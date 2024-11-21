@@ -1,5 +1,7 @@
 package com.shopethethao.modules.verification;
 
-public class VerificationsDAO {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface VerificationsDAO extends JpaRepository <Verifications,String> {
     
 }
