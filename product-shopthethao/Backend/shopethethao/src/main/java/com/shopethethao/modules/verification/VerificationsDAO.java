@@ -1,5 +1,5 @@
 package com.shopethethao.modules.verification;
 
-public class VerificationAPI {
+public class VerificationsDAO {
     
 }

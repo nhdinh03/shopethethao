@@ -1,5 +1,5 @@
 package com.shopethethao.modules.brands;
 
-public class BrandsDTO {
+public class BrandDTO {
     
 }

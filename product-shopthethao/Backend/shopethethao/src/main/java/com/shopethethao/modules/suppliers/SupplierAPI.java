@@ -1,6 +1,5 @@
 package com.shopethethao.modules.suppliers;
 
-public class SuppliersAPI {
+public class SupplierAPI {
     
 }
-git

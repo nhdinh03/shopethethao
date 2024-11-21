@@ -1,37 +1,33 @@
-package com.shopethethao.modules.role;
+package com.shopethethao.modules.suppliers;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.shopethethao.modules.accountRole.AccountRole;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name ="Roles")
-public class Role {
+@Table(name = "Suppliers")
+public class Supplier {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-    
-    private String name;
-    private String description;
+    private String id;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "role")
-    private List<AccountRole> accountRoles;
-   
+    private String name;
+    
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    private String email;
+
+    private String address;
 
 }

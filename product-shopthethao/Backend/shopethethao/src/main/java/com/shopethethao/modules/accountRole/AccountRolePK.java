@@ -13,11 +13,13 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+
 public class AccountRolePK implements Serializable {
-    
+
     @Column(name = "account_id", insertable = false, updatable = false)
     private String accountID;
-  
+
     @Column(name = "role_id", insertable = false, updatable = false)
     private Long roleID;
+
 }

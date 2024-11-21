@@ -1,5 +1,5 @@
 package com.shopethethao.modules.comments;
 
-public class CommentsAPI {
+public class CommentAPI {
     
 }
