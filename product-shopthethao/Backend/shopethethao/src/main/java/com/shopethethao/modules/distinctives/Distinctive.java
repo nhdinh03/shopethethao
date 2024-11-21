@@ -26,25 +26,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "detailed_invoices")
-public class Distinctives {
+@Table(name = "Distinctives")
+public class Distinctive {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+	private String id;
 
-    @ManyToOne
-    @JoinColumn(name = "invoice_id", nullable = false)
-    private Invoice invoice;
+	private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+	// @OneToMany(mappedBy = "distinctive")
+	// @JsonIgnore
+	// private List<ProductsDistinctives> productDistinctives;
 
-    @Column(nullable = false)
-    private int quantity;
-
-    @Column(name = "payment_method", nullable = false)
-    private String paymentMethod;
-    
 }

@@ -1,5 +1,9 @@
 package com.shopethethao.modules.stock_receipts;
 
-public class StockReceiptsDAO {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface StockReceiptsDAO extends JpaRepository<StockReceipt,String>{
     
 }

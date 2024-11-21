@@ -1,5 +1,8 @@
 package com.shopethethao.modules.products;
 
-public class ProductsDAO {
-    
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+@Repository
+public interface ProductsDAO extends JpaRepository<Product, String> {
+
 }

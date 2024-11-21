@@ -1,5 +1,9 @@
 package com.shopethethao.modules.detailed_invoices;
 
-public class DetailedInvoicesDAO {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface DetailedInvoicesDAO extends JpaRepository <DetailedInvoices, Integer> {
     
 }

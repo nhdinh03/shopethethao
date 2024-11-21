@@ -9,6 +9,7 @@ import com.shopethethao.modules.comments.Comment;
 import com.shopethethao.modules.detailed_invoices.DetailedInvoices;
 import com.shopethethao.modules.products_distinctives.ProductsDistinctives;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,8 +28,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "Products")
 public class Product {
-  @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private String id;
 	private String name;
 
@@ -45,22 +46,12 @@ public class Product {
 	private String image2;
 
 	@ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
-    private Categorie categorie;
-	
-	// @OneToMany(mappedBy = "product")
-	// @JsonIgnore
-	// private List<Comment> comments;
+	@JoinColumn(name = "category_id", referencedColumnName = "id")
+	private Categorie categorie;
 
-	// @OneToMany(mappedBy = "product")
-	// @JsonIgnore
-	// private List<DetailedInvoices> detailedInvoices;
 
-	
 
-	@OneToMany(mappedBy = "product")
-	@JsonIgnore
-	private List<ProductsDistinctives> productDistinctives;
 
-	// constructors, getters, and setters
+
+
 }

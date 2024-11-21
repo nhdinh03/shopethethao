@@ -31,6 +31,13 @@ public class StockReceipt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
+	private int quantity;
+
+	private float price;
+
+	@Temporal(TemporalType.DATE)
+	private Date orderDate;
+
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -42,12 +49,5 @@ public class StockReceipt {
 	@ManyToOne
 	@JoinColumn(name = "brand_id")
 	private Brand brand;
-
-	private int quantity;
-
-	private float price;
-
-	@Temporal(TemporalType.DATE)
-	private Date orderDate;
 
 }

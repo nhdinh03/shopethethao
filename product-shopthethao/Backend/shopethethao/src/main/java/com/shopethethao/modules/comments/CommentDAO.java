@@ -1,5 +1,7 @@
 package com.shopethethao.modules.comments;
 
-public class CommentDAO {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CommentDAO extends JpaRepository <Comment, Integer> {
     
 }

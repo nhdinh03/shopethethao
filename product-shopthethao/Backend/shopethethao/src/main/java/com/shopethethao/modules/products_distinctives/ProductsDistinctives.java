@@ -1,9 +1,11 @@
 package com.shopethethao.modules.products_distinctives;
 
-import com.shopethethao.modules.categories.Categorie;
-import com.shopethethao.modules.distinctives.Distinctives;
-import com.shopethethao.modules.products.Product;
+import org.springframework.stereotype.Service;
 
+
+import com.shopethethao.modules.distinctives.Distinctive;
+import com.shopethethao.modules.invoices.Invoice;
+import com.shopethethao.modules.products.Product;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,18 +18,18 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "Products_Distinctives")
 public class ProductsDistinctives {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Integer id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+	@ManyToOne
+	@JoinColumn(name = "product_id")
+	private Product product;
+
+	@ManyToOne
+	@JoinColumn(name = "distinctive_id")
+	private Distinctive distinctive;
 
 
-    @ManyToOne
-    @JoinColumn(name = "distinctive_id", nullable = false)
-    private Distinctives distinctive;
+
 }

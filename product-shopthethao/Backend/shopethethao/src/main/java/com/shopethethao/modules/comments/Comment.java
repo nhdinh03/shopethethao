@@ -39,7 +39,7 @@ public class Comment {
     private Integer likeCount;
 
     @Column(name = "order_date", nullable = false)
-    private java.util.Date orderDate; // Use java.util.Date
+    private java.util.Date orderDate; 
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -48,7 +48,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
-    @JsonIgnore
+    // @JsonIgnore
     private Product product;
 
 }
