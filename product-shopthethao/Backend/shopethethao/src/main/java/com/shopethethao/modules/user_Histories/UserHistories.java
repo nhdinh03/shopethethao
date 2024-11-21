@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 import com.shopethethao.modules.account.Account;
+import com.shopethethao.modules.suppliers.Supplier;
 
 @Data
 @AllArgsConstructor
@@ -31,8 +32,10 @@ public class UserHistories {
     @Column(name = "history_time", nullable = false, length = 20)
     private String historyTime;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_UserHistories_Accounts"))
+
+       @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private Account user;
+
 
 }

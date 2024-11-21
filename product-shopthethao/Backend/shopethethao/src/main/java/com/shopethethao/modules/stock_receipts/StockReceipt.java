@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 public class StockReceipt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)

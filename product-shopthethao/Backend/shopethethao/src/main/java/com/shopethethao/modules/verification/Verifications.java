@@ -21,11 +21,9 @@ public class Verifications {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private String id;
     
-    @ManyToOne
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+  
 
     @Column(name = "code", length = 6)
     private String code;
@@ -40,6 +38,10 @@ public class Verifications {
 
     @Column(name = "active")
     private Boolean active;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
   
 }

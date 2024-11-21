@@ -11,10 +11,7 @@ import com.shopethethao.modules.verification.Verifications;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -42,9 +39,11 @@ public class Account {
     private Boolean gender;
     private String image;
     private Integer status;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_date")
     private Date createdDate;
+
     private Boolean verified;
     private int points;
 
@@ -52,11 +51,11 @@ public class Account {
     @OneToMany(mappedBy = "account")
     private List<AccountRole> accountRole;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     private List<Comment> comments;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Verifications> verifications;
-
-
 }

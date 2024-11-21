@@ -2,6 +2,8 @@ package com.shopethethao.modules.comments;
 
 import java.sql.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.products.Product;
 
@@ -37,15 +39,16 @@ public class Comment {
     private Integer likeCount;
 
     @Column(name = "order_date", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date orderDate;
+    private java.util.Date orderDate; // Use java.util.Date
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private Account user;
+    private Account account;
+    
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnore
     private Product product;
-    
+
 }

@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.shopethethao.modules.brands.Brand;
-import com.shopethethao.modules.brands.BrandDAO;
+
 @RestController
 @RequestMapping("/api/categorie")
 public class CategorieAPI {
