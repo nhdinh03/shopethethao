@@ -7,8 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.shopethethao.auth.models.SecurityAccount;
 import com.shopethethao.modules.account.Account;
 
 @Data
@@ -29,19 +32,22 @@ public class Verifications {
     private String code;
 
     @Column(name = "created_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "expires_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date expiresAt;
+    private LocalDateTime expiresAt;
 
     @Column(name = "active")
     private Boolean active;
 
     @ManyToOne
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
+	@JoinColumn(name = "account_id", referencedColumnName = "phone", insertable = false, updatable = false)
+	private Account account;
+
+	@JsonIgnore
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "account_id", referencedColumnName = "id", insertable = false, updatable = false)
+	private SecurityAccount securityAccount;
 
   
 }

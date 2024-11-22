@@ -1,55 +1,58 @@
-// package com.shopethethao.auth.security.services;
+package com.shopethethao.auth.security.services;
 
-// import java.time.Instant;
-// import java.util.Optional;
-// import java.util.UUID;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.beans.factory.annotation.Value;
-// import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-// import com.shopethethao.modules.account.AccountDAO.AccountRepository;
+import com.shopethethao.auth.models.RefreshToken;
+import com.shopethethao.auth.repository.AccountRepository;
+import com.shopethethao.auth.repository.RefreshTokenRepository;
+import com.shopethethao.auth.security.jwt.exception.TokenRefreshException;
 
-// import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
-// @Service
-// public class RefreshTokenService {
-//     @Value("${bezkoder.app.jwtRefreshExpirationMs}")
-//     private Long refreshTokenDurationMs;
+@Service
+public class RefreshTokenService {
+    @Value("${bezkoder.app.jwtRefreshExpirationMs}")
+    private Long refreshTokenDurationMs;
 
-//     @Autowired
-//     private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
-//     @Autowired
-//     private AccountRepository dao;
+    @Autowired
+    private AccountRepository dao;
 
-//     public Optional<RefreshToken> findByToken(String token) {
-//         return refreshTokenRepository.findByToken(token);
-//     }
+    public Optional<RefreshToken> findByToken(String token) {
+        return refreshTokenRepository.findByToken(token);
+    }
 
-//     public RefreshToken createRefreshToken(String userId) {
-//         RefreshToken refreshToken = new RefreshToken();
+    public RefreshToken createRefreshToken(String userId) {
+        RefreshToken refreshToken = new RefreshToken();
 
-//         refreshToken.setUser(dao.findById(userId).get());
-//         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
-//         refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setUser(dao.findById(userId).get());
+        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+        refreshToken.setToken(UUID.randomUUID().toString());
 
-//         refreshToken = refreshTokenRepository.save(refreshToken);
-//         return refreshToken;
-//     }
+        refreshToken = refreshTokenRepository.save(refreshToken);
+        return refreshToken;
+    }
 
-//     public RefreshToken verifyExpiration(RefreshToken token) {
-//         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
-//             refreshTokenRepository.delete(token);
-//             throw new TokenRefreshException(token.getToken(),
-//                     "Mã thông báo làm mới đã hết hạn. Vui lòng thực hiện yêu cầu đăng nhập mới");
-//         }
+    public RefreshToken verifyExpiration(RefreshToken token) {
+        if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
+            refreshTokenRepository.delete(token);
+            throw new TokenRefreshException(token.getToken(),
+                    "Mã thông báo làm mới đã hết hạn. Vui lòng thực hiện yêu cầu đăng nhập mới");
+        }
 
-//         return token;
-//     }
+        return token;
+    }
 
-//     @Transactional
-//     public int deleteByAccountId(String userId) {
-//         return refreshTokenRepository.deleteByAccount(dao.findById(userId).get());
-//     }
-// }
+    @Transactional
+    public int deleteByAccountId(String userId) {
+        return refreshTokenRepository.deleteByAccount(dao.findById(userId).get());
+    }
+}
