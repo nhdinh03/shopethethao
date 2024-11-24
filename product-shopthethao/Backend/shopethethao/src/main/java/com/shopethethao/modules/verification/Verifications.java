@@ -1,7 +1,5 @@
 package com.shopethethao.modules.verification;
 
-
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,8 +23,9 @@ public class Verifications {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private String id;
-    
-  
+
+    @Column(name = "account_id")
+	private String accountId;
 
     @Column(name = "code", length = 6)
     private String code;
@@ -41,13 +40,13 @@ public class Verifications {
     private Boolean active;
 
     @ManyToOne
-	@JoinColumn(name = "account_id", referencedColumnName = "phone", insertable = false, updatable = false)
-	private Account account;
+    @JoinColumn(name = "account_id", referencedColumnName = "phone", insertable = false, updatable = false)
+    private Account account;
 
-	@JsonIgnore
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "account_id", referencedColumnName = "id", insertable = false, updatable = false)
-	private SecurityAccount securityAccount;
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", referencedColumnName = "id", insertable = false, updatable = false)
+    private SecurityAccount securityAccount;
 
-  
+
 }

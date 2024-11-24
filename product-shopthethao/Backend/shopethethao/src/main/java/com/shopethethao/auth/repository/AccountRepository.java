@@ -17,11 +17,11 @@ public interface AccountRepository extends JpaRepository<SecurityAccount, String
 
     Optional<SecurityAccount> findById(String id);
 
+    Optional<SecurityAccount> findByEmail(String email);
+
     boolean existsById(String id);
 
     Boolean existsByEmail(String email);
-
-    Optional<SecurityAccount> findByEmail(String email);
 
     Boolean existsByFullname(String fullname);
 

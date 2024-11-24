@@ -1,8 +1,10 @@
 package com.shopethethao.auth.models;
 
-
 import java.util.List;
 import java.util.Set;
+
+import org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyProperties.AssertingParty.Verification;
+
 import java.util.Date;
 import java.util.HashSet;
 
@@ -28,6 +30,7 @@ public class SecurityAccount {
     private String phone;
     private String fullname;
     private String address;
+    @Column(nullable = false, unique = true) 
     private String email;
     private String password;
     private Date birthday;
@@ -45,7 +48,7 @@ public class SecurityAccount {
     private Set<SecurityRole> roles = new HashSet<>();
 
     @JsonIgnore
-    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "securityAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Verifications verification;
 
     @JsonIgnore
