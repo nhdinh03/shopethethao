@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shopethethao.auth.OTP.util.AccountValidationUtil;
 import com.shopethethao.auth.OTP.util.EmailUtil;
 import com.shopethethao.auth.OTP.util.OtpUtil;
+import com.shopethethao.auth.models.RefreshToken;
 import com.shopethethao.auth.models.SecurityAccount;
 import com.shopethethao.auth.models.SecurityERole;
 import com.shopethethao.auth.models.SecurityRole;
@@ -43,6 +44,7 @@ import com.shopethethao.auth.payload.request.LoginRequest;
 import com.shopethethao.auth.payload.request.SignupRequest;
 import com.shopethethao.auth.payload.response.JwtResponseDTO;
 import com.shopethethao.auth.payload.response.MessageResponse;
+import com.shopethethao.auth.payload.response.TokenRefreshResponse;
 import com.shopethethao.auth.repository.AccountRepository;
 import com.shopethethao.auth.repository.RoleRepository;
 import com.shopethethao.auth.security.jwt.JwtUtils;
@@ -51,6 +53,8 @@ import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
 
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
@@ -250,12 +254,9 @@ public class AuthController {
     return ResponseEntity.ok().body(new MessageResponse("Tài khoản đã được xác thực thành công."));
   }
 
-  
-
   @PutMapping("/regenerate-otp")
   public ResponseEntity<?> regenerateOtp(@RequestBody Map<String, String> requestBody) {
     String email = requestBody.get("email");
-
     if (email == null || email.trim().isEmpty()) {
       return ResponseEntity.badRequest().body(new MessageResponse("Email không được để trống!"));
     }
@@ -283,7 +284,6 @@ public class AuthController {
       }
     } else {
       Verifications newVerification = new Verifications();
-      newVerification.setAccountId(securityAccount.getId());
       newVerification.setCode(otp);
       newVerification.setExpiresAt(LocalDateTime.now().plusMinutes(1));
       verificationDAO.save(newVerification);
@@ -411,11 +411,12 @@ public class AuthController {
   // return ResponseEntity.ok("Mật khẩu đã được cập nhật thành công.");
   // }
 
-  // @GetMapping("/logout")
-  // public ResponseEntity<?> logoutUser(HttpServletRequest request) {
-  // SecurityContextHolder.getContext().setAuthentication(null);
-  // return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công!"));
-  // }
+  @GetMapping("/logout")
+public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+    SecurityContextHolder.clearContext();
+    return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công!"));
+}
+
 
   @GetMapping("/getAll")
   public ResponseEntity<List<SecurityAccount>> findAll() {

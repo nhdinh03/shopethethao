@@ -15,6 +15,9 @@ const globalStyles = {
   },
 };
 
+
+
+
 const App = () => {
   // Apply body styles on mount
   React.useEffect(() => {
@@ -24,6 +27,7 @@ const App = () => {
   return (
     <div>
       <p>
+        
         Edit <code style={globalStyles.code}>src/App.js</code> and save to
         reload.
       </p>
