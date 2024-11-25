@@ -57,12 +57,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Hibernate Core -->
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>6.4.10.Final</version>
-        </dependency>
 
         <!-- Database Driver -->
         <dependency>
