@@ -40,6 +40,7 @@ import com.shopethethao.auth.models.RefreshToken;
 import com.shopethethao.auth.models.SecurityAccount;
 import com.shopethethao.auth.models.SecurityERole;
 import com.shopethethao.auth.models.SecurityRole;
+import com.shopethethao.auth.payload.request.ChangePasswordRequest;
 import com.shopethethao.auth.payload.request.LoginRequest;
 import com.shopethethao.auth.payload.request.SignupRequest;
 import com.shopethethao.auth.payload.response.JwtResponseDTO;
@@ -188,35 +189,33 @@ public class AuthController {
         .ok(new MessageResponse("Người dùng đã đăng ký thành công, vui lòng kiểm tra email để xác thực!"));
   }
 
-  // @PutMapping("/change-password")
-  // public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest
-  // changePasswordRequest) {
-  // SecurityAccount securityAccount =
-  // accountRepository.findById(changePasswordRequest.getId())
-  // .orElseThrow(
-  // () -> new UsernameNotFoundException("Không tìm thấy người dùng " +
-  // changePasswordRequest.getId()));
+  @PutMapping("/change-password")
+  public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+    SecurityAccount securityAccount = accountRepository.findById(changePasswordRequest.getId())
+        .orElseThrow(
+            () -> new UsernameNotFoundException("Không tìm thấy người dùng " +
+                changePasswordRequest.getId()));
 
-  // if (!encoder.matches(changePasswordRequest.getOldPassword(),
-  // securityAccount.getPassword())) {
-  // return ResponseEntity
-  // .badRequest()
-  // .body(new MessageResponse("Mật khẩu cũ không đúng!"));
-  // }
+    if (!encoder.matches(changePasswordRequest.getOldPassword(),
+        securityAccount.getPassword())) {
+      return ResponseEntity
+          .badRequest()
+          .body(new MessageResponse("Mật khẩu cũ không đúng!"));
+    }
 
-  // if
-  // (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword()))
-  // {
-  // return ResponseEntity
-  // .badRequest()
-  // .body(new MessageResponse("Mật khẩu mới và mật khẩu xác nhận không khớp"));
-  // }
-  // securityAccount.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
-  // accountRepository.save(securityAccount);
+    if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword())) {
+      return ResponseEntity
+          .badRequest()
+          .body(new MessageResponse("Mật khẩu mới và mật khẩu xác nhận không khớp"));
+    }
+    securityAccount.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
+    accountRepository.save(securityAccount);
 
-  // return ResponseEntity.ok().body("Đổi mật khẩu thành công");
+    return ResponseEntity
+        .badRequest()
+        .body(new MessageResponse("Đổi Mật khẩu thành công"));
 
-  // }
+  }
 
   @PostMapping("/verify-account")
   public ResponseEntity<?> verifyOtp(@RequestBody LoginRequest loginRequest) {
@@ -412,11 +411,10 @@ public class AuthController {
   // }
 
   @GetMapping("/logout")
-public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+  public ResponseEntity<?> logoutUser(HttpServletRequest request) {
     SecurityContextHolder.clearContext();
     return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công!"));
-}
-
+  }
 
   @GetMapping("/getAll")
   public ResponseEntity<List<SecurityAccount>> findAll() {

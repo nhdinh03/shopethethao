@@ -1,6 +1,6 @@
 import axios from 'axios';
-// import funcUtils from '~/utils/funcUtils';
-// import httpStatus from './httpStatus';
+import funcUtils from '~/utils/funcUtils';
+import httpStatus from './httpStatus';
 // import authApi from '../user/Security/authApi';
 
 const baseUrl = process.env.REACT_APP_ShopeTheThao_PRODUCTION_REST_API;
@@ -14,6 +14,7 @@ const axiosClient = axios.create({
     },
     // withCredentials: true,
 });
+  
 // axiosClient.interceptors.response.use(
 //     (response) => {
 //         if (response && response.data) {
@@ -42,19 +43,20 @@ const axiosClient = axios.create({
 //     },
 // );
 
-// axiosClient.interceptors.request.use(
-//     (config) => {
-//         // console.log('Interceptor is running');
-//         const token = authApi.getToken();
-//         if (token) {
-//             config.headers['Authorization'] = `Bearer ${token}`;
-//             // console.log('yes');
-//         }
-//         return config;
-//     },
-//     (error) => {
-//         return Promise.reject(error);
-//     },
-// );
+axiosClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('accessToken'); 
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+
+        }
+        
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    },
+);
+
 
 export default axiosClient;
