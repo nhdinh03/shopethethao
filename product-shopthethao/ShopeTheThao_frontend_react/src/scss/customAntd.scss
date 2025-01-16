@@ -1,0 +1,47 @@
+
+.ant-collapse{
+    border: none !important;
+    border-radius: 0px;
+    padding: 0 !important;
+    // margin: 0 -10px !important;
+    background-color: transparent !important;
+    width: 100% !important;
+    
+}
+.ant-collapse-item {
+    border: none !important;
+
+}
+
+.ant-collapse-header{
+    position: relative !important;
+}
+
+.ant-collapse-expand-icon{
+    position: absolute !important;
+    right: 10px;
+    top: 20px;
+    color: #ADADAD;
+
+}
+
+.ant-collapse-content {
+    &:hover {
+        background-color: #ffffff !important;
+    }
+}
+
+// .ant-collapse-content-active{
+
+// }
+
+.ant-list {
+    width: 100%;
+}
+
+.ant-collapse-content, .ant-collapse-content-box{
+    &:hover {
+        --tw-bg-opacity: 1;
+        background-color: rgb(250 250 250 / var(--tw-bg-opacity));
+    }
+}

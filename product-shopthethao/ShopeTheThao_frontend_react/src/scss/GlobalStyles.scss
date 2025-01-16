@@ -1,0 +1,32 @@
+// @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@700&family=Montserrat:ital,wght@0,100;0,200;1,100;1,200&family=Quicksand:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root {
+    --primary-color: #5d87ff;
+    --primary-background-color: #053b50;
+    --primany-text-background-color: #eeeeee;
+    --primany-text-hover-color: #64ccc5;
+    --primary--text-color: #176b87;
+    --font-family: 'Montserrat', sans-serif;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+html {
+    font-size: 62.5%;
+}
+a {
+    text-decoration: none;
+}
+ul {
+    list-style-type: none;
+}
+body {
+    font-size: 1.6rem;
+    line-height: 1.5;
+    text-rendering: optimizeSpeed;
+}

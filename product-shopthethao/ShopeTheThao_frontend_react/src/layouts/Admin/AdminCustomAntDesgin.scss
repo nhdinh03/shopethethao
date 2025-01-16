@@ -1,0 +1,16 @@
+:root {
+    --color-menu-item: #fff;
+    --color-menu-item-hover: #fff;
+    --color-menu-item-active: #fff;
+}
+.ant-menu-item-selected {
+    background-color: var(--primary-color) !important; /* Sử dụng biến cho màu nền */
+    color: var(--color-menu-item-active) !important; /* Màu chữ trắng khi được chọn */
+}
+
+// .ant-select,
+// .ant-select-in-form-item,
+// .ant-picker,
+// .ant-picker-status-success {
+//     width: 250px !important;
+// }

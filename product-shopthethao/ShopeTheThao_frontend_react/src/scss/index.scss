@@ -1,3 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './GlobalStyles.scss';
+@import './global';
+@import './customRootShowTime.scss';
+@import './customType.module.scss';
+@import 'normalize.css';
+@import './customAntd.scss';
+@import './tailwindcss.css';
+@import './mapbox-lg-modal.scss';
