@@ -1,16 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.jsx';
-import App from './App.jsx';
-import reportWebVitals from './reportWebVitals.js';
-// import 'bootstrap/dist/css/bootstrap.min.css';
-
+import App from './App'; // Không cần '.jsx'
+import reportWebVitals from './reportWebVitals';
+import './scss/index.scss';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
- 
+  <React.StrictMode>
     <App />
-  
+  </React.StrictMode>
 );
 
 reportWebVitals();

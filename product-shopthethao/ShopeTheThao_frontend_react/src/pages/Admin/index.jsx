@@ -1,0 +1,1 @@
+export { default as AdminIndex } from './Home';
