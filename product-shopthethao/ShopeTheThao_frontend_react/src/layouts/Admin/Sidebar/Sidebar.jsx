@@ -1,65 +1,214 @@
-import React from 'react';
-import { Menu } from 'antd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import * as solidIcons from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { Menu } from "antd";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import * as solidIcons from "@fortawesome/free-solid-svg-icons";
+import { Link, useLocation } from "react-router-dom";
+import styles from "./Sidebar.module.scss";
+import {
+  HomeFilled,
+  BarChartOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
 
 function getItem(label, key, icon, children, type) {
-    return { key, icon, children, label, type };
+  return { key, icon, children, label, type };
 }
 
-function Sidebar() {
-    const isAuthenticated = !!localStorage.getItem('token'); // Kiểm tra đăng nhập
+function Sidebar({ onClose }) {
+  const location = useLocation();
+  const selectedKey = location.pathname;
 
-    if (!isAuthenticated) return null; // Nếu chưa đăng nhập, ẩn Sidebar
+  // Xác định menu cha cần mở
+  const findParentKey = (key) => {
+    const parentMap = {
+      "/admin/index": "grHome", // Trang chủ
+      "/admin/product": "grProducts", // Sản phẩm
+      "/admin/categories": "grProducts", // Danh mục sản phẩm
+      "/admin/brands": "grProducts", // Nhãn hàng
+      "/admin/suppliers": "grSuppliers", // Nhà cung cấp
+      "/admin/stock-receipts": "grSuppliers", // Phiếu nhập kho
+      "/admin/invoices": "grInvoices", // Hóa đơn
+      "/admin/detailed-invoices": "grInvoices", // Chi tiết hóa đơn
+      "/admin/account": "grAccounts", // Người dùng
+      "/admin/accountStaff": "grAccounts", // Nhân viên
+      "/admin/products-distinctives": "grDistinctives", // Thuộc tính sản phẩm
+      "/admin/statistics-documents": "grStatistics", // Tài liệu thống kê
+      "/admin/charts": "grStatistics", // Biểu đồ thống kê
+    };
+    return parentMap[key];
+  };
+  
+  // Quản lý state openKeys
+  const [openKeys, setOpenKeys] = useState([]);
 
-    const items = [
-        getItem(<Link to="/admin/index">Trang chủ</Link>, 'home', <FontAwesomeIcon icon={solidIcons.faHouse} />),
+  // Thiết lập openKeys khi tải lại trang
+  useEffect(() => {
+    const parentKey = findParentKey(selectedKey);
+    if (parentKey) {
+      setOpenKeys([parentKey]);
+    }
+  }, [selectedKey]);
 
-        getItem('Rạp', 'grCinema', <FontAwesomeIcon icon={solidIcons.faTv} />, [
-            getItem(<Link to="/admin/cinema-complex">Cụm rạp</Link>, 'cinemaComplex'),
-            getItem(<Link to="/admin/cinema-type">Loại rạp</Link>, 'cinemaType'),
-            getItem(<Link to="/admin/cinema-chains">Chuỗi Rạp</Link>, 'cinemaChains'),
-        ]),
+  // Xử lý mở hoặc đóng menu cha
+  const onOpenChange = (keys) => {
+    setOpenKeys(keys);
+  };
 
-        getItem('Phim', 'grMovie', <FontAwesomeIcon icon={solidIcons.faVideo} />, [
-            getItem(<Link to="/admin/movie">Phim</Link>, 'movie'),
-            getItem(<Link to="/admin/movie-studio">Hãng phim</Link>, 'movieStudio'),
-            getItem(<Link to="/admin/movie-producer">Nhà sản xuất</Link>, 'movieProducer'),
-            getItem(<Link to="/admin/price">Giá vé</Link>, 'price'),
-            getItem(<Link to="/admin/showtime">Suất chiếu</Link>, 'showtime'),
-        ]),
+  const items = [
+    // Trang chủ
+    getItem(
+      <Link to="/admin/index" onClick={onClose}>
+        Trang chủ
+      </Link>,
+      "/admin/index",
+      <HomeFilled style={{ fontSize: "18px", color: "#4CAF50" }} />
+    ),
 
-        getItem('Ghế', 'grSeat', <FontAwesomeIcon icon={solidIcons.faCouch} />, [
-            getItem(<Link to="/admin/seat">Ghế</Link>, 'seat'),
-            getItem(<Link to="/admin/seat-type">Loại ghế</Link>, 'seatType'),
-            getItem(<Link to="/admin/seat-chart">Sơ đồ ghế</Link>, 'seatChart'),
-        ]),
+    // Quản lý sản phẩm
+    getItem(
+      "Quản Lý Sản Phẩm",
+      "grProducts",
+      <FontAwesomeIcon icon={solidIcons.faBox} style={{ color: "#00BCD4" }} />,
+      [
+        getItem(
+          <Link to="/admin/product" onClick={onClose}>
+            Sản phẩm
+          </Link>,
+          "/admin/product"
+        ),
+        getItem(
+          <Link to="/admin/categories" onClick={onClose}>
+            Danh mục
+          </Link>,
+          "/admin/categories"
+        ),
+        getItem(
+          <Link to="/admin/brands" onClick={onClose}>
+            Nhãn hàng
+          </Link>,
+          "/admin/brands"
+        ),
+      ]
+    ),
 
-        getItem('Thống kê', 'grStatic', <FontAwesomeIcon icon={solidIcons.faChartSimple} />, [
-            getItem(<Link to="/admin/ticket-statistics">Thống kê vé</Link>, 'static'),
-        ]),
+    // Nhà cung cấp
+    getItem(
+      "Quản Lý Nhà Cung Cấp",
+      "grSuppliers",
+      <FontAwesomeIcon
+        icon={solidIcons.faTruck}
+        style={{ color: "#FF5722" }}
+      />,
+      [
+        getItem(
+          <Link to="/admin/suppliers" onClick={onClose}>
+            Nhà cung cấp
+          </Link>,
+          "/admin/suppliers"
+        ),
+        getItem(
+          <Link to="/admin/stock-receipts" onClick={onClose}>
+            Phiếu nhập kho
+          </Link>,
+          "/admin/stock-receipts"
+        ),
+      ]
+    ),
 
-        getItem('Dịch vụ & sự kiện', 'grServiceEvent', <FontAwesomeIcon icon={solidIcons.faCalendarCheck} />, [
-            getItem(<Link to="/admin/combo">Combo</Link>, 'combo'),
-            getItem(<Link to="/admin/service">Dịch vụ</Link>, 'service'),
-            getItem(<Link to="/admin/priceService">Giá dịch vụ</Link>, 'priceService'),
-            getItem('Sự kiện', 'grEvent', null, [
-                getItem(<Link to="/admin/discount">Giảm giá</Link>, 'discount'),
-                getItem(<Link to="/admin/event">Sự kiện</Link>, 'event'),
-            ], 'group'),
-        ]),
+    // Quản lý bán hàng
+    getItem(
+      "Quản Lý Bán Hàng",
+      "grInvoices",
+      <FontAwesomeIcon
+        icon={solidIcons.faFileInvoice}
+        style={{ color: "#FF9800" }}
+      />,
+      [
+        getItem(
+          <Link to="/admin/invoices" onClick={onClose}>
+            Hóa đơn
+          </Link>,
+          "/admin/invoices"
+        ),
+        getItem(
+          <Link to="/admin/detailed-invoices" onClick={onClose}>
+            Chi tiết hóa đơn
+          </Link>,
+          "/admin/detailed-invoices"
+        ),
+      ]
+    ),
 
-        { type: 'divider' },
+    // Quản lý người dùng
+    getItem(
+      "Quản Lý Người Dùng",
+      "grAccounts",
+      <FontAwesomeIcon icon={solidIcons.faUser} style={{ color: "#3F51B5" }} />,
+      [
+        getItem(
+          <Link to="/admin/account" onClick={onClose}>
+            Người dùng
+          </Link>,
+          "/admin/account"
+        ),
+        getItem(
+          <Link to="/admin/accountStaff" onClick={onClose}>
+            Nhân viên
+          </Link>,
+          "/admin/accountStaff"
+        ),
+      ]
+    ),
 
-        getItem(<Link to="/admin/account">Quản lý người dùng</Link>, 'grAccount', <FontAwesomeIcon icon={solidIcons.faUsers} />),
-        getItem(<Link to="/admin/accountStaff">Quản lý nhân viên</Link>, 'grAccountStaff', <FontAwesomeIcon icon={solidIcons.faUserAlt} />),
-        getItem(<Link to="/admin/comentModeration">Kiểm duyệt bình luận</Link>, 'grComentModeration', <FontAwesomeIcon icon={solidIcons.faComment} />),
-        getItem(<Link to="/admin/webcam">Soát vé</Link>, 'webcam', <FontAwesomeIcon icon={solidIcons.faCamera} />),
-        getItem(<Link to="/admin/sendEmail">Gửi Email</Link>, 'sendEmail', <FontAwesomeIcon icon={solidIcons.faEnvelope} />),
-    ];
+    // Đặc trưng sản phẩm
+    getItem(
+      "Đặc Trưng Sản Phẩm",
+      "grDistinctives",
+      <FontAwesomeIcon icon={solidIcons.faStar} style={{ color: "#FFC107" }} />,
+      [
+        getItem(
+          <Link to="/admin/products-distinctives" onClick={onClose}>
+            Thuộc tính sản phẩm
+          </Link>,
+          "/admin/products-distinctives"
+        ),
+      ]
+    ),
 
-    return <Menu mode="inline" items={items} />;
+    // Thống kê & Báo cáo
+    getItem(
+      "Thống Kê & Báo Cáo",
+      "grStatistics",
+      <FileTextOutlined style={{ color: "#607D8B" }} />,
+      [
+        getItem(
+          <Link to="/admin/statistics-documents" onClick={onClose}>
+            Tài liệu thống kê
+          </Link>,
+          "/admin/statistics-documents"
+        ),
+        getItem(
+          <Link to="/admin/charts" onClick={onClose}>
+            Biểu đồ thống kê
+          </Link>,
+          "/admin/charts"
+        ),
+      ]
+    ),
+  ];
+
+  return (
+    <div className={styles.sidebar}>
+      <Menu
+        className={styles["sidebar-menu"]}
+        mode="inline"
+        items={items}
+        selectedKeys={[selectedKey]} // Highlight menu hiện tại
+        openKeys={openKeys} // Mở menu cha
+        onOpenChange={onOpenChange} // Xử lý mở/đóng menu cha
+      />
+    </div>
+  );
 }
 
 export default Sidebar;

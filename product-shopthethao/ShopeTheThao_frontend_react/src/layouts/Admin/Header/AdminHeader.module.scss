@@ -44,3 +44,7 @@
 .background{
     background-color: var(--primary-color) !important;
 }
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}

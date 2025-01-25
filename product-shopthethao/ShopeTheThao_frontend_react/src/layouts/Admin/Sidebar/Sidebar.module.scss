@@ -1,0 +1,82 @@
+// Các biến màu
+$primary-color: #cce7ff; // Màu nền xanh khi chọn
+$hover-color: #b3d9ff; // Màu nền khi hover
+$text-color: #0074f1; // Màu chữ xanh đậm
+$border-radius: 8px; // Bo tròn góc
+
+// Tổng quát cho sidebar
+.sidebar-menu {
+  background-color: #ffffff; // Màu nền sidebar
+  padding: 15px;
+  border-radius: $border-radius;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  .ant-menu-item {
+    margin: 8px 0;
+    padding: 12px 20px;
+    font-size: 16px;
+    color: $text-color;
+    border-radius: $border-radius;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: $hover-color !important; // Nền xanh khi hover
+      color: white !important; // Màu chữ khi hover
+
+      .anticon {
+        color: white !important; // Màu biểu tượng khi hover
+      }
+    }
+
+    .anticon {
+      margin-right: 10px;
+      color: $text-color;
+      font-size: 18px;
+      transition: color 0.3s;
+    }
+  }
+
+  // Mục được chọn
+  .ant-menu-item-selected {
+    background-color: $primary-color !important; // Nền xanh nhạt
+    color: $text-color !important; // Màu chữ xanh đậm
+    border-radius: $border-radius; // Bo tròn góc
+
+    .anticon {
+      color: $text-color !important; // Màu biểu tượng khi được chọn
+    }
+  }
+
+  // Tiêu đề submenu
+  .ant-menu-submenu-title {
+    padding: 12px 20px;
+    font-weight: bold;
+    color: $text-color;
+    border-radius: $border-radius;
+
+    &:hover {
+      background-color: $hover-color !important; // Nền xanh khi hover
+      color: white !important; // Màu chữ khi hover
+    }
+  }
+
+  // Hiệu ứng cho submenu
+  .ant-menu-sub {
+    background-color: lighten(#ffffff, 5%);
+    border-radius: $border-radius;
+
+    .ant-menu-item {
+      padding: 10px 30px;
+      font-size: 14px;
+
+      &:hover {
+        background-color: $hover-color !important; // Nền xanh khi hover
+        color: white !important; // Màu chữ khi hover
+
+        .anticon {
+          color: white !important; // Màu biểu tượng khi hover
+        }
+      }
+    }
+  }
+}

@@ -1,3 +1,21 @@
 .wrapper-brand-logo {
     height: 70px;
 }
+body.dark-mode {
+  background-color: #1e1e2f;
+  color: #ffffff;
+}
+
+body.dark-mode .ant-layout {
+  background-color: #1e1e2f;
+}
+
+body.dark-mode .ant-layout-header {
+  background-color: #282c34;
+  color: #ffffff;
+}
+
+body.dark-mode .ant-input {
+  background-color: #333;
+  color: #ffffff;
+}

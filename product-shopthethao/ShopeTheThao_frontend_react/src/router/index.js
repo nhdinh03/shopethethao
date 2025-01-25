@@ -13,6 +13,11 @@ const privateRoutes = [
     component: PageAdmin.AdminIndex,
     layout: AdminLayout,
   },
+  {
+    path: "/admin/product",
+    component: PageAdmin.ProductManagement,
+    layout: AdminLayout,
+  },
 ];
 
 export { publicRoutes, privateRoutes };

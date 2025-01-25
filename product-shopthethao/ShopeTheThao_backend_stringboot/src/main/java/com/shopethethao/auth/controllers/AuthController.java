@@ -85,19 +85,33 @@ public class AuthController {
     @Autowired
     private EmailUtil emailUtil;
 
+    @Autowired
+    TokenStore tokenStore;
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         SecurityAccount securityAccount = accountRepository.findById(loginRequest.getId())
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với id: " + loginRequest.getId()));
         AccountValidationUtil.validateAccount(securityAccount, loginRequest.getPassword(), encoder);
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getId(), loginRequest.getPassword()));
+
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getId(), loginRequest.getPassword()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai thông tin đăng nhập hoặc token không hợp lệ");
+        }
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwt = jwtUtils.generateJwtToken(authentication);
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
+
+        // Date expiryDate = new Date(System.currentTimeMillis() + jwtUtils.getJwtExpirationMs());
+        // tokenStore.saveNewToken(userDetails.getId(), jwt, expiryDate);
+        tokenStore.saveNewToken(userDetails.getId(), jwt);
         // Trả về JWT và thông tin người dùng
         return ResponseEntity.ok(new JwtResponseDTO(
                 userDetails.getId(),
