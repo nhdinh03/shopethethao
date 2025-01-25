@@ -5,10 +5,8 @@ import classNames from "classnames/bind";
 import { MenuUnfoldOutlined, ArrowUpOutlined } from "@ant-design/icons";
 import { Layout, Button, theme, Skeleton, Drawer, FloatButton } from "antd";
 import { HeaderAdminLeft, HeaderAdminRight } from "./Header";
-import { Footer } from "antd/es/layout/layout";
 import Sidebar from "./Sidebar/Sidebar";
 import { LayoutPageDefault } from "..";
-import FooterAdmin from "./Footer/FooterAdmin";
 import { useLocation } from "react-router-dom";
 import Bread from "./Breadcrumb/Breadcrumb";
 import { useDarkMode } from "..//..//config/DarkModeProvider";
@@ -21,8 +19,8 @@ const AdminLayout = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [active, setActive] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); // 🔥 State kiểm soát Sidebar mobile
-  const [showScrollButton, setShowScrollButton] = useState(false); // 🔥 State kiểm soát nút cuộn lên đầu trang
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); 
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -131,10 +129,6 @@ const AdminLayout = ({ children }) => {
           />
         )}
 
-        {/* Footer */}
-        <Footer>
-          <FooterAdmin />
-        </Footer>
       </Layout>
     </Layout>
   );

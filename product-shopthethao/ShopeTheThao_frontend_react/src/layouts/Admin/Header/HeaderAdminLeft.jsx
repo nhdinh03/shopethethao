@@ -9,7 +9,7 @@ function HeaderAdminLeft({ onClose }) {
         <div className="flex items-center gap-2">
           <img width={80} src={img.logoAdmin} alt="Admin Logo" />
 
-          <div className="hidden lg:block text-2xl font-semibold text-gray-800">
+          <div className="hidden lg:block text-4xl font-bold text-gray-900">
             Shope
           </div>
         </div>
@@ -19,7 +19,7 @@ function HeaderAdminLeft({ onClose }) {
       <div className="w-[1px] bg-gray-300 h-8 hidden lg:block"></div>
 
       {/* Nội dung thêm */}
-      <div className="hidden lg:block text-sm font-medium text-gray-500">
+      <div className="hidden lg:block text-lg font-semibold text-gray-700">
         nhdinh
       </div>
     </div>

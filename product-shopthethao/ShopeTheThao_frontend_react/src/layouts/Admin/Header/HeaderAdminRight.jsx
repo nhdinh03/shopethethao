@@ -103,96 +103,95 @@ function HeaderAdminRight() {
   ];
 
   return (
-    <div className="flex items-center justify-between w-full bg-white shadow-md px-6">
-      {/* Thông tin người dùng */}
-      <div className="flex items-center gap-4">
-        <Avatar
-          src={userData?.avatar}
-          size="large"
-          icon={<FontAwesomeIcon icon={faUser} />}
-        />
-        <div className="flex flex-col text-center md:text-left">
-          <span className="font-semibold text-gray-800 text-lg">
-            {userData?.fullname}
-          </span>
-          <span className="text-gray-500 text-sm">{userData?.position}</span>
-        </div>
-      </div>
-
-      {/* Thanh tìm kiếm */}
-      <div className="flex flex-1 justify-center px-4">
-        <Input
-          placeholder="Tìm kiếm..."
-          prefix={<SearchOutlined />}
-          className="w-full max-w-[400px] rounded-full shadow-sm"
-        />
-      </div>
-
-      {/* Các nút điều khiển */}
-      <div className="flex items-center gap-4">
-        {/* Chuyển đổi ngôn ngữ */}
-        <Dropdown
-          menu={{ items: languages }}
-          placement="bottomRight"
-          trigger={["click"]}
-        >
-          <Tooltip title="Chuyển đổi ngôn ngữ">
-            <img
-              src={img.Co_VN}
-              alt="Vietnam"
-              className="w-9 h-6 rounded-full cursor-pointer border"
-              style={{ borderRadius: "0.1px" }}
-            />
-          </Tooltip>
-        </Dropdown>
-
-        {/* Chuyển đổi chế độ sáng/tối */}
-        <Tooltip
-          title={
-            isDarkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"
-          }
-        >
-          <Switch
-            checkedChildren={<FontAwesomeIcon icon={faSun} />}
-            unCheckedChildren={<FontAwesomeIcon icon={faMoon} />}
-            checked={isDarkMode}
-            onChange={toggleDarkMode}
-            className="text-lg"
-          />
-        </Tooltip>
-
-        {/* Biểu tượng thành tích */}
-        <Tooltip title="Thành tích">
-          <span className="cursor-pointer text-gray-600 hover:text-blue-500">
-            <FontAwesomeIcon icon={faTrophy} className="text-xl" />
-          </span>
-        </Tooltip>
-
-        {/* Nút thông báo */}
-        <Dropdown
-          menu={{ items: notifications }}
-          placement="bottomRight"
-          trigger={["click"]}
-        >
-          <Badge count={3} size="small">
-            <span className="cursor-pointer text-gray-600 hover:text-blue-500">
-              <FontAwesomeIcon icon={faBell} className="text-xl" />
-            </span>
-          </Badge>
-        </Dropdown>
-
-        {/* Nút cài đặt */}
-        <Dropdown
-          menu={{ items: settings }}
-          placement="bottomRight"
-          trigger={["click"]}
-        >
-          <span className="cursor-pointer text-gray-600 hover:text-blue-500">
-            <FontAwesomeIcon icon={faGear} className="text-xl" />
-          </span>
-        </Dropdown>
-      </div>
+ <div className="flex items-center justify-between w-full bg-white shadow-md px-6">
+  {/* Thông tin người dùng */}
+  <div className="flex items-center gap-4">
+    <Avatar
+      src={userData?.avatar}
+      size="large"
+      icon={<FontAwesomeIcon icon={faUser} />}
+    />
+    <div className="flex flex-col text-center md:text-left">
+      <span className="font-semibold text-gray-800 text-lg">
+        {userData?.fullname}
+      </span>
+      <span className="text-gray-500 text-sm">{userData?.position}</span>
     </div>
+  </div>
+
+  {/* Thanh tìm kiếm */}
+  <div className="flex flex-1 justify-center px-4">
+    <Input
+      placeholder="Tìm kiếm..."
+      prefix={<SearchOutlined />}
+      className="w-full max-w-[400px] rounded-full shadow-sm"
+    />
+  </div>
+
+  {/* Các nút điều khiển */}
+  <div className="flex items-center gap-7">
+    {/* Chuyển đổi ngôn ngữ */}
+    <Dropdown
+      menu={{ items: languages }}
+      placement="bottomRight"
+      trigger={["click"]}
+    >
+      <Tooltip>
+        <img
+          src={img.Co_VN}
+          alt="Vietnam"
+          className="w-9 h-6 rounded-full cursor-pointer border"
+          style={{ borderRadius: "0.1px" }}
+        />
+      </Tooltip>
+    </Dropdown>
+
+    {/* Chuyển đổi chế độ sáng/tối */}
+    <Tooltip
+      title={isDarkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
+    >
+      <Switch
+        checkedChildren={<FontAwesomeIcon icon={faSun} />}
+        unCheckedChildren={<FontAwesomeIcon icon={faMoon} />}
+        checked={isDarkMode}
+        onChange={toggleDarkMode}
+        className="text-lg"
+      />
+    </Tooltip>
+
+    {/* Biểu tượng thành tích */}
+    <Tooltip title="Thành tích">
+      <span className="cursor-pointer text-gray-600 hover:text-blue-500">
+        <FontAwesomeIcon icon={faTrophy} className="text-xl" />
+      </span>
+    </Tooltip>
+
+    {/* Nút thông báo */}
+    <Dropdown
+      menu={{ items: notifications }}
+      placement="bottomRight"
+      trigger={["click"]}
+    >
+      <Badge count={3} size="small">
+        <span className="cursor-pointer text-gray-600 hover:text-blue-500">
+          <FontAwesomeIcon icon={faBell} className="text-xl" />
+        </span>
+      </Badge>
+    </Dropdown>
+
+    {/* Nút cài đặt */}
+    <Dropdown
+      menu={{ items: settings }}
+      placement="bottomRight"
+      trigger={["click"]}
+    >
+      <span className="cursor-pointer text-gray-600 hover:text-blue-500">
+        <FontAwesomeIcon icon={faGear} className="text-xl" />
+      </span>
+    </Dropdown>
+  </div>
+</div>
+
   );
 }
 
