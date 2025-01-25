@@ -1,0 +1,28 @@
+.btn {
+    
+    + .btn {
+        margin-left: 8px;
+    }
+}
+
+.black {
+    background-color: black;
+
+    &:hover {
+        background-color: red !important;
+    }
+}
+
+
+
+.text{ 
+    background-color: transparent !important;
+    font-size: 14px;
+    height: 32px;
+    padding: 0px 5px;
+    border-radius: 6px;    
+    &:focus-visible{
+        outline: none !important;
+    }
+   
+}

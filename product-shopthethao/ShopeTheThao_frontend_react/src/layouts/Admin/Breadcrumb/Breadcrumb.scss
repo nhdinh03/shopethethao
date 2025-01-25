@@ -1,0 +1,13 @@
+.breadcrumb-container {
+    display: flex;
+    align-items: center;
+    margin-left: 20px; // Tăng khoảng cách sang phải (tuỳ chỉnh giá trị)
+    font-size: 14px; // Tuỳ chỉnh kích thước chữ
+    color: #333; // Màu chữ
+  }
+  .breadcrumb-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px; // Khoảng cách giữa icon và text (tuỳ chỉnh)
+  }
+  

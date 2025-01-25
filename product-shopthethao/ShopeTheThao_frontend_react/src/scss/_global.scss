@@ -1,0 +1,101 @@
+// Global styles
+$blue-50: #eff6ff;
+$blue-100: #dbeafe;
+$blue-200: #bfdbfe;
+$blue-300: #93c5fd;
+$blue-400: #60a5fa;
+$blue-500: #3b82f6;
+$blue-600: #2563eb;
+$blue-700: #1d4ed8;
+$blue-800: #1e40af;
+$blue-900: #1e3a8a;
+$blue-950: #1e2e7a;
+
+$text-align-values: center right left end start;
+// text-align classes
+@each $value in $text-align-values {
+    .text-#{$value} {
+        text-align: $value;
+    }
+}
+
+$display-values: block inline inline-block flex grid none;
+// display classes
+@each $value in $display-values {
+    .d-#{$value} {
+        display: $value;
+    }
+}
+
+$base-values: 0 5 10 15 20 25 30;
+// gap classes
+@each $value in $base-values {
+    .g-#{$value} {
+        gap: $value + px;
+    }
+}
+// padding classes
+@each $value in $base-values {
+    .p-#{$value} {
+        padding: $value + px;
+    }
+}
+// padding-top classes
+@each $value in $base-values {
+    .pt-#{$value} {
+        padding-top: $value + px;
+    }
+}
+// padding-bottom classes
+@each $value in $base-values {
+    .pb-#{$value} {
+        padding-bottom: $value + px;
+    }
+}
+// padding-left classes
+@each $value in $base-values {
+    .ps-#{$value} {
+        padding-left: $value + px;
+    }
+}
+// padding-right classes
+@each $value in $base-values {
+    .pe-#{$value} {
+        padding-right: $value + px;
+    }
+}
+
+// margin classes
+@each $value in $base-values {
+    .m-#{$value} {
+        margin: $value + px;
+    }
+}
+// margin-left classes
+@each $value in $base-values {
+    .ms-#{$value} {
+        margin-left: $value + px;
+    }
+}
+// margin-rigth classes
+@each $value in $base-values {
+    .me-#{$value} {
+        margin-right: $value + px;
+    }
+}
+// margin-left classes
+@each $value in $base-values {
+    .mt-#{$value} {
+        margin-top: $value + px;
+    }
+}
+// margin-rigth classes
+@each $value in $base-values {
+    .mb-#{$value} {
+        margin-bottom: $value + px;
+    }
+}
+.text-gray-500 {
+    --tw-text-opacity: 1;
+    color: rgb(115 115 115 / var(--tw-text-opacity));
+}

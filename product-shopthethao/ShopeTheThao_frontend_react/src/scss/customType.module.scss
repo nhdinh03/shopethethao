@@ -1,0 +1,80 @@
+.k,
+.p,
+.t13,
+.t16,
+.t18,
+.dat-truoc,
+.sneak-show {
+    min-width: 25px;
+    max-width: 100px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    line-height: 1rem;
+    border-radius: 0.2rem;
+    height: 18px;
+    font-size: 10px;
+    padding: 5px 7px;
+
+    &::after {
+        content: '+';
+        font-weight: 500;
+    }
+}
+.k {
+    background-color: #006ee6;
+    width: 18px;
+    font-size: 11px;
+    &::after {
+        content: '';
+    }
+}
+
+.p {
+    background-color: #579b41;
+    width: 18px;
+    font-size: 11px;
+    &::after {
+        content: '';
+    }
+}
+.t13 {
+    background-color: #ddbc3f;
+}
+
+.t16 {
+    background-color: #e88021;
+}
+
+.t18 {
+    background-color: #9b2020;
+}
+
+// .dat-truoc {
+//     background-color: #ff5858;
+//     width: 95px;
+//     height: 20px;
+
+//     &::after {
+//         content: '';
+//         background-image: url('../assets//img/logo-dat-truoc.svg');
+//         width: 82px;
+//         height: 20px;
+//     }
+// }
+
+
+// .sneak-show {
+//     background-color: #0091FF;
+//     width: 108px;
+//     height: 20px;
+
+//     &::after {
+//         content: '';
+//         background-image: url('../assets/img/logo-ss.svg');
+//         width: 88px;
+//         height: 20px;
+//     }
+// }
