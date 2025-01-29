@@ -3,8 +3,8 @@ import * as PageAdmin from "..//pages/Admin";
 import { AdminLayout, DefaultLayout } from "..//layouts";
 
 const publicRoutes = [
-//   { path: "/", component: PageUser.Home, layout: DefaultLayout },
-//   { path: "/contact", component: UserContact, layout: DefaultLayout },
+  //   { path: "/", component: PageUser.Home, layout: DefaultLayout },
+  //   { path: "/contact", component: UserContact, layout: DefaultLayout },
 ];
 
 const privateRoutes = [
@@ -16,6 +16,12 @@ const privateRoutes = [
   {
     path: "/admin/product",
     component: PageAdmin.ProductManagement,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/categories",
+    component: PageAdmin.Categories,
     layout: AdminLayout,
   },
 ];

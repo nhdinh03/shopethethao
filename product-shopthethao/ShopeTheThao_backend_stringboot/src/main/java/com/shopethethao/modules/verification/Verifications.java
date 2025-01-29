@@ -22,7 +22,7 @@ public class Verifications {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private String id;
+    private Long id;
 
     @Column(name = "account_id")
 	private String accountId;
@@ -40,7 +40,7 @@ public class Verifications {
     private Boolean active;
 
     @ManyToOne
-    @JoinColumn(name = "account_id", referencedColumnName = "phone", insertable = false, updatable = false)
+    @JoinColumn(name = "account_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Account account;
 
     @JsonIgnore

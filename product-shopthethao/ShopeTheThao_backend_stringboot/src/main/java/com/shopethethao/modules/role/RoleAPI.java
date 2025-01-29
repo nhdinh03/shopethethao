@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-
-@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/role")
 public class RoleAPI {
@@ -18,7 +16,7 @@ public class RoleAPI {
     @Autowired
     RoleDAO roleDAO;
 
-    @GetMapping("/getAll")
+    @GetMapping("/get/all")
     public ResponseEntity<List<Role>> findAll() {
         List<Role> roles = roleDAO.findAllByOrderByIdDesc();
         return ResponseEntity.ok(roles);

@@ -16,9 +16,8 @@ public class CommentAPI {
     @Autowired
     private CommentDAO commentDAO;
 
-    @GetMapping("/getAll")
+    @GetMapping("/get/all")
     public ResponseEntity<List<Comment>> findAll() {
-
         List<Comment> comments = commentDAO.findAll();
         return ResponseEntity.ok(comments);
     }

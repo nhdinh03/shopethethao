@@ -1,11 +1,6 @@
 package com.shopethethao.modules.suppliers;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,15 +14,18 @@ public class Supplier {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    @Column(name = "id")
+    private Integer id;
 
+    @Column(name = "name", nullable = false, length = 200)
     private String name;
     
-    @Column(name = "phone_number")
+    @Column(name = "phone_number", nullable = false, length = 10)
     private String phoneNumber;
 
+    @Column(name = "email", length = 100)
     private String email;
 
+    @Column(name = "address")
     private String address;
-
 }

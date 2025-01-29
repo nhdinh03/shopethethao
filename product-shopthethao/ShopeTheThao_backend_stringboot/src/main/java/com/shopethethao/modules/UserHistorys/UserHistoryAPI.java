@@ -1,4 +1,4 @@
-package com.shopethethao.modules.user_Histories;
+package com.shopethethao.modules.UserHistorys;
 
 import java.util.List;
 
@@ -8,19 +8,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.shopethethao.modules.distinctives.Distinctive;
-import com.shopethethao.modules.distinctives.DistinctiveDAO;
 
 @RestController
 @RequestMapping("/api/userHistories")
-public class UserHistoriesAPI {
+public class UserHistoryAPI {
 
       @Autowired
-      UserHistoriesDAO userHistoriesDAO;
+      UserHistoryDAO userHistoriesDAO;
 
-    @GetMapping("/getAll")
-    public ResponseEntity<List<UserHistories>> findAll() {
-        List <UserHistories> userHistories = userHistoriesDAO.findAll();
+    @GetMapping("/get/all")
+    public ResponseEntity<List<UserHistory>> findAll() {
+        List <UserHistory> userHistories = userHistoriesDAO.findAll();
         return ResponseEntity.ok(userHistories);
     }
     

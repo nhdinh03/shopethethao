@@ -1,14 +1,11 @@
 package com.shopethethao.modules.invoices;
 
 import com.shopethethao.modules.account.Account;
-
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -18,24 +15,23 @@ import java.util.Date;
 public class Invoice {
 
     @Id
-    @Column(name = "id", nullable = false)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
 
     @Column(name = "order_date", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date orderDate;
+    private LocalDateTime orderDate;
 
-    @Column(name = "address")
+    @Column(name = "address", length = 200)
     private String address;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, length = 50)
     private String status;
 
-    @Column(name = "note")
+    @Column(name = "note", length = 200)
     private String note;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private Account user;
-
 }

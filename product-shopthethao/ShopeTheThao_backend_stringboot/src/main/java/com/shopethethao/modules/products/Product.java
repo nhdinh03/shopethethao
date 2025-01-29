@@ -1,26 +1,11 @@
 package com.shopethethao.modules.products;
 
-import java.util.List;
-import java.util.Locale.Category;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopethethao.modules.categories.Categorie;
-import com.shopethethao.modules.comments.Comment;
-import com.shopethethao.modules.detailed_invoices.DetailedInvoices;
-import com.shopethethao.modules.products_distinctives.ProductsDistinctives;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
@@ -28,30 +13,34 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "Products")
 public class Product {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private String id;
-	private String name;
 
-	private int quantity;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
 
-	private float price;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-	private String description;
+    @Column(name = "quantity", nullable = false)
+    private int quantity;
 
-	private boolean status;
+    @Column(name = "price", nullable = false, precision = 18, scale = 2)
+    private BigDecimal price;
 
-	private String image1;
+    @Column(name = "description")
+    private String description;
 
-	private String image2;
+    @Column(name = "status", nullable = false)
+    private boolean status;
+
+    @Column(name = "image1")
+    private String image1;
+
+    @Column(name = "image2")
+    private String image2;
 
 	@ManyToOne
 	@JoinColumn(name = "category_id", referencedColumnName = "id")
 	private Categorie categorie;
-
-
-
-
-
-
 }

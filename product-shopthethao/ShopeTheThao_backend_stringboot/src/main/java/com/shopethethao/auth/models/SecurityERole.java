@@ -1,10 +1,11 @@
 package com.shopethethao.auth.models;
 
 public enum SecurityERole {
-    Moderator,
-    Staff,
-    User,
-    Admin;
+    Admin,
+    CUSTOMER,
+    SELLER,
+    STAFF,
+    MARKETING;
 
     public static SecurityERole fromString(String role) {
         for (SecurityERole securityRole : SecurityERole.values()) {

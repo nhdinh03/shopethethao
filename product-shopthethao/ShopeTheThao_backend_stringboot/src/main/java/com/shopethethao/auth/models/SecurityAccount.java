@@ -1,44 +1,58 @@
 package com.shopethethao.auth.models;
 
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyProperties.AssertingParty.Verification;
-
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopethethao.modules.accountRole.AccountRole;
 import com.shopethethao.modules.verification.Verifications;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Table(name = "Accounts")
-// @Entity
-// @Table(name = "Accounts", uniqueConstraints = {
-// @UniqueConstraint(columnNames = "id"),
-// @UniqueConstraint(columnNames = "email")
-// })
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SecurityAccount {
+
     @Id
-    @Column(name = "id", nullable = false)
+    @Column(name = "id", nullable = false, unique = true)
     private String id;
+
+    @Column(name = "phone", nullable = false, unique = true)
     private String phone;
+    @Column(name = "fullname", nullable = false)
     private String fullname;
+
     private String address;
-    @Column(nullable = false, unique = true) 
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+    @Column(name = "password", nullable = false)
     private String password;
     private Date birthday;
     private Boolean gender;
     private String image;
     private Integer status;
+    @Column(name = "created_date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_date")
     private Date createdDate;
     private boolean verified;
     private int points;
@@ -51,13 +65,9 @@ public class SecurityAccount {
     @OneToOne(mappedBy = "securityAccount", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Verifications verification;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "account")
-    private List<AccountRole> accountRoles;
-
-    public SecurityAccount() {
-
-    }
+    // @JsonIgnore
+    // @OneToMany(mappedBy = "account")
+    // private List<AccountRole> accountRoles;
 
     public SecurityAccount(String id, String phone, String fullname, String email, String password) {
         this.id = id;

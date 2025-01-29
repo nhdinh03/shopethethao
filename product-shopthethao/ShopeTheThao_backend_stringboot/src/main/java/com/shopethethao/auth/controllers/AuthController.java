@@ -152,15 +152,17 @@ public class AuthController {
         Set<String> strRoles = signUpRequest.getRole();
         Set<SecurityRole> roles = new HashSet<>();
         if (strRoles == null) {
-            SecurityRole userRole = roleRepository.findByName(SecurityERole.User)
+            SecurityRole userRole = roleRepository.findByName(SecurityERole.Admin)
                     .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò"));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
-                SecurityRole securityRole = roleRepository.findByName(SecurityERole.valueOf(role))
-                        .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò"));
+                SecurityERole roleEnum = SecurityERole.fromString(role);
+                SecurityRole securityRole = roleRepository.findByName(roleEnum)
+                        .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò - " + role));
                 roles.add(securityRole);
             });
+
         }
         account.setRoles(roles);
         String otp = otpUtil.generateOtp();

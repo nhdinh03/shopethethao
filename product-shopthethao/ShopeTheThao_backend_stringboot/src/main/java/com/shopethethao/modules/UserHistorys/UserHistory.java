@@ -1,21 +1,18 @@
-package com.shopethethao.modules.user_Histories;
+package com.shopethethao.modules.UserHistorys;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Date;
-
+import java.time.LocalDate;
 import com.shopethethao.modules.account.Account;
-import com.shopethethao.modules.suppliers.Supplier;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "User_Histories")
-public class UserHistories {
+public class UserHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,16 +23,12 @@ public class UserHistories {
     private String note;
 
     @Column(name = "history_date", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date historyDate;
+    private LocalDate historyDate;
 
     @Column(name = "history_time", nullable = false, length = 20)
     private String historyTime;
 
-
-       @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private Account user;
-
-
 }

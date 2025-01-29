@@ -16,7 +16,7 @@ public class DetailedInvoicesAPI {
     @Autowired
     private DetailedInvoicesDAO detailedInvoicesDAO;
 
-    @GetMapping("/getAll")
+    @GetMapping("/get/all")
     public ResponseEntity<List<DetailedInvoices>> findAll() {
         List<DetailedInvoices> detailedInvoices = detailedInvoicesDAO.findAll();
         return ResponseEntity.ok(detailedInvoices);

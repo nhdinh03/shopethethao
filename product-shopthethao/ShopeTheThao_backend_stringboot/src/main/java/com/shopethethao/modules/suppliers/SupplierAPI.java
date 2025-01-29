@@ -15,7 +15,7 @@ public class SupplierAPI {
     @Autowired
     SupplierDAO supplierDao;
 
-    @GetMapping("/getAll")
+    @GetMapping("/get/all")
     public ResponseEntity<List<Supplier>> findAll() {
         List<Supplier> suppliers = supplierDao.findAll();
         return ResponseEntity.ok(suppliers);

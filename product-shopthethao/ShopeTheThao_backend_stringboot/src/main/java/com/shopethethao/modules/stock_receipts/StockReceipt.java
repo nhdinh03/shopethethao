@@ -1,22 +1,11 @@
 package com.shopethethao.modules.stock_receipts;
 
-import java.sql.Date;
-
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import com.shopethethao.modules.brands.Brand;
 import com.shopethethao.modules.products.Product;
 import com.shopethethao.modules.suppliers.Supplier;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,27 +16,30 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "Stock_Receipts")
 public class StockReceipt {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    @Column(name = "id")
+    private Integer id;
 
-	private int quantity;
+    @Column(name = "quantity", nullable = false)
+    private int quantity;
 
-	private float price;
+    @Column(name = "price", nullable = false, precision = 18, scale = 2)
+    private BigDecimal price;
 
-	@Temporal(TemporalType.DATE)
-	private Date orderDate;
+    @Column(name = "order_date", nullable = false)
+    private LocalDate orderDate;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "supplier_id", nullable = false)
+    @JoinColumn(name = "supplier_id", referencedColumnName = "id", nullable = false)
     private Supplier supplier;
 
-	@ManyToOne
-	@JoinColumn(name = "brand_id")
-	private Brand brand;
-
+    @ManyToOne
+    @JoinColumn(name = "brand_id", referencedColumnName = "id", nullable = false)
+    private Brand brand;
 }

@@ -18,7 +18,7 @@ public class DistinctiveAPI {
     @Autowired
     DistinctiveDAO distinctivesDAO;
 
-    @GetMapping("/getAll")
+    @GetMapping("/get/all")
     public ResponseEntity<List<Distinctive>> findAll() {
         List <Distinctive> distinctives = distinctivesDAO.findAll();
         return ResponseEntity.ok(distinctives);

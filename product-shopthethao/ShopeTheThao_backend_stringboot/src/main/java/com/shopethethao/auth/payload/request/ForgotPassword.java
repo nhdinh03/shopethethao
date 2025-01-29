@@ -1,10 +1,9 @@
 package com.shopethethao.auth.payload.request;
 
 
-import lombok.Getter;
-import lombok.Setter;
-@Getter
-@Setter
+import lombok.Data;
+
+@Data
 public class ForgotPassword {
     String code;
     String newPassword;

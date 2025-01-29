@@ -17,6 +17,7 @@ public class DetailedInvoices {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Integer id;
 
     @ManyToOne
@@ -30,6 +31,6 @@ public class DetailedInvoices {
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    @Column(name = "payment_method", nullable = false)
+    @Column(name = "payment_method", nullable = false, length = 200)
     private String paymentMethod;
 }

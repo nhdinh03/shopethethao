@@ -4,26 +4,21 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.shopethethao.modules.account.Account;
-import com.shopethethao.modules.account.AccountDAO;
-
-@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/accountRole")
 public class AccountRoleAPI {
 
     @Autowired
-    AccountDAO accountDAO;
+    AccountRoleDAO accountRoleDao;
 
-    @GetMapping("/getAll")
-    public ResponseEntity<List<Account>> findAll() {
-        List<Account> accounts = accountDAO.findAll();
-        return ResponseEntity.ok(accounts);
+    @GetMapping("/get/all")
+    public ResponseEntity<List<AccountRole>> findAll() {
+        List<AccountRole> accountRoles = accountRoleDao.findAll();
+        return ResponseEntity.ok(accountRoles);
     }
 
 }

@@ -1,0 +1,14 @@
+.ellipsis-text {
+    display: inline-block;
+    max-width: 200px; // Giới hạn chiều rộng
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: color 0.1s ease-in-out;
+  
+    // &:hover {
+    //   color: #1890ff; // Màu xanh khi hover
+    // }
+  }
+  

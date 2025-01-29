@@ -2,30 +2,39 @@ package com.shopethethao.auth.payload.request;
 
 import java.util.Set;
 
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SignupRequest {
-  @NotBlank
-  @Size(min = 3, max = 20)
-  @Column(name = "id", nullable = false)
-  private String id;
+    @NotBlank
+    @Size(min = 3, max = 20)
+    private String id;
 
-  @NotBlank
-  @Size(max = 50)
-  @Email
-  private String email;
-  private String fullname;
+    @NotBlank
+    @Size(max = 50)
+    @Email
+    private String email;
 
-  private Set<String> role;
+    @NotBlank
+    @Size(max = 50)
+    private String fullname;
 
-  @NotBlank
-  @Size(min = 8, max = 40)
-  private String password;
+    private Set<String> role;
 
-  private Boolean gender;
-  private String phone;
+    @NotBlank
+    @Size(min = 8, max = 40)
+    private String password;
 
+    private Boolean gender;
+
+    @NotBlank
+    @Size(min = 10, max = 15)
+    private String phone;
 }

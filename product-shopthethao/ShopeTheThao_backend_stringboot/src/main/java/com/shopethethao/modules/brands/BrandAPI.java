@@ -15,7 +15,7 @@ public class BrandAPI {
   @Autowired
   private BrandDAO brandsDAO;
 
-  @GetMapping("/getAll")
+  @GetMapping("/get/all")
   public ResponseEntity<List<Brand>> findAll() {
     List<Brand> brands = brandsDAO.findAll();
     return ResponseEntity.ok(brands);
