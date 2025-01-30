@@ -1,18 +1,17 @@
 package com.shopethethao.modules.account;
 
-import org.hibernate.query.Page;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-
-import com.shopethethao.modules.account.Account;
-
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -22,7 +21,7 @@ public class AccountAPI {
     private AccountDAO accountDao;
 
 
-      @GetMapping("/getAll")
+      @GetMapping("/get/all")
     public ResponseEntity<List<Account>> findAll() {
         List<Account> accounts = accountDao.findAll();
         return ResponseEntity.ok(accounts);
