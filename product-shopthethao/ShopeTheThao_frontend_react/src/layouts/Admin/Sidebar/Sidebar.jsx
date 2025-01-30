@@ -6,7 +6,6 @@ import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.scss";
 import {
   HomeFilled,
-  BarChartOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
 

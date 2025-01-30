@@ -11,20 +11,24 @@ import {
   Tooltip,
   Select,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import categoriesApi from "../../../api/Admin/managementGeneral/categoriesApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import PaginationComponent from "../../..//components/PaginationComponent";
+import Highlighter from "react-highlight-words";
 import "./Categories.scss";
-// import BaseModal from "..//..//..//components/Admin/BaseModal";
+import BaseModal from "..//..//..//components/Admin/BaseModal";
 
 const Categories = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [categories, setCategories] = useState([]);
+
   const [searchText, setSearchText] = useState("");
+const [searchedColumn, setSearchedColumn] = useState("");
+
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
@@ -112,12 +116,70 @@ const Categories = () => {
     }
   };
 
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder={`Tìm kiếm ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ marginBottom: 8, display: "block" }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Tìm
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Đặt lại
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
+  
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     {
       title: "Tên danh mục",
       dataIndex: "name",
       key: "name",
+      ...getColumnSearchProps("name"),
       render: (text) => (
         <Tooltip title={text.length > 30 ? text : ""} placement="top">
           <span className="ellipsis-text">
@@ -213,16 +275,17 @@ const Categories = () => {
         {/* Dropdown chọn số lượng hàng */}
         <Select
           value={pageSize}
-          style={{ width: 120, marginTop: 10 }}
+          style={{ width: 120, marginTop: 20 }}
           onChange={(value) => setPageSize(value)}
         >
           <Select.Option value={5}>5 hàng</Select.Option>
           <Select.Option value={10}>10 hàng</Select.Option>
           <Select.Option value={20}>20 hàng</Select.Option>
+          <Select.Option value={50}>50 hàng</Select.Option>
         </Select>
       </div>
 
-      <Modal
+      <BaseModal
         title={editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
         open={open}
         footer={null}
@@ -260,7 +323,7 @@ const Categories = () => {
             </Button>
           </Space>
         </Form>
-      </Modal>
+      </BaseModal>
     </div>
   );
 };
