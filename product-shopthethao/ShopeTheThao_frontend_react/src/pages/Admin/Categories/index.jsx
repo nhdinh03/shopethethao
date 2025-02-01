@@ -48,12 +48,11 @@ const Categories = () => {
           pageSize,
           searchText
         );
-
+        console.log(res);
         if (isMounted) {
           setCategories(res.data);
           setTotalItems(res.totalItems);
           setLoading(false);
-          
         }
       } catch (error) {
         message.error("Không thể lấy danh sách danh mục. Vui lòng thử lại!");
@@ -72,14 +71,10 @@ const Categories = () => {
     try {
       const response = await categoriesApi.delete(id);
       message.success(response.data || "Xóa danh mục thành công!");
+      console.log(response);
       setWorkSomeThing([!workSomeThing]);
-      // ✅ Cập nhật danh sách danh mục sau khi xóa
-      setCategories((prevCategories) =>
-        prevCategories.filter((c) => c.id !== id)
-      );
     } catch (error) {
       console.error("Lỗi khi xóa danh mục:", error);
-
       if (error.response) {
         if (error.response.status === 409) {
           message.error(
@@ -110,6 +105,8 @@ const Categories = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
+      console.log(values);
+
       const isDuplicate = categories.some(
         (category) =>
           category.name.trim().toLowerCase() ===
@@ -218,7 +215,7 @@ const Categories = () => {
       ),
     },
     {
-      title: "Mô tả",
+      title: "Mô tả danh mục",
       dataIndex: "description",
       key: "description",
       render: (text) => (
@@ -296,7 +293,7 @@ const Categories = () => {
             </Form.Item>
             <Form.Item
               name="description"
-              label="Mô tả"
+              label="Mô tả danh mục"
               rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
             >
               <Input placeholder="Nhập mô tả" />
