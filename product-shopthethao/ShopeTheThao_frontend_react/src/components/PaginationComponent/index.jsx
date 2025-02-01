@@ -3,7 +3,12 @@ import { Button } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleLeft, faAngleRight } from "@fortawesome/free-solid-svg-icons";
 
-const PaginationComponent = ({ totalPages, currentPage, setCurrentPage }) => {
+const PaginationComponent = ({ totalPages = 1, currentPage = 1, setCurrentPage }) => {
+  // Đảm bảo giá trị không bị lỗi
+  if (!totalPages || totalPages < 1) totalPages = 1;
+  if (!currentPage || currentPage < 1) currentPage = 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
   // Hàm lấy danh sách trang cần hiển thị
   const getPages = () => {
     let pages = [];
@@ -12,14 +17,10 @@ const PaginationComponent = ({ totalPages, currentPage, setCurrentPage }) => {
       pages = Array.from({ length: totalPages }, (_, i) => i + 1);
     } else if (currentPage <= 3) {
       pages = [1, 2, 3, 4, "...", totalPages];
-    } else if (currentPage >= totalPages - 3) {
+    } else if (currentPage >= totalPages - 2) {
       pages = [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
     } else {
-      pages = [1, "...", currentPage - 1, currentPage, currentPage + 1, totalPages];
-
-      if (currentPage + 2 < totalPages) {
-        pages.splice(-1, 0, "...");
-      }
+      pages = [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
     }
 
     return pages;
@@ -30,7 +31,7 @@ const PaginationComponent = ({ totalPages, currentPage, setCurrentPage }) => {
       {/* Nút Trang trước */}
       <Button 
         disabled={currentPage === 1} 
-        onClick={() => setCurrentPage(currentPage - 1)}
+        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
         style={{
           backgroundColor: "#f0f0f0",
           borderRadius: "50px",
@@ -72,7 +73,7 @@ const PaginationComponent = ({ totalPages, currentPage, setCurrentPage }) => {
       {/* Nút Trang sau */}
       <Button 
         disabled={currentPage === totalPages} 
-        onClick={() => setCurrentPage(currentPage + 1)}
+        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
         style={{
           backgroundColor: "#f0f0f0",
           borderRadius: "50px",

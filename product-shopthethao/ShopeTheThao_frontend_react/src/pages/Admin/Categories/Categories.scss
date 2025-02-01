@@ -5,7 +5,7 @@
   width: 100%;
   margin-bottom: 12px; // 🔹 Giảm margin cho gọn hơn
   
-  .add-category-btn {
+  .add-btn{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -35,7 +35,7 @@
 
 .ellipsis-text {
     display: inline-block;
-    max-width: 200px; // Giới hạn chiều rộng
+    max-width: 300px; // Giới hạn chiều rộng
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

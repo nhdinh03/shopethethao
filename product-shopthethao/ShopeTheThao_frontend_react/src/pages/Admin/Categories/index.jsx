@@ -10,6 +10,7 @@ import {
   Popconfirm,
   Tooltip,
   Select,
+  Row,
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import categoriesApi from "../../../api/Admin/managementGeneral/categoriesApi";
@@ -19,6 +20,7 @@ import PaginationComponent from "../../..//components/PaginationComponent";
 import Highlighter from "react-highlight-words";
 import "./Categories.scss";
 import BaseModal from "..//..//..//components/Admin/BaseModal";
+import productsApi from "..//..//..//api/Admin/Products/productsApi";
 
 const Categories = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -27,7 +29,7 @@ const Categories = () => {
   const [categories, setCategories] = useState([]);
 
   const [searchText, setSearchText] = useState("");
-const [searchedColumn, setSearchedColumn] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
 
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -46,10 +48,12 @@ const [searchedColumn, setSearchedColumn] = useState("");
           pageSize,
           searchText
         );
+
         if (isMounted) {
           setCategories(res.data);
           setTotalItems(res.totalItems);
           setLoading(false);
+          
         }
       } catch (error) {
         message.error("Không thể lấy danh sách danh mục. Vui lòng thử lại!");
@@ -66,11 +70,30 @@ const [searchedColumn, setSearchedColumn] = useState("");
 
   const handleDelete = async (id) => {
     try {
-      await categoriesApi.delete(id);
-      message.success("Xóa danh mục thành công!");
+      const response = await categoriesApi.delete(id);
+      message.success(response.data || "Xóa danh mục thành công!");
       setWorkSomeThing([!workSomeThing]);
+      // ✅ Cập nhật danh sách danh mục sau khi xóa
+      setCategories((prevCategories) =>
+        prevCategories.filter((c) => c.id !== id)
+      );
     } catch (error) {
-      message.error("Không thể xóa danh mục!");
+      console.error("Lỗi khi xóa danh mục:", error);
+
+      if (error.response) {
+        if (error.response.status === 409) {
+          message.error(
+            error.response.data ||
+              "Không thể xóa danh mục do dữ liệu tham chiếu!"
+          );
+        } else if (error.response.status === 404) {
+          message.error("Danh mục không tồn tại hoặc đã bị xóa!");
+        } else {
+          message.error("Lỗi không xác định khi xóa danh mục!");
+        }
+      } else {
+        message.error("Không thể kết nối đến máy chủ!");
+      }
     }
   };
 
@@ -93,7 +116,6 @@ const [searchedColumn, setSearchedColumn] = useState("");
             values.name.trim().toLowerCase() &&
           (!editingCategory || category.id !== editingCategory.id)
       );
-
       if (isDuplicate) {
         message.error("Tên danh mục đã tồn tại, vui lòng chọn tên khác!");
         return;
@@ -126,12 +148,19 @@ const [searchedColumn, setSearchedColumn] = useState("");
     setSearchText("");
   };
   const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
       <div style={{ padding: 8 }}>
         <Input
           placeholder={`Tìm kiếm ${dataIndex}`}
           value={selectedKeys[0]}
-          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
           onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
           style={{ marginBottom: 8, display: "block" }}
         />
@@ -172,7 +201,7 @@ const [searchedColumn, setSearchedColumn] = useState("");
         text
       ),
   });
-  
+
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     {
@@ -193,9 +222,9 @@ const [searchedColumn, setSearchedColumn] = useState("");
       dataIndex: "description",
       key: "description",
       render: (text) => (
-        <Tooltip title={text.length > 30 ? text : ""} placement="top">
+        <Tooltip title={text.length > 50 ? text : ""} placement="top">
           <span className="ellipsis-text">
-            {text.length > 30 ? `${text.substring(0, 30)}...` : text}
+            {text.length > 50 ? `${text.substring(0, 50)}...` : text}
           </span>
         </Tooltip>
       ),
@@ -236,26 +265,70 @@ const [searchedColumn, setSearchedColumn] = useState("");
 
   return (
     <div style={{ padding: 10 }}>
-      <h2>Quản lý danh mục</h2>
+      <Row>
+        <h2>Quản lý danh mục</h2>
 
-      <div className="header-container">
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setOpen(true)}
-          className="add-category-btn"
+        <div className="header-container">
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setOpen(true)}
+            className="add-btn"
+          >
+            Thêm danh mục
+          </Button>
+        </div>
+        <BaseModal
+          title={editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
+          open={open}
+          footer={null}
+          onCancel={handleCancel}
         >
-          Thêm danh mục
-        </Button>
-      </div>
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="name"
+              label="Tên danh mục"
+              rules={[
+                { required: true, message: "Vui lòng nhập tên danh mục!" },
+              ]}
+            >
+              <Input placeholder="Nhập tên danh mục" />
+            </Form.Item>
+            <Form.Item
+              name="description"
+              label="Mô tả"
+              rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+            >
+              <Input placeholder="Nhập mô tả" />
+            </Form.Item>
 
+            {/* Ẩn nút "Làm mới" khi chỉnh sửa */}
+            <Space
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                width: "100%",
+              }}
+            >
+              {!editingCategory && (
+                <Button onClick={handleResetForm}>Làm mới</Button>
+              )}
+              <Button type="primary" onClick={handleModalOk}>
+                {editingCategory ? "Cập nhật" : "Thêm mới"}
+              </Button>
+            </Space>
+          </Form>
+        </BaseModal>
+      </Row>
       <Table
         columns={columns}
-        dataSource={categories.map((item) => ({ ...item, key: item.id }))}
         pagination={false}
         loading={loading}
+        dataSource={categories.map((categorie) => ({
+          ...categorie,
+          key: categorie.id,
+        }))}
       />
-
       <div
         style={{
           display: "flex",
@@ -284,46 +357,6 @@ const [searchedColumn, setSearchedColumn] = useState("");
           <Select.Option value={50}>50 hàng</Select.Option>
         </Select>
       </div>
-
-      <BaseModal
-        title={editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
-        open={open}
-        footer={null}
-        onCancel={handleCancel}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="Tên danh mục"
-            rules={[{ required: true, message: "Vui lòng nhập tên danh mục!" }]}
-          >
-            <Input placeholder="Nhập tên danh mục" />
-          </Form.Item>
-          <Form.Item
-            name="description"
-            label="Mô tả"
-            rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-          >
-            <Input placeholder="Nhập mô tả" />
-          </Form.Item>
-
-          {/* Ẩn nút "Làm mới" khi chỉnh sửa */}
-          <Space
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              width: "100%",
-            }}
-          >
-            {!editingCategory && ( // 🔥 Chỉ hiển thị khi thêm mới
-              <Button onClick={handleResetForm}>Làm mới</Button>
-            )}
-            <Button type="primary" onClick={handleModalOk}>
-              {editingCategory ? "Cập nhật" : "Thêm mới"}
-            </Button>
-          </Space>
-        </Form>
-      </BaseModal>
     </div>
   );
 };

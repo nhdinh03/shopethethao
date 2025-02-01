@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.products.ProductsDAO;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -29,6 +30,12 @@ public class CategorieAPI {
 
     @Autowired
     private CategorieDAO dao;
+
+    @Autowired
+    private ProductsDAO productsDAO;
+
+
+
 
     // Lấy toàn bộ danh mục (không phân trang)
     @GetMapping("/get/all")
@@ -100,15 +107,31 @@ public class CategorieAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategory(@PathVariable("id") Integer id) {
         try {
+            // 🔥 Kiểm tra xem danh mục có tồn tại không
             if (!dao.existsById(id)) {
-                return new ResponseEntity<>("Danh mục không tồn tại!", HttpStatus.NOT_FOUND);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Danh mục không tồn tại!");
             }
-
+    
+            // 🔥 Kiểm tra xem danh mục có sản phẩm liên quan không
+            if (productsDAO.existsByCategorieId(id)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Không thể xóa danh mục vì có sản phẩm liên quan!");
+            }
+    
+            // ✅ Xóa danh mục nếu không có sản phẩm liên quan
             dao.deleteById(id);
             return ResponseEntity.ok("Xóa danh mục thành công!");
+    
         } catch (DataIntegrityViolationException e) {
-            return new ResponseEntity<>("Không thể xóa danh mục do dữ liệu tham chiếu!", HttpStatus.CONFLICT);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Không thể xóa danh mục do dữ liệu tham chiếu!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi không xác định khi xóa danh mục!");
         }
     }
+    
+    
 
 }
