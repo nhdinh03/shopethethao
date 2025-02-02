@@ -48,7 +48,7 @@ const Categories = () => {
           pageSize,
           searchText
         );
-        console.log(res);
+        // console.log(res);
         if (isMounted) {
           setCategories(res.data);
           setTotalItems(res.totalItems);
@@ -74,7 +74,6 @@ const Categories = () => {
       console.log(response);
       setWorkSomeThing([!workSomeThing]);
     } catch (error) {
-      console.error("Lỗi khi xóa danh mục:", error);
       if (error.response) {
         if (error.response.status === 409) {
           message.error(
@@ -91,6 +90,8 @@ const Categories = () => {
       }
     }
   };
+
+  
 
   const handleResetForm = () => {
     form.resetFields();
