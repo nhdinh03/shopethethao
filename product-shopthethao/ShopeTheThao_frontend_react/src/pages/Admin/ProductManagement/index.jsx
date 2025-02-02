@@ -15,15 +15,14 @@ import {
   Row,
   Upload,
 } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import productsApi from "../../..//api/Admin/Products/productsApi";
 import uploadApi from "..//..//..//api/service/uploadApi";
 import PaginationComponent from "../../..//components/PaginationComponent";
-import "./Products.module.scss";
-import BaseTable from "..//..//..//components/Admin/BaseTable/BaseTable";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { categoriesApi } from "..//..//..//api/Admin";
+import "./Products.module.scss";
 
 const ProductManagement = () => {
   const [searchText, setSearchText] = useState("");
@@ -36,15 +35,12 @@ const ProductManagement = () => {
   const [pageSize, setPageSize] = useState(5);
   const [products, setProducts] = useState([]);
   const [categoriesName, setCategoriesName] = useState();
+  const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
-  const [previewTitle, setPreviewTitle] = useState("");
-  const [fileList, setFileList] = useState([]);
-  const [fileListBanner, setFileListBanner] = useState([]);
-  const [list, setList] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalOpenGenre, setIsModalOpenGenre] = useState(false);
+  const [FileListBanner, setFileListBanner] = useState([]);
+  const [FileList, setFileList] = useState([]);
 
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
@@ -59,8 +55,6 @@ const ProductManagement = () => {
         );
         setProducts(resProducts.data);
         setTotalItems(resProducts.totalItems);
-
-        // ✅ Gọi API lấy tất cả danh mục (không phụ thuộc vào sản phẩm)
         const resCategories = await categoriesApi.getAll();
         setCategoriesName(resCategories.data || []);
         // console.log(resCategories);
@@ -73,16 +67,48 @@ const ProductManagement = () => {
       }
     };
     fetchData();
-  }, [currentPage, pageSize, searchText]);
+  }, [currentPage, pageSize, searchText, workSomeThing]);
 
   // 🔥 Xử lý chỉnh sửa sản phẩm
-  const handleEdit = (product) => {
-    setEditingProduct(product);
-    form.setFieldsValue({
-      ...product,
-      categorie: product.categorie?.id,
-    });
+  const handleEdit = (record) => {
+    console.log("🔥 Dữ liệu sản phẩm đang chỉnh sửa:", record);
+
+    // Kiểm tra và tạo danh sách file từ ảnh cũ
+    const newUploadFiles1 = record.image1
+      ? [
+          {
+            uid: `${record.id}-1`,
+            name: record.image1,
+            url: `http://localhost:8081/api/upload/${encodeURIComponent(
+              record.image1
+            )}`,
+          },
+        ]
+      : [];
+
+    const newUploadFiles2 = record.image2
+      ? [
+          {
+            uid: `${record.id}-2`,
+            name: record.image2,
+            url: `http://localhost:8081/api/upload/${encodeURIComponent(
+              record.image2
+            )}`,
+          },
+        ]
+      : [];
+
+    // Cập nhật danh sách ảnh vào state
+    setFileListBanner(newUploadFiles1); // Danh sách ảnh của image1
+    setFileList(newUploadFiles2); // Danh sách ảnh của image2
     setOpen(true);
+    setEditingProduct(record);
+
+    // Đặt giá trị vào form
+    form.setFieldsValue({
+      ...record,
+      categorie: record.categorie?.id,
+    });
   };
 
   const onPreview = async (file) => {
@@ -105,6 +131,7 @@ const ProductManagement = () => {
     try {
       await productsApi.delete(id);
       message.success("Xóa sản phẩm thành công!");
+      setWorkSomeThing([!workSomeThing]);
       setProducts(products.filter((p) => p.id !== id));
     } catch (error) {
       message.error("Không thể xóa sản phẩm!");
@@ -114,48 +141,43 @@ const ProductManagement = () => {
   // 🔥 Thêm hoặc cập nhật sản phẩm
   const handleModalOk = async () => {
     try {
-        const values = await form.validateFields();
-
-        let image1 = values.image1?.fileList?.length > 0 
-            ? await uploadApi.post(values.image1.fileList[0].originFileObj) 
-            : null;
-
-        let image2 = values.image2?.fileList?.length > 0 
-            ? await uploadApi.post(values.image2.fileList[0].originFileObj) 
-            : null;
-
-        console.log("🔥 Ảnh 1:", image1);
-        console.log("🔥 Ảnh 2:", image2);
-
-        const newProduct = {
-            ...values,
-            price: Number(values.price) || 0,
-            quantity: Number(values.quantity) || 1,
-            status: values.status,
-            description: values.description || "",
-            categorie: { id: values.categorie },
-            image1: image1,
-            image2: image2,
-        };
-
-        console.log("🔥 Dữ liệu sản phẩm gửi đi:", newProduct);
-
-        if (editingProduct) {
-            await productsApi.update(editingProduct.id, newProduct);
-            message.success("Cập nhật sản phẩm thành công!");
-        } else {
-            const createdProduct = await productsApi.create(newProduct);
-            message.success("Thêm sản phẩm thành công!");
-        }
-
-        setOpen(false);
-        form.resetFields();
+      const values = await form.validateFields();
+  
+      let image1 =
+        values.image1?.fileList?.length > 0
+          ? await uploadApi.post(values.image1.fileList[0].originFileObj)
+          : editingProduct?.image1;
+  
+      let image2 =
+        values.image2?.fileList?.length > 0
+          ? await uploadApi.post(values.image2.fileList[0].originFileObj)
+          : editingProduct?.image2;
+  
+      const newProduct = {
+        ...values,
+        categorie: { id: values.categorie },
+        image1,
+        image2,
+        status: values.quantity > 0, // ✅ Cập nhật trạng thái dựa trên số lượng
+      };
+  
+      if (editingProduct) {
+        await productsApi.update(editingProduct.id, newProduct);
+        message.success("Cập nhật sản phẩm thành công!");
+      } else {
+        await productsApi.create(newProduct);
+        message.success("Thêm sản phẩm thành công!");
+      }
+  
+      setWorkSomeThing([!workSomeThing]);
+      setOpen(false);
+      form.resetFields();
+      setEditingProduct(null);
     } catch (error) {
-        console.error("Lỗi khi thêm sản phẩm:", error);
-        message.error("Không thể thêm sản phẩm!");
+      message.error("Lỗi khi lưu sản phẩm!");
     }
-};
-
+  };
+  
 
   const handleModalCancel = () => {
     setOpen(false);
@@ -170,27 +192,12 @@ const ProductManagement = () => {
       reader.onerror = (error) => reject(error);
     });
 
-  const onChangeUpload = async ({ fileList: newFileList }) => {
-    setFileList(newFileList);
-    console.log("newFileList", newFileList);
-  };
-  const onChangeUploadBanner = async ({ fileList: newFileList }) => {
-    setFileListBanner(newFileList);
-    console.log("newFileList", newFileList);
-  };
   const handlePreview = async (file) => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
     }
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
-  };
-  const handleCancelPreview = () => setPreviewOpen(false);
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-  const showModalGenre = () => {
-    setIsModalOpenGenre(true);
   };
 
   // Cấu hình cột bảng
@@ -252,7 +259,7 @@ const ProductManagement = () => {
         </Space>
       ),
     },
-    
+
     {
       title: "Hình ảnh 2",
       dataIndex: "image2",
@@ -264,8 +271,8 @@ const ProductManagement = () => {
               width={105}
               height={80}
               style={{ objectFit: "contain" }}
-              alt="Ảnh sản phẩm"
               src={`http://localhost:8081/api/upload/${record.image2}`}
+              alt="Ảnh sản phẩm"
             />
           ) : (
             <span>Không có ảnh</span>
@@ -345,11 +352,39 @@ const ProductManagement = () => {
               <Input placeholder="Nhập Số lượng" />
             </Form.Item>
             <Form.Item
+              name="description"
+              label="Mô tả sản phẩm"
+              rules={[{ required: true, message: "Vui lòng Mô tả sản phẩm" }]}
+            >
+              <Input placeholder="Mô tả sản phẩm" />
+            </Form.Item>
+
+            <Form.Item
               name="quantity"
               label="Số lượng"
-              rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập số lượng!" },
+                {
+                  validator: (_, value) => {
+                    if (!value || isNaN(value) || value < 0) {
+                      return Promise.reject(
+                        new Error("Số lượng phải là số lớn hơn hoặc bằng 0!")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
             >
-              <Input type="number" min={1} placeholder="Nhập số lượng" />
+              <Input
+                type="number"
+                min={0}
+                placeholder="Nhập số lượng"
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  form.setFieldsValue({ status: value > 0 }); // ✅ Cập nhật trạng thái tự động
+                }}
+              />
             </Form.Item>
 
             <Form.Item
@@ -373,48 +408,67 @@ const ProductManagement = () => {
                 }))}
               />
             </Form.Item>
-            <Form.Item
-              label="image1"
-              name="image1"
-              rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}
-            >
+            <Form.Item label="image1" name="image1">
               <Upload
-                beforeUpload={(file) => {
-                  console.log({ file });
-                  return false;
-                }}
+                beforeUpload={() => false}
                 accept=".png, .jpg"
                 listType="picture-card"
-                onChange={onChangeUploadBanner}
+                fileList={FileListBanner} // Sử dụng danh sách ảnh của image1
+                onChange={({ fileList }) => setFileListBanner(fileList)}
                 onPreview={handlePreview}
-                fileList={fileListBanner}
-                name="image1"
-                maxCount={1}
+                maxCount={1} // Chỉ cho phép 1 ảnh
               >
-                {fileListBanner.length < 1 && "+ Upload"}
+                {FileListBanner.length < 1 && "+ Upload"}
               </Upload>
             </Form.Item>
 
-            <Form.Item
-              label="image2"
-              name="image2"
-              rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}
-            >
+            <Form.Item label="image2" name="image2">
               <Upload
-                beforeUpload={(file) => {
-                  console.log({ file });
-                  return false;
-                }}
+                beforeUpload={() => false}
                 accept=".png, .jpg"
                 listType="picture-card"
-                onChange={onChangeUpload}
-                onPreview={onPreview}
-                fileList={fileList}
-                name="image2"
-                maxCount={1}
+                fileList={FileList} // Sử dụng danh sách ảnh của image2
+                onChange={({ fileList }) => setFileList(fileList)}
+                onPreview={handlePreview}
+                maxCount={1} // Chỉ cho phép 1 ảnh
               >
-                {fileList.length < 1 && "+ Upload"}
+                {FileList.length < 1 && "+ Upload"}
               </Upload>
+            </Form.Item>
+            <Form.Item
+              name="price"
+              label="Giá sản phẩm"
+              rules={[
+                { required: true, message: "Vui lòng nhập giá sản phẩm!" },
+                {
+                  validator: (_, value) => {
+                    if (!value || isNaN(value)) {
+                      return Promise.reject(
+                        new Error("Giá sản phẩm phải là số hợp lệ!")
+                      );
+                    }
+                    if (value < 1000) {
+                      return Promise.reject(
+                        new Error("Giá sản phẩm không thể nhỏ hơn 1,000 VND!")
+                      );
+                    }
+                    if (value > 1000000000) {
+                      return Promise.reject(
+                        new Error("Giá sản phẩm không thể vượt quá 1 tỷ VND!")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Input
+                type="number"
+                min={1000}
+                max={1000000000}
+                step={1000}
+                placeholder="Nhập giá sản phẩm (VND)"
+              />
             </Form.Item>
           </Form>
         </Modal>
