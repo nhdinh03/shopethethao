@@ -111,21 +111,6 @@ const ProductManagement = () => {
     });
   };
 
-  const onPreview = async (file) => {
-    let src = file.url;
-    if (!src) {
-      src = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file.originFileObj);
-        reader.onload = () => resolve(reader.result);
-      });
-    }
-    const image = new Image();
-    image.src = src;
-    const imgWindow = window.open(src);
-    imgWindow?.document.write(image.outerHTML);
-  };
-
   // 🔥 Xóa sản phẩm
   const handleDelete = async (id) => {
     try {
@@ -142,17 +127,17 @@ const ProductManagement = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-  
+
       let image1 =
         values.image1?.fileList?.length > 0
           ? await uploadApi.post(values.image1.fileList[0].originFileObj)
           : editingProduct?.image1;
-  
+
       let image2 =
         values.image2?.fileList?.length > 0
           ? await uploadApi.post(values.image2.fileList[0].originFileObj)
           : editingProduct?.image2;
-  
+
       const newProduct = {
         ...values,
         categorie: { id: values.categorie },
@@ -160,7 +145,7 @@ const ProductManagement = () => {
         image2,
         status: values.quantity > 0, // ✅ Cập nhật trạng thái dựa trên số lượng
       };
-  
+
       if (editingProduct) {
         await productsApi.update(editingProduct.id, newProduct);
         message.success("Cập nhật sản phẩm thành công!");
@@ -168,7 +153,7 @@ const ProductManagement = () => {
         await productsApi.create(newProduct);
         message.success("Thêm sản phẩm thành công!");
       }
-  
+
       setWorkSomeThing([!workSomeThing]);
       setOpen(false);
       form.resetFields();
@@ -177,7 +162,6 @@ const ProductManagement = () => {
       message.error("Lỗi khi lưu sản phẩm!");
     }
   };
-  
 
   const handleModalCancel = () => {
     setOpen(false);
