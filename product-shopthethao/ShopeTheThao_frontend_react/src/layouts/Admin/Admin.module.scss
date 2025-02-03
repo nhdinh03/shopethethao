@@ -1,21 +1,108 @@
 .wrapper-brand-logo {
-    height: 70px;
+  height: 70px;
 }
+
+/* ✅ Chế độ Dark Mode */
 body.dark-mode {
-  background-color: #1e1e2f;
-  color: #ffffff;
+background-color: #1e1e2f;
+color: #ffffff;
 }
 
 body.dark-mode .ant-layout {
-  background-color: #1e1e2f;
+background-color: #1e1e2f;
 }
 
 body.dark-mode .ant-layout-header {
-  background-color: #282c34;
-  color: #ffffff;
+background-color: #282c34;
+color: #ffffff;
 }
 
 body.dark-mode .ant-input {
-  background-color: #333;
-  color: #ffffff;
+background-color: #333;
+color: #ffffff;
+}
+
+/* ✅ Đảm bảo Sidebar không hiển thị trên mobile */
+@media screen and (max-width: 1024px) {
+.hidden {
+  display: none !important;
+}
+}
+
+/* ✅ Fix layout trên Mobile (<= 480px) */
+@media screen and (max-width: 480px) {
+body, html {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+.ant-layout {
+  width: 100vw !important;
+  max-width: 100vw;
+}
+
+.ant-layout-content {
+  width: 100%;
+  max-width: 100%;
+  padding: 8px !important;
+}
+
+/* Ẩn Breadcrumb trên mobile để tiết kiệm không gian */
+.breadcrumb-container {
+  display: none;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+}
+
+/* ✅ Tối ưu layout trên Tablet (<= 768px) */
+@media screen and (max-width: 768px) {
+.breadcrumb-container {
+  display: none;
+}
+
+.p-4 {
+  padding: 10px;
+}
+
+.m-4 {
+  margin: 5px;
+}
+
+.rounded-md {
+  border-radius: 6px;
+}
+
+.shadow-md {
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+}
+
+/* ✅ Cải thiện hiển thị của nút cuộn lên */
+.FloatButton {
+transition: all 0.3s ease-in-out;
+right: 16px !important;
+bottom: 60px !important;
+}
+
+/* ✅ Đảm bảo Sidebar Mobile hiển thị đúng */
+@media screen and (max-width: 1024px) {
+.mobile-sidebar {
+  width: 250px;
+  background: #fff;
+  position: fixed;
+  top: 0;
+  left: -250px;
+  height: 100vh;
+  transition: left 0.3s ease-in-out;
+  z-index: 1000;
+}
+
+
+
+
 }

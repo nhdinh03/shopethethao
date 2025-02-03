@@ -78,6 +78,16 @@ CREATE TABLE Products (
 );
 GO
 
+CREATE TABLE Product_Sizes (
+    id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    product_id INT NOT NULL,
+    size NVARCHAR(10) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0, -- Số lượng của size đó
+    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE
+);
+GO
+
+
 -- Tạo bảng Comments (Bình luận sản phẩm)
 CREATE TABLE Comments (
     id INT IDENTITY(1,1) PRIMARY KEY,

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Service
 public class UploadImageService {
     public static boolean deleteImage(@PathVariable String id) {
-    String path = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/images/" + id).toString();
+    String path = Paths.get(System.getProperty("user.dir"), "product-shopthethao/ShopeTheThao_backend_stringboot/src/main/resources/static/" + id).toString();
 
     File imageFile = new File(path);
     if (!imageFile.exists()) {

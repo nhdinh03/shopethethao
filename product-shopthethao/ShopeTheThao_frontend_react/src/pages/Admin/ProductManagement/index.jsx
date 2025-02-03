@@ -14,6 +14,7 @@ import {
   Table,
   Row,
   Upload,
+  Col,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import productsApi from "../../..//api/Admin/Products/productsApi";
@@ -23,6 +24,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { categoriesApi } from "..//..//..//api/Admin";
 import "./Products.module.scss";
+import styles from "..//modalStyles.module.scss";
 
 const ProductManagement = () => {
   const [searchText, setSearchText] = useState("");
@@ -143,7 +145,7 @@ const ProductManagement = () => {
         categorie: { id: values.categorie },
         image1,
         image2,
-        status: values.quantity > 0, // ✅ Cập nhật trạng thái dựa trên số lượng
+        status: values.quantity > 0,
       };
 
       if (editingProduct) {
@@ -158,6 +160,8 @@ const ProductManagement = () => {
       setOpen(false);
       form.resetFields();
       setEditingProduct(null);
+      setFileListBanner([]); // 🔥 Reset ảnh Hình 1 sau khi thêm
+      setFileList([]);
     } catch (error) {
       message.error("Lỗi khi lưu sản phẩm!");
     }
@@ -167,7 +171,10 @@ const ProductManagement = () => {
     setOpen(false);
     form.resetFields();
     setEditingProduct(null);
+    setFileListBanner([]); // 🔥 Reset ảnh Hình 1
+    setFileList([]); // 🔥 Reset ảnh Hình 2
   };
+
   const getBase64 = (file) =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -183,6 +190,13 @@ const ProductManagement = () => {
     setPreviewImage(file.url || file.preview);
     setPreviewOpen(true);
   };
+
+  //phan trang 50
+  const handlePageSizeChange = (value) => {
+    setPageSize(value);
+    setCurrentPage(1); // 🔥 Reset về trang 1 mỗi khi thay đổi số hàng hiển thị
+  };
+  
 
   // Cấu hình cột bảng
   const columns = [
@@ -227,6 +241,7 @@ const ProductManagement = () => {
       title: "Ảnh sản phẩm",
       dataIndex: "image1",
       key: "image1",
+
       render: (_, record) => (
         <Space size="middle">
           {record.image1 ? (
@@ -319,141 +334,187 @@ const ProductManagement = () => {
             Thêm danh mục
           </Button>
         </div>
+
         <Modal
-          title={editingProduct ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
+          title={
+            <div className={styles.modalTitle}>
+              {editingProduct ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
+            </div>
+          }
           open={open}
           onOk={handleModalOk}
           onCancel={handleModalCancel}
+          centered
+          className={styles.modalWidth} // Áp dụng kích thước chuẩn
         >
           <Form form={form} layout="vertical">
-            <Form.Item
-              name="name"
-              label="Tên sản phẩm"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên sản phẩm!" },
-              ]}
-            >
-              <Input placeholder="Nhập Số lượng" />
-            </Form.Item>
-            <Form.Item
-              name="description"
-              label="Mô tả sản phẩm"
-              rules={[{ required: true, message: "Vui lòng Mô tả sản phẩm" }]}
-            >
-              <Input placeholder="Mô tả sản phẩm" />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col span={24}>
+                <Form.Item
+                  name="name"
+                  label="Tên sản phẩm"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập tên sản phẩm!" },
+                  ]}
+                >
+                  <Input placeholder="Nhập tên sản phẩm" />
+                </Form.Item>
+              </Col>
+            </Row>
 
-            <Form.Item
-              name="quantity"
-              label="Số lượng"
-              rules={[
-                { required: true, message: "Vui lòng nhập số lượng!" },
-                {
-                  validator: (_, value) => {
-                    if (!value || isNaN(value) || value < 0) {
-                      return Promise.reject(
-                        new Error("Số lượng phải là số lớn hơn hoặc bằng 0!")
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <Input
-                type="number"
-                min={0}
-                placeholder="Nhập số lượng"
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  form.setFieldsValue({ status: value > 0 }); // ✅ Cập nhật trạng thái tự động
-                }}
-              />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col span={24}>
+                <Form.Item
+                  name="description"
+                  label="Mô tả sản phẩm"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vui lòng nhập mô tả sản phẩm!",
+                    },
+                  ]}
+                >
+                  <Input.TextArea rows={2} placeholder="Nhập mô tả sản phẩm" />
+                </Form.Item>
+              </Col>
+            </Row>
 
-            <Form.Item
-              name="categorie"
-              label="Chọn danh mục"
-              rules={[{ required: true, message: "Vui lòng chọn" }]}
-            >
-              <Select
-                style={{ width: "100%" }}
-                showSearch
-                placeholder="Chọn "
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  (option?.label ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                options={categoriesName?.map((categorie) => ({
-                  value: categorie.id,
-                  label: categorie.name,
-                }))}
-              />
-            </Form.Item>
-            <Form.Item label="image1" name="image1">
-              <Upload
-                beforeUpload={() => false}
-                accept=".png, .jpg"
-                listType="picture-card"
-                fileList={FileListBanner} // Sử dụng danh sách ảnh của image1
-                onChange={({ fileList }) => setFileListBanner(fileList)}
-                onPreview={handlePreview}
-                maxCount={1} // Chỉ cho phép 1 ảnh
-              >
-                {FileListBanner.length < 1 && "+ Upload"}
-              </Upload>
-            </Form.Item>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="quantity"
+                  label="Số lượng"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập số lượng!" },
+                    {
+                      validator: (_, value) => {
+                        if (!value || isNaN(value) || value < 0) {
+                          return Promise.reject(
+                            new Error(
+                              "Số lượng phải là số lớn hơn hoặc bằng 0!"
+                            )
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input type="number" min={0} placeholder="Nhập số lượng" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="categorie"
+                  label="Chọn danh mục"
+                  rules={[
+                    { required: true, message: "Vui lòng chọn danh mục" },
+                  ]}
+                >
+                  <Select
+                    style={{ width: "100%" }}
+                    showSearch
+                    placeholder="Chọn danh mục"
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                    options={categoriesName?.map((categorie) => ({
+                      value: categorie.id,
+                      label: categorie.name,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-            <Form.Item label="image2" name="image2">
-              <Upload
-                beforeUpload={() => false}
-                accept=".png, .jpg"
-                listType="picture-card"
-                fileList={FileList} // Sử dụng danh sách ảnh của image2
-                onChange={({ fileList }) => setFileList(fileList)}
-                onPreview={handlePreview}
-                maxCount={1} // Chỉ cho phép 1 ảnh
-              >
-                {FileList.length < 1 && "+ Upload"}
-              </Upload>
-            </Form.Item>
-            <Form.Item
-              name="price"
-              label="Giá sản phẩm"
-              rules={[
-                { required: true, message: "Vui lòng nhập giá sản phẩm!" },
-                {
-                  validator: (_, value) => {
-                    if (!value || isNaN(value)) {
-                      return Promise.reject(
-                        new Error("Giá sản phẩm phải là số hợp lệ!")
-                      );
-                    }
-                    if (value < 1000) {
-                      return Promise.reject(
-                        new Error("Giá sản phẩm không thể nhỏ hơn 1,000 VND!")
-                      );
-                    }
-                    if (value > 1000000000) {
-                      return Promise.reject(
-                        new Error("Giá sản phẩm không thể vượt quá 1 tỷ VND!")
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
-            >
-              <Input
-                type="number"
-                min={1000}
-                max={1000000000}
-                step={1000}
-                placeholder="Nhập giá sản phẩm (VND)"
-              />
-            </Form.Item>
+            {/* Upload ảnh */}
+            <Row gutter={16} justify="space-between">
+              <Col span={12}>
+                <Form.Item
+                  label={<span>Hình ảnh 1</span>}
+                  name="image1"
+                  rules={[
+                    { required: true, message: "Vui lòng tải lên hình ảnh 1!" },
+                  ]}
+                >
+                  <Upload
+                    beforeUpload={() => false}
+                    accept=".png, .jpg, .jpeg"
+                    listType="picture-card"
+                    fileList={FileListBanner}
+                    onChange={({ fileList }) => setFileListBanner(fileList)}
+                    onPreview={handlePreview}
+                    maxCount={1}
+                  >
+                    {FileListBanner.length < 1 && "+ Upload"}
+                  </Upload>
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label={<span>Hình ảnh 2</span>}
+                  name="image2"
+                  rules={[
+                    { required: true, message: "Vui lòng tải lên hình ảnh 2!" },
+                  ]}
+                >
+                  <Upload
+                    beforeUpload={() => false}
+                    accept=".png, .jpg, .jpeg"
+                    listType="picture-card"
+                    fileList={FileList}
+                    onChange={({ fileList }) => setFileList(fileList)}
+                    onPreview={handlePreview}
+                    maxCount={1}
+                  >
+                    {FileList.length < 1 && "+ Upload"}
+                  </Upload>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={24}>
+                <Form.Item
+                  name="price"
+                  label="Giá sản phẩm"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập giá sản phẩm!" },
+                    {
+                      validator: (_, value) => {
+                        if (!value || isNaN(value) || value < 1000) {
+                          return Promise.reject(
+                            new Error(
+                              "Giá sản phẩm không thể nhỏ hơn 1,000 VND!"
+                            )
+                          );
+                        }
+                        if (value > 1000000000) {
+                          return Promise.reject(
+                            new Error(
+                              "Giá sản phẩm không thể vượt quá 1 tỷ VND!"
+                            )
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    type="number"
+                    min={1000}
+                    max={1000000000}
+                    step={1000}
+                    placeholder="Nhập giá sản phẩm (VND)"
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
         </Modal>
       </Row>
@@ -462,6 +523,7 @@ const ProductManagement = () => {
         pagination={false}
         columns={columns}
         loading={loading}
+        scroll={{ x: "max-content" }}
         dataSource={products.map((product, index) => ({
           ...product,
           key: product.id ?? `product-${index}`,
@@ -488,7 +550,7 @@ const ProductManagement = () => {
         <Select
           value={pageSize}
           style={{ width: 120, marginTop: 20 }}
-          onChange={(value) => setPageSize(value)}
+          onChange={handlePageSizeChange} // ✅ Gọi hàm mới để reset trang về 1
         >
           <Select.Option value={5}>5 hàng</Select.Option>
           <Select.Option value={10}>10 hàng</Select.Option>

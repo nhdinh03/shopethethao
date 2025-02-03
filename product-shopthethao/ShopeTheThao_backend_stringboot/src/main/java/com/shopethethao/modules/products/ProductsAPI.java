@@ -28,10 +28,22 @@ public class ProductsAPI {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable Integer id) {
+        Optional<Product> product = productsDAO.findByIdWithSizes(id);
+        
+        if (product.isPresent()) {
+            return ResponseEntity.ok(product.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+
     // Lấy danh sách sản phẩm có phân trang
     @GetMapping
     public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-                                     @RequestParam("limit") Optional<Integer> limit) {
+            @RequestParam("limit") Optional<Integer> limit) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
                 return new ResponseEntity<>("Trang không tồn tại", HttpStatus.NOT_FOUND);
@@ -63,13 +75,13 @@ public class ProductsAPI {
     // **Cập nhật sản phẩm**
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id,
-                                           @RequestBody Product product) {
+            @RequestBody Product product) {
         try {
             Optional<Product> existingProduct = productsDAO.findById(id);
             if (existingProduct.isEmpty()) {
                 return new ResponseEntity<>("Sản phẩm không tồn tại!", HttpStatus.NOT_FOUND);
             }
-            
+
             Product updatedProduct = existingProduct.get();
             updatedProduct.setName(product.getName());
             updatedProduct.setQuantity(product.getQuantity());
@@ -79,7 +91,7 @@ public class ProductsAPI {
             updatedProduct.setImage1(product.getImage1());
             updatedProduct.setImage2(product.getImage2());
             updatedProduct.setCategorie(product.getCategorie());
-            
+
             productsDAO.save(updatedProduct);
             return ResponseEntity.ok(updatedProduct);
         } catch (Exception e) {

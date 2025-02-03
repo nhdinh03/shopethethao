@@ -46,3 +46,49 @@
     //   color: #1890ff; // Màu xanh khi hover
     // }
   }
+
+
+  // ✅ Đảm bảo bảng không bị tràn trên mobile
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+// ✅ Điều chỉnh hiển thị cột trên màn hình nhỏ
+@media screen and (max-width: 768px) {
+  .table-container {
+    width: 100%;
+  }
+
+  .ant-table {
+    min-width: 600px; // Đảm bảo không bị co bảng quá mức
+  }
+
+  // 🔹 Thu nhỏ khoảng cách cho nút và chữ trên mobile
+  .header-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .add-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  // 🔹 Điều chỉnh kích thước avatar & biểu tượng trên mobile
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-icons {
+    display: flex;
+    gap: 8px;
+  }
+}

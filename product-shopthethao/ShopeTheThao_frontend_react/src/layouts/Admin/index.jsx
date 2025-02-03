@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
-import styles from "./Admin.module.scss";
-import "./AdminCustomAntDesgin.scss";
 import classNames from "classnames/bind";
-import { MenuUnfoldOutlined, ArrowUpOutlined } from "@ant-design/icons";
-import { Layout, Button, theme, Skeleton, Drawer, FloatButton } from "antd";
+import {
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  ArrowUpOutlined,
+} from "@ant-design/icons";
+import { Layout, Button, Skeleton, Drawer, FloatButton } from "antd";
 import { HeaderAdminLeft, HeaderAdminRight } from "./Header";
 import Sidebar from "./Sidebar/Sidebar";
 import { LayoutPageDefault } from "..";
 import { useLocation } from "react-router-dom";
 import Bread from "./Breadcrumb/Breadcrumb";
-import { useDarkMode } from "..//..//config/DarkModeProvider";
+import { useDarkMode } from "../../config/DarkModeProvider";
+import styles from "./Admin.module.scss";
 
 const { Header, Sider, Content } = Layout;
 const cx = classNames.bind(styles);
@@ -17,23 +20,16 @@ const cx = classNames.bind(styles);
 const AdminLayout = ({ children }) => {
   const { isDarkMode } = useDarkMode();
   const [isLoading, setIsLoading] = useState(true);
-  const [active, setActive] = useState(true);
-  const [collapsed, setCollapsed] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); 
+  const [collapsed, setCollapsed] = useState(false); // Sidebar Desktop
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); // Sidebar Mobile
   const [showScrollButton, setShowScrollButton] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    setTimeout(() => setIsLoading(false), 1000);
 
     const handleScroll = () => {
-      if (window.scrollY > 200) {
-        setShowScrollButton(true);
-      } else {
-        setShowScrollButton(false);
-      }
+      setShowScrollButton(window.scrollY > 200);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -41,94 +37,96 @@ const AdminLayout = ({ children }) => {
   }, []);
 
   const scrollToTopSlow = () => {
-    const scrollStep = -window.scrollY / (500 / 15);
-    const scrollInterval = setInterval(() => {
-      if (window.scrollY !== 0) {
-        window.scrollBy(0, scrollStep);
-      } else {
-        clearInterval(scrollInterval);
-      }
-    }, 15);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken();
-
-  const path = window.location.pathname;
-
   return (
-    <Layout className={`flex min-h-screen ${isDarkMode ? "dark-mode" : ""}`}>
+    <Layout
+      className={`w-full min-h-screen ${isDarkMode ? "dark-mode" : ""}`}
+      style={{ overflowX: "hidden" }}
+    >
       {/* Sidebar - Desktop */}
       <Sider
-        trigger={null}
         theme="light"
         collapsible
         collapsed={collapsed}
-        width={290}
-        className="hidden md:block"
+        width={300}
+        className="hidden lg:block transition-all duration-300"
       >
         <Header className="flex items-center bg-white px-4">
-          <HeaderAdminLeft />
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className="text-xl"
+          />
+          <HeaderAdminLeft collapsed={collapsed} />
         </Header>
         <Sidebar />
       </Sider>
-
-      {/* Sidebar - Mobile (Drawer) */}
+      {/* Sidebar - Mobile */}
       <Drawer
         placement="left"
-        closable={false}
+        closable={false} // ✅ Tắt nút mặc định của Ant Design
         onClose={() => setIsMobileSidebarOpen(false)}
         open={isMobileSidebarOpen}
-        className="block md:hidden"
-        width={250}
+        width={300} // ✅ Điều chỉnh chiều rộng cho phù hợp
       >
+        {/* 🔥 Thêm nút đóng ở góc phải */}
+        <div className="flex justify-end items-center py-2  bg-white shadow-sm relative">
+          <button
+            onClick={() => setIsMobileSidebarOpen(false)}
+            className="text-gray-600 hover:text-red-500 transition-all duration-200 text-4xl bg-transparent border-none outline-none focus:outline-none"
+          >
+            ✖
+          </button>
+        </div>
+
         <Sidebar onClose={() => setIsMobileSidebarOpen(false)} />
       </Drawer>
 
-      {/* Layout chính */}
+      {/* Main Layout */}
       <Layout className="w-full">
-        {/* Header - Hiển thị trên cả mobile & desktop */}
+        {/* Header */}
         <Header className="flex items-center justify-between bg-white px-4 shadow-md md:px-6">
           {/* Nút mở menu trên Mobile */}
           <Button
             type="text"
             icon={<MenuUnfoldOutlined />}
-            onClick={() => setIsMobileSidebarOpen(true)} // 🔥 Mở Sidebar Mobile
-            className="text-xl w-12 h-12 md:hidden"
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="text-xl w-10 h-10 lg:hidden"
           />
-
           <HeaderAdminRight />
         </Header>
 
         {/* Nội dung chính */}
-        <Content className="m-6 p-6 bg-gray-100 min-h-[80vh] rounded-md shadow-md">
-          <div className="breadcrumb-container">
+        <Content className="m-4 p-4 bg-gray-100 min-h-[80vh] rounded-md shadow-md">
+          {/* Ẩn Breadcrumb trên mobile để tiết kiệm không gian */}
+          <div className="breadcrumb-container hidden md:block">
             <Bread path={location.pathname} />
           </div>
 
           <div>
-            {isLoading && <Skeleton active={active} />}
-            {!isLoading && (
-              <LayoutPageDefault path={path}>{children}</LayoutPageDefault>
+            {isLoading ? (
+              <Skeleton active />
+            ) : (
+              <LayoutPageDefault>{children}</LayoutPageDefault>
             )}
           </div>
         </Content>
 
-        {/* Nút trở lại đầu trang */}
+        {/* Nút cuộn lên đầu trang */}
         {showScrollButton && (
           <FloatButton
             icon={<ArrowUpOutlined />}
             style={{
               right: 24,
               bottom: 80,
-              opacity: showScrollButton ? 1 : 0,
               transition: "opacity 0.3s",
             }}
             onClick={scrollToTopSlow}
           />
         )}
-
       </Layout>
     </Layout>
   );

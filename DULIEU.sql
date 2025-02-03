@@ -33,6 +33,16 @@ INSERT INTO Products (name, quantity, price, description, status, image1, image2
 (N'Balo thể thao Puma', 75, 1200000, N'Balo thể thao đa năng Puma', 1, NULL, NULL, 4),
 (N'Đồng hồ Garmin Forerunner', 30, 6000000, N'Đồng hồ thông minh hỗ trợ thể thao Garmin', 1, NULL, NULL, 5);
 
+
+-- Thêm nhiều size cho sản phẩm có ID = 1
+INSERT INTO ProductSizes (product_id, size, quantity) VALUES
+(1, 'S', 10),
+(1, 'M', 15),
+(1, 'L', 12),
+(1, 'XL', 8);
+GO
+
+
 INSERT INTO Brands (name, phone_number, email, address) VALUES 
 (N'Nike', N'0912345678', N'contact@nike.com', N'USA'),
 (N'Adidas', N'0923456789', N'contact@adidas.com', N'Germany'),
@@ -60,6 +70,14 @@ INSERT INTO Distinctives (name) VALUES
 (N'Nhẹ và thoáng khí'),
 (N'Hấp thụ sốc tốt'),
 (N'Công nghệ mới nhất');
+
+INSERT INTO Invoices (order_date, address, status, note, user_id) VALUES 
+(GETDATE(), N'789 Đường DEF, TP.HCM', N'Pending', N'Giao hàng nhanh', N'U001'),
+(GETDATE(), N'101 Đường GHI, Hà Nội', N'Completed', N'Thanh toán qua ví điện tử', N'U002'),
+(GETDATE(), N'222 Đường ABC, Đà Nẵng', N'Shipped', N'Miễn phí vận chuyển', N'U003'),
+(GETDATE(), N'333 Đường XYZ, Hải Phòng', N'Processing', N'Đặt trước sản phẩm', N'U004'),
+(GETDATE(), N'444 Đường MNP, Cần Thơ', N'Cancelled', N'Khách hủy đơn', N'U005');
+
 
 INSERT INTO Products_Distinctives (product_id, distinctive_id) VALUES 
 (1, 1),
@@ -96,10 +114,4 @@ INSERT INTO User_Histories (note, history_date, history_time, user_id) VALUES
 (N'Thêm sản phẩm vào giỏ hàng', GETDATE(), N'17:45', N'U004'),
 (N'Đánh giá sản phẩm', GETDATE(), N'18:20', N'U005');
 
-INSERT INTO Invoices (order_date, address, status, note, user_id) VALUES 
-(GETDATE(), N'789 Đường DEF, TP.HCM', N'Pending', N'Giao hàng nhanh', N'U001'),
-(GETDATE(), N'101 Đường GHI, Hà Nội', N'Completed', N'Thanh toán qua ví điện tử', N'U002'),
-(GETDATE(), N'222 Đường ABC, Đà Nẵng', N'Shipped', N'Miễn phí vận chuyển', N'U003'),
-(GETDATE(), N'333 Đường XYZ, Hải Phòng', N'Processing', N'Đặt trước sản phẩm', N'U004'),
-(GETDATE(), N'444 Đường MNP, Cần Thơ', N'Cancelled', N'Khách hủy đơn', N'U005');
 

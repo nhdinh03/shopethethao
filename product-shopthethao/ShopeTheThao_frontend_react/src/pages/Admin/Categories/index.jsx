@@ -19,8 +19,7 @@ import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import PaginationComponent from "../../..//components/PaginationComponent";
 import Highlighter from "react-highlight-words";
 import "./Categories.scss";
-import BaseModal from "..//..//..//components/Admin/BaseModal";
-import productsApi from "..//..//..//api/Admin/Products/productsApi";
+import BaseModal from "..//..//..//components/Admin/BaseModal/index";
 
 const Categories = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -90,8 +89,6 @@ const Categories = () => {
       }
     }
   };
-
-  
 
   const handleResetForm = () => {
     form.resetFields();
@@ -199,7 +196,12 @@ const Categories = () => {
         text
       ),
   });
-
+  //phan trang 50
+  const handlePageSizeChange = (value) => {
+    setPageSize(value);
+    setCurrentPage(1); // 🔥 Reset về trang 1 mỗi khi thay đổi số hàng hiển thị
+  };
+  
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     {
@@ -318,42 +320,46 @@ const Categories = () => {
           </Form>
         </BaseModal>
       </Row>
-      <Table
-        columns={columns}
-        pagination={false}
-        loading={loading}
-        dataSource={categories.map((categorie) => ({
-          ...categorie,
-          key: categorie.id,
-        }))}
-      />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: 10,
-          gap: 10,
-        }}
-      >
-        {/* Gọi component phân trang */}
-        <PaginationComponent
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
+      <div className="table-container">
+        <Table
+          pagination={false}
+          columns={columns}
+          loading={loading}
+          scroll={{ x: "max-content" }}
+          dataSource={categories.map((categorie) => ({
+            ...categorie,
+            key: categorie.id,
+          }))}
         />
 
-        {/* Dropdown chọn số lượng hàng */}
-        <Select
-          value={pageSize}
-          style={{ width: 120, marginTop: 20 }}
-          onChange={(value) => setPageSize(value)}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 10,
+            gap: 10,
+          }}
         >
-          <Select.Option value={5}>5 hàng</Select.Option>
-          <Select.Option value={10}>10 hàng</Select.Option>
-          <Select.Option value={20}>20 hàng</Select.Option>
-          <Select.Option value={50}>50 hàng</Select.Option>
-        </Select>
+          {/* Gọi component phân trang */}
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+
+          {/* Dropdown chọn số lượng hàng */}
+          <Select
+            value={pageSize}
+            style={{ width: 120, marginTop: 20 }}
+            onChange={handlePageSizeChange} // ✅ Gọi hàm mới để reset trang về 1
+          >
+            <Select.Option value={5}>5 hàng</Select.Option>
+            <Select.Option value={10}>10 hàng</Select.Option>
+            <Select.Option value={20}>20 hàng</Select.Option>
+            <Select.Option value={50}>50 hàng</Select.Option>
+          </Select>
+        </div>
       </div>
     </div>
   );
