@@ -1,5 +1,5 @@
-import funcUtils from '../../utils/funcUtils';
-import axiosClient from '../global/axiosClient';
+import axiosClient from "api/global/axiosClient";
+import funcUtils from "utils/funcUtils";
 
 const url = 'upload';
 const baseUrl = process.env.REACT_APP_ShopeTheThao_PRODUCTION_REST_API;

@@ -1,5 +1,5 @@
+import BaseApi from "api/global/baseApi";
 
-import BaseApi from "../../global/baseApi";
 
 class CategoriesApi extends BaseApi {
   constructor() {

@@ -1,6 +1,7 @@
 import axios from 'axios';
-import funcUtils from '..//..//utils/funcUtils';
 import httpStatus from './httpStatus';
+import funcUtils from 'utils/funcUtils';
+
 // import authApi from '../user/Security/authApi';
 
 const baseUrl = process.env.REACT_APP_ShopeTheThao_PRODUCTION_REST_API;

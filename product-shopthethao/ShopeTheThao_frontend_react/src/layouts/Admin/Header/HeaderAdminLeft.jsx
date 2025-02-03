@@ -1,6 +1,5 @@
+import img from "assets/Img";
 import { Link } from "react-router-dom";
-import img from "../../../assets/Img";
-
 function HeaderAdminLeft({ collapsed }) {
   return (
     <div className="flex items-center gap-4">

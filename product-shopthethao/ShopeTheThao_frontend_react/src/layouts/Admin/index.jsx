@@ -11,8 +11,8 @@ import Sidebar from "./Sidebar/Sidebar";
 import { LayoutPageDefault } from "..";
 import { useLocation } from "react-router-dom";
 import Bread from "./Breadcrumb/Breadcrumb";
-import { useDarkMode } from "../../config/DarkModeProvider";
 import styles from "./Admin.module.scss";
+import { useDarkMode } from "config/DarkModeProvider";
 
 const { Header, Sider, Content } = Layout;
 const cx = classNames.bind(styles);

@@ -1,6 +1,7 @@
+import { AdminLayout } from "layouts";
 import * as PageAdmin from "..//pages/Admin";
 // import * as PageUser from "~/pages/User";
-import { AdminLayout, DefaultLayout } from "..//layouts";
+
 
 const publicRoutes = [
   //   { path: "/", component: PageUser.Home, layout: DefaultLayout },

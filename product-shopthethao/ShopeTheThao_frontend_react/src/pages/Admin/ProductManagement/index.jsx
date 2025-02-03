@@ -17,14 +17,16 @@ import {
   Col,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import productsApi from "../../..//api/Admin/Products/productsApi";
-import uploadApi from "..//..//..//api/service/uploadApi";
-import PaginationComponent from "../../..//components/PaginationComponent";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-import { categoriesApi } from "..//..//..//api/Admin";
-import "./Products.module.scss";
 import styles from "..//modalStyles.module.scss";
+import "./Products.module.scss";
+import productsApi from "api/Admin/Products/productsApi";
+import uploadApi from "api/service/uploadApi";
+import PaginationComponent from "components/PaginationComponent";
+import { categoriesApi } from "api/Admin";
+
 
 const ProductManagement = () => {
   const [searchText, setSearchText] = useState("");

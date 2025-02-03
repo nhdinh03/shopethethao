@@ -18,10 +18,11 @@ import {
   Badge,
   Switch,
 } from "antd";
+import img from "assets/Img";
+import { useDarkMode } from "config/DarkModeProvider";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import img from "../../../assets/Img";
-import { useDarkMode } from "../../..//config/DarkModeProvider";
+
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);

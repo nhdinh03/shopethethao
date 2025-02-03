@@ -13,13 +13,14 @@ import {
   Row,
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import categoriesApi from "../../../api/Admin/managementGeneral/categoriesApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import PaginationComponent from "../../..//components/PaginationComponent";
 import Highlighter from "react-highlight-words";
 import "./Categories.scss";
-import BaseModal from "..//..//..//components/Admin/BaseModal/index";
+import { BaseModal } from "components/Admin";
+import PaginationComponent from "components/PaginationComponent";
+import { categoriesApi } from "api/Admin";
+
 
 const Categories = () => {
   const [totalItems, setTotalItems] = useState(0);

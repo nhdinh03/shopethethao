@@ -1,4 +1,5 @@
-import BaseApi from "../../global/baseApi";
+import BaseApi from "api/global/baseApi";
+
 
 class ProductsApi extends BaseApi {
   constructor() {

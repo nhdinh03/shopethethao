@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface SupplierDAO extends JpaRepository<Supplier, String> {
+public interface SupplierDAO extends JpaRepository<Supplier, Integer> {
 
 }
