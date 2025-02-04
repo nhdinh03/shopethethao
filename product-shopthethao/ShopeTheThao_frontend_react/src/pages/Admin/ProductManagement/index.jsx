@@ -207,13 +207,30 @@ const ProductManagement = () => {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
-      render: (text) => <Tooltip title={text}>{text}</Tooltip>,
+      render: (text) => (
+        <Tooltip title={text || "Không có mô tả"} placement="top">
+          <span className="ellipsis-text">
+            {text?.length > 15
+              ? `${text.substring(0, 15)}...`
+              : text || "Không có Tên sản phẩm"}
+          </span>
+        </Tooltip>
+      ),
     },
-    { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
+    { title: "Số lượng", dataIndex: "quantity", key: "quantity", },
     {
       title: "Loại sản phẩm",
       dataIndex: ["categorie", "name"],
       key: "categorie",
+      render: (text) => (
+        <Tooltip title={text || "Không có mô tả"} placement="top">
+          <span className="ellipsis-text">
+            {text?.length > 15
+              ? `${text.substring(0, 15)}...`
+              : text || "Không có mô tả"}
+          </span>
+        </Tooltip>
+      ),
     },
     {
       title: "Mô tả sản phẩm",
@@ -222,8 +239,8 @@ const ProductManagement = () => {
       render: (text) => (
         <Tooltip title={text || "Không có mô tả"} placement="top">
           <span className="ellipsis-text">
-            {text?.length > 50
-              ? `${text.substring(0, 50)}...`
+            {text?.length > 20
+              ? `${text.substring(0, 20)}...`
               : text || "Không có mô tả"}
           </span>
         </Tooltip>
