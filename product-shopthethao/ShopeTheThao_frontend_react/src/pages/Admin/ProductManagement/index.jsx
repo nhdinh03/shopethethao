@@ -16,7 +16,7 @@ import {
   Upload,
   Col,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
@@ -26,7 +26,8 @@ import productsApi from "api/Admin/Products/productsApi";
 import uploadApi from "api/service/uploadApi";
 import PaginationComponent from "components/PaginationComponent";
 import { categoriesApi } from "api/Admin";
-
+import productsSizeApi from "api/Admin/ProductsSize/productsSizeApi";
+import sizeApi from "api/Admin/Sizes/SizesApi";
 
 const ProductManagement = () => {
   const [searchText, setSearchText] = useState("");
@@ -40,7 +41,7 @@ const ProductManagement = () => {
   const [products, setProducts] = useState([]);
   const [categoriesName, setCategoriesName] = useState();
   const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
-
+  const [sizes, setSizes] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [FileListBanner, setFileListBanner] = useState([]);
@@ -57,12 +58,14 @@ const ProductManagement = () => {
           pageSize,
           searchText
         );
+        console.log("Fetched products:", resProducts.data); // Log to check API response
         setProducts(resProducts.data);
         setTotalItems(resProducts.totalItems);
         const resCategories = await categoriesApi.getAll();
         setCategoriesName(resCategories.data || []);
         // console.log(resCategories);
       } catch (error) {
+        console.error("Error fetching products:", error); // Log any error
         setProducts([]);
         setTotalItems(0);
         setCategoriesName([]);
@@ -73,10 +76,26 @@ const ProductManagement = () => {
     fetchData();
   }, [currentPage, pageSize, searchText, workSomeThing]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const resSizes = await sizeApi.getAll();
+        if (resSizes?.data) {
+          setSizes(resSizes.data);
+        } else {
+          console.error("Không có dữ liệu kích cỡ");
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu kích cỡ:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
   // 🔥 Xử lý chỉnh sửa sản phẩm
   const handleEdit = (record) => {
     console.log("🔥 Dữ liệu sản phẩm đang chỉnh sửa:", record);
-
+  
     // Kiểm tra và tạo danh sách file từ ảnh cũ
     const newUploadFiles1 = record.image1
       ? [
@@ -89,7 +108,7 @@ const ProductManagement = () => {
           },
         ]
       : [];
-
+  
     const newUploadFiles2 = record.image2
       ? [
           {
@@ -101,19 +120,25 @@ const ProductManagement = () => {
           },
         ]
       : [];
-
+  
     // Cập nhật danh sách ảnh vào state
     setFileListBanner(newUploadFiles1); // Danh sách ảnh của image1
     setFileList(newUploadFiles2); // Danh sách ảnh của image2
     setOpen(true);
     setEditingProduct(record);
-
+  
     // Đặt giá trị vào form
     form.setFieldsValue({
       ...record,
       categorie: record.categorie?.id,
+      sizes: record.sizes.map(size => ({
+        size: size.size.id, // Lấy ID của size
+        quantity: size.quantity,
+        price: size.price,
+      })),
     });
   };
+  
 
   // 🔥 Xóa sản phẩm
   const handleDelete = async (id) => {
@@ -132,6 +157,7 @@ const ProductManagement = () => {
     try {
       const values = await form.validateFields();
 
+      // Upload hình ảnh nếu có
       let image1 =
         values.image1?.fileList?.length > 0
           ? await uploadApi.post(values.image1.fileList[0].originFileObj)
@@ -142,14 +168,25 @@ const ProductManagement = () => {
           ? await uploadApi.post(values.image2.fileList[0].originFileObj)
           : editingProduct?.image2;
 
+      // Tạo mới sản phẩm với các kích cỡ
       const newProduct = {
         ...values,
         categorie: { id: values.categorie },
         image1,
         image2,
-        status: values.quantity > 0,
+        status: values.quantity > 0, // Trạng thái của sản phẩm
       };
 
+      // Thêm hoặc cập nhật các kích cỡ sản phẩm
+      const sizes = values.sizes.map((size) => ({
+        size: { id: size.size }, // Chỉ lấy id của size
+        quantity: size.quantity,
+        price: size.price,
+      }));
+
+      newProduct.sizes = sizes;
+
+      // Nếu đang chỉnh sửa sản phẩm
       if (editingProduct) {
         await productsApi.update(editingProduct.id, newProduct);
         message.success("Cập nhật sản phẩm thành công!");
@@ -158,11 +195,12 @@ const ProductManagement = () => {
         message.success("Thêm sản phẩm thành công!");
       }
 
+      // Reset trạng thái sau khi hoàn thành
       setWorkSomeThing([!workSomeThing]);
       setOpen(false);
       form.resetFields();
       setEditingProduct(null);
-      setFileListBanner([]); // 🔥 Reset ảnh Hình 1 sau khi thêm
+      setFileListBanner([]);
       setFileList([]);
     } catch (error) {
       message.error("Lỗi khi lưu sản phẩm!");
@@ -198,7 +236,6 @@ const ProductManagement = () => {
     setPageSize(value);
     setCurrentPage(1); // 🔥 Reset về trang 1 mỗi khi thay đổi số hàng hiển thị
   };
-  
 
   // Cấu hình cột bảng
   const columns = [
@@ -217,7 +254,7 @@ const ProductManagement = () => {
         </Tooltip>
       ),
     },
-    { title: "Số lượng", dataIndex: "quantity", key: "quantity", },
+    { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
     {
       title: "Loại sản phẩm",
       dataIndex: ["categorie", "name"],
@@ -232,6 +269,7 @@ const ProductManagement = () => {
         </Tooltip>
       ),
     },
+
     {
       title: "Mô tả sản phẩm",
       dataIndex: "description",
@@ -304,6 +342,21 @@ const ProductManagement = () => {
       dataIndex: "price",
       key: "price",
       render: (price) => `${price.toLocaleString()} VND`,
+    },
+    {
+      title: "Kích cỡ",
+      dataIndex: "sizes",
+      key: "sizes",
+      render: (sizes) => (
+        <Space direction="vertical" size="small">
+          {sizes.map((size, index) => (
+            <div key={index}>
+              <strong>{size.size?.name}</strong> - {size.quantity} chiếc -{" "}
+              {size.price.toLocaleString()} VND
+            </div>
+          ))}
+        </Space>
+      ),
     },
     {
       title: "Hành động",
@@ -534,6 +587,117 @@ const ProductManagement = () => {
                 </Form.Item>
               </Col>
             </Row>
+
+            <Form.List
+              name="sizes"
+              initialValue={
+                editingProduct?.sizes.map((size) => ({
+                  size: size.size.id, // Lấy id của kích cỡ
+                  quantity: size.quantity,
+                  price: size.price,
+                })) || []
+              }
+              rules={[
+                {
+                  validator: async (_, sizes) => {
+                    if (!sizes || sizes.length < 1) {
+                      return Promise.reject(
+                        new Error("Vui lòng thêm ít nhất một kích cỡ")
+                      );
+                    }
+                  },
+                },
+              ]}
+            >
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(({ key, name, fieldKey, ...restField }) => (
+                    <Row key={key} gutter={16}>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "size"]}
+                          fieldKey={[fieldKey, "size"]}
+                          label="Kích cỡ"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Vui lòng chọn kích cỡ",
+                            },
+                          ]}
+                        >
+                          <Select
+                            options={sizes.map((size) => ({
+                              value: size.id, // id của kích cỡ
+                              label: size.name, // Tên kích cỡ
+                            }))}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "quantity"]}
+                          fieldKey={[fieldKey, "quantity"]}
+                          label="Số lượng"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Vui lòng nhập số lượng",
+                            },
+                          ]}
+                        >
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="Nhập số lượng"
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "price"]}
+                          fieldKey={[fieldKey, "price"]}
+                          label="Giá"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Vui lòng nhập giá",
+                            },
+                          ]}
+                        >
+                          <Input type="number" min={0} placeholder="Nhập giá" />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={24}>
+                        <Button
+                          type="danger"
+                          onClick={() => remove(name)}
+                          icon={<MinusCircleOutlined />}
+                          block
+                        >
+                          Xoá kích cỡ
+                        </Button>
+                      </Col>
+                    </Row>
+                  ))}
+                  <Form.Item>
+                    <Button
+                      type="dashed"
+                      onClick={() => add()}
+                      icon={<PlusOutlined />}
+                      block
+                    >
+                      Thêm kích cỡ
+                    </Button>
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
           </Form>
         </Modal>
       </Row>

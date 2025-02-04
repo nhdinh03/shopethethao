@@ -8,11 +8,11 @@ import {
 import { Layout, Button, Skeleton, Drawer, FloatButton } from "antd";
 import { HeaderAdminLeft, HeaderAdminRight } from "./Header";
 import Sidebar from "./Sidebar/Sidebar";
-import { LayoutPageDefault } from "..";
 import { useLocation } from "react-router-dom";
-import Bread from "./Breadcrumb/Breadcrumb";
+import Bread from "../Breadcrumb/Breadcrumb";
 import styles from "./Admin.module.scss";
 import { useDarkMode } from "config/DarkModeProvider";
+import LayoutPageDefault from "layouts/LayoutPageDefault";
 
 const { Header, Sider, Content } = Layout;
 const cx = classNames.bind(styles);

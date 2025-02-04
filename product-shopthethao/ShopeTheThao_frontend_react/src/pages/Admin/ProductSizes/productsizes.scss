@@ -1,0 +1,95 @@
+.header-container {
+    display: flex;
+    justify-content: flex-end; // 🔹 Căn phải
+    align-items: center;
+    width: 100%;
+    margin-bottom: 12px; // 🔹 Giảm margin cho gọn hơn
+    
+    .add-btn{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px; // 🔹 Nhỏ lại một chút
+      font-weight: 600; // 🔹 Giữ độ đậm vừa phải
+      background-color: #1890ff;
+      border: none;
+      padding: 6px 12px; // 🔹 Thu nhỏ padding cho vừa tay
+      transition: all 0.2s ease-in-out;
+      border-radius: 6px; // 🔹 Bớt bo góc lại
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+      min-width: 130px; // 🔹 Giữ cho nút không bị quá nhỏ
+      height: 36px; // 🔹 Đặt chiều cao cố định để đồng bộ UI
+  
+      &:hover {
+        background-color: #40a9ff;
+        transform: scale(1.03); // 🔥 Hiệu ứng hover nhẹ hơn
+      }
+  
+      &:active {
+        transform: scale(0.98); // 🔹 Hiệu ứng nhấn xuống mượt hơn
+      }
+    }
+  }
+  
+  
+  
+  .ellipsis-text {
+      display: inline-block;
+      max-width: 300px; // Giới hạn chiều rộng
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: color 0.1s ease-in-out;
+    
+      // &:hover {
+      //   color: #1890ff; // Màu xanh khi hover
+      // }
+    }
+  
+  
+    // ✅ Đảm bảo bảng không bị tràn trên mobile
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  // ✅ Điều chỉnh hiển thị cột trên màn hình nhỏ
+  @media screen and (max-width: 768px) {
+    .table-container {
+      width: 100%;
+    }
+  
+    .ant-table {
+      min-width: 600px; // Đảm bảo không bị co bảng quá mức
+    }
+  
+    // 🔹 Thu nhỏ khoảng cách cho nút và chữ trên mobile
+    .header-container {
+      flex-direction: column;
+      gap: 8px;
+    }
+  
+    .add-btn {
+      font-size: 12px;
+      padding: 5px 10px;
+    }
+  
+    // 🔹 Điều chỉnh kích thước avatar & biểu tượng trên mobile
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+  
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+    }
+  
+    .header-icons {
+      display: flex;
+      gap: 8px;
+    }
+  }
+  

@@ -1,32 +1,5 @@
-import { Card } from 'antd';
-import style from './LayoutPageDefault.module.scss';
-import classNames from 'classnames/bind';
-import { useLocation } from 'react-router-dom';
-import Bread from 'layouts/Admin/Breadcrumb/Breadcrumb';
-;
-
-const cx = classNames.bind(style);
-
-function LayoutPageDefault({ children, path = '' }) {
-      const location = useLocation();
-      const isHomePage = location.pathname === '/admin/index'; 
-    return (
-        <>
-            <Card bordered={false} className={cx('card-Breadcrumb')}>
-                <Bread path={path} />
-            </Card>
-
-            {isHomePage ? (
-                // Ẩn Card nếu là trang chủ
-                <>{children}</>
-            ) : (
-                // Hiển thị Card nếu không phải trang chủ
-                <Card bordered={false} className={cx('card-content-page')}>
-                    {children}
-                </Card>
-            )}
-        </>
-    );
-}
+const LayoutPageDefault = ({ children }) => {
+    return <div>{children}</div>;
+};
 
 export default LayoutPageDefault;

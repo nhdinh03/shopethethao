@@ -1,6 +1,8 @@
 package com.shopethethao.modules.products;
 
 import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.productSizes.ProductSize;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -10,9 +12,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
+import com.shopethethao.modules.productSizes.ProductSizeDAO;
 
 @RestController
 @RequestMapping("/api/products")
@@ -20,6 +25,9 @@ public class ProductsAPI {
 
     @Autowired
     private ProductsDAO productsDAO;
+
+    @Autowired
+    private ProductSizeDAO productSizeDAO;
 
     // Lấy toàn bộ danh sách sản phẩm (không phân trang)
     @GetMapping("/get/all")
@@ -31,19 +39,13 @@ public class ProductsAPI {
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Integer id) {
         Optional<Product> product = productsDAO.findByIdWithSizes(id);
-        
-        if (product.isPresent()) {
-            return ResponseEntity.ok(product.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return product.isPresent() ? ResponseEntity.ok(product.get()) : ResponseEntity.notFound().build();
     }
-    
 
     // Lấy danh sách sản phẩm có phân trang
     @GetMapping
     public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-            @RequestParam("limit") Optional<Integer> limit) {
+                                     @RequestParam("limit") Optional<Integer> limit) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
                 return new ResponseEntity<>("Trang không tồn tại", HttpStatus.NOT_FOUND);
@@ -63,19 +65,25 @@ public class ProductsAPI {
 
     // **Thêm mới sản phẩm**
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Product product) {
+    public ResponseEntity<?> createProductWithSizes(@RequestBody Product product) {
         try {
             Product savedProduct = productsDAO.save(product);
+            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
+                for (ProductSize size : product.getSizes()) {
+                    size.setProduct(savedProduct);
+                    productSizeDAO.save(size);
+                }
+            }
             return ResponseEntity.ok(savedProduct);
         } catch (Exception e) {
             return new ResponseEntity<>("Không thể thêm sản phẩm!", HttpStatus.BAD_REQUEST);
         }
     }
 
-    // **Cập nhật sản phẩm**
+    // **Cập nhật sản phẩm và kích cỡ**
+    @Transactional
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id,
-            @RequestBody Product product) {
+    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id, @RequestBody Product product) {
         try {
             Optional<Product> existingProduct = productsDAO.findById(id);
             if (existingProduct.isEmpty()) {
@@ -91,6 +99,16 @@ public class ProductsAPI {
             updatedProduct.setImage1(product.getImage1());
             updatedProduct.setImage2(product.getImage2());
             updatedProduct.setCategorie(product.getCategorie());
+
+            // Xóa các kích cỡ cũ không còn trong danh sách mới
+            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
+                productSizeDAO.deleteByProductId(id);
+
+                for (ProductSize size : product.getSizes()) {
+                    size.setProduct(updatedProduct);
+                    productSizeDAO.save(size);
+                }
+            }
 
             productsDAO.save(updatedProduct);
             return ResponseEntity.ok(updatedProduct);

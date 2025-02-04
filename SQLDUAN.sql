@@ -38,8 +38,8 @@ CREATE TABLE Accounts_Roles (
     account_id NVARCHAR(20) NOT NULL,
     role_id BIGINT NOT NULL,
     PRIMARY KEY (account_id, role_id),
-    FOREIGN KEY (account_id) REFERENCES Accounts(id) ON DELETE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE
+    FOREIGN KEY (account_id) REFERENCES Accounts(id) ,
+    FOREIGN KEY (role_id) REFERENCES Roles(id) 
 );
 GO
 
@@ -51,7 +51,7 @@ CREATE TABLE Verification (
     created_at DATETIME DEFAULT GETDATE(),
     expires_at DATETIME,
     active BIT DEFAULT 1,
-    FOREIGN KEY (account_id) REFERENCES Accounts(id) ON DELETE CASCADE
+    FOREIGN KEY (account_id) REFERENCES Accounts(id) 
 );
 GO
 
@@ -74,7 +74,7 @@ CREATE TABLE Products (
     image1 NVARCHAR(MAX),
     image2 NVARCHAR(MAX),
     category_id INT NOT NULL,  
-    FOREIGN KEY (category_id) REFERENCES Categories(id) ON DELETE CASCADE
+    FOREIGN KEY (category_id) REFERENCES Categories(id) ,
 );
 GO
 
@@ -82,10 +82,13 @@ CREATE TABLE Product_Sizes (
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     product_id INT NOT NULL,
     size NVARCHAR(10) NOT NULL,
-    quantity INT NOT NULL DEFAULT 0, -- Số lượng của size đó
-    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE
+    quantity INT NOT NULL DEFAULT 0,  -- Số lượng của size đó
+    price DECIMAL(18,2) NOT NULL DEFAULT 0.00,  -- Giá của từng size
+	 FOREIGN KEY (product_id) REFERENCES Products(id) 
+   
 );
 GO
+
 
 
 -- Tạo bảng Comments (Bình luận sản phẩm)
@@ -96,8 +99,8 @@ CREATE TABLE Comments (
     order_date DATE NOT NULL,
     user_id NVARCHAR(20) NOT NULL,
        product_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Accounts(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES Accounts(id) ,
+    FOREIGN KEY (product_id) REFERENCES Products(id) 
 );
 GO
 
@@ -109,7 +112,7 @@ CREATE TABLE Invoices (
     status NVARCHAR(50) NOT NULL DEFAULT 'Pending',
     note NVARCHAR(200),
     user_id NVARCHAR(20) NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Accounts(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES Accounts(id) 
 );
 GO
 
@@ -120,8 +123,8 @@ CREATE TABLE Detailed_Invoices (
       product_id INT NOT NULL,
     quantity INT NOT NULL,
     payment_method NVARCHAR(200) NOT NULL,
-    FOREIGN KEY (invoice_id) REFERENCES Invoices(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE
+    FOREIGN KEY (invoice_id) REFERENCES Invoices(id) ,
+    FOREIGN KEY (product_id) REFERENCES Products(id) 
 );
 GO
 CREATE TABLE Distinctives (
@@ -166,9 +169,9 @@ CREATE TABLE Stock_Receipts (
     quantity INT NOT NULL,
     price DECIMAL(18,2) NOT NULL,
     order_date DATE NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
-    FOREIGN KEY (supplier_id) REFERENCES Suppliers(id) ON DELETE CASCADE,
-    FOREIGN KEY (brand_id) REFERENCES Brands(id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES Products(id) ,
+    FOREIGN KEY (supplier_id) REFERENCES Suppliers(id) ,
+    FOREIGN KEY (brand_id) REFERENCES Brands(id) 
 );
 GO
 

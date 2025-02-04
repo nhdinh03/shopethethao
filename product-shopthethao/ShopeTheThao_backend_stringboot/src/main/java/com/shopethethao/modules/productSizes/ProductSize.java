@@ -1,6 +1,8 @@
 package com.shopethethao.modules.productSizes;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.shopethethao.modules.Size.Size;
+
 import com.shopethethao.modules.products.Product;
 
 import jakarta.persistence.*;
@@ -20,13 +22,18 @@ public class ProductSize {
     private Integer id;
 
     @Column(nullable = false)
-    private String size; // Kích thước: S, M, L, XL hoặc 38, 39, 40
+    private int quantity; // Số lượng theo size
 
     @Column(nullable = false)
-    private int quantity; // Số lượng theo size
+    private Integer price;
+
+    @ManyToOne
+    @JoinColumn(name = "size_id", referencedColumnName = "id", nullable = false)
+    private Size size;
 
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
     @JsonBackReference
     private Product product;
+
 }

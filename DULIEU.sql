@@ -32,15 +32,30 @@ INSERT INTO Products (name, quantity, price, description, status, image1, image2
 (N'Dây nhảy thể dục', 200, 150000, N'Dây nhảy thể dục cao cấp', 1, NULL, NULL, 3),
 (N'Balo thể thao Puma', 75, 1200000, N'Balo thể thao đa năng Puma', 1, NULL, NULL, 4),
 (N'Đồng hồ Garmin Forerunner', 30, 6000000, N'Đồng hồ thông minh hỗ trợ thể thao Garmin', 1, NULL, NULL, 5);
-
-
--- Thêm nhiều size cho sản phẩm có ID = 1
-INSERT INTO ProductSizes (product_id, size, quantity) VALUES
-(1, 'S', 10),
-(1, 'M', 15),
-(1, 'L', 12),
-(1, 'XL', 8);
 GO
+
+
+
+-- Thêm các kích cỡ vào bảng Sizes
+INSERT INTO Sizes (name) VALUES
+    ('S'),
+    ('M'),
+    ('L'),
+    ('XL'),
+    ('XXL');
+GO
+
+
+
+-- Thêm dữ liệu vào bảng Product_Sizes với khóa ngoại size_id
+INSERT INTO Product_Sizes (product_id, size_id, quantity, price)
+VALUES
+    (1, (SELECT id FROM Sizes WHERE name = 'S'), 10, 100.00),  -- Giá 100 cho size S
+    (1, (SELECT id FROM Sizes WHERE name = 'M'), 15, 120.00),  -- Giá 120 cho size M
+    (1, (SELECT id FROM Sizes WHERE name = 'L'), 12, 130.00),  -- Giá 130 cho size L
+    (1, (SELECT id FROM Sizes WHERE name = 'XL'), 8, 140.00);  -- Giá 140 cho size XL
+GO
+
 
 
 INSERT INTO Brands (name, phone_number, email, address) VALUES 

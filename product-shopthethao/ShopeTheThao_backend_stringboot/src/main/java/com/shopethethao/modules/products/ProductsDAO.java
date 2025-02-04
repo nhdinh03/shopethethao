@@ -15,4 +15,8 @@ public interface ProductsDAO extends JpaRepository<Product, Integer> {
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.sizes WHERE p.id = :id")
     Optional<Product> findByIdWithSizes(@Param("id") Integer id);
 
+
+
+    
+
 }

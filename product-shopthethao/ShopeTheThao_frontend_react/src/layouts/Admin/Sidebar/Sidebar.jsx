@@ -4,10 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as solidIcons from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.scss";
-import {
-  HomeFilled,
-  FileTextOutlined,
-} from "@ant-design/icons";
+import { HomeFilled, FileTextOutlined } from "@ant-design/icons";
 
 function getItem(label, key, icon, children, type) {
   return { key, icon, children, label, type };
@@ -22,6 +19,7 @@ function Sidebar({ onClose }) {
     const parentMap = {
       "/admin/index": "grHome", // Trang chủ
       "/admin/product": "grProducts", // Sản phẩm
+      "/admin/productsizes": "grProducts", // size Sản phẩm
       "/admin/categories": "grProducts", // Danh mục sản phẩm
       "/admin/brands": "grProducts", // Nhãn hàng
       "/admin/suppliers": "grSuppliers", // Nhà cung cấp
@@ -36,7 +34,7 @@ function Sidebar({ onClose }) {
     };
     return parentMap[key];
   };
-  
+
   // Quản lý state openKeys
   const [openKeys, setOpenKeys] = useState([]);
 
@@ -74,6 +72,12 @@ function Sidebar({ onClose }) {
             Sản phẩm
           </Link>,
           "/admin/product"
+        ),
+        getItem(
+          <Link to="/admin/productsizes" onClick={onClose}>
+            Size Sản phẩm
+          </Link>,
+          "/admin/productsizes"
         ),
         getItem(
           <Link to="/admin/categories" onClick={onClose}>
