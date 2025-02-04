@@ -1,5 +1,7 @@
 ﻿-- Kiểm tra và tạo Database nếu chưa tồn tại
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'productShope')
+IF NOT EXISTS (SELECT *
+FROM sys.databases
+WHERE name = 'productShope')
 BEGIN
     CREATE DATABASE productShope;
 END;
@@ -8,7 +10,8 @@ USE productShope;
 GO
 
 -- Tạo bảng Accounts (Người dùng)
-CREATE TABLE Accounts (
+CREATE TABLE Accounts
+(
     id NVARCHAR(20) NOT NULL PRIMARY KEY,
     phone NVARCHAR(15),
     fullname NVARCHAR(100),
@@ -26,7 +29,8 @@ CREATE TABLE Accounts (
 GO
 
 -- Tạo bảng Roles (Vai trò người dùng)
-CREATE TABLE Roles (
+CREATE TABLE Roles
+(
     id BIGINT IDENTITY(1,1) PRIMARY KEY,
     name NVARCHAR(255) NOT NULL UNIQUE,
     description NVARCHAR(MAX)
@@ -34,37 +38,41 @@ CREATE TABLE Roles (
 GO
 
 -- Tạo bảng Accounts_Roles (Quan hệ tài khoản và vai trò)
-CREATE TABLE Accounts_Roles (
+CREATE TABLE Accounts_Roles
+(
     account_id NVARCHAR(20) NOT NULL,
     role_id BIGINT NOT NULL,
     PRIMARY KEY (account_id, role_id),
     FOREIGN KEY (account_id) REFERENCES Accounts(id) ,
-    FOREIGN KEY (role_id) REFERENCES Roles(id) 
+    FOREIGN KEY (role_id) REFERENCES Roles(id)
 );
 GO
 
 -- Tạo bảng Verification (Mã xác thực tài khoản)
-CREATE TABLE Verification (
+CREATE TABLE Verification
+(
     id BIGINT IDENTITY(1,1) PRIMARY KEY,
     account_id NVARCHAR(20) NOT NULL,
     code NVARCHAR(6) NOT NULL,
     created_at DATETIME DEFAULT GETDATE(),
     expires_at DATETIME,
     active BIT DEFAULT 1,
-    FOREIGN KEY (account_id) REFERENCES Accounts(id) 
+    FOREIGN KEY (account_id) REFERENCES Accounts(id)
 );
 GO
 
 -- Tạo bảng Categories (Danh mục sản phẩm)
-CREATE TABLE Categories (
-  id INT IDENTITY(1,1) PRIMARY KEY,
+CREATE TABLE Categories
+(
+    id INT IDENTITY(1,1) PRIMARY KEY,
     name NVARCHAR(50) NOT NULL UNIQUE,
     description NVARCHAR(200)
 );
 GO
 
 -- Tạo bảng Products (Sản phẩm)
-CREATE TABLE Products (
+CREATE TABLE Products
+(
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     name NVARCHAR(MAX) NOT NULL,
     quantity INT NOT NULL,
@@ -73,76 +81,94 @@ CREATE TABLE Products (
     status BIT NOT NULL DEFAULT 1,
     image1 NVARCHAR(MAX),
     image2 NVARCHAR(MAX),
-    category_id INT NOT NULL,  
-    FOREIGN KEY (category_id) REFERENCES Categories(id) ,
+    category_id INT NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES Categories(id)
+    ,
 );
 GO
 
-CREATE TABLE Product_Sizes (
+CREATE TABLE Sizes
+(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    -- Tự động tăng và khóa chính
+    name NVARCHAR(255) NOT NULL UNIQUE
+    -- Cột name không được null và phải duy nhất
+);
+
+
+CREATE TABLE Product_Sizes
+(
     id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     product_id INT NOT NULL,
-    size NVARCHAR(10) NOT NULL,
-    quantity INT NOT NULL DEFAULT 0,  -- Số lượng của size đó
-    price DECIMAL(18,2) NOT NULL DEFAULT 0.00,  -- Giá của từng size
-	 FOREIGN KEY (product_id) REFERENCES Products(id) 
-   
+   size_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,
+    price DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+    FOREIGN KEY (product_id) REFERENCES Products(id),
+    FOREIGN KEY (size_id) REFERENCES Sizes(id)
+
 );
 GO
 
 
 
 -- Tạo bảng Comments (Bình luận sản phẩm)
-CREATE TABLE Comments (
+CREATE TABLE Comments
+(
     id INT IDENTITY(1,1) PRIMARY KEY,
     content NVARCHAR(MAX),
     like_count INT DEFAULT 0,
     order_date DATE NOT NULL,
     user_id NVARCHAR(20) NOT NULL,
-       product_id INT NOT NULL,
+    product_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Accounts(id) ,
-    FOREIGN KEY (product_id) REFERENCES Products(id) 
+    FOREIGN KEY (product_id) REFERENCES Products(id)
 );
 GO
 
 -- Tạo bảng Invoices (Hóa đơn)
-CREATE TABLE Invoices (
+CREATE TABLE Invoices
+(
     id INT IDENTITY(1,1) PRIMARY KEY,
     order_date DATETIME NOT NULL DEFAULT GETDATE(),
     address NVARCHAR(200),
     status NVARCHAR(50) NOT NULL DEFAULT 'Pending',
     note NVARCHAR(200),
     user_id NVARCHAR(20) NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Accounts(id) 
+    FOREIGN KEY (user_id) REFERENCES Accounts(id)
 );
 GO
 
 -- Tạo bảng Detailed_Invoices (Chi tiết hóa đơn)
-CREATE TABLE Detailed_Invoices (
+CREATE TABLE Detailed_Invoices
+(
     id INT IDENTITY(1,1) PRIMARY KEY,
-    invoice_id  INT NOT NULL,
-      product_id INT NOT NULL,
+    invoice_id INT NOT NULL,
+    product_id INT NOT NULL,
     quantity INT NOT NULL,
     payment_method NVARCHAR(200) NOT NULL,
     FOREIGN KEY (invoice_id) REFERENCES Invoices(id) ,
-    FOREIGN KEY (product_id) REFERENCES Products(id) 
+    FOREIGN KEY (product_id) REFERENCES Products(id)
 );
 GO
-CREATE TABLE Distinctives (
-       id INT IDENTITY(1,1) NOT NULL,
+CREATE TABLE Distinctives
+(
+    id INT IDENTITY(1,1) NOT NULL,
     name NVARCHAR(MAX)
 );
 
 
 -- Tạo bảng Products_Distinctives
-CREATE TABLE Products_Distinctives (
+CREATE TABLE Products_Distinctives
+(
     id INT IDENTITY(1,1) NOT NULL,
-  product_id INT NOT NULL,
+    product_id INT NOT NULL,
     distinctive_id INT NOT NULL
 );
 
 -- Tạo bảng Brands (Thương hiệu)
-CREATE TABLE Brands (
- id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+CREATE TABLE Brands
+(
+    id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     name NVARCHAR(200) NOT NULL UNIQUE,
     phone_number NVARCHAR(10) NOT NULL,
     email NVARCHAR(100),
@@ -151,8 +177,9 @@ CREATE TABLE Brands (
 GO
 
 -- Tạo bảng Suppliers (Nhà cung cấp)
-CREATE TABLE Suppliers (
-  id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+CREATE TABLE Suppliers
+(
+    id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     name NVARCHAR(200) NOT NULL UNIQUE,
     phone_number NVARCHAR(10) NOT NULL,
     email NVARCHAR(100),
@@ -161,7 +188,8 @@ CREATE TABLE Suppliers (
 GO
 
 -- Tạo bảng Stock_Receipts (Nhập hàng)
-CREATE TABLE Stock_Receipts (
+CREATE TABLE Stock_Receipts
+(
     id INT IDENTITY(1,1) PRIMARY KEY,
     product_id INT NOT NULL,
     supplier_id INT NOT NULL,
@@ -171,12 +199,13 @@ CREATE TABLE Stock_Receipts (
     order_date DATE NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (product_id) REFERENCES Products(id) ,
     FOREIGN KEY (supplier_id) REFERENCES Suppliers(id) ,
-    FOREIGN KEY (brand_id) REFERENCES Brands(id) 
+    FOREIGN KEY (brand_id) REFERENCES Brands(id)
 );
 GO
 
 -- Tạo bảng User_Histories
-CREATE TABLE User_Histories (
+CREATE TABLE User_Histories
+(
     id_history INT IDENTITY(1,1) NOT NULL,
     note NVARCHAR(200),
     history_date DATE NOT NULL,
