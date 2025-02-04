@@ -19,8 +19,9 @@ function Sidebar({ onClose }) {
     const parentMap = {
       "/admin/index": "grHome", // Trang chủ
       "/admin/product": "grProducts", // Sản phẩm
-      "/admin/productsizes": "grProducts", // size Sản phẩm
+      "/admin/sizes": "grProducts", // Nhãn hàng
       "/admin/categories": "grProducts", // Danh mục sản phẩm
+      "/admin/productsizes": "grProducts", // Nhãn hàng
       "/admin/brands": "grProducts", // Nhãn hàng
       "/admin/suppliers": "grSuppliers", // Nhà cung cấp
       "/admin/stock-receipts": "grSuppliers", // Phiếu nhập kho
@@ -74,8 +75,14 @@ function Sidebar({ onClose }) {
           "/admin/product"
         ),
         getItem(
+          <Link to="/admin/sizes" onClick={onClose}>
+           Quản lý kích thước
+          </Link>,
+          "/admin/sizes"
+        ),
+        getItem(
           <Link to="/admin/productsizes" onClick={onClose}>
-            Size Sản phẩm
+            Danh sách 
           </Link>,
           "/admin/productsizes"
         ),

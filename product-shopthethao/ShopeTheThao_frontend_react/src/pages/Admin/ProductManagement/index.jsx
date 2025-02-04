@@ -40,12 +40,16 @@ const ProductManagement = () => {
   const [pageSize, setPageSize] = useState(5);
   const [products, setProducts] = useState([]);
   const [categoriesName, setCategoriesName] = useState();
-  const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
+  const [workSomeThing, setWorkSomeThing] = useState(false);
   const [sizes, setSizes] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [FileListBanner, setFileListBanner] = useState([]);
   const [FileList, setFileList] = useState([]);
+
+  const [formListKey, setFormListKey] = useState(Date.now());
+
+  const [totalQuantity, setTotalQuantity] = useState(0);
 
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
@@ -58,14 +62,11 @@ const ProductManagement = () => {
           pageSize,
           searchText
         );
-        console.log("Fetched products:", resProducts.data); // Log to check API response
         setProducts(resProducts.data);
         setTotalItems(resProducts.totalItems);
         const resCategories = await categoriesApi.getAll();
         setCategoriesName(resCategories.data || []);
-        // console.log(resCategories);
       } catch (error) {
-        console.error("Error fetching products:", error); // Log any error
         setProducts([]);
         setTotalItems(0);
         setCategoriesName([]);
@@ -92,10 +93,15 @@ const ProductManagement = () => {
     fetchData();
   }, []);
 
+  // 🔥 Tính tổng số lượng từ các kích cỡ
+  const calculateTotalQuantity = (sizes) => {
+    return sizes.reduce((total, size) => total + (size.quantity || 0), 0);
+  };
+
   // 🔥 Xử lý chỉnh sửa sản phẩm
   const handleEdit = (record) => {
-    console.log("🔥 Dữ liệu sản phẩm đang chỉnh sửa:", record);
-  
+    // console.log("🔥 Dữ liệu sản phẩm đang chỉnh sửa:", record);
+
     // Kiểm tra và tạo danh sách file từ ảnh cũ
     const newUploadFiles1 = record.image1
       ? [
@@ -108,7 +114,7 @@ const ProductManagement = () => {
           },
         ]
       : [];
-  
+
     const newUploadFiles2 = record.image2
       ? [
           {
@@ -120,25 +126,27 @@ const ProductManagement = () => {
           },
         ]
       : [];
-  
+
     // Cập nhật danh sách ảnh vào state
-    setFileListBanner(newUploadFiles1); // Danh sách ảnh của image1
-    setFileList(newUploadFiles2); // Danh sách ảnh của image2
+    setFileListBanner(newUploadFiles1);
+    setFileList(newUploadFiles2);
     setOpen(true);
     setEditingProduct(record);
-  
-    // Đặt giá trị vào form
+
     form.setFieldsValue({
       ...record,
       categorie: record.categorie?.id,
-      sizes: record.sizes.map(size => ({
-        size: size.size.id, // Lấy ID của size
+      sizes: record.sizes.map((size) => ({
+        size: size.size.id,
         quantity: size.quantity,
         price: size.price,
       })),
     });
+
+    const totalQuantity = calculateTotalQuantity(record.sizes);
+    setTotalQuantity(totalQuantity);
+    setFormListKey(Date.now());
   };
-  
 
   // 🔥 Xóa sản phẩm
   const handleDelete = async (id) => {
@@ -156,8 +164,7 @@ const ProductManagement = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-
-      // Upload hình ảnh nếu có
+      setWorkSomeThing([!workSomeThing]);
       let image1 =
         values.image1?.fileList?.length > 0
           ? await uploadApi.post(values.image1.fileList[0].originFileObj)
@@ -168,22 +175,19 @@ const ProductManagement = () => {
           ? await uploadApi.post(values.image2.fileList[0].originFileObj)
           : editingProduct?.image2;
 
-      // Tạo mới sản phẩm với các kích cỡ
       const newProduct = {
         ...values,
         categorie: { id: values.categorie },
         image1,
         image2,
-        status: values.quantity > 0, // Trạng thái của sản phẩm
+        status: values.totalQuantity > 0,
       };
 
-      // Thêm hoặc cập nhật các kích cỡ sản phẩm
       const sizes = values.sizes.map((size) => ({
-        size: { id: size.size }, // Chỉ lấy id của size
+        size: { id: size.size },
         quantity: size.quantity,
         price: size.price,
       }));
-
       newProduct.sizes = sizes;
 
       // Nếu đang chỉnh sửa sản phẩm
@@ -195,13 +199,13 @@ const ProductManagement = () => {
         message.success("Thêm sản phẩm thành công!");
       }
 
-      // Reset trạng thái sau khi hoàn thành
-      setWorkSomeThing([!workSomeThing]);
+      form.setFieldsValue({ sizes: [] });
       setOpen(false);
       form.resetFields();
       setEditingProduct(null);
       setFileListBanner([]);
       setFileList([]);
+      setWorkSomeThing([!workSomeThing]);
     } catch (error) {
       message.error("Lỗi khi lưu sản phẩm!");
     }
@@ -209,10 +213,14 @@ const ProductManagement = () => {
 
   const handleModalCancel = () => {
     setOpen(false);
-    form.resetFields();
     setEditingProduct(null);
-    setFileListBanner([]); // 🔥 Reset ảnh Hình 1
-    setFileList([]); // 🔥 Reset ảnh Hình 2
+    form.resetFields();
+    setFileListBanner([]);
+    setFileList([]);
+
+    setTimeout(() => {
+      form.setFieldsValue({ sizes: [] });
+    }, 0);
   };
 
   const getBase64 = (file) =>
@@ -227,14 +235,14 @@ const ProductManagement = () => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
     }
-    setPreviewImage(file.url || file.preview);
-    setPreviewOpen(true);
+    setPreviewImage(file.url || file.preview); // Set the preview image URL or base64 string
+    setPreviewOpen(true); // Open the preview modal
   };
 
   //phan trang 50
   const handlePageSizeChange = (value) => {
     setPageSize(value);
-    setCurrentPage(1); // 🔥 Reset về trang 1 mỗi khi thay đổi số hàng hiển thị
+    setCurrentPage(1);
   };
 
   // Cấu hình cột bảng
@@ -254,7 +262,11 @@ const ProductManagement = () => {
         </Tooltip>
       ),
     },
-    { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
+    {
+      title: "Tổng Số Số lượng",
+      dataIndex: "totalQuantity",
+      key: "totalQuantity",
+    },
     {
       title: "Loại sản phẩm",
       dataIndex: ["categorie", "name"],
@@ -286,11 +298,11 @@ const ProductManagement = () => {
     },
     {
       title: "Trạng thái",
-      dataIndex: "status",
+      dataIndex: "totalQuantity",
       key: "status",
-      render: (status) => (
-        <Tag color={status ? "green" : "red"}>
-          {status ? "Còn sản phẩm" : "Hết sản phẩm"}
+      render: (totalQuantity) => (
+        <Tag color={totalQuantity > 0 ? "green" : "red"}>
+          {totalQuantity > 0 ? "Còn sản phẩm" : "Hết sản phẩm"}
         </Tag>
       ),
     },
@@ -344,7 +356,7 @@ const ProductManagement = () => {
       render: (price) => `${price.toLocaleString()} VND`,
     },
     {
-      title: "Kích cỡ",
+      title: "Kích cỡ | Số Lượng | Giá tiền",
       dataIndex: "sizes",
       key: "sizes",
       render: (sizes) => (
@@ -400,10 +412,15 @@ const ProductManagement = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setOpen(true);
+              setTimeout(() => {
+                form.setFieldsValue({ sizes: [] });
+              }, 0);
+            }}
             className="add-btn"
           >
-            Thêm danh mục
+            Thêm sản phẩm
           </Button>
         </div>
 
@@ -453,28 +470,11 @@ const ProductManagement = () => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item
-                  name="quantity"
-                  label="Số lượng"
-                  rules={[
-                    { required: true, message: "Vui lòng nhập số lượng!" },
-                    {
-                      validator: (_, value) => {
-                        if (!value || isNaN(value) || value < 0) {
-                          return Promise.reject(
-                            new Error(
-                              "Số lượng phải là số lớn hơn hoặc bằng 0!"
-                            )
-                          );
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                  ]}
-                >
-                  <Input type="number" min={0} placeholder="Nhập số lượng" />
+                <Form.Item name="totalQuantity" label="Tổng số lượng">
+                  <Input value={totalQuantity} disabled />
                 </Form.Item>
               </Col>
+
               <Col span={12}>
                 <Form.Item
                   name="categorie"
@@ -589,25 +589,17 @@ const ProductManagement = () => {
             </Row>
 
             <Form.List
+              key={formListKey} // Ép Form.List render lại mỗi khi mở modal
               name="sizes"
               initialValue={
-                editingProduct?.sizes.map((size) => ({
-                  size: size.size.id, // Lấy id của kích cỡ
-                  quantity: size.quantity,
-                  price: size.price,
-                })) || []
-              }
-              rules={[
-                {
-                  validator: async (_, sizes) => {
-                    if (!sizes || sizes.length < 1) {
-                      return Promise.reject(
-                        new Error("Vui lòng thêm ít nhất một kích cỡ")
-                      );
-                    }
-                  },
-                },
-              ]}
+                editingProduct
+                  ? editingProduct.sizes.map((size) => ({
+                      size: size.size.id,
+                      quantity: size.quantity,
+                      price: size.price,
+                    }))
+                  : []
+              } // Khi thêm mới, danh sách sẽ rỗng
             >
               {(fields, { add, remove }) => (
                 <>
@@ -617,19 +609,18 @@ const ProductManagement = () => {
                         <Form.Item
                           {...restField}
                           name={[name, "size"]}
-                          fieldKey={[fieldKey, "size"]}
                           label="Kích cỡ"
                           rules={[
                             {
                               required: true,
-                              message: "Vui lòng chọn kích cỡ",
+                              message: "Vui lòng chọn kích cỡ!",
                             },
                           ]}
                         >
                           <Select
                             options={sizes.map((size) => ({
-                              value: size.id, // id của kích cỡ
-                              label: size.name, // Tên kích cỡ
+                              value: size.id,
+                              label: size.name,
                             }))}
                           />
                         </Form.Item>
@@ -639,20 +630,15 @@ const ProductManagement = () => {
                         <Form.Item
                           {...restField}
                           name={[name, "quantity"]}
-                          fieldKey={[fieldKey, "quantity"]}
                           label="Số lượng"
                           rules={[
                             {
                               required: true,
-                              message: "Vui lòng nhập số lượng",
+                              message: "Vui lòng nhập số lượng!",
                             },
                           ]}
                         >
-                          <Input
-                            type="number"
-                            min={0}
-                            placeholder="Nhập số lượng"
-                          />
+                          <Input type="number" min={0} />
                         </Form.Item>
                       </Col>
 
@@ -660,16 +646,12 @@ const ProductManagement = () => {
                         <Form.Item
                           {...restField}
                           name={[name, "price"]}
-                          fieldKey={[fieldKey, "price"]}
                           label="Giá"
                           rules={[
-                            {
-                              required: true,
-                              message: "Vui lòng nhập giá",
-                            },
+                            { required: true, message: "Vui lòng nhập giá!" },
                           ]}
                         >
-                          <Input type="number" min={0} placeholder="Nhập giá" />
+                          <Input type="number" min={0} />
                         </Form.Item>
                       </Col>
 
@@ -699,6 +681,21 @@ const ProductManagement = () => {
               )}
             </Form.List>
           </Form>
+          <Modal
+            open={previewOpen}
+            footer={null}
+            onCancel={() => setPreviewOpen(false)}
+          >
+            <img
+              alt="example"
+              style={{
+                width: "100%", 
+                objectFit: "contain", 
+              }}
+              src={previewImage}
+              onError={() => setPreviewImage(null)} 
+            />
+          </Modal>
         </Modal>
       </Row>
 
@@ -710,6 +707,7 @@ const ProductManagement = () => {
         dataSource={products.map((product, index) => ({
           ...product,
           key: product.id ?? `product-${index}`,
+          totalQuantity: calculateTotalQuantity(product.sizes),
         }))}
       />
 

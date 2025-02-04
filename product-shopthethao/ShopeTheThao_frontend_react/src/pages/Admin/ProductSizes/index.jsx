@@ -41,7 +41,7 @@ const ProductSizes = () => {
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await productsSizeApi.getAll(
+        const res = await productsSizeApi.getByPage(
           currentPage,
           pageSize,
           searchText

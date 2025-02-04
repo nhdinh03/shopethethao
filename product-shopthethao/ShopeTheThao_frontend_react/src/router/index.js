@@ -24,9 +24,15 @@ const privateRoutes = [
     layout: AdminLayout,
   },
 
+
   {
     path: "/admin/categories",
     component: PageAdmin.Categories,
+    layout: AdminLayout,
+  },
+  {
+    path: "/admin/sizes",
+    component: PageAdmin.Sizes,
     layout: AdminLayout,
   },
 ];

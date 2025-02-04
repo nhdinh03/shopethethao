@@ -21,22 +21,20 @@ import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
 import { categoriesApi } from "api/Admin";
 
-
 const Categories = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [categories, setCategories] = useState([]);
+  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
+  const [categories, setCategories] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
-
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
-  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
   useEffect(() => {
     let isMounted = true;
@@ -202,7 +200,7 @@ const Categories = () => {
     setPageSize(value);
     setCurrentPage(1); // 🔥 Reset về trang 1 mỗi khi thay đổi số hàng hiển thị
   };
-  
+
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     {

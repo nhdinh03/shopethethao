@@ -34,9 +34,6 @@ public class CategorieAPI {
     @Autowired
     private ProductsDAO productsDAO;
 
-
-
-
     // Lấy toàn bộ danh mục (không phân trang)
     @GetMapping("/get/all")
     public ResponseEntity<List<Categorie>> findAll() {
@@ -112,17 +109,17 @@ public class CategorieAPI {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Danh mục không tồn tại!");
             }
-    
+
             // 🔥 Kiểm tra xem danh mục có sản phẩm liên quan không
             if (productsDAO.existsByCategorieId(id)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body("Không thể xóa danh mục vì có sản phẩm liên quan!");
             }
-    
+
             // ✅ Xóa danh mục nếu không có sản phẩm liên quan
             dao.deleteById(id);
             return ResponseEntity.ok("Xóa danh mục thành công!");
-    
+
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Không thể xóa danh mục do dữ liệu tham chiếu!");
@@ -131,7 +128,5 @@ public class CategorieAPI {
                     .body("Lỗi không xác định khi xóa danh mục!");
         }
     }
-    
-    
 
 }

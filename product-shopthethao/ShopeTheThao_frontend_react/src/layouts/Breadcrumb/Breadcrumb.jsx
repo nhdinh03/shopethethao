@@ -7,7 +7,9 @@ import { Link } from "react-router-dom";
 const breadcrumbData = [
   { url: "/admin/index", title: "Trang chủ" },
   { url: "/admin/product", title: "Sản phẩm" },
+  { url: "/admin/sizes", title: "Quản Lý Size" },
   { url: "/admin/categories", title: "Danh mục sản phẩm" },
+  { url: "/admin/productsizes", title: "Quản Lý Size" },
   { url: "/admin/brands", title: "Nhãn hàng" },
   { url: "/admin/suppliers", title: "Nhà cung cấp" },
   { url: "/admin/stock-receipts", title: "Phiếu nhập kho" },
