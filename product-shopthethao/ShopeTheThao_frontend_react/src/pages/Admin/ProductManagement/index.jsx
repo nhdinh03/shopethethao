@@ -98,11 +98,16 @@ const ProductManagement = () => {
     return sizes.reduce((total, size) => total + (size.quantity || 0), 0);
   };
 
+  const handleSizeQuantityChange = (value, index) => {
+    const sizes = form.getFieldValue("sizes") || [];
+    sizes[index].quantity = value;
+    const updatedTotalQuantity = calculateTotalQuantity(sizes);
+    form.setFieldsValue({ sizes, totalQuantity: updatedTotalQuantity });
+    setTotalQuantity(updatedTotalQuantity);
+  };
+
   // 🔥 Xử lý chỉnh sửa sản phẩm
   const handleEdit = (record) => {
-    // console.log("🔥 Dữ liệu sản phẩm đang chỉnh sửa:", record);
-
-    // Kiểm tra và tạo danh sách file từ ảnh cũ
     const newUploadFiles1 = record.image1
       ? [
           {
@@ -589,7 +594,6 @@ const ProductManagement = () => {
             </Row>
 
             <Form.List
-              key={formListKey} // Ép Form.List render lại mỗi khi mở modal
               name="sizes"
               initialValue={
                 editingProduct
@@ -599,7 +603,7 @@ const ProductManagement = () => {
                       price: size.price,
                     }))
                   : []
-              } // Khi thêm mới, danh sách sẽ rỗng
+              }
             >
               {(fields, { add, remove }) => (
                 <>
@@ -634,11 +638,18 @@ const ProductManagement = () => {
                           rules={[
                             {
                               required: true,
-                              message: "Vui lòng nhập số lượng!",
+                              message: "Vui lòng nhập số lượng Lớn hơn 1!",
                             },
                           ]}
                         >
-                          <Input type="number" min={0} />
+                          <Input
+                            type="number"
+                            min={1}
+                            onChange={(e) => {
+                              const value = Math.max(0, e.target.value); 
+                              handleSizeQuantityChange(value, name);
+                            }}
+                          />
                         </Form.Item>
                       </Col>
 
@@ -647,9 +658,6 @@ const ProductManagement = () => {
                           {...restField}
                           name={[name, "price"]}
                           label="Giá"
-                          rules={[
-                            { required: true, message: "Vui lòng nhập giá!" },
-                          ]}
                         >
                           <Input type="number" min={0} />
                         </Form.Item>
@@ -689,11 +697,11 @@ const ProductManagement = () => {
             <img
               alt="example"
               style={{
-                width: "100%", 
-                objectFit: "contain", 
+                width: "100%",
+                objectFit: "contain",
               }}
               src={previewImage}
-              onError={() => setPreviewImage(null)} 
+              onError={() => setPreviewImage(null)}
             />
           </Modal>
         </Modal>
