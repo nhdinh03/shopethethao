@@ -19,7 +19,8 @@ import Highlighter from "react-highlight-words";
 import "./productsizes.scss";
 import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
-import productsSizeApi from "api/Admin/ProductsSize/productsSizeApi";
+import { productsSizeApi } from "api/Admin";
+
 
 const ProductSizes = () => {
   const [totalItems, setTotalItems] = useState(0);

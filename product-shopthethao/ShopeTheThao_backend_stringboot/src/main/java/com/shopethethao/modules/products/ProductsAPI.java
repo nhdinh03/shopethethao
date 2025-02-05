@@ -1,7 +1,7 @@
 package com.shopethethao.modules.products;
 
-import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.productSizes.ProductSize;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -11,12 +11,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.productSizes.ProductSize;
 import com.shopethethao.modules.productSizes.ProductSizeDAO;
 
 @RestController
@@ -45,7 +52,7 @@ public class ProductsAPI {
     // Lấy danh sách sản phẩm có phân trang
     @GetMapping
     public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-                                     @RequestParam("limit") Optional<Integer> limit) {
+            @RequestParam("limit") Optional<Integer> limit) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
                 return new ResponseEntity<>("Trang không tồn tại", HttpStatus.NOT_FOUND);
@@ -81,8 +88,8 @@ public class ProductsAPI {
     }
 
     // **Cập nhật sản phẩm và kích cỡ**
-    @Transactional
     @PutMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id, @RequestBody Product product) {
         try {
             Optional<Product> existingProduct = productsDAO.findById(id);
@@ -100,10 +107,11 @@ public class ProductsAPI {
             updatedProduct.setImage2(product.getImage2());
             updatedProduct.setCategorie(product.getCategorie());
 
-            // Xóa các kích cỡ cũ không còn trong danh sách mới
-            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
-                productSizeDAO.deleteByProductId(id);
+            // **Xóa toàn bộ size trước khi cập nhật sản phẩm**
+            productSizeDAO.deleteByProductId(id);
 
+            // **Nếu `sizes` tồn tại trong request, cập nhật lại size mới**
+            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
                 for (ProductSize size : product.getSizes()) {
                     size.setProduct(updatedProduct);
                     productSizeDAO.save(size);
@@ -113,21 +121,31 @@ public class ProductsAPI {
             productsDAO.save(updatedProduct);
             return ResponseEntity.ok(updatedProduct);
         } catch (Exception e) {
-            return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi hệ thống, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // **Xóa sản phẩm**
+    // **Xóa sản phẩm và size liên quan**
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteProduct(@PathVariable("id") Integer id) {
         try {
             if (!productsDAO.existsById(id)) {
                 return new ResponseEntity<>("Sản phẩm không tồn tại!", HttpStatus.NOT_FOUND);
             }
+
+            // 🛠️ Xóa tất cả size của sản phẩm trước khi xóa sản phẩm
+            productSizeDAO.deleteByProductId(id);
+
+            // 🛠️ Sau đó mới xóa sản phẩm
             productsDAO.deleteById(id);
-            return ResponseEntity.ok("Xóa sản phẩm thành công!");
+
+            return ResponseEntity.ok("Xóa sản phẩm và size thành công!");
         } catch (DataIntegrityViolationException e) {
             return new ResponseEntity<>("Không thể xóa sản phẩm do dữ liệu tham chiếu!", HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 }

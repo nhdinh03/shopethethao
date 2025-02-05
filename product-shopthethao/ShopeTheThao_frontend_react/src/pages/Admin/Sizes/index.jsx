@@ -15,7 +15,6 @@ import {
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import Highlighter from "react-highlight-words";
 import "./size.scss";
 import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
@@ -164,9 +163,7 @@ const Sizes = () => {
           </Button>
         </div>
         <BaseModal
-          title={
-            editSize ? "Cập nhật kích thước" : "Thêm kích thước mới"
-          }
+          title={editSize ? "Cập nhật kích thước" : "Thêm kích thước mới"}
           open={open}
           footer={null}
           onCancel={handleCancel}
@@ -175,7 +172,9 @@ const Sizes = () => {
             <Form.Item
               name="name"
               label="Tên kích thước"
-              rules={[{ required: true, message: "Vui lòng nhập tên kích thước!" }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập tên kích thước!" },
+              ]}
             >
               <Input placeholder="Nhập tên kích thước" />
             </Form.Item>
@@ -186,9 +185,7 @@ const Sizes = () => {
                 width: "100%",
               }}
             >
-              {!editSize && (
-                <Button onClick={handleResetForm}>Làm mới</Button>
-              )}
+              {!editSize && <Button onClick={handleResetForm}>Làm mới</Button>}
               <Button type="primary" onClick={handleModalOk}>
                 {editSize ? "Cập nhật" : "Thêm mới"}
               </Button>

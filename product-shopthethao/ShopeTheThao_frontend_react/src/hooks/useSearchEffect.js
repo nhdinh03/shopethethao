@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import funcUtils from '~/utils/funcUtils';
+
 import useDebounce from './useDebounce';
+import funcUtils from 'utils/funcUtils';
 
 const useSearch = (searchValue, api, setStateList, isSearching) => {
     const searchValueDebounce = useDebounce(searchValue, 500);

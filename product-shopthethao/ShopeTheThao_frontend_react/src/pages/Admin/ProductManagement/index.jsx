@@ -22,12 +22,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import styles from "..//modalStyles.module.scss";
 import "./Products.module.scss";
-import productsApi from "api/Admin/Products/productsApi";
 import uploadApi from "api/service/uploadApi";
 import PaginationComponent from "components/PaginationComponent";
-import { categoriesApi } from "api/Admin";
-import productsSizeApi from "api/Admin/ProductsSize/productsSizeApi";
-import sizeApi from "api/Admin/Sizes/SizesApi";
+import { useCategories, useSizes } from "hooks";
+import { productsApi } from "api/Admin";
 
 const ProductManagement = () => {
   const [searchText, setSearchText] = useState("");
@@ -35,23 +33,21 @@ const ProductManagement = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
   const [products, setProducts] = useState([]);
-  const [categoriesName, setCategoriesName] = useState();
   const [workSomeThing, setWorkSomeThing] = useState(false);
-  const [sizes, setSizes] = useState([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [FileListBanner, setFileListBanner] = useState([]);
   const [FileList, setFileList] = useState([]);
-
-  const [formListKey, setFormListKey] = useState(Date.now());
-
   const [totalQuantity, setTotalQuantity] = useState(0);
-
+  const [totalItems, setTotalItems] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
+
+  //api
+  const sizes = useSizes();
+  const categories = useCategories();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,12 +60,9 @@ const ProductManagement = () => {
         );
         setProducts(resProducts.data);
         setTotalItems(resProducts.totalItems);
-        const resCategories = await categoriesApi.getAll();
-        setCategoriesName(resCategories.data || []);
       } catch (error) {
         setProducts([]);
         setTotalItems(0);
-        setCategoriesName([]);
       } finally {
         setLoading(false);
       }
@@ -77,95 +70,6 @@ const ProductManagement = () => {
     fetchData();
   }, [currentPage, pageSize, searchText, workSomeThing]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const resSizes = await sizeApi.getAll();
-        if (resSizes?.data) {
-          setSizes(resSizes.data);
-        } else {
-          console.error("Không có dữ liệu kích cỡ");
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu kích cỡ:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // 🔥 Tính tổng số lượng từ các kích cỡ
-  const calculateTotalQuantity = (sizes) => {
-    return sizes.reduce((total, size) => total + (size.quantity || 0), 0);
-  };
-
-  const handleSizeQuantityChange = (value, index) => {
-    const sizes = form.getFieldValue("sizes") || [];
-    sizes[index].quantity = value;
-    const updatedTotalQuantity = calculateTotalQuantity(sizes);
-    form.setFieldsValue({ sizes, totalQuantity: updatedTotalQuantity });
-    setTotalQuantity(updatedTotalQuantity);
-  };
-
-  // 🔥 Xử lý chỉnh sửa sản phẩm
-  const handleEdit = (record) => {
-    const newUploadFiles1 = record.image1
-      ? [
-          {
-            uid: `${record.id}-1`,
-            name: record.image1,
-            url: `http://localhost:8081/api/upload/${encodeURIComponent(
-              record.image1
-            )}`,
-          },
-        ]
-      : [];
-
-    const newUploadFiles2 = record.image2
-      ? [
-          {
-            uid: `${record.id}-2`,
-            name: record.image2,
-            url: `http://localhost:8081/api/upload/${encodeURIComponent(
-              record.image2
-            )}`,
-          },
-        ]
-      : [];
-
-    // Cập nhật danh sách ảnh vào state
-    setFileListBanner(newUploadFiles1);
-    setFileList(newUploadFiles2);
-    setOpen(true);
-    setEditingProduct(record);
-
-    form.setFieldsValue({
-      ...record,
-      categorie: record.categorie?.id,
-      sizes: record.sizes.map((size) => ({
-        size: size.size.id,
-        quantity: size.quantity,
-        price: size.price,
-      })),
-    });
-
-    const totalQuantity = calculateTotalQuantity(record.sizes);
-    setTotalQuantity(totalQuantity);
-    setFormListKey(Date.now());
-  };
-
-  // 🔥 Xóa sản phẩm
-  const handleDelete = async (id) => {
-    try {
-      await productsApi.delete(id);
-      message.success("Xóa sản phẩm thành công!");
-      setWorkSomeThing([!workSomeThing]);
-      setProducts(products.filter((p) => p.id !== id));
-    } catch (error) {
-      message.error("Không thể xóa sản phẩm!");
-    }
-  };
-
-  // 🔥 Thêm hoặc cập nhật sản phẩm
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
@@ -215,6 +119,79 @@ const ProductManagement = () => {
       message.error("Lỗi khi lưu sản phẩm!");
     }
   };
+
+  const handleEdit = (record) => {
+    const newUploadFiles1 = record.image1
+      ? [
+          {
+            uid: `${record.id}-1`,
+            name: record.image1,
+            url: `http://localhost:8081/api/upload/${encodeURIComponent(
+              record.image1
+            )}`,
+          },
+        ]
+      : [];
+
+    const newUploadFiles2 = record.image2
+      ? [
+          {
+            uid: `${record.id}-2`,
+            name: record.image2,
+            url: `http://localhost:8081/api/upload/${encodeURIComponent(
+              record.image2
+            )}`,
+          },
+        ]
+      : [];
+
+    // Cập nhật danh sách ảnh vào state
+    setFileListBanner(newUploadFiles1);
+    setFileList(newUploadFiles2);
+    setOpen(true);
+    setEditingProduct(record);
+
+    form.setFieldsValue({
+      ...record,
+      categorie: record.categorie?.id,
+      sizes: record.sizes.map((size) => ({
+        size: size.size.id,
+        quantity: size.quantity,
+        price: size.price,
+      })),
+    });
+
+    const totalQuantity = calculateTotalQuantity(record.sizes);
+    setTotalQuantity(totalQuantity);
+  };
+
+  // 🔥 Xóa sản phẩm
+  const handleDelete = async (id) => {
+    try {
+      await productsApi.delete(id);
+      message.success("Xóa sản phẩm thành công!");
+      setWorkSomeThing([!workSomeThing]);
+      setProducts(products.filter((p) => p.id !== id));
+    } catch (error) {
+      message.error("Không thể xóa sản phẩm!");
+    }
+  };
+
+  const calculateTotalQuantity = (sizes) => {
+    return sizes.reduce((total, size) => total + (size.quantity || 0), 0);
+  };
+
+  const handleSizeQuantityChange = (value, index) => {
+    const sizes = form.getFieldValue("sizes") || [];
+    sizes[index].quantity = value;
+    const updatedTotalQuantity = calculateTotalQuantity(sizes);
+    form.setFieldsValue({ sizes, totalQuantity: updatedTotalQuantity });
+    setTotalQuantity(updatedTotalQuantity);
+  };
+
+  // 🔥 Xử lý chỉnh sửa sản phẩm
+
+  // 🔥 Thêm hoặc cập nhật sản phẩm
 
   const handleModalCancel = () => {
     setOpen(false);
@@ -498,7 +475,7 @@ const ProductManagement = () => {
                         .toLowerCase()
                         .includes(input.toLowerCase())
                     }
-                    options={categoriesName?.map((categorie) => ({
+                    options={categories?.map((categorie) => ({
                       value: categorie.id,
                       label: categorie.name,
                     }))}
@@ -646,7 +623,7 @@ const ProductManagement = () => {
                             type="number"
                             min={1}
                             onChange={(e) => {
-                              const value = Math.max(0, e.target.value); 
+                              const value = Math.max(0, e.target.value);
                               handleSizeQuantityChange(value, name);
                             }}
                           />
