@@ -1,44 +1,27 @@
-// package com.shopethethao.dto;
+package com.shopethethao.dto;
 
-// import jakarta.persistence.*;
-// import lombok.Data;
+import java.util.Date;
 
-// @Entity
-// @Table(name = "Accounts") 
-// @Data 
-// public class AccountDTO {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-//     @Id
-//     @Column(name = "id", nullable = false, length = 20)
-//     private String id;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AccountDTO {
 
-//     @Column(name = "name", nullable = false, length = 50)
-//     private String name;
+	private String id;
+	private String phone;
+	private String fullname;
+	private String email;
+	private String address;
+	private Date birthday;
+	private Boolean gender;
+	private String image;
+	private Integer status;
+	private Date createdDate;
+	private Boolean verified;
+	private int points;
 
-//     @Column(name = "Password", nullable = false, length = 20)
-//     private String password;
-
-//     @Column(name = "Phone", length = 10)
-//     private String phone;
-
-//     @Column(name = "email", nullable = false, unique = true, length = 100)
-//     private String email;
-
-//     @Column(name = "address", length = 200)
-//     private String address;
-
-//     @Column(name = "image", length = 200)
-//     private String image;
-
-//     @Column(name = "admin", nullable = false)
-//     private boolean admin;
-
-//     @Column(name = "status", nullable = false)
-//     private boolean status = true;
-
-//     @Column(name = "confirm")
-//     private Boolean confirm;
-
-//     @Column(name = "OTP", length = 20)
-//     private String otp;
-// }
+}

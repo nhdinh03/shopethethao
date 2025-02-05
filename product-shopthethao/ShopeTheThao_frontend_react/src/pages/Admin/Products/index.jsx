@@ -27,7 +27,7 @@ import PaginationComponent from "components/PaginationComponent";
 import { useCategories, useSizes } from "hooks";
 import { productsApi } from "api/Admin";
 
-const ProductManagement = () => {
+const Products = () => {
   const [searchText, setSearchText] = useState("");
   const [open, setOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -116,8 +116,27 @@ const ProductManagement = () => {
       setFileList([]);
       setWorkSomeThing([!workSomeThing]);
     } catch (error) {
-      message.error("Lỗi khi lưu sản phẩm!");
+      message.error("Lỗi khi lưu sản phẩm vui lòng thực hiện lại Kích cở!");
     }
+  };
+
+  const handleSizeChange = (value, name) => {
+    const sizes = form.getFieldValue("sizes") || [];
+    // Kiểm tra nếu kích cỡ đã tồn tại trong danh sách, ngoại trừ phần tử hiện tại (name)
+    const sizeExists = sizes.some(
+      (size, index) => index !== name && size.size === value
+    );
+    if (sizeExists) {
+      message.error("Kích cỡ này đã tồn tại trong danh sách! Không thể thêm!");
+      return;
+    }
+    // Nếu chưa có, cập nhật lại kích cỡ
+    const updatedSizes = sizes.map((size, index) =>
+      index === name ? { ...size, size: value } : size
+    );
+    form.setFieldsValue({
+      sizes: updatedSizes,
+    });
   };
 
   const handleEdit = (record) => {
@@ -189,10 +208,6 @@ const ProductManagement = () => {
     setTotalQuantity(updatedTotalQuantity);
   };
 
-  // 🔥 Xử lý chỉnh sửa sản phẩm
-
-  // 🔥 Thêm hoặc cập nhật sản phẩm
-
   const handleModalCancel = () => {
     setOpen(false);
     setEditingProduct(null);
@@ -245,7 +260,7 @@ const ProductManagement = () => {
       ),
     },
     {
-      title: "Tổng Số Số lượng",
+      title: "Tổng Sản Phẩm",
       dataIndex: "totalQuantity",
       key: "totalQuantity",
     },
@@ -332,7 +347,7 @@ const ProductManagement = () => {
     },
 
     {
-      title: "Giá",
+      title: "Giá Góc",
       dataIndex: "price",
       key: "price",
       render: (price) => `${price.toLocaleString()} VND`,
@@ -569,7 +584,6 @@ const ProductManagement = () => {
                 </Form.Item>
               </Col>
             </Row>
-
             <Form.List
               name="sizes"
               initialValue={
@@ -603,6 +617,7 @@ const ProductManagement = () => {
                               value: size.id,
                               label: size.name,
                             }))}
+                            onChange={(value) => handleSizeChange(value, name)} // Đảm bảo mỗi lần thay đổi gọi hàm kiểm tra trùng
                           />
                         </Form.Item>
                       </Col>
@@ -615,7 +630,7 @@ const ProductManagement = () => {
                           rules={[
                             {
                               required: true,
-                              message: "Vui lòng nhập số lượng Lớn hơn 1!",
+                              message: "Vui lòng nhập số lượng lớn hơn 1!",
                             },
                           ]}
                         >
@@ -728,4 +743,4 @@ const ProductManagement = () => {
   );
 };
 
-export default ProductManagement;
+export default Products;

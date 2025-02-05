@@ -33,9 +33,9 @@ function HeaderAdminRight() {
     const fetchData = async () => {
       try {
         const user = {
-          fullname: "Nguyễn Văn A",
+          fullname: "Nhdinh",
           avatar: "https://i.pravatar.cc/150",
-          position: "CEO",
+          position: "Admin",
         };
         setUserData(user);
       } catch (error) {

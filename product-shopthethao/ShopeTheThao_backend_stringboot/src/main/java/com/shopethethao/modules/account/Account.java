@@ -3,8 +3,6 @@ package com.shopethethao.modules.account;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyProperties.AssertingParty.Verification;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopethethao.modules.accountRole.AccountRole;
 import com.shopethethao.modules.comments.Comment;

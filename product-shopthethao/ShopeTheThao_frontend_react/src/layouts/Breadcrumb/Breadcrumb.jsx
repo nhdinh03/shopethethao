@@ -9,7 +9,7 @@ const breadcrumbData = [
   { url: "/admin/product", title: "Sản phẩm" },
   { url: "/admin/sizes", title: "Quản Lý Size" },
   { url: "/admin/categories", title: "Danh mục sản phẩm" },
-  { url: "/admin/productsizes", title: "Quản Lý Size" },
+  // { url: "/admin/productsizes", title: "Quản Lý Size" },
   { url: "/admin/brands", title: "Nhãn hàng" },
   { url: "/admin/suppliers", title: "Nhà cung cấp" },
   { url: "/admin/stock-receipts", title: "Phiếu nhập kho" },
@@ -17,9 +17,11 @@ const breadcrumbData = [
   { url: "/admin/detailed-invoices", title: "Chi tiết hóa đơn" },
   { url: "/admin/account", title: "Người dùng" },
   { url: "/admin/accountStaff", title: "Nhân viên" },
+  { url: "/admin/roles", title: "vai trò" },
   { url: "/admin/products-distinctives", title: "Thuộc tính sản phẩm" },
   { url: "/admin/statistics-documents", title: "Tài liệu thống kê" },
   { url: "/admin/charts", title: "Biểu đồ thống kê" },
+  { url: "/admin/verification", title: "Thống kê Tài khoản" },
 ];
 
 const Bread = ({ path }) => {

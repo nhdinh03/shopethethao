@@ -74,6 +74,31 @@ public class ProductsAPI {
     @PostMapping
     public ResponseEntity<?> createProductWithSizes(@RequestBody Product product) {
         try {
+            // Kiểm tra trùng kích cỡ trong danh sách sizes
+            for (int i = 0; i < product.getSizes().size(); i++) {
+                for (int j = i + 1; j < product.getSizes().size(); j++) {
+                    // So sánh kích cỡ
+                    if (product.getSizes().get(i).getSize().getId()
+                            .equals(product.getSizes().get(j).getSize().getId())) {
+                        return new ResponseEntity<>(
+                                "Kích cỡ " + product.getSizes().get(i).getSize().getName() + " đã tồn tại!",
+                                HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+
+            // Kiểm tra nếu kích cỡ đã tồn tại trong cơ sở dữ liệu
+            for (ProductSize size : product.getSizes()) {
+                Optional<ProductSize> existingSize = productSizeDAO.findByProductIdAndSizeId(product.getId(),
+                        size.getSize().getId());
+                if (existingSize.isPresent()) {
+                    return new ResponseEntity<>(
+                            "Kích cỡ " + size.getSize().getName() + " đã tồn tại trong danh sách sản phẩm!",
+                            HttpStatus.BAD_REQUEST);
+                }
+            }
+
+            // Lưu sản phẩm và các kích cỡ
             Product savedProduct = productsDAO.save(product);
             if (product.getSizes() != null && !product.getSizes().isEmpty()) {
                 for (ProductSize size : product.getSizes()) {
@@ -107,12 +132,33 @@ public class ProductsAPI {
             updatedProduct.setImage2(product.getImage2());
             updatedProduct.setCategorie(product.getCategorie());
 
+            // **Kiểm tra trùng kích cỡ trước khi cập nhật**
+            for (int i = 0; i < product.getSizes().size(); i++) {
+                for (int j = i + 1; j < product.getSizes().size(); j++) {
+                    // So sánh kích cỡ
+                    if (product.getSizes().get(i).getSize().getId()
+                            .equals(product.getSizes().get(j).getSize().getId())) {
+                        return new ResponseEntity<>(
+                                "Kích cỡ " + product.getSizes().get(i).getSize().getName() + " đã tồn tại!",
+                                HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+
             // **Xóa toàn bộ size trước khi cập nhật sản phẩm**
             productSizeDAO.deleteByProductId(id);
 
             // **Nếu `sizes` tồn tại trong request, cập nhật lại size mới**
             if (product.getSizes() != null && !product.getSizes().isEmpty()) {
                 for (ProductSize size : product.getSizes()) {
+                    // Kiểm tra xem kích cỡ đã tồn tại chưa
+                    Optional<ProductSize> existingSize = productSizeDAO.findByProductIdAndSizeId(id,
+                            size.getSize().getId());
+                    if (existingSize.isPresent()) {
+                        return new ResponseEntity<>(
+                                "Kích cỡ " + size.getSize().getName() + " đã tồn tại trong danh sách sản phẩm!",
+                                HttpStatus.BAD_REQUEST);
+                    }
                     size.setProduct(updatedProduct);
                     productSizeDAO.save(size);
                 }

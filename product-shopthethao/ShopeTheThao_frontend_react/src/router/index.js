@@ -15,15 +15,14 @@ const privateRoutes = [
   },
   {
     path: "/admin/product",
-    component: PageAdmin.ProductManagement,
+    component: PageAdmin.Products,
     layout: AdminLayout,
   },
-  {
-    path: "/admin/productsizes",
-    component: PageAdmin.ProductSizes,
-    layout: AdminLayout,
-  },
-
+  // {
+  //   path: "/admin/productsizes",
+  //   component: PageAdmin.ProductSizes,
+  //   layout: AdminLayout,
+  // },
 
   {
     path: "/admin/categories",
@@ -35,6 +34,86 @@ const privateRoutes = [
     component: PageAdmin.Sizes,
     layout: AdminLayout,
   },
+
+  {
+    path: "/admin/brands",
+    component: PageAdmin.Brands,
+    layout: AdminLayout,
+  },
+  {
+    path: "/admin/account",
+    component: PageAdmin.Accounts,
+    layout: AdminLayout,
+  },
+  {
+    path: "/admin/comment",
+    component: PageAdmin.Comments,
+    layout: AdminLayout,
+  },
+
+  //
+  {
+    path: "/admin/detailed-invoices",
+    component: PageAdmin.Detailed_Invoices,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/distinctives",
+    component: PageAdmin.Distinctives,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/invoices",
+    component: PageAdmin.Invoices,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/products-distinctives",
+    component: PageAdmin.Products_Distinctives,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/roles",
+    component: PageAdmin.Roles,
+    layout: AdminLayout,
+  },
+  {
+    path: "/admin/accountStaff",
+    component: PageAdmin.AccountStaff,
+    layout: AdminLayout,
+  },
+  {
+    path: "/admin/stock-receipts",
+    component: PageAdmin.Stock_Receipts,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/suppliers",
+    component: PageAdmin.Suppliers,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/user-histories",
+    component: PageAdmin.User_Histories,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/verification",
+    component: PageAdmin.Verification,
+    layout: AdminLayout,
+  },
+
+
 ];
 
 export { publicRoutes, privateRoutes };
+
+
+
