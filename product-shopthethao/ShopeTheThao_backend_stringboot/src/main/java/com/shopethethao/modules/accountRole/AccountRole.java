@@ -2,7 +2,7 @@ package com.shopethethao.modules.accountRole;
 
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.role.Role;
-import jakarta.persistence.ForeignKey;
+
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;

@@ -152,6 +152,7 @@ const Sizes = () => {
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Quản lý kích thước sản phẩm</h2>
+     
         <div className="header-container">
           <Button
             type="primary"

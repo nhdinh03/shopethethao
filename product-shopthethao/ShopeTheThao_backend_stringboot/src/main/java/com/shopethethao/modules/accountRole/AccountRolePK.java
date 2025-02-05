@@ -1,7 +1,7 @@
 package com.shopethethao.modules.accountRole;
 
 import java.io.Serializable;
-import java.util.Objects;
+
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
