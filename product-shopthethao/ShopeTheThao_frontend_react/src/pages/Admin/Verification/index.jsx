@@ -1,44 +1,42 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  message,
-  Space,
-  Tooltip,
-  Popconfirm,
-  Tag,
-  Row,
-  Select,
-} from "antd";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { Table, message, Tag, Row, Select } from "antd";
 import verifications from "api/Admin/Verifications/Verifications";
 import PaginationComponent from "components/PaginationComponent";
 import "./verifications.scss";
 
 const Verifications = () => {
+  const [workSomeThing, setWorkSomeThing] = useState(false);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [searchText, setSearchText] = useState("");
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
+  // Lấy dữ liệu với phân trang
   useEffect(() => {
+    let isMounted = true;
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await verifications.getAll();
-        setData(res.data); // Lưu trữ dữ liệu vào state
-        setTotalItems(res.totalItems);
-        setLoading(false);
+        const res = await verifications.getByPage(currentPage, pageSize, searchText);
+        if (isMounted) {
+          setData(res.data);
+          setTotalItems(res.totalItems);
+          setLoading(false);
+        }
       } catch (error) {
-        message.error("Không thể lấy danh sách xác nhận!");
+        message.error("Không thể lấy danh sách sản phẩm. Vui lòng thử lại!");
         setLoading(false);
       }
     };
     getList();
-  }, []);
+    return () => {
+      isMounted = false;
+    };
+  }, [currentPage, pageSize, searchText, workSomeThing]);
 
   const handlePageSizeChange = (value) => {
     setPageSize(value);
