@@ -31,6 +31,7 @@ public class StockReceipt {
     @Column(name = "order_date", nullable = false)
     private LocalDate orderDate;
 
+
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
     private Product product;

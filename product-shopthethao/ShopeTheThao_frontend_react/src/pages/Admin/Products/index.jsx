@@ -15,6 +15,7 @@ import {
   Row,
   Upload,
   Col,
+  Typography,
 } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
@@ -28,6 +29,7 @@ import { useCategories, useSizes } from "hooks";
 import { productsApi } from "api/Admin";
 
 const Products = () => {
+  const { Title, Text } = Typography;
   const [searchText, setSearchText] = useState("");
   const [open, setOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -251,14 +253,17 @@ const Products = () => {
       key: "name",
       render: (text) => (
         <Tooltip title={text || "Không có mô tả"} placement="top">
-          <span className="ellipsis-text">
-            {text?.length > 15
-              ? `${text.substring(0, 15)}...`
-              : text || "Không có Tên sản phẩm"}
-          </span>
+          <Text strong>
+            <span className="ellipsis-text">
+              {text?.length > 15
+                ? `${text.substring(0, 15)}...`
+                : text || "Không có Tên sản phẩm"}
+            </span>
+          </Text>
         </Tooltip>
       ),
     },
+
     {
       title: "Tổng Sản Phẩm",
       dataIndex: "totalQuantity",
@@ -395,6 +400,8 @@ const Products = () => {
                 }}
               />
             </Tooltip>
+
+
           </Popconfirm>
         </Space>
       ),

@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.products.Product;
+
+
 @RestController
 @RequestMapping("/api/productsizes")
 public class ProductSizeAPI {

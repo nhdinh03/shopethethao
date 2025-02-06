@@ -6,5 +6,5 @@ class Verifications extends BaseApi {
   }
 }
 
-const verifications = new Verifications();
-export default verifications;
+const verificationsApi = new Verifications();
+export default verificationsApi;

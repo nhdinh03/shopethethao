@@ -11,6 +11,7 @@ import {
   Tooltip,
   Select,
   Row,
+  Typography,
 } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,13 +23,15 @@ import PaginationComponent from "components/PaginationComponent";
 import { categoriesApi } from "api/Admin";
 
 const Categories = () => {
+  const { Title, Text } = Typography;
+
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-
-  const [categories, setCategories] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [categories, setCategories] = useState([]);
+
   const [searchedColumn, setSearchedColumn] = useState("");
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -211,7 +214,13 @@ const Categories = () => {
       render: (text) => (
         <Tooltip title={text.length > 30 ? text : ""} placement="top">
           <span className="ellipsis-text">
-            {text.length > 30 ? `${text.substring(0, 30)}...` : text}
+            <Text strong={true} className="ellipsis-text">
+              {text
+                ? text.length > 30
+                  ? `${text.substring(0, 30)}...`
+                  : text
+                : "Không có danh mục"}
+            </Text>
           </span>
         </Tooltip>
       ),

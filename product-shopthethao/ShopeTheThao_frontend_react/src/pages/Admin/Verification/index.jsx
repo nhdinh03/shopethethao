@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, message, Tag, Row, Select } from "antd";
-import verifications from "api/Admin/Verifications/Verifications";
+import verifications from "api/Admin/Verifications/verificationsApi";
 import PaginationComponent from "components/PaginationComponent";
 import "./verifications.scss";
 

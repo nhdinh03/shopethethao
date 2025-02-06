@@ -23,9 +23,10 @@ function Sidebar({ onClose }) {
       "/admin/sizes": "grProducts", // Nhãn hàng
       "/admin/categories": "grProducts", // Danh mục sản phẩm
       // "/admin/productsizes": "grProducts", // Nhãn hàng
-      "/admin/brands": "grProducts", // Nhãn hàng
+
 
       "/admin/suppliers": "grSuppliers", // Nhà cung cấp
+      "/admin/brands": "grSuppliers", // Nhãn hàng
       "/admin/stock-receipts": "grSuppliers", // Phiếu nhập kho
 
       "/admin/invoices": "grInvoices", // Hóa đơn
@@ -83,6 +84,12 @@ function Sidebar({ onClose }) {
           "/admin/product"
         ),
         getItem(
+          <Link to="/admin/categories" onClick={onClose}>
+            Danh mục
+          </Link>,
+          "/admin/categories"
+        ),
+        getItem(
           <Link to="/admin/sizes" onClick={onClose}>
             Kích thước
           </Link>,
@@ -94,18 +101,8 @@ function Sidebar({ onClose }) {
         //   </Link>,
         //   "/admin/productsizes"
         // ),
-        getItem(
-          <Link to="/admin/categories" onClick={onClose}>
-            Danh mục
-          </Link>,
-          "/admin/categories"
-        ),
-        getItem(
-          <Link to="/admin/brands" onClick={onClose}>
-            Nhãn hàng
-          </Link>,
-          "/admin/brands"
-        ),
+
+    
       ]
     ),
 
@@ -123,6 +120,12 @@ function Sidebar({ onClose }) {
             Nhà cung cấp
           </Link>,
           "/admin/suppliers"
+        ),
+        getItem(
+          <Link to="/admin/brands" onClick={onClose}>
+            Thương hiệu
+          </Link>,
+          "/admin/brands"
         ),
         getItem(
           <Link to="/admin/stock-receipts" onClick={onClose}>
