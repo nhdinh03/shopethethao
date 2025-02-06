@@ -10,28 +10,36 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.categories.Categorie;
 
 @RestController
 @RequestMapping("/api/brands")
 public class BrandAPI {
 
-  @Autowired
-  private BrandDAO brandsDAO;
 
-  @GetMapping("/get/all")
-  public ResponseEntity<List<Brand>> findAll() {
-    List<Brand> brands = brandsDAO.findAll();
-    return ResponseEntity.ok(brands);
-  }
+    @Autowired
+    private BrandDAO brandsDAO;
 
+    // Fetch all brands without pagination
+    @GetMapping("/get/all")
+    public ResponseEntity<List<Brand>> findAll() {
+        List<Brand> brands = brandsDAO.findAll();
+        return ResponseEntity.ok(brands);
+    }
 
+    // Fetch brands with pagination
     @GetMapping
     public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
             @RequestParam("limit") Optional<Integer> limit) {
@@ -49,6 +57,43 @@ public class BrandAPI {
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Create a new brand
+    @PostMapping
+    public ResponseEntity<?> createBrand(@RequestBody Brand brand) {
+        try {
+            Brand savedBrand = brandsDAO.save(brand);
+            return ResponseEntity.ok(savedBrand);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi khi tạo thương hiệu!", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Update an existing brand
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateBrand(@PathVariable("id") Integer id,
+            @RequestBody Brand brand) {
+        Optional<Brand> existingBrand = brandsDAO.findById(id);
+        if (existingBrand.isPresent()) {
+            brand.setId(id);
+            Brand updatedBrand = brandsDAO.save(brand);
+            return ResponseEntity.ok(updatedBrand);
+        } else {
+            return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Delete a brand
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteBrand(@PathVariable("id") Integer id) {
+        Optional<Brand> existingBrand = brandsDAO.findById(id);
+        if (existingBrand.isPresent()) {
+            brandsDAO.deleteById(id);
+            return ResponseEntity.ok("Xóa thương hiệu thành công!");
+        } else {
+            return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
         }
     }
 }

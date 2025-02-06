@@ -2,7 +2,7 @@ import BaseApi from "api/global/baseApi";
 
 class Suppliers  extends BaseApi {
   constructor() {
-    super("supplier");
+    super("suppliers");
   }
 }
 

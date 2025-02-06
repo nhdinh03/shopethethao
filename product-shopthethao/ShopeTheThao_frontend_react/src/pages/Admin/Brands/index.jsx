@@ -95,13 +95,13 @@ const Brands = () => {
     try {
       const values = await form.validateFields();
       if (editSize) {
-        await sizeApi.update(editSize.id, values);
+        await brandsApi.update(editSize.id, values);
         message.success("Cập nhật kích thước thành công!");
       } else {
         const productData = {
           ...values,
         };
-        await sizeApi.create(productData);
+        await brandsApi.create(productData);
         message.success("Thêm kích thước thành công!");
       }
       setOpen(false);

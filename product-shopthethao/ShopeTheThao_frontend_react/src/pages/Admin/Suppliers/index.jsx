@@ -18,10 +18,7 @@ import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import "./index.scss";
 import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
-import productsSizeApi from "api/Admin/ProductsSize/productsSizeApi";
-import sizeApi from "api/Admin/Sizes/SizesApi";
-import brandsApi from "api/Admin/Brands/Brands";
-import suppliersApi from "api/Admin/Suppliers/suppliersApi";
+import { suppliersApi } from "api/Admin";
 
 const Suppliers  = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -30,7 +27,7 @@ const Suppliers  = () => {
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
   const [searchText, setSearchText] = useState("");
-  const [size, setSize] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [open, setOpen] = useState(false);
   const [editSize, setEditSize] = useState(null);
   const [workSomeThing, setWorkSomeThing] = useState(false);
@@ -45,7 +42,7 @@ const Suppliers  = () => {
       try {
         const res = await suppliersApi.getByPage(currentPage, pageSize, searchText);
         if (isMounted) {
-          setSize(res.data);
+          setSuppliers(res.data);
           setTotalItems(res.totalItems);
           setLoading(false);
         }
@@ -92,13 +89,13 @@ const Suppliers  = () => {
     try {
       const values = await form.validateFields();
       if (editSize) {
-        await sizeApi.update(editSize.id, values);
+        await suppliersApi.update(editSize.id, values);
         message.success("Cập nhật kích thước thành công!");
       } else {
         const productData = {
           ...values,
         };
-        await sizeApi.create(productData);
+        await suppliersApi.create(productData);
         message.success("Thêm kích thước thành công!");
       }
       setOpen(false);
@@ -207,9 +204,9 @@ const Suppliers  = () => {
           columns={columns}
           loading={loading}
           scroll={{ x: "max-content" }}
-          dataSource={size.map((sizes) => ({
-            ...sizes,
-            key: sizes.id,
+          dataSource={suppliers.map((supplier) => ({
+            ...supplier,
+            key: supplier.id,
           }))}
         />
         <div
