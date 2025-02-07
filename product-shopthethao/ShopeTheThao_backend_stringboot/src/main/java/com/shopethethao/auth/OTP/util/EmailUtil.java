@@ -1,15 +1,13 @@
 package com.shopethethao.auth.OTP.util;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
-
 import org.thymeleaf.spring6.SpringTemplateEngine;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Component
 public class EmailUtil {
@@ -57,6 +55,13 @@ public class EmailUtil {
         ".dynamic-part { font-size: 22px; font-weight: 600; color: #0078d4; margin-top: 20px; display: inline-block; }"
         +
         ".footer { text-align: center; margin-top: 20px; font-size: 14px; color: #666; }" +
+        "@media only screen and (max-width: 600px) {" +
+        ".container { padding: 15px; }" +
+        ".header h1 { font-size: 20px; }" +
+        ".content { font-size: 14px; }" +
+        ".dynamic-part { font-size: 18px; }" +
+        ".footer { font-size: 12px; }" +
+        "}" +
         "</style>" +
         "</head>" +
         "<body>" +
