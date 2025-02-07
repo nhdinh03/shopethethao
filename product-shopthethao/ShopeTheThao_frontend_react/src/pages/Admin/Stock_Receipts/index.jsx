@@ -45,6 +45,7 @@ const Stock_Receipts = () => {
   const [brand, setBrand] = useState([]);
   const [stockReceipts, setStockReceipts] = useState([]);
 
+    const [searchText, setSearchText] = useState("");
   const [workSomeThing, setWorkSomeThing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
   const [pageSize, setPageSize] = useState(5); // Number of items per page
@@ -58,7 +59,7 @@ const Stock_Receipts = () => {
         const stockReceiptsRes = await stock_ReceiptsAPi.getByPage(
           currentPage,
           pageSize,
-          ""
+          searchText,
         );
         setStockReceipts(stockReceiptsRes.data);
         setTotalItems(stockReceiptsRes.totalItems);
@@ -79,7 +80,7 @@ const Stock_Receipts = () => {
       }
     };
     fetchData();
-  }, [currentPage, pageSize, workSomeThing]); // Trigger fetch when page or page size changes
+  }, [currentPage, pageSize,searchText, workSomeThing]); // Trigger fetch when page or page size changes
 
   const handlePageSizeChange = (value) => {
     setPageSize(value);
