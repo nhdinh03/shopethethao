@@ -167,7 +167,6 @@ const Stock_Receipts = () => {
       </Row>
       <Card className="receipts-table">
         <Table
-          pagination={false} // Disabling AntD pagination since we're using custom pagination
           columns={[
             { title: "🆔 ID", dataIndex: "id", key: "id", align: "center" },
             {
@@ -244,14 +243,20 @@ const Stock_Receipts = () => {
               ),
             },
           ]}
+          pagination={false}
           loading={loading}
-          dataSource={stockReceipts}
+          dataSource={stockReceipts.map((receipt) => ({
+            ...receipt,
+            key: receipt.id,
+          }))}
         />
       </Card>
 
       {/* Modal to Add/Edit Stock Receipt */}
       <Modal
-        title={editMode ? "✏️ Sửa Phiếu nhập kho Nhập" : "🆕 Nhập Phiếu nhập kho Mới"}
+        title={
+          editMode ? "✏️ Sửa Phiếu nhập kho Nhập" : "🆕 Nhập Phiếu nhập kho Mới"
+        }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         onOk={handleModalOk}

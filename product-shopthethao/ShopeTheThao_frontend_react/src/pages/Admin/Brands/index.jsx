@@ -16,12 +16,16 @@ import {
 import { PlusOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import styles from "..//index.scss";
 import PaginationComponent from "components/PaginationComponent";
 import brandsApi from "api/Admin/Brands/Brands";
-const { Title, Text } = Typography;
+import styles from "..//index.scss";
+
+
+
+
 
 const Brands = () => {
+  
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -34,6 +38,7 @@ const Brands = () => {
   const [loading, setLoading] = useState(false);
   const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
   const [form] = Form.useForm();
+  const { Title, Text } = Typography;
 
   useEffect(() => {
     let isMounted = true;
@@ -118,18 +123,18 @@ const Brands = () => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    {
-      title: "Tên thương hiệu",
-      dataIndex: "name",
-      key: "name",
-      render: (text) => <Text strong>{text}</Text>,
-    },
-    { title: "Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Địa chỉ", dataIndex: "address", key: "address" },
-    {
-      title: "Thao tác",
+  { title: "🆔 ID", dataIndex: "id", key: "id" },
+  {
+    title: "🏷️ Tên thương hiệu",
+    dataIndex: "name",
+    key: "name",
+    render: (text) => <Text strong>{text}</Text>,
+  },
+  { title: "📞 Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
+  { title: "📧 Email", dataIndex: "email", key: "email" },
+  { title: "🏠 Địa chỉ", dataIndex: "address", key: "address" },
+  {
+    title: "⚙️ Thao tác",
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
@@ -261,7 +266,7 @@ const Brands = () => {
           />
           <Select
             value={pageSize}
-            style={{ width: 120 }}
+            style={{ width: 120, marginTop: 20 }}
             onChange={handlePageSizeChange}
           >
             <Select.Option value={5}>5 hàng</Select.Option>

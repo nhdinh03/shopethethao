@@ -48,15 +48,19 @@ const Verifications = () => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
-    { title: "Thời gian ngày tạo", dataIndex: "createdAt", key: "createdAt" },
+    { title: "🆔 ID", dataIndex: "id", key: "id" },
     {
-      title: "Thời gian được xác minh",
+      title: "📅 Thời gian ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+    },
+    {
+      title: "⏳ Thời gian được xác minh",
       dataIndex: "expiresAt",
       key: "expiresAt",
     },
     {
-      title: "Trang Thái",
+      title: "🔒 Trang Thái",
       dataIndex: "account",
       key: "status",
       render: (account) => (
@@ -66,7 +70,7 @@ const Verifications = () => {
       ),
     },
     {
-      title: "Thông tin tài khoản",
+      title: "🧑‍💻 Thông tin tài khoản", 
       key: "account",
       render: (_, record) => {
         const { account } = record;
@@ -115,9 +119,9 @@ const Verifications = () => {
   ];
 
   return (
-    <div style={{ padding: 10 }}>
+    <div >
       <Row>
-        <h2>Quản lý xác nhận</h2>
+        <h2 className="H2_all">Thống Kê tài khoản</h2>
         <br />
         <br />
         <br />

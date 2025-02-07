@@ -17,10 +17,10 @@ import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import Highlighter from "react-highlight-words";
-import "..//index.scss";
 import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
 import { categoriesApi } from "api/Admin";
+import "..//index.scss";
 
 const Categories = () => {
   const { Title, Text } = Typography;
@@ -205,9 +205,9 @@ const Categories = () => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "🆔 ID", dataIndex: "id", key: "id" },
     {
-      title: "Tên danh mục",
+      title: "📂 Tên danh mục",
       dataIndex: "name",
       key: "name",
       ...getColumnSearchProps("name"),
@@ -226,7 +226,7 @@ const Categories = () => {
       ),
     },
     {
-      title: "Mô tả danh mục",
+      title: "📝 Mô tả danh mục",
       dataIndex: "description",
       key: "description",
       render: (text) => (
@@ -238,7 +238,7 @@ const Categories = () => {
       ),
     },
     {
-      title: "Thao tác",
+      title: "⚙️ Thao tác",
       key: "actions",
       render: (_, record) => (
         <Space size="middle">

@@ -1,7 +1,7 @@
 .breadcrumb-container {
     display: flex;
     align-items: center;
-    margin-left: 20px; // Tăng khoảng cách sang phải (tuỳ chỉnh giá trị)
+    margin-left: 10px;
     font-size: 14px; // Tuỳ chỉnh kích thước chữ
     color: #333; // Màu chữ
   }
@@ -11,3 +11,50 @@
     gap: 8px; // Khoảng cách giữa icon và text (tuỳ chỉnh)
   }
   
+  .logo {
+    height: 32px;
+    margin: 16px;
+    background: rgba(255, 255, 255, 0.3);
+    text-align: center;
+    color: #fff;
+    font-size: 18px;
+    line-height: 32px;
+  }
+  
+  .ant-layout-header {
+    padding: 0 !important;
+  }
+  
+  .ant-breadcrumb {
+    padding: 12px;
+    background-color: #f3f4f6; /* Màu nền xám đậm cho phần tiêu đề */
+    font-weight: bold;
+    color: #000000; /* Màu chữ trắng */
+    border: 2px solid #f2f3f3; /* Viền màu tối */
+    border-radius: 8px; /* Bo tròn góc */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Bóng đổ nhẹ */
+    margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
+
+
+    // margin-bottom: 16px;
+  
+    .ant-breadcrumb-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+  
+      a {
+        color: #1890ff;
+        text-decoration: none;
+  
+        &:hover {
+          text-decoration: underline;
+          text-decoration: none;
+        }
+      }
+    }
+  
+    .ant-breadcrumb-separator {
+      color: #999;
+    }
+  }

@@ -17,7 +17,12 @@ import {
   Col,
   Typography,
 } from "antd";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  MinusCircleOutlined,
+  PlusOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
@@ -25,8 +30,8 @@ import uploadApi from "api/service/uploadApi";
 import PaginationComponent from "components/PaginationComponent";
 import { useCategories, useSizes } from "hooks";
 import { productsApi } from "api/Admin";
-import styles from "..//index.scss";
-
+import "..//index.scss";
+import styles from "..//modalStyles.module.scss";
 
 const Products = () => {
   const { Title, Text } = Typography;
@@ -246,16 +251,16 @@ const Products = () => {
 
   // Cấu hình cột bảng
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "🆔 ID", dataIndex: "id", key: "id" },
     {
-      title: "Tên sản phẩm",
+      title: "🏷️ Tên sản phẩm",
       dataIndex: "name",
       key: "name",
       render: (text) => (
         <Tooltip title={text || "Không có mô tả"} placement="top">
           <Text strong>
             <span className="ellipsis-text">
-              {text?.length > 15
+              {text?.length > 35
                 ? `${text.substring(0, 15)}...`
                 : text || "Không có Tên sản phẩm"}
             </span>
@@ -263,29 +268,27 @@ const Products = () => {
         </Tooltip>
       ),
     },
-
     {
-      title: "Tổng Sản Phẩm",
+      title: "📦 Số Lượng",
       dataIndex: "totalQuantity",
       key: "totalQuantity",
     },
     {
-      title: "Loại sản phẩm",
+      title: "📂 Loại sản phẩm",
       dataIndex: ["categorie", "name"],
       key: "categorie",
       render: (text) => (
         <Tooltip title={text || "Không có mô tả"} placement="top">
           <span className="ellipsis-text">
-            {text?.length > 15
+            {text?.length > 25
               ? `${text.substring(0, 15)}...`
               : text || "Không có mô tả"}
           </span>
         </Tooltip>
       ),
     },
-
     {
-      title: "Mô tả sản phẩm",
+      title: "📝 Mô tả sản phẩm",
       dataIndex: "description",
       key: "description",
       render: (text) => (
@@ -299,20 +302,41 @@ const Products = () => {
       ),
     },
     {
-      title: "Trạng thái",
+      title: "📊 Trạng thái",
       dataIndex: "totalQuantity",
       key: "status",
       render: (totalQuantity) => (
-        <Tag color={totalQuantity > 0 ? "green" : "red"}>
+        <Tag
+          icon={
+            totalQuantity > 0 ? (
+              <CheckCircleOutlined />
+            ) : (
+              <CloseCircleOutlined />
+            )
+          }
+          color={totalQuantity > 0 ? "green" : "red"}
+          style={{
+            borderRadius: "12px",
+            padding: "4px 12px",
+            transition: "all 0.3s ease",
+            cursor: "pointer",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "scale(1.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "scale(1)";
+          }}
+        >
           {totalQuantity > 0 ? "Còn sản phẩm" : "Hết sản phẩm"}
         </Tag>
       ),
     },
+
     {
-      title: "Ảnh sản phẩm",
+      title: "🖼️ Ảnh sản phẩm",
       dataIndex: "image1",
       key: "image1",
-
       render: (_, record) => (
         <Space size="middle">
           {record.image1 ? (
@@ -329,9 +353,8 @@ const Products = () => {
         </Space>
       ),
     },
-
     {
-      title: "Hình ảnh 2",
+      title: "🖼️ Hình ảnh 2",
       dataIndex: "image2",
       key: "image2",
       render: (_, record) => (
@@ -350,30 +373,31 @@ const Products = () => {
         </Space>
       ),
     },
-
     {
-      title: "Giá Góc",
+      title: "💵 Giá Góc",
       dataIndex: "price",
       key: "price",
       render: (price) => `${price.toLocaleString()} VND`,
     },
     {
       title: "Kích cỡ | Số Lượng | Giá tiền",
+
       dataIndex: "sizes",
       key: "sizes",
       render: (sizes) => (
         <Space direction="vertical" size="small">
           {sizes.map((size, index) => (
             <div key={index}>
-              <strong>{size.size?.name}</strong> - {size.quantity} chiếc -{" "}
+              <strong>{size.size?.name}</strong> - {size.quantity} Sản Phẩm -{" "}
               {size.price.toLocaleString()} VND
             </div>
           ))}
         </Space>
       ),
     },
+
     {
-      title: "Hành động",
+      title: "⚙️ Hành động",
       key: "action",
       render: (_, record) => (
         <Space key={record.id} size="middle">
@@ -400,8 +424,6 @@ const Products = () => {
                 }}
               />
             </Tooltip>
-
-
           </Popconfirm>
         </Space>
       ),

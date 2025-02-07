@@ -15,9 +15,11 @@ import {
 import { PlusOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import styles from  "..//index.scss";
 import PaginationComponent from "components/PaginationComponent";
 import { suppliersApi } from "api/Admin";
+import "..//index.scss";
+import styles from "..//modalStyles.module.scss";
+
 
 
 const Suppliers  = () => {
@@ -117,13 +119,13 @@ const Suppliers  = () => {
   };
 
   const columns = [
-    { title: "Danh sách", dataIndex: "id", key: "id" },
-    { title: "Nhà cung cấp", dataIndex: "name", key: "name" },
-    { title: "email", dataIndex: "email", key: "email" },
-    { title: "phoneNumber", dataIndex: "phoneNumber", key: "phoneNumber" },
-    { title: "address", dataIndex: "address", key: "address" },
+    { title: "📋 Danh sách", dataIndex: "id", key: "id" },
+    { title: "🏢 Nhà cung cấp", dataIndex: "name", key: "name" },
+    { title: "📧 Email", dataIndex: "email", key: "email" },
+    { title: "📞 Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
+    { title: "🏠 Địa chỉ", dataIndex: "address", key: "address" },
     {
-      title: "Thao tác",
+      title: "⚙️ Thao tác",
       key: "actions",
       render: (_, record) => (
         <Space size="middle">

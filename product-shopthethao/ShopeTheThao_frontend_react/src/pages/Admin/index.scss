@@ -17,3 +17,33 @@
 @import './User_Histories/user_historis.scss';
 @import './Verification//verifications.scss';
 @import './modalStyles.module.scss';
+
+
+
+/* Cập nhật style cho tiêu đề */
+.H2_all {
+    margin-left: 10px; // Tăng khoảng cách sang phải (tuỳ chỉnh giá trị)
+    padding: 10px;
+    background-color: #f3f4f6; /* Màu nền xám đậm cho phần tiêu đề */
+    font-size: 24px; /* Kích thước chữ */
+    font-weight: bold;
+    color: #000000; /* Màu chữ trắng */
+    border: 2px solid #f2f3f3; /* Viền màu tối */
+    border-radius: 8px; /* Bo tròn góc */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Bóng đổ nhẹ */
+    margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
+    text-align: center; /* Căn giữa tiêu đề */
+    width: 100%;
+
+  }
+  
+  
+  
+  /* Responsive: Chỉnh sửa font size và padding cho các thiết bị di động */
+  @media (max-width: 768px) {
+    .adasdasd {
+      font-size: 20px;
+      padding: 10px;
+    }
+  }
+  

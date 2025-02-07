@@ -15,12 +15,14 @@ import {
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import "..//index.scss";
+
 import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
-import productsSizeApi from "api/Admin/ProductsSize/productsSizeApi";
 import sizeApi from "api/Admin/Sizes/SizesApi";
 import { SizeApi } from "api/Admin";
+import "..//index.scss";
+
+
 
 const Sizes = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -113,10 +115,10 @@ const Sizes = () => {
   };
 
   const columns = [
-    { title: "Danh sách", dataIndex: "id", key: "id" },
-    { title: "Tên Kích Thước", dataIndex: "name", key: "name" },
+    { title: "🆔 Danh sách", dataIndex: "id", key: "id" },
+    { title: "📏 Tên Kích Thước", dataIndex: "name", key: "name" },
     {
-      title: "Thao tác",
+      title: "⚙️ Thao tác",
       key: "actions",
       render: (_, record) => (
         <Space size="middle">

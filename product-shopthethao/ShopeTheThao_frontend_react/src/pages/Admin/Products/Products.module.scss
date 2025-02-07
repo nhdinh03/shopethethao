@@ -47,3 +47,17 @@
   // }
 }
 
+/* Giới hạn chiều rộng của cột Kích cỡ, Số lượng và Giá tiền */
+.space-vertical {
+  margin-bottom: 10px;  /* Tạo khoảng cách giữa các mục */
+}
+
+/* Giảm độ rộng của cột nếu cần */
+.ant-table-thead > tr > th {
+  text-align: center; /* Căn giữa tiêu đề */
+}
+
+/* Tạo đường viền để bảng trông rõ ràng hơn */
+.ant-table-cell {
+  padding: 12px; /* Tăng khoảng cách trong các ô */
+}
