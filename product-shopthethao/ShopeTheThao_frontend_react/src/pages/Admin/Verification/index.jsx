@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, message, Tag, Row, Select } from "antd";
 import verifications from "api/Admin/Verifications/verificationsApi";
 import PaginationComponent from "components/PaginationComponent";
-import "./verifications.scss";
+import "..//index.scss";
 
 const Verifications = () => {
   const [workSomeThing, setWorkSomeThing] = useState(false);
@@ -21,7 +21,11 @@ const Verifications = () => {
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await verifications.getByPage(currentPage, pageSize, searchText);
+        const res = await verifications.getByPage(
+          currentPage,
+          pageSize,
+          searchText
+        );
         if (isMounted) {
           setData(res.data);
           setTotalItems(res.totalItems);

@@ -21,12 +21,12 @@ import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-import styles from "..//modalStyles.module.scss";
-import "./Products.module.scss";
 import uploadApi from "api/service/uploadApi";
 import PaginationComponent from "components/PaginationComponent";
 import { useCategories, useSizes } from "hooks";
 import { productsApi } from "api/Admin";
+import styles from "..//index.scss";
+
 
 const Products = () => {
   const { Title, Text } = Typography;

@@ -17,7 +17,7 @@ import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import Highlighter from "react-highlight-words";
-import "./Categories.scss";
+import "..//index.scss";
 import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
 import { categoriesApi } from "api/Admin";

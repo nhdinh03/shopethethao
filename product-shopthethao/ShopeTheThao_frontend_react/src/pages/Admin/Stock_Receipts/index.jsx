@@ -25,7 +25,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { productsApi, suppliersApi, stock_ReceiptsAPi } from "api/Admin";
 import moment from "moment";
-import "./index.scss";
+import "..//index.scss";
 import brandsApi from "api/Admin/Brands/Brands";
 import PaginationComponent from "components/PaginationComponent"; // Your custom pagination component
 
@@ -145,7 +145,7 @@ const Stock_Receipts = () => {
   const handleDelete = async (id) => {
     try {
       const response = await stock_ReceiptsAPi.delete(id);
-      message.success(response.data || "Xóa danh mục thành công!");
+      message.success(response.data || "Xóa Phiếu nhập kho thành công!");
       console.log(response);
       setWorkSomeThing([!workSomeThing]);
     } catch (error) {
@@ -251,7 +251,7 @@ const Stock_Receipts = () => {
 
       {/* Modal to Add/Edit Stock Receipt */}
       <Modal
-        title={editMode ? "✏️ Sửa Phiếu Nhập" : "🆕 Nhập Phiếu Mới"}
+        title={editMode ? "✏️ Sửa Phiếu nhập kho Nhập" : "🆕 Nhập Phiếu nhập kho Mới"}
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         onOk={handleModalOk}

@@ -15,11 +15,12 @@ import {
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import "./size.scss";
+import "..//index.scss";
 import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
 import productsSizeApi from "api/Admin/ProductsSize/productsSizeApi";
 import sizeApi from "api/Admin/Sizes/SizesApi";
+import { SizeApi } from "api/Admin";
 
 const Sizes = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -66,7 +67,7 @@ const Sizes = () => {
 
   const handleDelete = async (id) => {
     try {
-      await productsSizeApi.delete(id);
+      await SizeApi.delete(id);
       message.success("Xóa kích thước thành công!");
       setWorkSomeThing([!workSomeThing]); // Update list
     } catch (error) {

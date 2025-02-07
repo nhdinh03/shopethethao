@@ -12,13 +12,13 @@ import {
   Select,
   Row,
 } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import "./index.scss";
-import { BaseModal } from "components/Admin";
+import styles from  "..//index.scss";
 import PaginationComponent from "components/PaginationComponent";
 import { suppliersApi } from "api/Admin";
+
 
 const Suppliers  = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -26,10 +26,12 @@ const Suppliers  = () => {
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
+  const [editsuppliers, setEditSuppliers] = useState(null);
+
   const [searchText, setSearchText] = useState("");
   const [suppliers, setSuppliers] = useState([]);
   const [open, setOpen] = useState(false);
-  const [editSize, setEditSize] = useState(null);
+
   const [workSomeThing, setWorkSomeThing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
@@ -59,28 +61,30 @@ const Suppliers  = () => {
     };
   }, [currentPage, pageSize, searchText, workSomeThing]);
 
-  const handleEditData = (category) => {
-    setEditSize(category);
-    form.setFieldsValue(category);
+  const handleEditData = (supplier) => {
+    setEditSuppliers(supplier);
+    form.setFieldsValue(supplier);
     setOpen(true);
   };
+
+
 
   const handleDelete = async (id) => {
     try {
       await suppliersApi.delete(id);
-      message.success("Xóa kích thước thành công!");
+      message.success("Xóa Nhà cung cấp thành công!");
       setWorkSomeThing([!workSomeThing]); // Update list
     } catch (error) {
-      message.error("Không thể xóa kích thước!");
+      message.error("Không thể xóa Nhà cung cấp!");
     }
   };
 
   const handleResetForm = () => {
     form.resetFields();
-    setEditSize(null);
+    setEditSuppliers(null);
   };
 
-  const handleCancel = () => {
+  const handleModalCancel = () => {
     setOpen(false);
     handleResetForm();
   };
@@ -88,22 +92,22 @@ const Suppliers  = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      if (editSize) {
-        await suppliersApi.update(editSize.id, values);
-        message.success("Cập nhật kích thước thành công!");
+      if (editsuppliers) {
+        await suppliersApi.update(editsuppliers.id, values);
+        message.success("Cập nhật Nhà cung cấp thành công!");
       } else {
         const productData = {
           ...values,
         };
         await suppliersApi.create(productData);
-        message.success("Thêm kích thước thành công!");
+        message.success("Thêm Nhà cung cấp thành công!");
       }
       setOpen(false);
       form.resetFields();
-      setEditSize(null);
+      setEditSuppliers(null);
       setWorkSomeThing([!workSomeThing]);
     } catch (error) {
-      message.error("Lỗi khi lưu kích thước!");
+      message.error("Lỗi khi lưu Nhà cung cấp!");
     }
   };
 
@@ -155,7 +159,7 @@ const Suppliers  = () => {
   return (
     <div style={{ padding: 10 }}>
       <Row>
-        <h2>Quản lý kích thước sản phẩm</h2>
+        <h2>Quản lý Nhà cung cấp sản phẩm</h2>
      
         <div className="header-container">
           <Button
@@ -164,39 +168,69 @@ const Suppliers  = () => {
             onClick={() => setOpen(true)}
             className="add-btn"
           >
-            Thêm kích thước
+            Thêm Nhà cung cấp
           </Button>
         </div>
-        <BaseModal
-          title={editSize ? "Cập nhật kích thước" : "Thêm kích thước mới"}
+        <Modal
+          title={
+            <div className={styles.modalTitle}>
+              {editsuppliers ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
+            </div>
+          }
           open={open}
-          footer={null}
-          onCancel={handleCancel}
+          onOk={handleModalOk}
+          onCancel={handleModalCancel}
+          centered
+          className={styles.modalWidth} 
         >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              name="name"
-              label="Tên kích thước"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên kích thước!" },
-              ]}
-            >
-              <Input placeholder="Nhập tên kích thước" />
-            </Form.Item>
-            <Space
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                width: "100%",
-              }}
-            >
-              {!editSize && <Button onClick={handleResetForm}>Làm mới</Button>}
-              <Button type="primary" onClick={handleModalOk}>
-                {editSize ? "Cập nhật" : "Thêm mới"}
-              </Button>
-            </Space>
-          </Form>
-        </BaseModal>
+            <Form form={form} layout="vertical">
+                   <Form.Item
+                     name="name"
+                     label="Tên Thương hiệu"
+                     rules={[
+                       { required: true, message: "Vui lòng nhập tên Thương hiệu!" },
+                     ]}
+                   >
+                     <Input placeholder="Nhập tên Thương hiệu" />
+                   </Form.Item>
+       
+                   <Form.Item
+                     name="phoneNumber"
+                     label="Số điện thoại"
+                     rules={[
+                       { required: true, message: "Vui lòng nhập Số điện thoại!" },
+                     ]}
+                   >
+                     <Input placeholder="Vui lòng nhập Số điện thoại" />
+                   </Form.Item>
+       
+                   <Form.Item
+                     name="email"
+                     label="Email"
+                     rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+                   >
+                     <Input placeholder="Nhập email" />
+                   </Form.Item>
+       
+                   <Form.Item
+                     name="address"
+                     label="Địa chỉ"
+                     rules={[{ required: true, message: "Vui lòng nhập Địa chỉ!" }]}
+                   >
+                     <Input placeholder="Nhập địa chỉ" />
+                   </Form.Item>
+       
+                   <Space
+                     style={{
+                       display: "flex",
+                       justifyContent: "flex-end",
+                       width: "100%",
+                     }}
+                   >
+                
+                   </Space>
+                 </Form>
+        </Modal>
       </Row>
       <div className="table-container">
         <Table

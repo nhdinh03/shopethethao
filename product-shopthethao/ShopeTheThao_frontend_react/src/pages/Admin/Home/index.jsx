@@ -1,6 +1,6 @@
 import React from "react";
 import ReactApexChart from "react-apexcharts";
-
+import "..//index.scss";
 const AdminIndex = () => {
   // Dữ liệu giả lập
   const monthlyRevenue = Array(12)
