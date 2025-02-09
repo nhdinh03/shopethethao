@@ -32,6 +32,8 @@ import { useCategories, useSizes } from "hooks";
 import { productsApi } from "api/Admin";
 import "..//index.scss";
 import styles from "..//modalStyles.module.scss";
+import ActionColumn from "components/Admin/tableColumns/ActionColumn";
+import productImagesApi from "api/Admin/ProductImages/productImagesApi";
 
 const Products = () => {
   const { Title, Text } = Typography;
@@ -44,13 +46,14 @@ const Products = () => {
   const [workSomeThing, setWorkSomeThing] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
-  const [FileListBanner, setFileListBanner] = useState([]);
+
   const [FileList, setFileList] = useState([]);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
+
 
   //api
   const sizes = useSizes();
@@ -80,33 +83,38 @@ const Products = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      setWorkSomeThing([!workSomeThing]);
-      let image1 =
-        values.image1?.fileList?.length > 0
-          ? await uploadApi.post(values.image1.fileList[0].originFileObj)
-          : editingProduct?.image1;
 
-      let image2 =
-        values.image2?.fileList?.length > 0
-          ? await uploadApi.post(values.image2.fileList[0].originFileObj)
-          : editingProduct?.image2;
+      const imagesFileList = values.images?.fileList || [];
+      let uploadedImages = [];
+
+      // ✅ Upload ảnh trước khi gửi API
+      if (imagesFileList.length > 0) {
+        uploadedImages = await Promise.all(
+          imagesFileList.map(async (file) => {
+            if (file.originFileObj) {
+              return await uploadApi.post(file.originFileObj);
+            }
+            return file.url;
+          })
+        );
+      }
 
       const newProduct = {
-        ...values,
+        name: values.name,
+        description: values.description,
+        totalQuantity: values.totalQuantity,
         categorie: { id: values.categorie },
-        image1,
-        image2,
+        images: uploadedImages.map((imageUrl) => ({ imageUrl })),
+        price: parseFloat(values.price),
+        sizes: values.sizes.map((size) => ({
+          // size: { id: parseInt(size.size) },
+          size: { id: size.size },
+          quantity: parseInt(size.quantity),
+          price: parseFloat(size.price),
+        })),
         status: values.totalQuantity > 0,
       };
 
-      const sizes = values.sizes.map((size) => ({
-        size: { id: size.size },
-        quantity: size.quantity,
-        price: size.price,
-      }));
-      newProduct.sizes = sizes;
-
-      // Nếu đang chỉnh sửa sản phẩm
       if (editingProduct) {
         await productsApi.update(editingProduct.id, newProduct);
         message.success("Cập nhật sản phẩm thành công!");
@@ -115,65 +123,28 @@ const Products = () => {
         message.success("Thêm sản phẩm thành công!");
       }
 
-      form.setFieldsValue({ sizes: [] });
+      // form.setFieldsValue({ sizes: [] });
       setOpen(false);
       form.resetFields();
-      setEditingProduct(null);
-      setFileListBanner([]);
       setFileList([]);
-      setWorkSomeThing([!workSomeThing]);
+      setEditingProduct(null);
+      setWorkSomeThing(!workSomeThing);
     } catch (error) {
-      message.error("Lỗi khi lưu sản phẩm vui lòng thực hiện lại Kích cở!");
+      message.error("Lỗi khi lưu sản phẩm! Vui lòng thử lại.");
     }
   };
 
-  const handleSizeChange = (value, name) => {
-    const sizes = form.getFieldValue("sizes") || [];
-    // Kiểm tra nếu kích cỡ đã tồn tại trong danh sách, ngoại trừ phần tử hiện tại (name)
-    const sizeExists = sizes.some(
-      (size, index) => index !== name && size.size === value
-    );
-    if (sizeExists) {
-      message.error("Kích cỡ này đã tồn tại trong danh sách! Không thể thêm!");
-      return;
-    }
-    // Nếu chưa có, cập nhật lại kích cỡ
-    const updatedSizes = sizes.map((size, index) =>
-      index === name ? { ...size, size: value } : size
-    );
-    form.setFieldsValue({
-      sizes: updatedSizes,
-    });
-  };
-
-  const handleEdit = (record) => {
-    const newUploadFiles1 = record.image1
-      ? [
-          {
-            uid: `${record.id}-1`,
-            name: record.image1,
-            url: `http://localhost:8081/api/upload/${encodeURIComponent(
-              record.image1
-            )}`,
-          },
-        ]
+  //edit sản phẩm
+  const handleEditData = (record) => {
+    const newUploadFiles = record.images
+      ? record.images.map((img, index) => ({
+          uid: `${record.id}-${index}`,
+          name: img.imageUrl,
+          url: `http://localhost:8081/api/upload/${img.imageUrl}`,
+        }))
       : [];
 
-    const newUploadFiles2 = record.image2
-      ? [
-          {
-            uid: `${record.id}-2`,
-            name: record.image2,
-            url: `http://localhost:8081/api/upload/${encodeURIComponent(
-              record.image2
-            )}`,
-          },
-        ]
-      : [];
-
-    // Cập nhật danh sách ảnh vào state
-    setFileListBanner(newUploadFiles1);
-    setFileList(newUploadFiles2);
+    setFileList(newUploadFiles);
     setOpen(true);
     setEditingProduct(record);
 
@@ -203,28 +174,18 @@ const Products = () => {
     }
   };
 
+  //tổng sl sản phẩm
   const calculateTotalQuantity = (sizes) => {
     return sizes.reduce((total, size) => total + (size.quantity || 0), 0);
   };
 
+  //update size
   const handleSizeQuantityChange = (value, index) => {
     const sizes = form.getFieldValue("sizes") || [];
     sizes[index].quantity = value;
     const updatedTotalQuantity = calculateTotalQuantity(sizes);
     form.setFieldsValue({ sizes, totalQuantity: updatedTotalQuantity });
     setTotalQuantity(updatedTotalQuantity);
-  };
-
-  const handleModalCancel = () => {
-    setOpen(false);
-    setEditingProduct(null);
-    form.resetFields();
-    setFileListBanner([]);
-    setFileList([]);
-
-    setTimeout(() => {
-      form.setFieldsValue({ sizes: [] });
-    }, 0);
   };
 
   const getBase64 = (file) =>
@@ -239,12 +200,65 @@ const Products = () => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
     }
-    setPreviewImage(file.url || file.preview); // Set the preview image URL or base64 string
-    setPreviewOpen(true); // Open the preview modal
+    setPreviewImage(file.url || file.preview);
+    setPreviewOpen(true);
+  };
+
+//kiểm tra kích cở trùng không
+  const handleSizeChange = (value, name) => {
+    const sizes = form.getFieldValue("sizes") || [];
+    // Kiểm tra nếu kích cỡ đã tồn tại trong danh sách, ngoại trừ phần tử hiện tại (name)
+    const sizeExists = sizes.some(
+      (size, index) => index !== name && size.size === value
+    );
+    if (sizeExists) {
+      message.error("Kích cỡ này đã tồn tại trong danh sách! Không thể thêm!");
+      return;
+    }
+    // Nếu chưa có, cập nhật lại kích cỡ
+    const updatedSizes = sizes.map((size, index) =>
+      index === name ? { ...size, size: value } : size
+    );
+    form.setFieldsValue({
+      sizes: updatedSizes,
+    });
+  };
+
+
+
+  //trùng ảnh
+  const handleUploadChange = ({ fileList }) => {
+    // ✅ Lọc ra danh sách ảnh không trùng lặp
+    const uniqueFiles = [];
+    const fileNames = new Set();
+
+    fileList.forEach((file) => {
+      const fileName = file.name || file.url;
+      if (!fileNames.has(fileName)) {
+        fileNames.add(fileName);
+        uniqueFiles.push(file);
+      } else {
+        message.error(`Ảnh ${fileName} đã tồn tại!`);
+      }
+    });
+
+    setFileList(uniqueFiles); // Cập nhật danh sách file không trùng
+  };
+
+  //cancel
+  const handleModalCancel = () => {
+    setOpen(false);
+    setEditingProduct(null);
+    form.resetFields();
+    setFileList([]);
+
+    setTimeout(() => {
+      form.setFieldsValue({ sizes: [] });
+    }, 0);
   };
 
   //phan trang 50
-  const handlePageSizeChange = (value) => {
+  const handlePageProductsChange = (value) => {
     setPageSize(value);
     setCurrentPage(1);
   };
@@ -258,13 +272,11 @@ const Products = () => {
       key: "name",
       render: (text) => (
         <Tooltip title={text || "Không có mô tả"} placement="top">
-          <Text strong>
-            <span className="ellipsis-text">
-              {text?.length > 35
-                ? `${text.substring(0, 15)}...`
-                : text || "Không có Tên sản phẩm"}
-            </span>
-          </Text>
+          <span className="ellipsis-text">
+            {text?.length > 35
+              ? `${text.substring(0, 15)}...`
+              : text || "Không có Tên sản phẩm"}
+          </span>
         </Tooltip>
       ),
     },
@@ -335,38 +347,21 @@ const Products = () => {
 
     {
       title: "🖼️ Ảnh sản phẩm",
-      dataIndex: "image1",
-      key: "image1",
+      dataIndex: "images",
+      key: "images",
       render: (_, record) => (
         <Space size="middle">
-          {record.image1 ? (
-            <Image
-              width={105}
-              height={80}
-              style={{ objectFit: "contain" }}
-              src={`http://localhost:8081/api/upload/${record.image1}`}
-              alt="Ảnh sản phẩm"
-            />
-          ) : (
-            <span>Không có ảnh</span>
-          )}
-        </Space>
-      ),
-    },
-    {
-      title: "🖼️ Hình ảnh 2",
-      dataIndex: "image2",
-      key: "image2",
-      render: (_, record) => (
-        <Space size="middle">
-          {record.image2 ? (
-            <Image
-              width={105}
-              height={80}
-              style={{ objectFit: "contain" }}
-              src={`http://localhost:8081/api/upload/${record.image2}`}
-              alt="Ảnh sản phẩm"
-            />
+          {record.images && record.images.length > 0 ? (
+            record.images.map((image, index) => (
+              <Image
+                key={index}
+                width={80}
+                height={80}
+                style={{ objectFit: "contain" }}
+                src={`http://localhost:8081/api/upload/${image.imageUrl}`}
+                alt="Ảnh sản phẩm"
+              />
+            ))
           ) : (
             <span>Không có ảnh</span>
           )}
@@ -396,38 +391,7 @@ const Products = () => {
       ),
     },
 
-    {
-      title: "⚙️ Hành động",
-      key: "action",
-      render: (_, record) => (
-        <Space key={record.id} size="middle">
-          <Tooltip>
-            <FontAwesomeIcon
-              icon={faEdit}
-              style={{ color: "#28a745", cursor: "pointer", fontSize: "16px" }}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Bạn có chắc muốn xoá?"
-            okText="Đồng ý"
-            cancelText="Huỷ"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Tooltip>
-              <FontAwesomeIcon
-                icon={faTrashAlt}
-                style={{
-                  color: "#dc3545",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                }}
-              />
-            </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
-    },
+    ActionColumn(handleEditData, handleDelete),
   ];
 
   return (
@@ -530,49 +494,27 @@ const Products = () => {
 
             {/* Upload ảnh */}
             <Row gutter={16} justify="space-between">
-              <Col span={12}>
-                <Form.Item
-                  label={<span>Hình ảnh 1</span>}
-                  name="image1"
-                  rules={[
-                    { required: true, message: "Vui lòng tải lên hình ảnh 1!" },
-                  ]}
+              <Form.Item
+                label="Hình ảnh sản phẩm"
+                name="images"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng tải lên ít nhất một hình ảnh!",
+                  },
+                ]}
+              >
+                <Upload
+                  beforeUpload={() => false}
+                  accept=".png, .jpg, .jpeg"
+                  listType="picture-card"
+                  fileList={FileList}
+                  onChange={handleUploadChange}
+                  multiple
                 >
-                  <Upload
-                    beforeUpload={() => false}
-                    accept=".png, .jpg, .jpeg"
-                    listType="picture-card"
-                    fileList={FileListBanner}
-                    onChange={({ fileList }) => setFileListBanner(fileList)}
-                    onPreview={handlePreview}
-                    maxCount={1}
-                  >
-                    {FileListBanner.length < 1 && "+ Upload"}
-                  </Upload>
-                </Form.Item>
-              </Col>
-
-              <Col span={12}>
-                <Form.Item
-                  label={<span>Hình ảnh 2</span>}
-                  name="image2"
-                  rules={[
-                    { required: true, message: "Vui lòng tải lên hình ảnh 2!" },
-                  ]}
-                >
-                  <Upload
-                    beforeUpload={() => false}
-                    accept=".png, .jpg, .jpeg"
-                    listType="picture-card"
-                    fileList={FileList}
-                    onChange={({ fileList }) => setFileList(fileList)}
-                    onPreview={handlePreview}
-                    maxCount={1}
-                  >
-                    {FileList.length < 1 && "+ Upload"}
-                  </Upload>
-                </Form.Item>
-              </Col>
+                  {FileList.length < 5 && "+ Upload"}
+                </Upload>
+              </Form.Item>
             </Row>
 
             <Row gutter={16}>
@@ -760,7 +702,7 @@ const Products = () => {
         <Select
           value={pageSize}
           style={{ width: 120, marginTop: 20 }}
-          onChange={handlePageSizeChange} // ✅ Gọi hàm mới để reset trang về 1
+          onChange={handlePageProductsChange} // ✅ Gọi hàm mới để reset trang về 1
         >
           <Select.Option value={5}>5 hàng</Select.Option>
           <Select.Option value={10}>10 hàng</Select.Option>

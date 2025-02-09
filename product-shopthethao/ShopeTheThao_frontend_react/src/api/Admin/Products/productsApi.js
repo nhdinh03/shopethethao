@@ -15,6 +15,18 @@ class ProductsApi extends BaseApi {
       console.error("Lỗi khi lấy danh sách sản phẩm:", error);
     }
   }
+
+ async getProductDetails(productsId) {
+    try {
+      const response = await this.getById(productsId);  
+      return response.data;  
+    } catch (error) {
+      console.error("Lỗi khi lấy chi tiết sản phẩm:", error);
+      return null;
+    }
+  }
+
+  
 }
 
 const productsApi = new ProductsApi();

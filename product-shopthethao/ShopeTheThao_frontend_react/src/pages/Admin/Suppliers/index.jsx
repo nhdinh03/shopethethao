@@ -19,6 +19,7 @@ import PaginationComponent from "components/PaginationComponent";
 import { suppliersApi } from "api/Admin";
 import "..//index.scss";
 import styles from "..//modalStyles.module.scss";
+import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 
 
@@ -124,38 +125,7 @@ const Suppliers  = () => {
     { title: "📧 Email", dataIndex: "email", key: "email" },
     { title: "📞 Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
     { title: "🏠 Địa chỉ", dataIndex: "address", key: "address" },
-    {
-      title: "⚙️ Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space size="middle">
-          <Tooltip>
-            <FontAwesomeIcon
-              icon={faEdit}
-              style={{ color: "#28a745", cursor: "pointer", fontSize: "16px" }}
-              onClick={() => handleEditData(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Bạn có chắc muốn xoá?"
-            okText="Đồng ý"
-            cancelText="Huỷ"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Tooltip>
-              <FontAwesomeIcon
-                icon={faTrashAlt}
-                style={{
-                  color: "#dc3545",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                }}
-              />
-            </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
-    },
+    ActionColumn(handleEditData, handleDelete),
   ];
 
   return (

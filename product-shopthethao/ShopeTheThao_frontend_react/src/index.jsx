@@ -1,15 +1,15 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App'; // Không cần '.jsx'
-import reportWebVitals from './reportWebVitals';
-import './scss/index.scss';
-import { DarkModeProvider } from './config/DarkModeProvider';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App"; // Không cần '.jsx'
+import reportWebVitals from "./reportWebVitals";
+import "./scss/index.scss";
+import { DarkModeProvider } from "./config/DarkModeProvider";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-    <DarkModeProvider>
+  <DarkModeProvider>
     <App />
-    </DarkModeProvider>
+  </DarkModeProvider>
 );
 
 reportWebVitals();

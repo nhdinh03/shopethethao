@@ -1,9 +1,9 @@
-import { AdminLayout } from "layouts";
+import { AdminLayout, UserLayout } from "layouts";
 import * as PageAdmin from "..//pages/Admin";
-// import * as PageUser from "~/pages/User";
+import * as PageUser from "..//pages/User";
 
 const publicRoutes = [
-  //   { path: "/", component: PageUser.Home, layout: DefaultLayout },
+  { path: "/", component: PageUser.HomePage, layout: UserLayout },
   //   { path: "/contact", component: UserContact, layout: DefaultLayout },
 ];
 
@@ -59,20 +59,14 @@ const privateRoutes = [
   },
 
   {
-    path: "/admin/distinctives",
-    component: PageAdmin.Distinctives,
+    path: "/admin/product-attributes",
+    component: PageAdmin.ProductAttributes,
     layout: AdminLayout,
   },
 
   {
     path: "/admin/invoices",
     component: PageAdmin.Invoices,
-    layout: AdminLayout,
-  },
-
-  {
-    path: "/admin/products-distinctives",
-    component: PageAdmin.Products_Distinctives,
     layout: AdminLayout,
   },
 
@@ -109,11 +103,7 @@ const privateRoutes = [
     component: PageAdmin.Verification,
     layout: AdminLayout,
   },
-
-
+  
 ];
 
 export { publicRoutes, privateRoutes };
-
-
-

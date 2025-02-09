@@ -66,7 +66,7 @@ public class EmailUtil {
         "</head>" +
         "<body>" +
         "<div class='container'>" +
-        "<div class='header'><h1>Shop Thể Thao Nhdinh</h1></div>" +
+        "<div class='header'><h1>Shope Thể Thao Nhdinh</h1></div>" +
         "<div class='content'>" +
         "<p>" + message + "</p>" +
         "<span class='dynamic-part'>" + dynamicPart + "</span>" +

@@ -2,6 +2,7 @@ package com.shopethethao.auth.controllers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -34,7 +35,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.shopethethao.auth.OTP.util.AccountValidationUtil;
 import com.shopethethao.auth.OTP.util.EmailUtil;
 import com.shopethethao.auth.OTP.util.OtpUtil;
-import com.shopethethao.auth.models.SecurityAccount;
 import com.shopethethao.auth.models.SecurityERole;
 import com.shopethethao.auth.models.SecurityRole;
 import com.shopethethao.auth.payload.request.ChangePasswordRequest;
@@ -44,10 +44,11 @@ import com.shopethethao.auth.payload.request.NewOtp;
 import com.shopethethao.auth.payload.request.SignupRequest;
 import com.shopethethao.auth.payload.response.JwtResponseDTO;
 import com.shopethethao.auth.payload.response.MessageResponse;
-import com.shopethethao.auth.repository.AccountRepository;
 import com.shopethethao.auth.repository.RoleRepository;
 import com.shopethethao.auth.security.jwt.JwtUtils;
 import com.shopethethao.auth.security.services.UserDetailsImpl;
+import com.shopethethao.modules.account.Account;
+import com.shopethethao.modules.account.AccountDAO;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
 
@@ -65,7 +66,7 @@ public class AuthController {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    AccountRepository accountRepository;
+    AccountDAO accountDAO;
 
     @Autowired
     RoleRepository roleRepository;
@@ -90,29 +91,51 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        SecurityAccount securityAccount = accountRepository.findById(loginRequest.getId())
-                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với id: " + loginRequest.getId()));
-        AccountValidationUtil.validateAccount(securityAccount, loginRequest.getPassword(), encoder);
+        // ✅ Kiểm tra nếu ID/Phone bị null hoặc trống
+        if (loginRequest.getId() == null || loginRequest.getId().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("ID hoặc số điện thoại không hợp lệ");
+        }
+
+        String loginValue = loginRequest.getId().trim();
+
+        // ✅ Tìm tài khoản bằng ID trước, nếu không có thì tìm bằng phone
+        Account account = accountDAO.findById(loginValue)
+                .orElseGet(() -> accountDAO.findByPhone(loginValue)
+                        .orElseThrow(() -> new UsernameNotFoundException(
+                                "Không tìm thấy người dùng với ID hoặc phone: " + loginValue)));
+
+        // ✅ Kiểm tra tài khoản có bị khóa hay chưa xác minh không
+        AccountValidationUtil.validateAccount(account, loginRequest.getPassword(), encoder);
 
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getId(), loginRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(account.getId(), loginRequest.getPassword()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai thông tin đăng nhập hoặc token không hợp lệ");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Sai thông tin đăng nhập hoặc token không hợp lệ");
         }
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // ✅ Kiểm tra `authentication.getPrincipal()`
+        if (!(authentication.getPrincipal() instanceof UserDetailsImpl)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Lỗi xác thực, không thể lấy thông tin người dùng");
+        }
+
+        // ✅ Lấy thông tin từ `UserDetailsImpl`
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwt = jwtUtils.generateJwtToken(authentication);
+
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        // Date expiryDate = new Date(System.currentTimeMillis() + jwtUtils.getJwtExpirationMs());
-        // tokenStore.saveNewToken(userDetails.getId(), jwt, expiryDate);
         tokenStore.saveNewToken(userDetails.getId(), jwt);
-        // Trả về JWT và thông tin người dùng
+
+        // ✅ Xử lý `gender` để tránh lỗi `NullPointerException`
+        String gender = (userDetails.getGender() != null) ? userDetails.getGender().toString() : "Không xác định";
+
+        // ✅ Trả về JWT và thông tin người dùng
         return ResponseEntity.ok(new JwtResponseDTO(
                 userDetails.getId(),
                 userDetails.getPhone(),
@@ -120,7 +143,7 @@ public class AuthController {
                 userDetails.getEmail(),
                 userDetails.getAddress(),
                 userDetails.getBirthday(),
-                userDetails.getGender(),
+                gender,
                 userDetails.getImage(),
                 jwt,
                 "Bearer",
@@ -130,29 +153,35 @@ public class AuthController {
     @Transactional // Transactional OTP chỉ được lưu khi tất cả các thao tác thành công:
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        Map<Boolean, String> validationMap = new LinkedHashMap<>();
-        validationMap.put(accountRepository.existsById(signUpRequest.getId()), "Tên người dùng đã tồn tại!");
-        validationMap.put(accountRepository.existsByEmail(signUpRequest.getEmail()), "Email đã được sử dụng!");
-        validationMap.put(accountRepository.existsByPhone(signUpRequest.getPhone()), "Số điện thoại đã được sử dụng!");
-        for (Map.Entry<Boolean, String> entry : validationMap.entrySet()) {
-            if (entry.getKey()) {
-                return ResponseEntity.badRequest().body(new MessageResponse(entry.getValue()));
-            }
+        // ✅ Kiểm tra xem ID, email hoặc phone có bị trùng không
+        if (accountDAO.existsById(signUpRequest.getId())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Tên người dùng đã tồn tại!"));
         }
-        // Tạo tài khoản mới
-        SecurityAccount account = new SecurityAccount(
+        if (accountDAO.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Email đã được sử dụng!"));
+        }
+        if (accountDAO.existsByPhone(signUpRequest.getPhone())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Số điện thoại đã được sử dụng!"));
+        }
+
+        // ✅ Tạo tài khoản mới
+        Account account = new Account(
                 signUpRequest.getId(),
                 signUpRequest.getPhone(),
                 signUpRequest.getFullname(),
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()));
+
+        account.setGender(signUpRequest.getGender());
         account.setStatus(1);
         account.setCreatedDate(new Date());
         account.setVerified(false);
+
+        // ✅ Xử lý vai trò (ROLE)
         Set<String> strRoles = signUpRequest.getRole();
         Set<SecurityRole> roles = new HashSet<>();
         if (strRoles == null) {
-            SecurityRole userRole = roleRepository.findByName(SecurityERole.Admin)
+            SecurityRole userRole = roleRepository.findByName(SecurityERole.USER)
                     .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò"));
             roles.add(userRole);
         } else {
@@ -162,32 +191,35 @@ public class AuthController {
                         .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò - " + role));
                 roles.add(securityRole);
             });
-
         }
         account.setRoles(roles);
+
+        // ✅ Gửi OTP qua email
         String otp = otpUtil.generateOtp();
         try {
             emailUtil.sendOtpEmail(signUpRequest.getEmail(), otp);
         } catch (MessagingException e) {
             throw new RuntimeException("Không thể gửi OTP, vui lòng thử lại sau!");
         }
-        // Tạo Verifications
+
+        // ✅ Tạo Verifications
         Verifications verifications = new Verifications();
-        verifications.setAccountId(signUpRequest.getId());
+        verifications.setAccountId(account.getId()); // Đảm bảo `account_id` là String
         verifications.setCode(otp);
         verifications.setActive(false);
         verifications.setCreatedAt(LocalDateTime.now());
         verifications.setExpiresAt(LocalDateTime.now().plusMinutes(10));
-        verifications.setSecurityAccount(account);
-        account.setVerification(verifications);
-        accountRepository.save(account);
+        account.setVerifications(Collections.singletonList(verifications));
+
+        accountDAO.save(account);
+
         return ResponseEntity
                 .ok(new MessageResponse("Người dùng đã đăng ký thành công, vui lòng kiểm tra email để xác thực!"));
     }
 
     @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
-        SecurityAccount securityAccount = accountRepository.findById(changePasswordRequest.getId())
+        Account securityAccount = accountDAO.findById(changePasswordRequest.getId())
                 .orElseThrow(
                         () -> new UsernameNotFoundException("Không tìm thấy người dùng "
                                 + changePasswordRequest.getId()));
@@ -203,7 +235,7 @@ public class AuthController {
                     .body(new MessageResponse("Mật khẩu mới và mật khẩu xác nhận không khớp"));
         }
         securityAccount.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
-        accountRepository.save(securityAccount);
+        accountDAO.save(securityAccount);
         return ResponseEntity
                 .badRequest()
                 .body(new MessageResponse("Đổi Mật khẩu thành công"));
@@ -212,8 +244,9 @@ public class AuthController {
 
     @PostMapping("/verify-account")
     public ResponseEntity<?> verifyOtp(@RequestBody LoginRequest loginRequest) {
-        SecurityAccount securityAccount = accountRepository.findById(loginRequest.getId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với id này: " + loginRequest.getId()));
+        Account securityAccount = accountDAO.findById(loginRequest.getId())
+                .orElseThrow(
+                        () -> new RuntimeException("Không tìm thấy người dùng với id này: " + loginRequest.getId()));
         List<Verifications> verifications = verificationDAO.findByAccountId(securityAccount.getId());
         boolean isOtpValid = false;
         for (Verifications verification : verifications) {
@@ -223,7 +256,7 @@ public class AuthController {
                     verification.setActive(true);
                     verificationDAO.save(verification);
                     securityAccount.setVerified(true);
-                    accountRepository.save(securityAccount);
+                    accountDAO.save(securityAccount);
                     isOtpValid = true;
                     break; // Dừng vòng lặp nếu OTP hợp lệ
                 } else {
@@ -247,13 +280,13 @@ public class AuthController {
         if (email == null || email.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(new MessageResponse("Email không được để trống!"));
         }
-        Optional<SecurityAccount> securityAccountOpt = accountRepository.findByEmail(email);
+        Optional<Account> securityAccountOpt = accountDAO.findByEmail(email);
 
         if (!securityAccountOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new MessageResponse("Không tìm thấy người dùng với email này: " + email));
         }
-        SecurityAccount securityAccount = securityAccountOpt.get();
+        Account securityAccount = securityAccountOpt.get();
         String otp = otpUtil.generateOtp();
         try {
             emailUtil.sendOtpEmail(email, otp);
@@ -284,21 +317,21 @@ public class AuthController {
     // @PutMapping("/{id}")
     // public ResponseEntity<?> updateAccount(@PathVariable String id, @Valid
     // @RequestBody UserDto userDto) {
-    // Optional<SecurityAccount> existingAccountOpt =
-    // accountRepository.findById(id);
+    // Optional<Account> existingAccountOpt =
+    // accountDAO.findById(id);
     // if (!existingAccountOpt.isPresent()) {
     // return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Tài khoản không được
     // tìm thấy");
     // }
-    // SecurityAccount existingAccount = existingAccountOpt.get();
+    // Account existingAccount = existingAccountOpt.get();
     // if (!existingAccount.getPhone().equals(userDto.getPhone()) &&
-    // accountRepository.existsByPhone(userDto.getPhone())) {
+    // accountDAO.existsByPhone(userDto.getPhone())) {
     // return ResponseEntity
     // .badRequest()
     // .body(new MessageResponse("Số điện thoai đã được sử dụng!"));
     // }
     // if (!existingAccount.getEmail().equals(userDto.getEmail()) &&
-    // accountRepository.existsByEmail(userDto.getEmail())) {
+    // accountDAO.existsByEmail(userDto.getEmail())) {
     // return ResponseEntity
     // .badRequest()
     // .body(new MessageResponse("Email đã được sử dụng!"));
@@ -310,7 +343,7 @@ public class AuthController {
     // existingAccount.setBirthday(userDto.getBirthday());
     // existingAccount.setGender(userDto.getGender());
     // existingAccount.setImage(userDto.getImage());
-    // SecurityAccount updatedAccount = accountRepository.save(existingAccount);
+    // Account updatedAccount = accountDAO.save(existingAccount);
     // UserDto responseDto = new UserDto(
     // updatedAccount.getId(),
     // updatedAccount.getPhone(),
@@ -325,11 +358,11 @@ public class AuthController {
     // Gửi email quên mật khẩu
     @PutMapping("/forgot-password")
     public ResponseEntity<?> sendForgotPasswordEmail(@RequestBody NewOtp newOtp) {
-        Optional<SecurityAccount> userOpt = accountRepository.findByEmail(newOtp.getEmail());
+        Optional<Account> userOpt = accountDAO.findByEmail(newOtp.getEmail());
         if (!userOpt.isPresent()) {
             return ResponseEntity.ok(new MessageResponse("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi."));
         }
-        SecurityAccount user = userOpt.get();
+        Account user = userOpt.get();
         String code = otpUtil.generateOtp(); // Tạo OTP mới
         Verifications verification = verificationDAO.findByAccountId(user.getId())
                 .stream()
@@ -355,7 +388,8 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@RequestBody ForgotPassword forgotPassword) {
 
         Verifications verification = verificationDAO.findByCode(forgotPassword.getCode())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP không hợp lệ hoặc không tồn tại."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "OTP không hợp lệ hoặc không tồn tại."));
 
         if (Duration.between(verification.getCreatedAt(), LocalDateTime.now()).getSeconds() > 1000) {
             verification.setActive(false);
@@ -363,11 +397,11 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse("OTP đã hết hạn."));
         }
 
-        SecurityAccount user = accountRepository.findById(verification.getAccountId())
+        Account user = accountDAO.findById(verification.getAccountId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tài khoản."));
 
         user.setPassword(encoder.encode(forgotPassword.getNewPassword()));
-        accountRepository.save(user);
+        accountDAO.save(user);
 
         // Hủy hiệu lực OTP
         verification.setActive(false);
@@ -383,14 +417,14 @@ public class AuthController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<List<SecurityAccount>> findAll() {
-        List<SecurityAccount> accounts = accountRepository.findAll();
+    public ResponseEntity<List<Account>> findAll() {
+        List<Account> accounts = accountDAO.findAll();
         return ResponseEntity.ok(accounts);
     }
 
     @GetMapping("/{email}")
-    public ResponseEntity<SecurityAccount> findByEmail(@PathVariable String email) {
-        Optional<SecurityAccount> optionalAccount = accountRepository.findByEmail(email);
+    public ResponseEntity<Account> findByEmail(@PathVariable String email) {
+        Optional<Account> optionalAccount = accountDAO.findByEmail(email);
         return optionalAccount.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

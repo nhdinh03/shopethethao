@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.shopethethao.auth.models.RefreshToken;
-import com.shopethethao.auth.repository.AccountRepository;
 import com.shopethethao.auth.repository.RefreshTokenRepository;
 import com.shopethethao.auth.security.jwt.exception.TokenRefreshException;
+import com.shopethethao.modules.account.AccountDAO;
 
 import jakarta.transaction.Transactional;
 
@@ -24,7 +24,7 @@ public class RefreshTokenService {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    private AccountRepository dao;
+    private AccountDAO dao;
 
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);

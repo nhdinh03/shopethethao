@@ -21,6 +21,7 @@ import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
 import { categoriesApi } from "api/Admin";
 import "..//index.scss";
+import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 const Categories = () => {
   const { Title, Text } = Typography;
@@ -212,15 +213,11 @@ const Categories = () => {
       key: "name",
       ...getColumnSearchProps("name"),
       render: (text) => (
-        <Tooltip title={text.length > 30 ? text : ""} placement="top">
+        <Tooltip title={text || "Không có tên dan mục"} placement="top">
           <span className="ellipsis-text">
-            <Text strong={true} className="ellipsis-text">
-              {text
-                ? text.length > 30
-                  ? `${text.substring(0, 30)}...`
-                  : text
-                : "Không có danh mục"}
-            </Text>
+            {text?.length > 35
+              ? `${text.substring(0, 15)}...`
+              : text || "Không có tên danh mục"}
           </span>
         </Tooltip>
       ),
@@ -237,38 +234,7 @@ const Categories = () => {
         </Tooltip>
       ),
     },
-    {
-      title: "⚙️ Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space size="middle">
-          <Tooltip>
-            <FontAwesomeIcon
-              icon={faEdit}
-              style={{ color: "#28a745", cursor: "pointer", fontSize: "16px" }}
-              onClick={() => handleEditData(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Bạn có chắc muốn xoá?"
-            okText="Đồng ý"
-            cancelText="Huỷ"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Tooltip>
-              <FontAwesomeIcon
-                icon={faTrashAlt}
-                style={{
-                  color: "#dc3545",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                }}
-              />
-            </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
-    },
+    ActionColumn(handleEditData, handleDelete),
   ];
 
   return (

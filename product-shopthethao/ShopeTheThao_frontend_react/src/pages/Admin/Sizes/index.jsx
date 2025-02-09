@@ -21,6 +21,8 @@ import PaginationComponent from "components/PaginationComponent";
 import sizeApi from "api/Admin/Sizes/SizesApi";
 import { SizeApi } from "api/Admin";
 import "..//index.scss";
+import { Edit, Trash2 } from "lucide-react";
+import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 
 
@@ -117,38 +119,7 @@ const Sizes = () => {
   const columns = [
     { title: "🆔 Danh sách", dataIndex: "id", key: "id" },
     { title: "📏 Tên Kích Thước", dataIndex: "name", key: "name" },
-    {
-      title: "⚙️ Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space size="middle">
-          <Tooltip>
-            <FontAwesomeIcon
-              icon={faEdit}
-              style={{ color: "#28a745", cursor: "pointer", fontSize: "16px" }}
-              onClick={() => handleEditData(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Bạn có chắc muốn xoá?"
-            okText="Đồng ý"
-            cancelText="Huỷ"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Tooltip>
-              <FontAwesomeIcon
-                icon={faTrashAlt}
-                style={{
-                  color: "#dc3545",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                }}
-              />
-            </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
-    },
+    ActionColumn(handleEditData, handleDelete),
   ];
 
   return (

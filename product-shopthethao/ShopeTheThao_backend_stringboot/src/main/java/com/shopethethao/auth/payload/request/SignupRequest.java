@@ -2,19 +2,20 @@ package com.shopethethao.auth.payload.request;
 
 import java.util.Set;
 
+import com.shopethethao.auth.models.Gender;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class SignupRequest {
     @NotBlank
-    @Size(min = 3, max = 20)
     private String id;
 
     @NotBlank
@@ -32,7 +33,7 @@ public class SignupRequest {
     @Size(min = 8, max = 40)
     private String password;
 
-    private Boolean gender;
+    private Gender gender; 
 
     @NotBlank
     @Size(min = 10, max = 15)

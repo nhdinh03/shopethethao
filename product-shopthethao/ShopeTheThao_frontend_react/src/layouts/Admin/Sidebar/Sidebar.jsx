@@ -36,7 +36,7 @@ function Sidebar({ onClose }) {
       "/admin/accountStaff": "grAccounts", // Nhân viên
       "/admin/roles": "grAccounts", //role
 
-      "/admin/products-distinctives": "grDistinctives", // Thuộc tính sản phẩm
+      "/admin/product-attributes": "grDistinctives", // Thuộc tính sản phẩm
 
       "/admin/statistics-documents": "grStatistics", // Tài liệu thống kê
       "/admin/charts": "grStatistics", // Biểu đồ thống kê
@@ -103,6 +103,21 @@ function Sidebar({ onClose }) {
         // ),
 
     
+      ]
+    ),
+
+     // Đặc trưng sản phẩm
+     getItem(
+      "Đặc Trưng Sản Phẩm",
+      "grDistinctives",
+      <FontAwesomeIcon icon={solidIcons.faStar} style={{ color: "#FFC107" }} />,
+      [
+        getItem(
+          <Link to="/admin/product-attributes" onClick={onClose}>
+            Thuộc tính sản phẩm
+          </Link>,
+          "/admin/product-attributes"
+        ),
       ]
     ),
 
@@ -188,20 +203,7 @@ function Sidebar({ onClose }) {
       ]
     ),
 
-    // Đặc trưng sản phẩm
-    getItem(
-      "Đặc Trưng Sản Phẩm",
-      "grDistinctives",
-      <FontAwesomeIcon icon={solidIcons.faStar} style={{ color: "#FFC107" }} />,
-      [
-        getItem(
-          <Link to="/admin/products-distinctives" onClick={onClose}>
-            Thuộc tính sản phẩm
-          </Link>,
-          "/admin/products-distinctives"
-        ),
-      ]
-    ),
+   
 
     // Thống kê & Báo cáo
     getItem(

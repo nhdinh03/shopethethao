@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Table,
   message,
@@ -20,12 +20,10 @@ import PaginationComponent from "components/PaginationComponent";
 import brandsApi from "api/Admin/Brands/Brands";
 import styles from "..//index.scss";
 
-
-
-
+import { Edit, Trash2, Search } from "lucide-react";
+import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 const Brands = () => {
-  
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -123,48 +121,16 @@ const Brands = () => {
   };
 
   const columns = [
-  { title: "🆔 ID", dataIndex: "id", key: "id" },
-  {
-    title: "🏷️ Tên thương hiệu",
-    dataIndex: "name",
-    key: "name",
-    render: (text) => <Text strong>{text}</Text>,
-  },
-  { title: "📞 Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
-  { title: "📧 Email", dataIndex: "email", key: "email" },
-  { title: "🏠 Địa chỉ", dataIndex: "address", key: "address" },
-  {
-    title: "⚙️ Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space size="middle">
-          <Tooltip>
-            <FontAwesomeIcon
-              icon={faEdit}
-              style={{ color: "#28a745", cursor: "pointer", fontSize: "16px" }}
-              onClick={() => handleEditData(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Bạn có chắc muốn xoá?"
-            okText="Đồng ý"
-            cancelText="Huỷ"
-            onConfirm={() => handleDelete(record.id)}
-          >
-            <Tooltip>
-              <FontAwesomeIcon
-                icon={faTrashAlt}
-                style={{
-                  color: "#dc3545",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                }}
-              />
-            </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
+    { title: "🆔 ID", dataIndex: "id", key: "id", width: 80 },
+    {
+      title: "🏷️ Tên thương hiệu",
+      dataIndex: "name",
+      key: "name",
     },
+    { title: "📞 Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
+    { title: "📧 Email", dataIndex: "email", key: "email" },
+    { title: "🏠 Địa chỉ", dataIndex: "address", key: "address" },
+    ActionColumn(handleEditData, handleDelete),
   ];
 
   return (
@@ -192,7 +158,7 @@ const Brands = () => {
           onOk={handleModalOk}
           onCancel={handleModalCancel}
           centered
-          className={styles.modalWidth} 
+          className={styles.modalWidth}
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -237,9 +203,7 @@ const Brands = () => {
                 justifyContent: "flex-end",
                 width: "100%",
               }}
-            >
-       
-            </Space>
+            ></Space>
           </Form>
         </Modal>
       </Row>

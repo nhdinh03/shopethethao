@@ -1,6 +1,8 @@
 package com.shopethethao.auth.models;
 import java.time.Instant;
 
+import com.shopethethao.modules.account.Account;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,7 +29,7 @@ public class RefreshToken {
 
     @OneToOne
     @JoinColumn(name = "account_id", referencedColumnName = "id")
-    private SecurityAccount account;
+    private Account account;
 
     @Column(nullable = false, unique = true)
     private String token;
@@ -35,6 +37,6 @@ public class RefreshToken {
     @Column(nullable = false)
     private Instant expiryDate;
 
-    public void setUser(SecurityAccount account2) {
+    public void setUser(Account account2) {
     }
 }
