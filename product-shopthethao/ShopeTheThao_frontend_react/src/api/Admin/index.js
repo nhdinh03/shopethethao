@@ -6,3 +6,4 @@ export { default as Verifications } from './Verifications/verificationsApi';
 export { default as stock_ReceiptsAPi } from './Stock_Receipts/stock_ReceiptsApi';
 export { default as suppliersApi } from './Suppliers/suppliersApi';
 export { default as rolesApi } from './Roles/rolesApi';
+export { default as accountsUserApi } from './AccountsUsers/accountsUserApi';

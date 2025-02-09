@@ -22,10 +22,9 @@ public class Verifications {
     private Long id;
 
     @Column(name = "account_id", insertable = false, updatable = false)
-    private String accountId; 
+    private String accountId;
 
-
-    @Column(name = "code", nullable = false, length = 6)
+    @Column(name = "code", nullable = false, length = 50)
     private String code;
 
     @Column(name = "created_at", nullable = false, columnDefinition = "DATETIME DEFAULT GETDATE()")
@@ -38,7 +37,7 @@ public class Verifications {
     private Boolean active = true;
 
     @ManyToOne
-    @JoinColumn(name = "account_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)
     private Account account;
 
 }

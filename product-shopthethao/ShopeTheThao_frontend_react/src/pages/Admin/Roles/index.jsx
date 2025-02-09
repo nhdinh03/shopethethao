@@ -16,11 +16,8 @@ import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 
-import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
-import sizeApi from "api/Admin/Sizes/SizesApi";
 import "..//index.scss";
-import { Edit, Trash2 } from "lucide-react";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { rolesApi } from "api/Admin";
 
@@ -138,11 +135,12 @@ const Roles = () => {
             Thêm kích thước
           </Button>
         </div>
-        <BaseModal
+        <Modal
           title={editSize ? "Cập nhật kích thước" : "Thêm kích thước mới"}
           open={open}
           footer={null}
           onCancel={handleCancel}
+        
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -178,7 +176,7 @@ const Roles = () => {
               </Button>
             </Space>
           </Form>
-        </BaseModal>
+        </Modal>
       </Row>
       <div className="table-container">
         <Table

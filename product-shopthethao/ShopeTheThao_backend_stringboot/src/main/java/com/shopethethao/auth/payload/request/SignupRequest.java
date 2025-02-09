@@ -38,4 +38,7 @@ public class SignupRequest {
     @NotBlank
     @Size(min = 10, max = 15)
     private String phone;
+
+
+    
 }

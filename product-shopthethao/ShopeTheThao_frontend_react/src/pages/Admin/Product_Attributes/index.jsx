@@ -133,7 +133,7 @@ const ProductAttributes = () => {
             Thêm kích thước
           </Button>
         </div>
-        <BaseModal
+        <Modal
           title={editProductAttributes ? "Cập nhật kích thước" : "Thêm kích thước mới"}
           open={open}
           footer={null}
@@ -162,7 +162,7 @@ const ProductAttributes = () => {
               </Button>
             </Space>
           </Form>
-        </BaseModal>
+        </Modal>
       </Row>
       <div className="table-container">
         <Table

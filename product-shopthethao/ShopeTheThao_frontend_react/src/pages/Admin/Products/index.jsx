@@ -33,7 +33,6 @@ import { productsApi } from "api/Admin";
 import "..//index.scss";
 import styles from "..//modalStyles.module.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
-import productImagesApi from "api/Admin/ProductImages/productImagesApi";
 
 const Products = () => {
   const { Title, Text } = Typography;
@@ -369,7 +368,7 @@ const Products = () => {
       ),
     },
     {
-      title: "💵 Giá Góc",
+      title: "💵 Giá Mặc định",
       dataIndex: "price",
       key: "price",
       render: (price) => `${price.toLocaleString()} VND`,

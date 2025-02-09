@@ -1,4 +1,4 @@
-package com.shopethethao.auth.controllers;
+package com.shopethethao.auth.payload.response;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public class TokenStore {
 
     // Lưu token mới với thời gian hết hạn mặc định (60 giây)
     public void saveNewToken(String userId, String token) {
-        Date expiryDate = new Date(System.currentTimeMillis() + 60 * 1000); // 60 giây test
+        Date expiryDate = new Date(System.currentTimeMillis() + 60 * 1000000000); // 60 giây test
         saveNewToken(userId, token, expiryDate);
     }
 

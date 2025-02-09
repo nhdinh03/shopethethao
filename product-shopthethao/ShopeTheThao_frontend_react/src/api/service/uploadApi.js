@@ -16,7 +16,7 @@ const uploadApi = {
         formData.append('file_to_upload', originFileObj);
         const dataUpload = await axiosClient.post(url, formData, headers);
         const imageName = dataUpload.data.fieldName;
-        // console.log(dataUpload);
+        console.log(dataUpload);
         if (dataUpload.data.error) {
             funcUtils.notify(dataUpload.data.error, 'error');
             return null;

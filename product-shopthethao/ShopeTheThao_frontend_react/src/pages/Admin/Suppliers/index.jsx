@@ -13,8 +13,6 @@ import {
   Row,
 } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import PaginationComponent from "components/PaginationComponent";
 import { suppliersApi } from "api/Admin";
 import "..//index.scss";

@@ -27,9 +27,9 @@ public class Comment {
     @Column(name = "like_count")
     private Integer likeCount;
 
-    @Column(name = "order_date", nullable = false)
-    private LocalDate orderDate;
-
+    @Column(name = "created_at", nullable = false)
+    private LocalDate createdAt;
+    
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private Account account;
