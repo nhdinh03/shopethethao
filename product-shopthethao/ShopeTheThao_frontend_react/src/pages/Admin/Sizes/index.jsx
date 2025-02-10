@@ -12,7 +12,12 @@ import {
   Select,
   Row,
 } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  PlusOutlined,
+  RedoOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 
@@ -23,8 +28,6 @@ import { SizeApi } from "api/Admin";
 import "..//index.scss";
 import { Edit, Trash2 } from "lucide-react";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
-
-
 
 const Sizes = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -126,7 +129,7 @@ const Sizes = () => {
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Quản lý kích thước sản phẩm</h2>
-     
+
         <div className="header-container">
           <Button
             type="primary"
@@ -137,7 +140,7 @@ const Sizes = () => {
             Thêm kích thước
           </Button>
         </div>
-        <BaseModal
+        <Modal
           title={editSize ? "Cập nhật kích thước" : "Thêm kích thước mới"}
           open={open}
           footer={null}
@@ -160,13 +163,21 @@ const Sizes = () => {
                 width: "100%",
               }}
             >
-              {!editSize && <Button onClick={handleResetForm}>Làm mới</Button>}
-              <Button type="primary" onClick={handleModalOk}>
+              {!editSize && (
+                <Button icon={<RedoOutlined />} onClick={handleResetForm}>
+                  Làm mới
+                </Button>
+              )}
+              <Button
+                icon={<CheckOutlined />}
+                type="primary"
+                onClick={handleModalOk}
+              >
                 {editSize ? "Cập nhật" : "Thêm mới"}
               </Button>
             </Space>
           </Form>
-        </BaseModal>
+        </Modal>
       </Row>
       <div className="table-container">
         <Table

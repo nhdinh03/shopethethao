@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class AccountRolePK implements Serializable {
 
     @Column(name = "account_id")
-    private Integer accountId;
+    private String accountId;
 
     @Column(name = "role_id")
     private Long roleId;

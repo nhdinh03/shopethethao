@@ -22,12 +22,26 @@ import {
   faEdit,
   faPlus,
   faPrint,
+  faMoneyBillWave,
+  faShoppingCart,
+  faIndustry,
+  faTags,
+  faBox,
+  faCalendarAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { productsApi, suppliersApi, stock_ReceiptsAPi } from "api/Admin";
 import moment from "moment";
 import "..//index.scss";
 import brandsApi from "api/Admin/Brands/Brands";
 import PaginationComponent from "components/PaginationComponent"; // Your custom pagination component
+import {
+  CalendarOutlined,
+  DollarOutlined,
+  NumberOutlined,
+  RedoOutlined,
+  TagOutlined,
+  TrademarkOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -45,7 +59,7 @@ const Stock_Receipts = () => {
   const [brand, setBrand] = useState([]);
   const [stockReceipts, setStockReceipts] = useState([]);
 
-    const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
   const [workSomeThing, setWorkSomeThing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
   const [pageSize, setPageSize] = useState(5); // Number of items per page
@@ -59,7 +73,7 @@ const Stock_Receipts = () => {
         const stockReceiptsRes = await stock_ReceiptsAPi.getByPage(
           currentPage,
           pageSize,
-          searchText,
+          searchText
         );
         setStockReceipts(stockReceiptsRes.data);
         setTotalItems(stockReceiptsRes.totalItems);
@@ -80,7 +94,7 @@ const Stock_Receipts = () => {
       }
     };
     fetchData();
-  }, [currentPage, pageSize,searchText, workSomeThing]); // Trigger fetch when page or page size changes
+  }, [currentPage, pageSize, searchText, workSomeThing]); // Trigger fetch when page or page size changes
 
   const handlePageSizeChange = (value) => {
     setPageSize(value);
@@ -272,7 +286,7 @@ const Stock_Receipts = () => {
             name="productId"
             rules={[{ required: true, message: "Chọn sản phẩm!" }]}
           >
-            <Select placeholder="Chọn sản phẩm">
+            <Select placeholder="Chọn sản phẩm" prefix={<TagOutlined />}>
               {products.map((p) => (
                 <Option key={p.id} value={p.id}>
                   {p.name}
@@ -285,7 +299,7 @@ const Stock_Receipts = () => {
             name="supplierId"
             rules={[{ required: true, message: "Chọn nhà cung cấp!" }]}
           >
-            <Select placeholder="Chọn nhà cung cấp">
+            <Select placeholder="Chọn nhà cung cấp" prefix={<TagOutlined />}>
               {suppliers.map((s) => (
                 <Option key={s.id} value={s.id}>
                   {s.name}
@@ -298,7 +312,10 @@ const Stock_Receipts = () => {
             name="brandId"
             rules={[{ required: true, message: "Chọn thương hiệu!" }]}
           >
-            <Select placeholder="Chọn thương hiệu">
+            <Select
+              placeholder="Chọn thương hiệu"
+              prefix={<TrademarkOutlined />}
+            >
               {brand.map((b) => (
                 <Option key={b.id} value={b.id}>
                   {b.name}
@@ -311,26 +328,37 @@ const Stock_Receipts = () => {
             name="orderDate"
             rules={[{ required: true, message: "Chọn ngày nhập!" }]}
           >
-            <DatePicker style={{ width: "100%" }} />
+            <DatePicker
+              style={{ width: "100%" }}
+              prefix={<CalendarOutlined />}
+            />
           </Form.Item>
           <Form.Item
             label="📦 Số lượng"
             name="quantity"
             rules={[{ required: true, message: "Nhập số lượng!" }]}
           >
-            <InputNumber style={{ width: "100%" }} />
+            <InputNumber
+              style={{ width: "100%" }}
+              prefix={<NumberOutlined />}
+            />
           </Form.Item>
           <Form.Item
             label="💰 Giá nhập"
             name="price"
             rules={[{ required: true, message: "Nhập giá nhập!" }]}
           >
-            <InputNumber style={{ width: "100%" }} />
+            <InputNumber
+              style={{ width: "100%" }}
+              prefix={<DollarOutlined />}
+            />
           </Form.Item>
         </Form>
       </Modal>
       <Modal
-        title="Chi Tiết Phiếu Nhập Kho"
+        title={
+          <span style={{ fontWeight: "bold" }}>📜 Chi Tiết Phiếu Nhập Kho</span>
+        }
         open={printModalVisible}
         onCancel={() => setPrintModalVisible(false)}
         footer={[
@@ -339,7 +367,6 @@ const Stock_Receipts = () => {
             type="primary"
             icon={<FontAwesomeIcon icon={faPrint} />}
             onClick={handlePrint}
-            style={{ marginRight: 8 }}
           >
             In Phiếu Nhập
           </Button>,
@@ -347,77 +374,104 @@ const Stock_Receipts = () => {
             Đóng
           </Button>,
         ]}
-        width={700}
+        width={750}
       >
         {selectedReceipt && (
           <div ref={printRef} className="printable-receipt">
             <Card
               style={{
                 padding: 20,
-                borderRadius: 8,
-                border: "1px solid #e8e8e8",
+                borderRadius: 10,
+                border: "1px solid #ddd",
               }}
             >
               {/* Thông tin chung */}
-              <Title level={4} style={{ marginBottom: 16, color: "#333" }}>
-                Thông Tin Phiếu Nhập
+              <Title
+                level={4}
+                style={{ marginBottom: 16, color: "#333", textAlign: "center" }}
+              >
+                📌 Thông Tin Phiếu Nhập
               </Title>
               <Row gutter={[16, 16]} style={{ fontSize: 14 }}>
                 <Col span={12}>
-                  <Text strong>🆔 Mã phiếu: </Text> {selectedReceipt.id}
+                  <Text strong>🆔 Mã phiếu:</Text> {selectedReceipt.id}
                 </Col>
                 <Col span={12}>
-                  <Text strong>📅 Ngày nhập: </Text>{" "}
+                  <Text strong>
+                    <FontAwesomeIcon icon={faCalendarAlt} /> Ngày nhập:
+                  </Text>{" "}
                   {moment(selectedReceipt.orderDate).format("DD/MM/YYYY")}
                 </Col>
               </Row>
 
-              <Divider style={{ margin: "16px 0" }} />
+              <Divider />
 
               {/* Thông tin sản phẩm */}
-              <Title level={4} style={{ marginBottom: 16, color: "#333" }}>
-                Thông Tin Sản Phẩm
+              <Title
+                level={4}
+                style={{ marginBottom: 16, color: "#333", textAlign: "center" }}
+              >
+                📦 Thông Tin Sản Phẩm
               </Title>
               <Row gutter={[16, 16]} style={{ fontSize: 14 }}>
                 <Col span={12}>
-                  <Text strong>Tên sản phẩm: </Text>{" "}
+                  <Text strong>
+                    <FontAwesomeIcon icon={faBox} /> Tên sản phẩm:
+                  </Text>{" "}
                   {selectedReceipt.product?.name}
                 </Col>
                 <Col span={12}>
-                  <Text strong>Danh mục: </Text>{" "}
+                  <Text strong>
+                    <FontAwesomeIcon icon={faTags} /> Danh mục:
+                  </Text>{" "}
                   {selectedReceipt.product?.categorie?.name}
                 </Col>
               </Row>
 
-              <Divider style={{ margin: "16px 0" }} />
+              <Divider />
 
               {/* Thông tin nhà cung cấp */}
-              <Title level={4} style={{ marginBottom: 16, color: "#333" }}>
-                Nhà Cung Cấp & Thương Hiệu
+              <Title
+                level={4}
+                style={{ marginBottom: 16, color: "#333", textAlign: "center" }}
+              >
+                🏭 Nhà Cung Cấp & Thương Hiệu
               </Title>
               <Row gutter={[16, 16]} style={{ fontSize: 14 }}>
                 <Col span={12}>
-                  <Text strong>Nhà cung cấp: </Text>{" "}
+                  <Text strong>
+                    <FontAwesomeIcon icon={faIndustry} /> Nhà cung cấp:
+                  </Text>{" "}
                   {selectedReceipt.supplier?.name}
                 </Col>
                 <Col span={12}>
-                  <Text strong>Thương hiệu: </Text>{" "}
+                  <Text strong>
+                    <FontAwesomeIcon icon={faShoppingCart} /> Thương hiệu:
+                  </Text>{" "}
                   {selectedReceipt.brand?.name}
                 </Col>
               </Row>
 
-              <Divider style={{ margin: "16px 0" }} />
+              <Divider />
 
               {/* Thông tin giá nhập */}
-              <Title level={4} style={{ marginBottom: 16, color: "#333" }}>
-                Chi Tiết Giá Nhập
+              <Title
+                level={4}
+                style={{ marginBottom: 16, color: "#333", textAlign: "center" }}
+              >
+                💰 Chi Tiết Giá Nhập
               </Title>
               <Row gutter={[16, 16]} style={{ fontSize: 14 }}>
                 <Col span={12}>
-                  <Text strong>Số lượng: </Text> {selectedReceipt.quantity}
+                  <Text strong>
+                    <FontAwesomeIcon icon={faShoppingCart} /> Số lượng:
+                  </Text>{" "}
+                  {selectedReceipt.quantity}
                 </Col>
                 <Col span={12}>
-                  <Text strong>Tổng giá nhập: </Text>{" "}
+                  <Text strong>
+                    <FontAwesomeIcon icon={faMoneyBillWave} /> Tổng giá nhập:
+                  </Text>{" "}
                   {selectedReceipt.price.toLocaleString()} VND
                 </Col>
               </Row>

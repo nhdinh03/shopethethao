@@ -3,12 +3,14 @@ package com.shopethethao.modules.accountRole;
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.role.Role;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,4 +34,6 @@ public class AccountRole {
     @MapsId("roleId") // Ánh xạ với role_id trong AccountRolePK
     @JoinColumn(name = "role_id")
     private Role role;
+
+
 }

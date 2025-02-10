@@ -12,16 +12,14 @@ import {
   Select,
   Row,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { HomeOutlined, MailOutlined, PhoneOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import PaginationComponent from "components/PaginationComponent";
 import { suppliersApi } from "api/Admin";
 import "..//index.scss";
 import styles from "..//modalStyles.module.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
-
-
-const Suppliers  = () => {
+const Suppliers = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -43,14 +41,17 @@ const Suppliers  = () => {
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await suppliersApi.getByPage(currentPage, pageSize, searchText);
+        const res = await suppliersApi.getByPage(
+          currentPage,
+          pageSize,
+          searchText
+        );
         if (isMounted) {
           setSuppliers(res.data);
           setTotalItems(res.totalItems);
           setLoading(false);
         }
         console.log(res);
-        
       } catch (error) {
         message.error("Không thể lấy danh sách sản phẩm. Vui lòng thử lại!");
         setLoading(false);
@@ -67,8 +68,6 @@ const Suppliers  = () => {
     form.setFieldsValue(supplier);
     setOpen(true);
   };
-
-
 
   const handleDelete = async (id) => {
     try {
@@ -130,7 +129,7 @@ const Suppliers  = () => {
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Quản lý Nhà cung cấp sản phẩm</h2>
-     
+
         <div className="header-container">
           <Button
             type="primary"
@@ -144,62 +143,56 @@ const Suppliers  = () => {
         <Modal
           title={
             <div className={styles.modalTitle}>
-              {editsuppliers ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
+              {editsuppliers
+                ? "✏️ Cập nhật Nhà cung cấp"
+                : "➕ Thêm Nhà cung cấp mới"}
             </div>
           }
           open={open}
           onOk={handleModalOk}
           onCancel={handleModalCancel}
           centered
-          className={styles.modalWidth} 
+          className={styles.modalWidth}
         >
-            <Form form={form} layout="vertical">
-                   <Form.Item
-                     name="name"
-                     label="Tên Thương hiệu"
-                     rules={[
-                       { required: true, message: "Vui lòng nhập tên Thương hiệu!" },
-                     ]}
-                   >
-                     <Input placeholder="Nhập tên Thương hiệu" />
-                   </Form.Item>
-       
-                   <Form.Item
-                     name="phoneNumber"
-                     label="Số điện thoại"
-                     rules={[
-                       { required: true, message: "Vui lòng nhập Số điện thoại!" },
-                     ]}
-                   >
-                     <Input placeholder="Vui lòng nhập Số điện thoại" />
-                   </Form.Item>
-       
-                   <Form.Item
-                     name="email"
-                     label="Email"
-                     rules={[{ required: true, message: "Vui lòng nhập email!" }]}
-                   >
-                     <Input placeholder="Nhập email" />
-                   </Form.Item>
-       
-                   <Form.Item
-                     name="address"
-                     label="Địa chỉ"
-                     rules={[{ required: true, message: "Vui lòng nhập Địa chỉ!" }]}
-                   >
-                     <Input placeholder="Nhập địa chỉ" />
-                   </Form.Item>
-       
-                   <Space
-                     style={{
-                       display: "flex",
-                       justifyContent: "flex-end",
-                       width: "100%",
-                     }}
-                   >
-                
-                   </Space>
-                 </Form>
+          <Form form={form} layout="vertical">
+    
+    {/* Tên Thương hiệu */}
+    <Form.Item
+      name="name"
+      label="Tên Thương hiệu"
+      rules={[{ required: true, message: "Vui lòng nhập tên Thương hiệu!" }]}
+    >
+      <Input prefix={<UserOutlined />} placeholder="Nhập tên Thương hiệu" />
+    </Form.Item>
+
+    {/* Số điện thoại */}
+    <Form.Item
+      name="phoneNumber"
+      label="Số điện thoại"
+      rules={[{ required: true, message: "Vui lòng nhập Số điện thoại!" }]}
+    >
+      <Input prefix={<PhoneOutlined />} placeholder="Vui lòng nhập Số điện thoại" />
+    </Form.Item>
+
+    {/* Email */}
+    <Form.Item
+      name="email"
+      label="Email"
+      rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+    >
+      <Input prefix={<MailOutlined />} placeholder="Nhập email" />
+    </Form.Item>
+
+    {/* Địa chỉ */}
+    <Form.Item
+      name="address"
+      label="Địa chỉ"
+      rules={[{ required: true, message: "Vui lòng nhập Địa chỉ!" }]}
+    >
+      <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
+    </Form.Item>
+
+  </Form>
         </Modal>
       </Row>
       <div className="table-container">
@@ -242,4 +235,4 @@ const Suppliers  = () => {
   );
 };
 
-export default Suppliers ;
+export default Suppliers;

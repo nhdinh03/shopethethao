@@ -13,7 +13,7 @@ import {
   Row,
   Typography,
 } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { FileTextOutlined, FolderOpenOutlined, PlusOutlined, RedoOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import Highlighter from "react-highlight-words";
@@ -252,31 +252,39 @@ const Categories = () => {
             Thêm danh mục
           </Button>
         </div>
-        <BaseModal
-          title={editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
+        <Modal
+          title={
+            editingCategory ? "✏️ Cập nhật danh mục" : "➕ Thêm danh mục mới"
+          }
           open={open}
           footer={null}
           onCancel={handleCancel}
         >
           <Form form={form} layout="vertical">
+            {/* Tên danh mục */}
             <Form.Item
               name="name"
-              label="Tên danh mục"
+              label="📂 Tên danh mục"
               rules={[
                 { required: true, message: "Vui lòng nhập tên danh mục!" },
               ]}
             >
-              <Input placeholder="Nhập tên danh mục" />
-            </Form.Item>
-            <Form.Item
-              name="description"
-              label="Mô tả danh mục"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-            >
-              <Input placeholder="Nhập mô tả" />
+              <Input
+                prefix={<FolderOpenOutlined />}
+                placeholder="Nhập tên danh mục"
+              />
             </Form.Item>
 
-            {/* Ẩn nút "Làm mới" khi chỉnh sửa */}
+            {/* Mô tả danh mục */}
+            <Form.Item
+              name="description"
+              label="📝 Mô tả danh mục"
+              rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
+            >
+              <Input prefix={<FileTextOutlined />} placeholder="Nhập mô tả" />
+            </Form.Item>
+
+            {/* Nút hành động */}
             <Space
               style={{
                 display: "flex",
@@ -285,14 +293,20 @@ const Categories = () => {
               }}
             >
               {!editingCategory && (
-                <Button onClick={handleResetForm}>Làm mới</Button>
+                <Button icon={<RedoOutlined />} onClick={handleResetForm}>
+                  Làm mới
+                </Button>
               )}
-              <Button type="primary" onClick={handleModalOk}>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleModalOk}
+              >
                 {editingCategory ? "Cập nhật" : "Thêm mới"}
               </Button>
             </Space>
           </Form>
-        </BaseModal>
+        </Modal>
       </Row>
       <div className="table-container">
         <Table

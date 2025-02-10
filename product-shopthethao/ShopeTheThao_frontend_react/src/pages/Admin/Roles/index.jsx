@@ -12,7 +12,14 @@ import {
   Select,
   Row,
 } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  FileTextOutlined,
+  PlusOutlined,
+  RedoOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 
@@ -20,8 +27,6 @@ import PaginationComponent from "components/PaginationComponent";
 import "..//index.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { rolesApi } from "api/Admin";
-
-
 
 const Roles = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -70,7 +75,7 @@ const Roles = () => {
     try {
       await rolesApi.delete(id);
       message.success("Xóa kích thước thành công!");
-      setWorkSomeThing([!workSomeThing]); 
+      setWorkSomeThing([!workSomeThing]);
     } catch (error) {
       message.error("Không thể xóa kích thước!");
     }
@@ -124,7 +129,6 @@ const Roles = () => {
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Quản lý kích thước sản phẩm</h2>
-     
         <div className="header-container">
           <Button
             type="primary"
@@ -135,12 +139,16 @@ const Roles = () => {
             Thêm kích thước
           </Button>
         </div>
+
         <Modal
-          title={editSize ? "Cập nhật kích thước" : "Thêm kích thước mới"}
+          title={
+            <>
+              {editSize ? "✏️ Cập nhật kích thước" : "➕ Thêm kích thước mới"}
+            </>
+          }
           open={open}
           footer={null}
           onCancel={handleCancel}
-        
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -150,9 +158,10 @@ const Roles = () => {
                 { required: true, message: "Vui lòng nhập Tên Vai trò!" },
               ]}
             >
-              <Input placeholder="Nhập Tên Vai trò" />
+              <Input prefix={<UserOutlined />} placeholder="Nhập Tên Vai trò" />
             </Form.Item>
 
+            {/* Trường Nhập Mô Tả Vai Trò */}
             <Form.Item
               name="description"
               label="Mô tả vai trò"
@@ -160,9 +169,11 @@ const Roles = () => {
                 { required: true, message: "Vui lòng nhập Mô tả vai trò!" },
               ]}
             >
-              <Input placeholder="Nhập Mô tả vai trò" />
+              <Input
+                prefix={<FileTextOutlined />}
+                placeholder="Nhập Mô tả vai trò"
+              />
             </Form.Item>
-
             <Space
               style={{
                 display: "flex",
@@ -170,8 +181,16 @@ const Roles = () => {
                 width: "100%",
               }}
             >
-              {!editSize && <Button onClick={handleResetForm}>Làm mới</Button>}
-              <Button type="primary" onClick={handleModalOk}>
+              {!editSize && (
+                <Button icon={<RedoOutlined />} onClick={handleResetForm}>
+                  Làm mới
+                </Button>
+              )}
+              <Button
+                type="primary"
+                icon={<CheckOutlined />}
+                onClick={handleModalOk}
+              >
                 {editSize ? "Cập nhật" : "Thêm mới"}
               </Button>
             </Space>

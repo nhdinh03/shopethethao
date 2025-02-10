@@ -13,7 +13,7 @@ import {
   Select,
   Row,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { HomeOutlined, MailOutlined, PhoneOutlined, PlusOutlined, TagOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import PaginationComponent from "components/PaginationComponent";
@@ -151,7 +151,9 @@ const Brands = () => {
         <Modal
           title={
             <div className={styles.modalTitle}>
-              {editBrand ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
+              {editBrand
+                ? "✏️ Cập nhật Thương hiệu"
+                : "➕ Thêm Thương hiệu mới"}
             </div>
           }
           open={open}
@@ -161,6 +163,7 @@ const Brands = () => {
           className={styles.modalWidth}
         >
           <Form form={form} layout="vertical">
+            {/* Tên Thương hiệu */}
             <Form.Item
               name="name"
               label="Tên Thương hiệu"
@@ -168,9 +171,13 @@ const Brands = () => {
                 { required: true, message: "Vui lòng nhập tên Thương hiệu!" },
               ]}
             >
-              <Input placeholder="Nhập tên Thương hiệu" />
+              <Input
+                prefix={<TagOutlined />}
+                placeholder="Nhập tên Thương hiệu"
+              />
             </Form.Item>
 
+            {/* Số điện thoại */}
             <Form.Item
               name="phoneNumber"
               label="Số điện thoại"
@@ -178,32 +185,29 @@ const Brands = () => {
                 { required: true, message: "Vui lòng nhập Số điện thoại!" },
               ]}
             >
-              <Input placeholder="Vui lòng nhập Số điện thoại" />
+              <Input
+                prefix={<PhoneOutlined />}
+                placeholder="Nhập số điện thoại"
+              />
             </Form.Item>
 
+            {/* Email */}
             <Form.Item
               name="email"
               label="Email"
               rules={[{ required: true, message: "Vui lòng nhập email!" }]}
             >
-              <Input placeholder="Nhập email" />
+              <Input prefix={<MailOutlined />} placeholder="Nhập email" />
             </Form.Item>
 
+            {/* Địa chỉ */}
             <Form.Item
               name="address"
               label="Địa chỉ"
               rules={[{ required: true, message: "Vui lòng nhập Địa chỉ!" }]}
             >
-              <Input placeholder="Nhập địa chỉ" />
+              <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
             </Form.Item>
-
-            <Space
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                width: "100%",
-              }}
-            ></Space>
           </Form>
         </Modal>
       </Row>

@@ -74,6 +74,8 @@ const Accounts = () => {
           pageSize,
           searchText
         );
+        console.log(res);
+        
         if (isMounted) {
           // Kiểm tra dữ liệu trước khi set state
           if (res.data && Array.isArray(res.data)) {
@@ -294,17 +296,22 @@ const Accounts = () => {
       title: "Vai trò",
       dataIndex: "roles",
       key: "roles",
-      render: (roles) =>
-        roles.length > 0 ? (
-          roles.map((role) => (
-            <Tag color="blue" key={role.id}>
-              {role.name}
-            </Tag>
-          ))
-        ) : (
-          <Tag color="gray">Chưa có</Tag>
-        ),
-    },
+      render: (roles) => {
+        if (Array.isArray(roles)) {
+          return roles.length > 0 ? (
+            roles.map((role) => (
+              <Tag color="blue" key={role.id}>
+                {role.name}
+              </Tag>
+            ))
+          ) : (
+            <Tag color="gray">Chưa có</Tag>
+          );
+        }
+        return <Tag color="gray">Chưa có</Tag>;
+      },
+    }
+    ,
     ActionColumn(handleEditData, handleDelete),
   ];
 
@@ -478,21 +485,27 @@ const Accounts = () => {
               </Form.Item>
 
               {/* Quyền */}
-              <Col span={24}>
+              {/* <Col span={24}>
                 <Form.Item
                   name="roles"
                   label="Quyền"
                   rules={[{ required: true, message: "Vui lòng chọn quyền!" }]}
                 >
-                  <Select mode="multiple" placeholder="Chọn quyền">
-                    {roles.map((role) => (
-                      <Select.Option key={role.id} value={role.id}>
-                        {role.name} - {role.description}
-                      </Select.Option>
-                    ))}
+                  <Select
+                    mode="multiple"
+                    placeholder="Chọn quyền"
+                    // Remove the default 'USER' role selection logic, as it is handled on the backend.
+                  >
+                    {roles
+                      .filter((role) => role.name !== "USER")
+                      .map((role) => (
+                        <Select.Option key={role.id} value={role.id}>
+                          {role.name} - {role.description}
+                        </Select.Option>
+                      ))}
                   </Select>
                 </Form.Item>
-              </Col>
+              </Col> */}
             </Row>
 
             {/* Buttons */}

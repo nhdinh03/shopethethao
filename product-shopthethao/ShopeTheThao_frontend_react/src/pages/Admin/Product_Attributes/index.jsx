@@ -12,7 +12,7 @@ import {
   Select,
   Row,
 } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, UserOutlined } from "@ant-design/icons";
 import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
 import "..//index.scss";
@@ -147,7 +147,7 @@ const ProductAttributes = () => {
                 { required: true, message: "Vui lòng nhập tên kích thước!" },
               ]}
             >
-              <Input placeholder="Nhập tên kích thước" />
+              <Input prefix={<UserOutlined />} placeholder="Nhập tên kích thước" />
             </Form.Item>
             <Space
               style={{
