@@ -1,10 +1,10 @@
 import BaseApi from "api/global/baseApi";
 
-class Stock_Receipts  extends BaseApi {
+class StockReceipts  extends BaseApi {
   constructor() {
     super("stockReceipts");
   }
 }
 
-const stock_ReceiptsAPi  = new Stock_Receipts ();
+const stock_ReceiptsAPi  = new StockReceipts ();
 export default stock_ReceiptsAPi;

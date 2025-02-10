@@ -1,35 +1,64 @@
-// .stock-receipts-container {
-//     padding: 20px;
+.header-container {
+    display: flex;
+    justify-content: flex-end; // 🔹 Căn phải
+    align-items: center;
+    width: 100%;
+    margin-bottom: 12px; // 🔹 Giảm margin cho gọn hơn
+    
+    .add-btn{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px; // 🔹 Nhỏ lại một chút
+      font-weight: 600; // 🔹 Giữ độ đậm vừa phải
+      background-color: #1890ff;
+      border: none;
+      padding: 6px 12px; // 🔹 Thu nhỏ padding cho vừa tay
+      transition: all 0.2s ease-in-out;
+      border-radius: 6px; // 🔹 Bớt bo góc lại
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+      min-width: 130px; // 🔹 Giữ cho nút không bị quá nhỏ
+      height: 36px; // 🔹 Đặt chiều cao cố định để đồng bộ UI
   
-//     .receipts-table {
-//       margin-top: 20px;
-//     }
+      &:hover {
+        background-color: #40a9ff;
+        transform: scale(1.03); // 🔥 Hiệu ứng hover nhẹ hơn
+      }
   
-//     .receipt-card {
-//       margin-top: 20px;
+      &:active {
+        transform: scale(0.98); // 🔹 Hiệu ứng nhấn xuống mượt hơn
+      }
+    }
+  }
   
-//       .receipt-title {
-//         text-align: center;
-//         margin-bottom: 20px;
-//       }
   
-//       .label {
-//         font-weight: bold;
-//         color: #1890ff;
-//       }
   
-//       .price {
-//         color: #52c41a;
-//         font-weight: bold;
-//       }
+  .ellipsis-text {
+    display: inline-block;
+    max-width: 300px; // Giới hạn chiều rộng
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: color 0.1s ease-in-out;
   
-//       .receipt-table {
-//         margin-top: 20px;
+    // &:hover {
+    //   color: #1890ff; // Màu xanh khi hover
+    // }
+  }
   
-//         .ant-table-thead > tr > th {
-//           background-color: #f0f2f5;
-//           font-weight: bold;
-//         }
-//       }
-//     }
-//   }
+  /* Giới hạn chiều rộng của cột Kích cỡ, Số lượng và Giá tiền */
+  .space-vertical {
+    margin-bottom: 10px;  /* Tạo khoảng cách giữa các mục */
+  }
+  
+  /* Giảm độ rộng của cột nếu cần */
+  .ant-table-thead > tr > th {
+    text-align: center; /* Căn giữa tiêu đề */
+  }
+  
+  /* Tạo đường viền để bảng trông rõ ràng hơn */
+  .ant-table-cell {
+    padding: 12px; /* Tăng khoảng cách trong các ô */
+  }
+  

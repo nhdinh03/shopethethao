@@ -12,7 +12,13 @@ import {
   Select,
   Row,
 } from "antd";
-import { HomeOutlined, MailOutlined, PhoneOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  HomeOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  PlusOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import PaginationComponent from "components/PaginationComponent";
 import { suppliersApi } from "api/Admin";
 import "..//index.scss";
@@ -155,44 +161,52 @@ const Suppliers = () => {
           className={styles.modalWidth}
         >
           <Form form={form} layout="vertical">
-    
-    {/* Tên Thương hiệu */}
-    <Form.Item
-      name="name"
-      label="Tên Thương hiệu"
-      rules={[{ required: true, message: "Vui lòng nhập tên Thương hiệu!" }]}
-    >
-      <Input prefix={<UserOutlined />} placeholder="Nhập tên Thương hiệu" />
-    </Form.Item>
+            {/* Tên Thương hiệu */}
+            <Form.Item
+              name="name"
+              label="Tên Thương hiệu"
+              rules={[
+                { required: true, message: "Vui lòng nhập tên Thương hiệu!" },
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Nhập tên Thương hiệu"
+              />
+            </Form.Item>
 
-    {/* Số điện thoại */}
-    <Form.Item
-      name="phoneNumber"
-      label="Số điện thoại"
-      rules={[{ required: true, message: "Vui lòng nhập Số điện thoại!" }]}
-    >
-      <Input prefix={<PhoneOutlined />} placeholder="Vui lòng nhập Số điện thoại" />
-    </Form.Item>
+            {/* Số điện thoại */}
+            <Form.Item
+              name="phoneNumber"
+              label="Số điện thoại"
+              rules={[
+                { required: true, message: "Vui lòng nhập Số điện thoại!" },
+              ]}
+            >
+              <Input
+                prefix={<PhoneOutlined />}
+                placeholder="Vui lòng nhập Số điện thoại"
+              />
+            </Form.Item>
 
-    {/* Email */}
-    <Form.Item
-      name="email"
-      label="Email"
-      rules={[{ required: true, message: "Vui lòng nhập email!" }]}
-    >
-      <Input prefix={<MailOutlined />} placeholder="Nhập email" />
-    </Form.Item>
+            {/* Email */}
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[{ required: true, message: "Vui lòng nhập email!" }]}
+            >
+              <Input prefix={<MailOutlined />} placeholder="Nhập email" />
+            </Form.Item>
 
-    {/* Địa chỉ */}
-    <Form.Item
-      name="address"
-      label="Địa chỉ"
-      rules={[{ required: true, message: "Vui lòng nhập Địa chỉ!" }]}
-    >
-      <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
-    </Form.Item>
-
-  </Form>
+            {/* Địa chỉ */}
+            <Form.Item
+              name="address"
+              label="Địa chỉ"
+              rules={[{ required: true, message: "Vui lòng nhập Địa chỉ!" }]}
+            >
+              <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
+            </Form.Item>
+          </Form>
         </Modal>
       </Row>
       <div className="table-container">

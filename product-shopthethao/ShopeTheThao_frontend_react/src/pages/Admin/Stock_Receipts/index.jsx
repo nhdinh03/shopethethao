@@ -32,17 +32,19 @@ import {
 import { productsApi, suppliersApi, stock_ReceiptsAPi } from "api/Admin";
 import moment from "moment";
 import "..//index.scss";
-import brandsApi from "api/Admin/Brands/Brands";
+
 import PaginationComponent from "components/PaginationComponent"; // Your custom pagination component
 import {
   CalendarOutlined,
   DollarOutlined,
   NumberOutlined,
+  PlusOutlined,
   RedoOutlined,
   TagOutlined,
   TrademarkOutlined,
 } from "@ant-design/icons";
-
+import brandsApi from "api/Admin/Brands/Brands";
+import styles from "..//modalStyles.module.scss";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -65,7 +67,8 @@ const Stock_Receipts = () => {
   const [pageSize, setPageSize] = useState(5); // Number of items per page
   const [totalItems, setTotalItems] = useState(0); // Total number of items for pagination
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-
+  const [brands, setBrands] = useState([]);
+  const [open, setOpen] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -75,35 +78,41 @@ const Stock_Receipts = () => {
           pageSize,
           searchText
         );
-        setStockReceipts(stockReceiptsRes.data);
+        const stockReceipts = stockReceiptsRes.data.map((receipt) => ({
+          ...receipt,
+        }));
+        setStockReceipts(stockReceipts);
         setTotalItems(stockReceiptsRes.totalItems);
-
-        const productsRes = await productsApi.getAll();
-        setProducts(productsRes.data);
-
-        const suppliersRes = await suppliersApi.getAll();
-        setSuppliers(suppliersRes.data);
-
-        const brandsRes = await brandsApi.getAll();
-        setBrand(brandsRes.data);
-
         setLoading(false);
       } catch (error) {
         setLoading(false);
         message.error("Không thể lấy danh sách dữ liệu. Vui lòng thử lại!");
       }
     };
+
     fetchData();
-  }, [currentPage, pageSize, searchText, workSomeThing]); // Trigger fetch when page or page size changes
+  }, [currentPage, pageSize, searchText, workSomeThing]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const productsRes = await productsApi.getAll();
+        setProducts(productsRes.data);
+        const suppliersRes = await suppliersApi.getAll();
+        setSuppliers(suppliersRes.data);
+        const brandsRes = await brandsApi.getAll();
+        setBrands(brandsRes.data);
+      } catch (error) {
+        message.error("Không thể lấy danh sách dữ liệu. Vui lòng thử lại!");
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handlePageSizeChange = (value) => {
     setPageSize(value);
     setCurrentPage(1); // Reset to page 1 when page size is changed
-  };
-
-  const handleViewReceipt = (record) => {
-    setSelectedReceipt(record);
-    setPrintModalVisible(true);
   };
 
   const handlePrint = () => {
@@ -119,12 +128,10 @@ const Stock_Receipts = () => {
   const handleEdit = (record) => {
     form.setFieldsValue({
       id: record.id,
-      productId: record.product?.id,
-      supplierId: record.supplier?.id,
-      brandId: record.brand?.id,
+      supplierId: record.supplierName,
+      brandId: record.brandName,
       orderDate: moment(record.orderDate),
-      quantity: record.quantity,
-      price: record.price,
+      receiptProducts: record.receiptProducts || [],
     });
     setEditMode(true);
     setModalVisible(true);
@@ -133,28 +140,64 @@ const Stock_Receipts = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      const { productId, supplierId, brandId, ...restValues } = values;
+      const { receiptProducts, supplierId, brandId, orderDate, ...restValues } =
+        values;
+
+      // Kiểm tra ngày nhập kho không ở trong quá khứ
+      if (moment(orderDate).isBefore(moment(), "day")) {
+        message.error("Ngày nhập kho không được ở trong quá khứ!");
+        return;
+      }
+
+      // Kiểm tra số lượng và giá sản phẩm
+      const invalidProducts = receiptProducts.filter((product) => {
+        return product.quantity <= 0 || product.price <= 0;
+      });
+
+      if (invalidProducts.length > 0) {
+        message.error("Số lượng và giá sản phẩm phải lớn hơn 0!");
+        return;
+      }
+
+      const processedProducts = receiptProducts.map((product) => ({
+        productId: product.productId,
+        quantity: product.quantity,
+        price: product.price,
+        totalAmount: product.quantity * product.price,
+      }));
+
+      // Tạo đối tượng gửi tới backend
       const res = {
         ...restValues,
-        product: { id: productId },
-        supplier: { id: supplierId },
-        brand: { id: brandId },
+        supplierId,
+        brandId,
+        orderDate: moment(orderDate).format("YYYY-MM-DD"), // Định dạng ngày
+        receiptProducts: processedProducts, // Gán các sản phẩm đã xử lý
       };
 
+      console.log(res); // Kiểm tra đối tượng dữ liệu đã gửi
+
+      // Kiểm tra chế độ sửa hay thêm mới
       if (editMode) {
         await stock_ReceiptsAPi.update(res.id, res);
-        message.success("Cập nhật phiếu nhập thành công!");
+        message.success("Cập nhật phiếu nhập kho thành công!");
       } else {
-        delete res.id;
         await stock_ReceiptsAPi.create(res);
-        message.success("Thêm phiếu nhập thành công!");
+        message.success("Thêm phiếu nhập kho thành công!");
       }
-      setModalVisible(false);
-      form.resetFields();
-      setWorkSomeThing([!workSomeThing]);
+
+      setWorkSomeThing([!workSomeThing]); // Trigger to refresh the data
+      setModalVisible(false); // Close modal
+      form.resetFields(); // Reset form fields
     } catch (error) {
-      message.error("Lỗi khi lưu phiếu nhập!");
+      message.error("Lỗi khi lưu phiếu nhập kho!");
     }
+  };
+
+  const handleViewReceipt = (record) => {
+    console.log(record); // Check the structure of the `record`
+    setSelectedReceipt(record);
+    setPrintModalVisible(true);
   };
 
   const handleDelete = async (id) => {
@@ -168,340 +211,318 @@ const Stock_Receipts = () => {
     }
   };
 
+  const columns = [
+    { title: "🆔 ID", dataIndex: "id", key: "id", align: "center" },
+    {
+      title: "📅 Ngày nhập",
+      dataIndex: "orderDate",
+      key: "orderDate",
+      align: "center",
+      render: (orderDate) => moment(orderDate).format("DD/MM/YYYY"),
+    },
+    {
+      title: "🏢 Nhà cung cấp",
+      dataIndex: "supplierName",
+      key: "supplierName",
+      align: "center",
+    },
+    {
+      title: "🏢 Thương Hiệu",
+      dataIndex: "brandName",
+      key: "brandName",
+      align: "center",
+    },
+    {
+      title: "Tên sản phẩm",
+      dataIndex: "productNames",
+      key: "productNames",
+      align: "center",
+      render: (productNames) => (
+        <div>
+          {productNames?.map((product, index) => (
+            <div key={index}>{product}</div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      title: "⚙️ Hành động",
+      key: "actions",
+      align: "center",
+      render: (_, record) => (
+        <Space size="middle">
+          <Tooltip title="Sửa">
+            <Button
+              type="primary"
+              icon={<FontAwesomeIcon icon={faEdit} />}
+              onClick={() => handleEdit(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Xóa">
+            <Button
+              danger
+              icon={<FontAwesomeIcon icon={faTrashAlt} />}
+              onClick={() => handleDelete(record.id)}
+            />
+          </Tooltip>
+          <Tooltip title="Xem chi tiết">
+            <Button
+              icon={<FontAwesomeIcon icon={faPrint} />}
+              onClick={() => handleViewReceipt(record)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
+
   return (
-    <div className="stock-receipts-container">
-      <Row justify="space-between">
-        <Title level={2}>📦 Quản lý Phiếu Nhập Kho</Title>
-        <Button
-          type="primary"
-          icon={<FontAwesomeIcon icon={faPlus} />}
-          onClick={handleAddNew}
+    <div style={{ padding: 10 }}>
+      <Row>
+        <h2>Phiếu Nhập Kho</h2>
+
+        <div className="header-container">
+          <Button
+            type="primary"
+            icon={<FontAwesomeIcon icon={faPlus} />}
+            onClick={handleAddNew}
+          >
+            Nhập Phiếu Mới
+          </Button>
+          s{" "}
+        </div>
+
+        <Modal
+          title={editMode ? "Sửa Phiếu Nhập Kho" : "Thêm Phiếu Nhập Kho"}
+          open={modalVisible}
+          onCancel={() => setModalVisible(false)}
+          onOk={handleModalOk}
+          className={styles.modalWidth}
         >
-          Nhập Phiếu Mới
-        </Button>
-      </Row>
-      <Card className="receipts-table">
-        <Table
-          columns={[
-            { title: "🆔 ID", dataIndex: "id", key: "id", align: "center" },
-            {
-              title: "📅 Ngày nhập",
-              dataIndex: "orderDate",
-              key: "orderDate",
-              align: "center",
-            },
-            {
-              title: "🏷️ Sản phẩm",
-              dataIndex: ["product", "name"],
-              key: "product.name",
-              align: "center",
-            },
-            {
-              title: "🏢 Nhà cung cấp",
-              dataIndex: ["supplier", "name"],
-              key: "supplier.name",
-              align: "center",
-            },
-            {
-              title: "🏢 Thương Hiệu",
-              dataIndex: ["brand", "name"],
-              key: "brand.name",
-              align: "center",
-            },
-            {
-              title: "📂 Loại sản phẩm",
-              dataIndex: ["product", "categorie", "name"],
-              key: "product.categorie.name",
-              align: "center",
-            },
-            {
-              title: "📦 Số lượng",
-              dataIndex: "quantity",
-              key: "quantity",
-              align: "center",
-            },
-            {
-              title: "💰 Tổng Giá nhập",
-              dataIndex: "price",
-              key: "price",
-              align: "center",
-              render: (price) => `${price.toLocaleString()} VND`,
-            },
-            {
-              title: "⚙️ Hành động",
-              key: "actions",
-              align: "center",
-              render: (_, record) => (
-                <Space size="middle">
-                  <Tooltip title="In Phiếu Nhập">
-                    <Button
-                      type="default"
-                      icon={<FontAwesomeIcon icon={faPrint} />}
-                      onClick={() => handleViewReceipt(record)}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Sửa">
-                    <Button
-                      type="primary"
-                      icon={<FontAwesomeIcon icon={faEdit} />}
-                      onClick={() => handleEdit(record)}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Xóa">
-                    <Button
-                      danger
-                      icon={<FontAwesomeIcon icon={faTrashAlt} />}
-                      onClick={() => handleDelete(record.id)}
-                    />
-                  </Tooltip>
-                </Space>
-              ),
-            },
+          <Form form={form} layout="vertical">
+            <Form.Item
+              label="🏢 Nhà cung cấp"
+              name="supplierId"
+              rules={[{ required: true, message: "Chọn nhà cung cấp!" }]}
+            >
+              <Select placeholder="Chọn nhà cung cấp">
+                {suppliers.map((s) => (
+                  <Option key={s.id} value={s.id}>
+                    {s.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="🏢 Thương Hiệu"
+              name="brandId"
+              rules={[{ required: true, message: "Chọn thương hiệu!" }]}
+            >
+              <Select placeholder="Chọn thương hiệu">
+                {brands.map((b) => (
+                  <Option key={b.id} value={b.id}>
+                    {b.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="📅 Ngày nhập"
+              name="orderDate"
+              rules={[{ required: true, message: "Chọn ngày nhập!" }]}
+            >
+              <DatePicker style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.List
+              name="receiptProducts"
+              initialValue={[]}
+              rules={[
+                {
+                  validator: async (_, fields) => {
+                    if (!fields || fields.length < 1) {
+                      return Promise.reject(
+                        new Error("Ít nhất phải có một sản phẩm!")
+                      );
+                    }
+                  },
+                },
+              ]}
+            >
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(
+                    ({ fieldKey, fieldName, name, fieldClassName }) => (
+                      <Row gutter={16} key={fieldName}>
+                        <Col span={8}>
+                          <Form.Item
+                            {...fieldClassName}
+                            label="Sản phẩm"
+                            name={[name, "productId"]}
+                            rules={[
+                              { required: true, message: "Chọn sản phẩm!" },
+                            ]}
+                          >
+                            <Select placeholder="Chọn sản phẩm">
+                              {products.map((product) => (
+                                <Option key={product.id} value={product.id}>
+                                  {product.name}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={8}>
+                          <Form.Item
+                            {...fieldClassName}
+                            label="Số lượng"
+                            name={[name, "quantity"]}
+                            rules={[
+                              { required: true, message: "Nhập số lượng!" },
+                            ]}
+                          >
+                            <InputNumber min={1} style={{ width: "100%" }} />
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={8}>
+                          <Form.Item
+                            {...fieldClassName}
+                            label="Giá"
+                            name={[name, "price"]}
+                            rules={[{ required: true, message: "Nhập giá!" }]}
+                          >
+                            <InputNumber min={0} style={{ width: "100%" }} />
+                          </Form.Item>
+                        </Col>
+
+                        <Col span={24} style={{ textAlign: "right" }}>
+                          <Button
+                            danger
+                            onClick={() => remove(name)}
+                            icon={<FontAwesomeIcon icon={faTrashAlt} />}
+                          />
+                        </Col>
+                      </Row>
+                    )
+                  )}
+
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    icon={<FontAwesomeIcon icon={faPlus} />}
+                  >
+                    Thêm sản phẩm
+                  </Button>
+                </>
+              )}
+            </Form.List>
+          </Form>
+        </Modal>
+
+        <Modal
+          title="Chi Tiết Phiếu Nhập Kho"
+          open={printModalVisible}
+          onCancel={() => setPrintModalVisible(false)}
+          footer={[
+            <Button key="print" type="primary" onClick={handlePrint}>
+              <FontAwesomeIcon icon={faPrint} /> In Phiếu
+            </Button>,
+            <Button key="close" onClick={() => setPrintModalVisible(false)}>
+              Đóng
+            </Button>,
           ]}
+          width={800}
+        >
+          {selectedReceipt && (
+            <div ref={printRef}>
+              <Title level={4}>Thông Tin Phiếu Nhập Kho</Title>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Text strong>Mã Phiếu: </Text>
+                  <Text>{selectedReceipt.id}</Text>
+                </Col>
+                <Col span={12}>
+                  <Text strong>Ngày Nhập: </Text>
+                  <Text>
+                    {moment(selectedReceipt.orderDate).format("DD/MM/YYYY")}
+                  </Text>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Text strong>Nhà Cung Cấp: </Text>
+                  <Text>{selectedReceipt.supplierName}</Text>{" "}
+                  {/* Hiển thị nhà cung cấp */}
+                </Col>
+                <Col span={12}>
+                  <Text strong>Thương Hiệu: </Text>
+                  <Text>{selectedReceipt.brandName}</Text>{" "}
+                  {/* Hiển thị thương hiệu */}
+                </Col>
+              </Row>
+              <Divider />
+
+              <Title level={5}>Danh Sách Sản Phẩm</Title>
+              <Table
+                columns={[
+                  {
+                    title: "Tên Sản Phẩm",
+                    dataIndex: "productName",
+                    key: "productName",
+                  },
+                  { title: "Số Lượng", dataIndex: "quantity", key: "quantity" },
+                  { title: "Đơn Giá", dataIndex: "price", key: "price" },
+                  {
+                    title: "Thành Tiền",
+                    dataIndex: "totalAmount",
+                    key: "totalAmount",
+                  },
+                ]}
+                dataSource={selectedReceipt.receiptProducts}
+                pagination={false}
+                rowKey={(record) => `${record.productId}`}
+              />
+            </div>
+          )}
+        </Modal>
+      </Row>
+      <div className="table-container">
+        <Table
+          columns={columns}
           pagination={false}
           loading={loading}
           dataSource={stockReceipts.map((receipt) => ({
             ...receipt,
             key: receipt.id,
+            productNames: receipt.receiptProducts?.map(
+              (product) => product.productName
+            ),
+            totalAmount: receipt.receiptProducts?.map(
+              (product) =>
+                `${product.quantity} x ${product.price} = ${product.totalAmount}`
+            ),
           }))}
         />
-      </Card>
-
-      {/* Modal to Add/Edit Stock Receipt */}
-      <Modal
-        title={
-          editMode ? "✏️ Sửa Phiếu nhập kho Nhập" : "🆕 Nhập Phiếu nhập kho Mới"
-        }
-        open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        onOk={handleModalOk}
-      >
-        <Form layout="vertical" form={form}>
-          {/* Form Fields */}
-          <Form.Item name="id" hidden>
-            <InputNumber />
-          </Form.Item>
-          <Form.Item
-            label="📦 Chọn Sản Phẩm"
-            name="productId"
-            rules={[{ required: true, message: "Chọn sản phẩm!" }]}
-          >
-            <Select placeholder="Chọn sản phẩm" prefix={<TagOutlined />}>
-              {products.map((p) => (
-                <Option key={p.id} value={p.id}>
-                  {p.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="🏢 Nhà cung cấp"
-            name="supplierId"
-            rules={[{ required: true, message: "Chọn nhà cung cấp!" }]}
-          >
-            <Select placeholder="Chọn nhà cung cấp" prefix={<TagOutlined />}>
-              {suppliers.map((s) => (
-                <Option key={s.id} value={s.id}>
-                  {s.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="🏢 Thương hiệu"
-            name="brandId"
-            rules={[{ required: true, message: "Chọn thương hiệu!" }]}
-          >
-            <Select
-              placeholder="Chọn thương hiệu"
-              prefix={<TrademarkOutlined />}
-            >
-              {brand.map((b) => (
-                <Option key={b.id} value={b.id}>
-                  {b.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="📅 Ngày nhập"
-            name="orderDate"
-            rules={[{ required: true, message: "Chọn ngày nhập!" }]}
-          >
-            <DatePicker
-              style={{ width: "100%" }}
-              prefix={<CalendarOutlined />}
-            />
-          </Form.Item>
-          <Form.Item
-            label="📦 Số lượng"
-            name="quantity"
-            rules={[{ required: true, message: "Nhập số lượng!" }]}
-          >
-            <InputNumber
-              style={{ width: "100%" }}
-              prefix={<NumberOutlined />}
-            />
-          </Form.Item>
-          <Form.Item
-            label="💰 Giá nhập"
-            name="price"
-            rules={[{ required: true, message: "Nhập giá nhập!" }]}
-          >
-            <InputNumber
-              style={{ width: "100%" }}
-              prefix={<DollarOutlined />}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        title={
-          <span style={{ fontWeight: "bold" }}>📜 Chi Tiết Phiếu Nhập Kho</span>
-        }
-        open={printModalVisible}
-        onCancel={() => setPrintModalVisible(false)}
-        footer={[
-          <Button
-            key="print"
-            type="primary"
-            icon={<FontAwesomeIcon icon={faPrint} />}
-            onClick={handlePrint}
-          >
-            In Phiếu Nhập
-          </Button>,
-          <Button key="close" onClick={() => setPrintModalVisible(false)}>
-            Đóng
-          </Button>,
-        ]}
-        width={750}
-      >
-        {selectedReceipt && (
-          <div ref={printRef} className="printable-receipt">
-            <Card
-              style={{
-                padding: 20,
-                borderRadius: 10,
-                border: "1px solid #ddd",
-              }}
-            >
-              {/* Thông tin chung */}
-              <Title
-                level={4}
-                style={{ marginBottom: 16, color: "#333", textAlign: "center" }}
-              >
-                📌 Thông Tin Phiếu Nhập
-              </Title>
-              <Row gutter={[16, 16]} style={{ fontSize: 14 }}>
-                <Col span={12}>
-                  <Text strong>🆔 Mã phiếu:</Text> {selectedReceipt.id}
-                </Col>
-                <Col span={12}>
-                  <Text strong>
-                    <FontAwesomeIcon icon={faCalendarAlt} /> Ngày nhập:
-                  </Text>{" "}
-                  {moment(selectedReceipt.orderDate).format("DD/MM/YYYY")}
-                </Col>
-              </Row>
-
-              <Divider />
-
-              {/* Thông tin sản phẩm */}
-              <Title
-                level={4}
-                style={{ marginBottom: 16, color: "#333", textAlign: "center" }}
-              >
-                📦 Thông Tin Sản Phẩm
-              </Title>
-              <Row gutter={[16, 16]} style={{ fontSize: 14 }}>
-                <Col span={12}>
-                  <Text strong>
-                    <FontAwesomeIcon icon={faBox} /> Tên sản phẩm:
-                  </Text>{" "}
-                  {selectedReceipt.product?.name}
-                </Col>
-                <Col span={12}>
-                  <Text strong>
-                    <FontAwesomeIcon icon={faTags} /> Danh mục:
-                  </Text>{" "}
-                  {selectedReceipt.product?.categorie?.name}
-                </Col>
-              </Row>
-
-              <Divider />
-
-              {/* Thông tin nhà cung cấp */}
-              <Title
-                level={4}
-                style={{ marginBottom: 16, color: "#333", textAlign: "center" }}
-              >
-                🏭 Nhà Cung Cấp & Thương Hiệu
-              </Title>
-              <Row gutter={[16, 16]} style={{ fontSize: 14 }}>
-                <Col span={12}>
-                  <Text strong>
-                    <FontAwesomeIcon icon={faIndustry} /> Nhà cung cấp:
-                  </Text>{" "}
-                  {selectedReceipt.supplier?.name}
-                </Col>
-                <Col span={12}>
-                  <Text strong>
-                    <FontAwesomeIcon icon={faShoppingCart} /> Thương hiệu:
-                  </Text>{" "}
-                  {selectedReceipt.brand?.name}
-                </Col>
-              </Row>
-
-              <Divider />
-
-              {/* Thông tin giá nhập */}
-              <Title
-                level={4}
-                style={{ marginBottom: 16, color: "#333", textAlign: "center" }}
-              >
-                💰 Chi Tiết Giá Nhập
-              </Title>
-              <Row gutter={[16, 16]} style={{ fontSize: 14 }}>
-                <Col span={12}>
-                  <Text strong>
-                    <FontAwesomeIcon icon={faShoppingCart} /> Số lượng:
-                  </Text>{" "}
-                  {selectedReceipt.quantity}
-                </Col>
-                <Col span={12}>
-                  <Text strong>
-                    <FontAwesomeIcon icon={faMoneyBillWave} /> Tổng giá nhập:
-                  </Text>{" "}
-                  {selectedReceipt.price.toLocaleString()} VND
-                </Col>
-              </Row>
-            </Card>
-          </div>
-        )}
-      </Modal>
-
-      <div className="table-container">
         <div
           style={{
             display: "flex",
             justifyContent: "center",
-            alignItems: "center",
             marginTop: 10,
             gap: 10,
           }}
         >
-          {/* Gọi component phân trang */}
           <PaginationComponent
             totalPages={totalPages}
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
           />
-
-          {/* Dropdown chọn số lượng hàng */}
           <Select
             value={pageSize}
             style={{ width: 120, marginTop: 20 }}
-            onChange={handlePageSizeChange} // ✅ Gọi hàm mới để reset trang về 1
+            onChange={handlePageSizeChange} // Reset to page 1 when page size changes
           >
             <Select.Option value={5}>5 hàng</Select.Option>
             <Select.Option value={10}>10 hàng</Select.Option>

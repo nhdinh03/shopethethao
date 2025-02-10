@@ -1,46 +1,52 @@
 package com.shopethethao.modules.stock_receipts;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.shopethethao.modules.Receipt_Products.ReceiptProduct;
+import com.shopethethao.modules.accountRole.AccountRole;
 import com.shopethethao.modules.brands.Brand;
-import com.shopethethao.modules.products.Product;
 import com.shopethethao.modules.suppliers.Supplier;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "Stock_Receipts")
+// @AllArgsConstructor
+// @NoArgsConstructor
+@Data
+@Table(name = "stock_receipts")
 public class StockReceipt {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
 
-    @Column(name = "quantity", nullable = false)
-    private int quantity;
-
-    @Column(name = "price", nullable = false, precision = 18, scale = 2)
-    private BigDecimal price;
-
-    @Column(name = "order_date", nullable = false)
-    private LocalDate orderDate;
-
-
     @ManyToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
-    private Product product;
-
-    @ManyToOne
-    @JoinColumn(name = "supplier_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
     @ManyToOne
-    @JoinColumn(name = "brand_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
+
+    @Column(name = "order_date")
+    private LocalDate orderDate;
+
+    @OneToMany(mappedBy = "stockReceipt", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference // Đảm bảo sử dụng annotation này để tránh vòng lặp vô hạn
+    private List<ReceiptProduct> receiptProducts;
+
 }
