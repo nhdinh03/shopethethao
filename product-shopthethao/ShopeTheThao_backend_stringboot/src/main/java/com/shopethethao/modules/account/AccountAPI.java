@@ -3,6 +3,7 @@ package com.shopethethao.modules.account;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -35,10 +36,11 @@ import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.auth.repository.RoleRepository;
 import com.shopethethao.dto.AccountServiceDTO;
 import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.lock_reasons.LockReasons;
+import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
 import com.shopethethao.modules.role.RoleDAO;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
-
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
@@ -53,7 +55,7 @@ public class AccountAPI {
     private AccountServiceDTO accountService;
 
     @Autowired
-    private RoleDAO roleDAO;
+    private LockReasonsDAO lockReasonsDAO;
 
     @Autowired
     private VerificationsDAO verificationDAO;
@@ -74,6 +76,7 @@ public class AccountAPI {
     @GetMapping("/get/all")
     public ResponseEntity<List<Account>> findAll() {
         List<Account> accounts = accountDao.findAll();
+
         return ResponseEntity.ok(accounts);
     }
 
@@ -198,15 +201,14 @@ public class AccountAPI {
         }
     }
 
-    // ✅ Cập nhật tài khoản
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAccount(@PathVariable("id") String id,
-            @RequestBody Account updatedAccount) {
+    public ResponseEntity<?> updateAccount(@PathVariable("id") String id, @RequestBody Account updatedAccount) {
         try {
+            // Kiểm tra tài khoản tồn tại
             Optional<Account> existingAccount = accountDao.findById(id);
             if (existingAccount.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Người dùng không tồn tại");
+                        .body(new MessageResponse("Người dùng không tồn tại"));
             }
 
             // Cập nhật thông tin tài khoản
@@ -218,21 +220,61 @@ public class AccountAPI {
             account.setBirthday(updatedAccount.getBirthday());
             account.setGender(updatedAccount.getGender());
             account.setImage(updatedAccount.getImage());
+            account.setStatus(updatedAccount.getStatus()); // Cập nhật trạng thái
             account.setVerified(updatedAccount.getVerified());
             account.setPoints(updatedAccount.getPoints());
 
+            // Nếu có mật khẩu mới, mã hóa lại mật khẩu
+            if (updatedAccount.getPassword() != null && !updatedAccount.getPassword().isEmpty()) {
+                account.setPassword(encoder.encode(updatedAccount.getPassword()));
+            }
+
+            // Lưu lại thay đổi
             accountDao.save(account);
-            return ResponseEntity.ok(account);
+
+            // Nếu trạng thái là khóa (status = 0), lưu lý do khóa
+            if (updatedAccount.getStatus() == 0) {
+                // Lấy danh sách lý do khóa
+                List<LockReasons> lockReasons = updatedAccount.getLockReasons();
+
+                if (lockReasons != null && !lockReasons.isEmpty()) {
+                    // Lấy lý do khóa từ phần tử đầu tiên (nếu có)
+                    String lockReason = lockReasons.get(0).getReason(); // Giả sử mỗi LockReasons có trường 'reason'
+
+                    LockReasons lockReasonEntry = new LockReasons();
+                    lockReasonEntry.setAccount(account); // Gán tài khoản
+                    lockReasonEntry.setReason(lockReason); // Lý do khóa
+                    lockReasonEntry.setCreatedAt(new Date());
+
+                    lockReasonsDAO.save(lockReasonEntry); // Lưu lý do khóa
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new MessageResponse("Lý do khóa không có trong danh sách!"));
+                }
+            }
+
+            return ResponseEntity.ok(new MessageResponse("Cập nhật tài khoản thành công!"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Server error, vui lòng thử lại sau!");
+                    .body(new MessageResponse("Lỗi hệ thống: " + e.getMessage()));
         }
     }
 
-
+    // ✅ Xóa tài khoản và LockReasons liên quan
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAccountById(@PathVariable String id) {
         try {
+            Optional<Account> account = accountDao.findById(id);
+            if (account.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Tài khoản không tồn tại.");
+            }
+
+            // Xoá tài khoản và LockReasons liên quan
+            Account existingAccount = account.get();
+            // CascadeType.ALL ensures that LockReasons will be deleted as well
+            existingAccount.getLockReasons().clear(); // Clear the associated lock reasons if needed (optional)
+
             accountService.deleteAccount(id); // Call deleteAccount method from AccountService
             return ResponseEntity.ok("Tài khoản và vai trò đã được xóa thành công.");
         } catch (Exception e) {
@@ -240,5 +282,4 @@ public class AccountAPI {
                     .body("Lỗi hệ thống, vui lòng thử lại sau.");
         }
     }
-
 }

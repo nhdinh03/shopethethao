@@ -25,6 +25,13 @@ CREATE TABLE Accounts (
 );
 GO
 
+CREATE TABLE dbo.lock_reasons (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    account_id NVARCHAR(100) NOT NULL,
+    reason NVARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (account_id) REFERENCES dbo.Accounts(id)
+);
 
 -- Tạo bảng Roles (Vai trò người dùng)
 CREATE TABLE Roles (
@@ -116,15 +123,13 @@ CREATE TABLE Receipt_Products (
     receipt_id INT,
     product_id INT,
     quantity INT NOT NULL CHECK (quantity >= 0),
-    price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
-    total_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    price DECIMAL(15, 2) NOT NULL CHECK (price >= 0),
+    total_amount DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
     PRIMARY KEY (receipt_id, product_id),
     FOREIGN KEY (receipt_id) REFERENCES Stock_Receipts(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
     CONSTRAINT CHK_TotalAmount CHECK (total_amount = quantity * price) -- Ràng buộc tính toán
 );
-GO
-
 
 
 

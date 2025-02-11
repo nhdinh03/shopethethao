@@ -35,7 +35,6 @@ import styles from "..//modalStyles.module.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 const Products = () => {
-  const { Title, Text } = Typography;
   const [searchText, setSearchText] = useState("");
   const [open, setOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -45,14 +44,12 @@ const Products = () => {
   const [workSomeThing, setWorkSomeThing] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
-
   const [FileList, setFileList] = useState([]);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-
 
   //api
   const sizes = useSizes();
@@ -82,10 +79,8 @@ const Products = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-
       const imagesFileList = values.images?.fileList || [];
       let uploadedImages = [];
-
       // ✅ Upload ảnh trước khi gửi API
       if (imagesFileList.length > 0) {
         uploadedImages = await Promise.all(

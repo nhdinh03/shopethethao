@@ -33,6 +33,8 @@ public interface AccountDAO extends JpaRepository<Account, String> {
             """, nativeQuery = true)
     long countAllUsers();
 
+
+
 //xóa user
     @Modifying
     @Transactional
@@ -40,6 +42,9 @@ public interface AccountDAO extends JpaRepository<Account, String> {
     void deleteById(@Param("id") String id);
 
     // jwt
+
+    List<Account> findByStatus(int status);
+    
 
     List<Account> findAllByOrderByCreatedDateDesc();
 

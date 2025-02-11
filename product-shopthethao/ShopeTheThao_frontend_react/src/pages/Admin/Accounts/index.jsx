@@ -14,6 +14,9 @@ import {
   Upload,
   DatePicker,
   Tag,
+  Tabs,
+  Tooltip,
+  Popconfirm,
 } from "antd";
 import {
   HomeOutlined,
@@ -23,12 +26,21 @@ import {
   UploadOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import PaginationComponent from "components/PaginationComponent";import "..//index.scss";
+import PaginationComponent from "components/PaginationComponent";
+import "..//index.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
-import { accountsUserApi, rolesApi } from "api/Admin";
+import {
+  accountsUserApi,
+  lockreasonsApi,
+  LockreasonsApi,
+  rolesApi,
+} from "api/Admin";
 import dayjs from "dayjs";
 import uploadApi from "api/service/uploadApi";
-import Item from "antd/es/list/Item";
+import axios from "axios";
+import { Edit, Trash2 } from "lucide-react";
+
+const { TabPane } = Tabs;
 
 const Accounts = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -45,24 +57,8 @@ const Accounts = () => {
   const [form] = Form.useForm();
   const [workSomeThing, setWorkSomeThing] = useState(false);
   const [FileList, setFileList] = useState([]);
-  const [roles, setRoles] = useState([]); // Lưu danh sách quyền từ API
-  const [resetForm, setResetForm] = useState(false);
-  const [editData, setEditData] = useState(null);
-  const [posts, setPosts] = useState([]);
-
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const res = await rolesApi.getByPage();
-        setRoles(res.data);
-      } catch (error) {
-        message.error("Lỗi khi tải danh sách quyền!");
-      }
-    };
-    fetchRoles();
-  }, []);
-
-  // Fetch dữ liệu user từ API
+  const [lockedUser, setLockedUser] = useState([]);
+  const [statusChecked, setStatusChecked] = useState(editUser?.status === 1);
   useEffect(() => {
     let isMounted = true;
     const getList = async () => {
@@ -73,13 +69,15 @@ const Accounts = () => {
           pageSize,
           searchText
         );
-        console.log(res);
-        
+
         if (isMounted) {
-          // Kiểm tra dữ liệu trước khi set state
           if (res.data && Array.isArray(res.data)) {
             setUser(res.data);
             setTotalItems(res.totalItems);
+            const lockedAccounts = res.data.filter((user) => user.status === 0);
+            setUser(res.data.filter((user) => user.status === 1));
+            setLockedUser(res.data.filter((user) => user.status === 0));
+            setLockedUser(lockedAccounts);
           } else {
             message.error("Dữ liệu không hợp lệ từ API!");
           }
@@ -97,21 +95,19 @@ const Accounts = () => {
   }, [currentPage, pageSize, searchText, refresh, workSomeThing]);
 
   const handleChange = async ({ fileList }) => {
-    setFileList(fileList); // ✅ Cập nhật danh sách ảnh trên UI
+    setFileList(fileList);
 
     if (fileList.length > 0) {
-      const file = fileList[0].originFileObj || fileList[0]; // ✅ Lấy ảnh gốc
-      console.log("📤 Ảnh chuẩn bị upload:", file);
+      const file = fileList[0].originFileObj || fileList[0];
 
-      const uploadedImage = await uploadApi.post(file); // ✅ Gửi ảnh lên server
-      console.log("🔥 Ảnh sau upload:", uploadedImage);
+      const uploadedImage = await uploadApi.post(file);
 
       if (uploadedImage) {
         setFileList([
           {
             uid: file.uid,
             name: file.name,
-            url: `http://localhost:8081/api/upload/${uploadedImage}`, // ✅ Lưu đường dẫn ảnh
+            url: `http://localhost:8081/api/upload/${uploadedImage}`,
           },
         ]);
       }
@@ -121,12 +117,16 @@ const Accounts = () => {
   const handleEditData = (record) => {
     setEditUser(record);
     setOpen(true);
+
     form.setFieldsValue({
       ...record,
       birthday: record.birthday ? dayjs(record.birthday) : null,
       roles: record.roles ? record.roles.map((role) => role.id) : [],
-      verified: record.verified || false, // Chuyển đổi ngày
+      status: record.status || 0,
+      verified: record.verified || false,
+      lockReasons: record.lockReasons?.[0]?.reason || "",
     });
+    setStatusChecked(record.status === 1);
     const newUploadFile = record.image
       ? [
           {
@@ -139,15 +139,8 @@ const Accounts = () => {
     setFileList(newUploadFile);
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await accountsUserApi.delete(id);
-      message.success("Xóa tài khoản thành công!");
-      setWorkSomeThing(!workSomeThing);
-      setRefresh(!refresh);
-    } catch (error) {
-      message.error("Không thể xóa tài khoản!");
-    }
+  const handleStatus = (e) => {
+    setStatusChecked(e.target.checked); // Cập nhật trạng thái khi người dùng chọn hoặc bỏ chọn checkbox
   };
 
   const onPreview = async (file) => {
@@ -181,48 +174,72 @@ const Accounts = () => {
     }, 0);
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await accountsUserApi.delete(id);
+      message.success("Xóa tài khoản thành công!");
+      setRefresh(!refresh);
+      setWorkSomeThing(!workSomeThing);
+    } catch (error) {
+      message.error("Không thể xóa tài khoản!");
+    }
+  };
+
+  const handleStatusChange = async (lockReasonId) => {
+    try {
+      // Gọi API xóa với đúng id của lockReason
+      await lockreasonsApi.delete(lockReasonId);
+      message.success("Xóa tài khoản thành công!");
+    } catch (error) {
+      console.error("Có lỗi khi xóa lý do khóa:", error);
+      message.error("Không thể xóa lý do khóa, vui lòng thử lại!");
+    }
+  };
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      console.log("📂 Kiểm tra ảnh trong form:", values.image);
 
-      // ✅ Kiểm tra nếu `fileList` đã có ảnh từ server
       let image = FileList.length > 0 ? FileList[0].url.split("/").pop() : null;
-      console.log("🔥 Ảnh cuối cùng gửi API:", image);
 
-      // ✅ Chuẩn bị dữ liệu gửi lên API
       const newUserData = {
         ...values,
-        image: image, // ✅ Lấy đúng tên ảnh đã upload
+        image: image,
         birthday: values.birthday ? values.birthday.format("YYYY-MM-DD") : null,
         roles:
           values.roles?.map((role) =>
             typeof role === "object" ? role.id : role
           ) || [],
+        // status: values.status ? 1 : 0,
+        // lockReasons: values.lockReasons ? [{ reason: values.lockReasons }] : [],
+
+        status: statusChecked ? 1 : 0,
+        lockReasons:
+          !statusChecked && values.lockReasons
+            ? [{ reason: values.lockReasons }]
+            : [],
       };
 
-      console.log("📤 Dữ liệu gửi đi:", JSON.stringify(newUserData, null, 2));
-
-      // ✅ Gửi API để thêm tài khoản mới
-      const res = await accountsUserApi.create(newUserData);
-      console.log("🔄 API Response:", res);
+      let res;
+      if (editUser) {
+        res = await accountsUserApi.update(editUser.id, newUserData);
+        message.success("Cập nhật tài khoản thành công!");
+      } else {
+        res = await accountsUserApi.create(newUserData);
+        message.success("Thêm tài khoản thành công!");
+      }
 
       if (res.status === 200) {
-        message.success("Thêm tài khoản thành công!");
-
-        // Reset form và đóng modal
-        setWorkSomeThing(!workSomeThing);
         setOpen(false);
         form.resetFields();
         setFileList([]);
-        setEditData(null);
         setRefresh((prev) => !prev);
+        setWorkSomeThing(!workSomeThing);
       } else {
         throw new Error(`Lỗi API: ${res.statusText}`);
       }
     } catch (error) {
-      console.error("🚨 Lỗi khi thêm tài khoản:", error);
-      message.error(error.message || "Không thể thêm tài khoản!");
+      console.error("🚨 Lỗi khi thêm/cập nhật tài khoản:", error);
+      message.error(error.message || "Không thể thêm/cập nhật tài khoản!");
     }
   };
 
@@ -231,7 +248,6 @@ const Accounts = () => {
     setCurrentPage(1);
   };
 
-  // Định nghĩa cột bảng
   const columns = [
     { title: "🆔 ID", dataIndex: "id", key: "id" },
     { title: "📞 Số điện thoại", dataIndex: "phone", key: "phone" },
@@ -256,7 +272,6 @@ const Accounts = () => {
         }
       },
     },
-
     {
       title: "🖼️ Ảnh đại diện",
       dataIndex: "image",
@@ -289,6 +304,17 @@ const Accounts = () => {
           <Tag color="red">Chưa xác minh</Tag>
         ),
     },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) =>
+        status === 0 ? (
+          <Tag color="red">Tạm Khóa</Tag>
+        ) : (
+          <Tag color="green">Đang hoạt động</Tag>
+        ),
+    },
     { title: "⭐ Điểm", dataIndex: "points", key: "points" },
     {
       title: "Vai trò",
@@ -308,15 +334,77 @@ const Accounts = () => {
         }
         return <Tag color="gray">Chưa có</Tag>;
       },
-    }
-    ,
+    },
     ActionColumn(handleEditData, handleDelete),
+  ];
+
+  const lockedColumns = [
+    { title: "🆔 ID", dataIndex: "id", key: "id" },
+    { title: "📞 Số điện thoại", dataIndex: "phone", key: "phone" },
+    { title: "👤 Họ tên", dataIndex: "fullname", key: "fullname" },
+    { title: "🏠 Địa chỉ", dataIndex: "address", key: "address" },
+    { title: "✉️ Email", dataIndex: "email", key: "email" },
+    { title: "🎂 Ngày sinh", dataIndex: "birthday", key: "birthday" },
+    {
+      title: "Trạng thái",
+      dataIndex: "verified",
+      key: "verified",
+      render: (verified) =>
+        verified ? (
+          <Tag color="green">Đã xác minh</Tag>
+        ) : (
+          <Tag color="red">Chưa xác minh</Tag>
+        ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) =>
+        status === 0 ? (
+          <Tag color="red">Đã khóa</Tag>
+        ) : (
+          <Tag color="green">Đã xác minh</Tag>
+        ),
+    },
+
+    {
+      title: "Lý do khóa",
+      dataIndex: "lockReasons",
+      key: "lockReasons",
+      render: (lockReasons) => {
+        return lockReasons && lockReasons.length > 0 ? (
+          lockReasons.map((lockReason) => (
+            <div key={lockReason.id}>
+              <span>{lockReason.reason}</span>
+            </div>
+          ))
+        ) : (
+          <span>Không có lý do</span>
+        );
+      },
+    },
+
+    { title: "⭐ Điểm", dataIndex: "points", key: "points" },
+    {
+      title: "Hành động",
+      key: "action",
+      render: (text, record) => (
+        <Space size="middle">
+          <Button type="primary" onClick={() => handleEditData(record)}>
+            Xem chi tiết
+          </Button>
+        </Space>
+      ),
+    },
   ];
 
   return (
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Quản lý tài khoản</h2>
+
+        {/* Thêm tài khoản Button */}
         <div className="header-container">
           <Button
             type="primary"
@@ -327,25 +415,62 @@ const Accounts = () => {
             Thêm tài khoản
           </Button>
         </div>
+
+        {/* Tab chứa các bảng */}
+        <div className="table-container">
+          <Tabs defaultActiveKey="1">
+            <TabPane tab="Tài khoản đang hoạt động" key="1">
+              <Table
+                pagination={false}
+                columns={columns}
+                loading={loading}
+                dataSource={user.map((user, index) => ({
+                  ...user,
+                  key: user.id || `active-${index}`,
+                }))}
+              />
+            </TabPane>
+            <TabPane tab="Tài khoản bị khóa" key="2">
+              <Table
+                pagination={false}
+                columns={lockedColumns}
+                loading={loading}
+                dataSource={lockedUser.map((user, index) => ({
+                  ...user,
+                  key: user.id || `locked-${index}`,
+                }))}
+              />
+            </TabPane>
+          </Tabs>
+        </div>
+
+        {/* Modal chỉnh sửa tài khoản */}
         <Modal
           title={editUser ? "Cập nhật tài khoản" : "Thêm tài khoản mới"}
           open={open}
           footer={null}
           onCancel={handleCancel}
+          width={700}
         >
           <Form form={form} layout="vertical" validateTrigger="onBlur">
             <Row gutter={16}>
+              {/* User Name */}
               <Col span={12}>
                 <Form.Item
                   name="id"
                   label="User Name"
-                  rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+                  rules={[
+                    { required: true, message: "Vui lòng nhập User Name!" },
+                  ]}
                 >
-                  <Input prefix={<UserOutlined />} placeholder="Nhập họ tên" />
+                  <Input
+                    prefix={<UserOutlined />}
+                    placeholder="Nhập User Name"
+                  />
                 </Form.Item>
               </Col>
 
-              {/* Họ tên */}
+              {/* Fullname */}
               <Col span={12}>
                 <Form.Item
                   name="fullname"
@@ -356,7 +481,7 @@ const Accounts = () => {
                 </Form.Item>
               </Col>
 
-              {/* Số điện thoại */}
+              {/* Phone */}
               <Col span={12}>
                 <Form.Item
                   name="phone"
@@ -381,15 +506,15 @@ const Accounts = () => {
                     {
                       required: true,
                       type: "email",
-                      message: "Vui lòng nhập Email hợp lệ!",
+                      message: "Vui lòng nhập email hợp lệ!",
                     },
                   ]}
                 >
-                  <Input prefix={<MailOutlined />} placeholder="Nhập Email" />
+                  <Input prefix={<MailOutlined />} placeholder="Nhập email" />
                 </Form.Item>
               </Col>
 
-              {/* Địa chỉ */}
+              {/* Address */}
               <Col span={12}>
                 <Form.Item
                   name="address"
@@ -402,7 +527,7 @@ const Accounts = () => {
                 </Form.Item>
               </Col>
 
-              {/* Ngày sinh */}
+              {/* Birthday */}
               <Col span={12}>
                 <Form.Item
                   name="birthday"
@@ -419,7 +544,7 @@ const Accounts = () => {
                 </Form.Item>
               </Col>
 
-              {/* Giới tính */}
+              {/* Gender */}
               <Col span={12}>
                 <Form.Item
                   name="gender"
@@ -436,74 +561,100 @@ const Accounts = () => {
                 </Form.Item>
               </Col>
 
-              {/* Upload ảnh */}
-              <Row gutter={16} justify="space-between">
+              {/* Image */}
+              <Col span={12}>
                 <Form.Item
-                  label="image"
+                  label="Ảnh đại diện"
                   name="image"
-                  rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}
+                  rules={[{ required: true, message: "Vui lòng chọn ảnh!" }]}
                 >
                   <Upload
-                    beforeUpload={(file) => {
-                      console.log({ file });
-                      return false;
-                    }}
+                    beforeUpload={() => false}
                     accept=".png, .jpg"
                     listType="picture-card"
                     onChange={handleChange}
                     onPreview={onPreview}
                     fileList={FileList}
-                    name="image"
                     maxCount={1}
                   >
                     {FileList.length < 1 && "+ Upload"}
                   </Upload>
                 </Form.Item>
-              </Row>
-
-              {/* Xác thực */}
-              <Col span={12}>
-                <Form.Item
-                  name="verified"
-                  label="Xác thực"
-                  valuePropName="checked"
-                >
-                  <Checkbox>Đã xác thực</Checkbox>
-                </Form.Item>
               </Col>
-              <Form.Item
-                label="Mật khẩu"
-                name="password"
-                rules={[
-                  { required: true, message: "Vui lòng nhập mật khẩu!" },
-                  { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
-                ]}
-              >
-                <Input.Password placeholder="Nhập mật khẩu" />
-              </Form.Item>
 
-              {/* Quyền */}
-              {/* <Col span={24}>
-                <Form.Item
-                  name="roles"
-                  label="Quyền"
-                  rules={[{ required: true, message: "Vui lòng chọn quyền!" }]}
-                >
-                  <Select
-                    mode="multiple"
-                    placeholder="Chọn quyền"
-                    // Remove the default 'USER' role selection logic, as it is handled on the backend.
+              {/* Verified */}
+              {editUser && (
+                <Col span={12}>
+                  <Form.Item
+                    name="verified"
+                    label="Xác thực"
+                    valuePropName="checked"
+                    initialValue={true}
                   >
-                    {roles
-                      .filter((role) => role.name !== "USER")
-                      .map((role) => (
-                        <Select.Option key={role.id} value={role.id}>
-                          {role.name} - {role.description}
-                        </Select.Option>
-                      ))}
-                  </Select>
+                    <Checkbox>Đã xác thực</Checkbox>
+                  </Form.Item>
+                </Col>
+              )}
+
+              {/* Status */}
+              {editUser && (
+                <Col span={12}>
+                  <Form.Item
+                    name="status"
+                    label="Trạng thái"
+                    valuePropName="checked"
+                    initialValue={statusChecked}
+                  >
+                    <Checkbox onChange={handleStatus}>
+                      Tình Trạng Tài khoản
+                    </Checkbox>
+                  </Form.Item>
+                </Col>
+              )}
+
+              {/* Lock Reasons */}
+              {editUser && !statusChecked && (
+                <Form.Item
+                  name="lockReasons"
+                  label="Lý do khóa"
+                  rules={[
+                    {
+                      required: !statusChecked,
+                      message: "Vui lòng nhập lý do khóa!",
+                    },
+                  ]}
+                >
+                  <Input.TextArea
+                    placeholder="Nhập lý do khóa"
+                    rows={4}
+                    defaultValue={editUser?.lockReasons?.[0]?.reason || ""}
+                  />
                 </Form.Item>
-              </Col> */}
+              )}
+
+              {/* Xóa lý do khóa Button */}
+              {editUser && editUser.lockReasons?.length > 0 && (
+                <Button
+                  type="danger"
+                  onClick={() => handleStatusChange(editUser.lockReasons[0].id)}
+                >
+                  Xóa lý do khóa
+                </Button>
+              )}
+
+              {/* Password */}
+              {!editUser && (
+                <Form.Item
+                  name="password"
+                  label="Mật khẩu"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập mật khẩu!" },
+                    { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
+                  ]}
+                >
+                  <Input.Password placeholder="Nhập mật khẩu" />
+                </Form.Item>
+              )}
             </Row>
 
             {/* Buttons */}
@@ -514,7 +665,7 @@ const Accounts = () => {
                 width: "100%",
               }}
             >
-              {!editUser && <Button onClick={handleResetForm}>Làm mới</Button>}
+              <Button onClick={handleResetForm}>Làm mới</Button>
               <Button type="primary" onClick={handleModalOk}>
                 {editUser ? "Cập nhật" : "Thêm mới"}
               </Button>
@@ -522,26 +673,13 @@ const Accounts = () => {
           </Form>
         </Modal>
       </Row>
-      <div className="table-container">
-        <Table
-          pagination={false}
-          columns={columns}
-          loading={loading}
-          scroll={{ x: "max-content" }}
-          dataSource={
-            Array.isArray(user)
-              ? user.map((users, index) => ({
-                  ...users,
-                  key: users.id || `row-${index}`,
-                }))
-              : []
-          }
-        />
 
+      <div className="table-container">
         <div
           style={{
             display: "flex",
             justifyContent: "center",
+            alignItems: "center",
             marginTop: 10,
             gap: 10,
           }}
@@ -556,7 +694,7 @@ const Accounts = () => {
             style={{ width: 120, marginTop: 20 }}
             onChange={handlePageSizeChange}
           >
-            <Select.Option value={5}>5 hàng</Select.Option>
+            <Select.Option value={5}>5 hàng</Select.Option>s
             <Select.Option value={10}>10 hàng</Select.Option>
             <Select.Option value={20}>20 hàng</Select.Option>
           </Select>

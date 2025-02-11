@@ -162,7 +162,7 @@ public class StockReceiptsAPI {
             stockReceipt.setSupplier(supplier.get());
             stockReceipt.setBrand(brand.get());
             stockReceipt.setOrderDate(request.getOrderDate());
-            stockReceipt.setReceiptProducts(new ArrayList<>()); // Initialize the receiptProducts list
+            stockReceipt.setReceiptProducts(new ArrayList<>()); 
 
             // Lưu StockReceipt vào cơ sở dữ liệu
             StockReceipt savedStockReceipt = stockReceiptsDAO.save(stockReceipt);

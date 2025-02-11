@@ -128,7 +128,7 @@ const Roles = () => {
   return (
     <div style={{ padding: 10 }}>
       <Row>
-        <h2>Quản lý kích thước sản phẩm</h2>
+        <h2>Quản lý Vai trò</h2>
         <div className="header-container">
           <Button
             type="primary"

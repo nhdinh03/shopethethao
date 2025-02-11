@@ -5,16 +5,14 @@ import PaginationComponent from "components/PaginationComponent";
 import "..//index.scss";
 
 const Verifications = () => {
-  const [workSomeThing, setWorkSomeThing] = useState(false);
+  // const [workSomeThing, setWorkSomeThing] = useState(false);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-
   const [searchText, setSearchText] = useState("");
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-
+  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1; 
   // Lấy dữ liệu với phân trang
   useEffect(() => {
     let isMounted = true;
@@ -40,7 +38,7 @@ const Verifications = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, searchText, workSomeThing]);
+  }, [currentPage, pageSize, searchText]);
 
   const handlePageSizeChange = (value) => {
     setPageSize(value);
@@ -121,7 +119,11 @@ const Verifications = () => {
   return (
     <div >
       <Row>
-        <h2 className="H2_all">Thống Kê tài khoản</h2>
+        <h2 className="H2_all">Thống Kê tài khoản
+        <p>Tổng số tài khoản hiện có: {totalItems}</p>
+        </h2>
+       
+        <br />
         <br />
         <br />
         <br />
