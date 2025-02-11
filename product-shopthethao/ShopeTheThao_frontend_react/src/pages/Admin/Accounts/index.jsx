@@ -23,8 +23,7 @@ import {
   UploadOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import PaginationComponent from "components/PaginationComponent";
-import "..//index.scss";
+import PaginationComponent from "components/PaginationComponent";import "..//index.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { accountsUserApi, rolesApi } from "api/Admin";
 import dayjs from "dayjs";
@@ -122,7 +121,6 @@ const Accounts = () => {
   const handleEditData = (record) => {
     setEditUser(record);
     setOpen(true);
-
     form.setFieldsValue({
       ...record,
       birthday: record.birthday ? dayjs(record.birthday) : null,
