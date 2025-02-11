@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -12,7 +11,7 @@ import jakarta.mail.internet.MimeMessage;
 @Component
 public class EmailUtil {
   @Autowired
-  private SpringTemplateEngine thymeleafTemplateEngine;
+
   private final JavaMailSender javaMailSender;
 
   public EmailUtil(JavaMailSender javaMailSender) {

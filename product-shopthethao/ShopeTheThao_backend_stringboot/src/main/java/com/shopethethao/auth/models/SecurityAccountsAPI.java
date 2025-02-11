@@ -8,9 +8,7 @@ public class SecurityAccountsAPI {
     
 
 
-    
-    @Autowired
-    private AccountDAO accountDao;
+
 
 
 }

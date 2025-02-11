@@ -3,9 +3,7 @@ package com.shopethethao.modules.Receipt_Products;
 import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.products.Product;
-import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.stock_receipts.StockReceipt;
 
 import jakarta.persistence.Column;

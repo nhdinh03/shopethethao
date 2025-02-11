@@ -3,19 +3,15 @@ package com.shopethethao.modules.account;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.shopethethao.auth.OTP.util.EmailUtil;
-import com.shopethethao.auth.OTP.util.OtpUtil;
+
+
 import com.shopethethao.auth.models.SecurityERole;
 import com.shopethethao.auth.models.SecurityRole;
 import com.shopethethao.auth.payload.request.AccountsUser;
@@ -38,7 +34,6 @@ import com.shopethethao.dto.AccountServiceDTO;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
-import com.shopethethao.modules.role.RoleDAO;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
 import jakarta.transaction.Transactional;
@@ -65,12 +60,6 @@ public class AccountAPI {
 
     @Autowired
     private PasswordEncoder encoder;
-
-    @Autowired
-    private OtpUtil otpUtil;
-
-    @Autowired
-    private EmailUtil emailUtil;
 
     // ✅ Lấy tất cả tài khoản
     @GetMapping("/get/all")

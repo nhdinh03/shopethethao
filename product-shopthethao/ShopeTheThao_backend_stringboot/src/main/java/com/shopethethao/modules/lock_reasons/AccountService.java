@@ -1,6 +1,5 @@
 package com.shopethethao.modules.lock_reasons;
 
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Optional;
 

@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +61,7 @@ public class StockReceiptsAPI {
     @Autowired
     private ProductsDAO productsDAO;
 
-    @Autowired
-    private StockReceiptService stockReceiptService;
+
 
     @GetMapping("/{id}")
     public ResponseEntity<StockReceipt> getProductById(@PathVariable Integer id) {

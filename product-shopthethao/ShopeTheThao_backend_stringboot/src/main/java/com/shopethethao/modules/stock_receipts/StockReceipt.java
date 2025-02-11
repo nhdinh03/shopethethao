@@ -3,10 +3,8 @@ package com.shopethethao.modules.stock_receipts;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.shopethethao.modules.Receipt_Products.ReceiptProduct;
-import com.shopethethao.modules.accountRole.AccountRole;
 import com.shopethethao.modules.brands.Brand;
 import com.shopethethao.modules.suppliers.Supplier;
 
@@ -20,13 +18,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
 
 @Entity
-// @AllArgsConstructor
-// @NoArgsConstructor
 @Data
 @Table(name = "stock_receipts")
 public class StockReceipt {

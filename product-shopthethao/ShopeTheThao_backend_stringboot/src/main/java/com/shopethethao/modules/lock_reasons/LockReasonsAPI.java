@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.account.AccountDAO;
-import com.shopethethao.modules.brands.Brand;
 
 @RestController
 @RequestMapping("/api/lockreasons")
