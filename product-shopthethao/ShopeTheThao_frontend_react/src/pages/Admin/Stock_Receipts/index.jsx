@@ -54,11 +54,10 @@ const Stock_Receipts = () => {
   const [selectedReceipt, setSelectedReceipt] = useState(null);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, setEditMode] = useState(null);
   const [form] = Form.useForm();
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
-  const [brand, setBrand] = useState([]);
   const [stockReceipts, setStockReceipts] = useState([]);
 
   const [searchText, setSearchText] = useState("");
@@ -69,6 +68,7 @@ const Stock_Receipts = () => {
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
   const [brands, setBrands] = useState([]);
   const [open, setOpen] = useState(false);
+  
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -128,12 +128,14 @@ const Stock_Receipts = () => {
   const handleEdit = (record) => {
     form.setFieldsValue({
       id: record.id,
-      supplierId: record.supplierName,
-      brandId: record.brandName,
+      supplierId: record.supplierId, // Lưu trữ ID nhà cung cấp
+      brandId: record.brandId, // Lưu trữ ID thương hiệu
       orderDate: moment(record.orderDate),
       receiptProducts: record.receiptProducts || [],
     });
-    setEditMode(true);
+
+    // Set lại tên nhà cung cấp và thương hiệu để hiển thị
+    setEditMode(record);
     setModalVisible(true);
   };
 
@@ -142,6 +144,16 @@ const Stock_Receipts = () => {
       const values = await form.validateFields();
       const { receiptProducts, supplierId, brandId, orderDate, ...restValues } =
         values;
+
+      // Parse supplierId and brandId as integers
+      const parsedSupplierId = parseInt(supplierId, 10);
+      const parsedBrandId = parseInt(brandId, 10);
+
+      // Validate parsed values
+      if (isNaN(parsedSupplierId) || isNaN(parsedBrandId)) {
+        message.error("Supplier ID và Brand ID phải là số nguyên!");
+        return;
+      }
 
       // Kiểm tra ngày nhập kho không ở trong quá khứ
       if (moment(orderDate).isBefore(moment(), "day")) {
@@ -169,17 +181,17 @@ const Stock_Receipts = () => {
       // Tạo đối tượng gửi tới backend
       const res = {
         ...restValues,
-        supplierId,
-        brandId,
+        supplierId: parsedSupplierId, // Use parsed integer value
+        brandId: parsedBrandId, // Use parsed integer value
         orderDate: moment(orderDate).format("YYYY-MM-DD"), // Định dạng ngày
         receiptProducts: processedProducts, // Gán các sản phẩm đã xử lý
       };
 
-      console.log(res); // Kiểm tra đối tượng dữ liệu đã gửi
+      console.log("Sending request payload:", res); // Kiểm tra đối tượng dữ liệu đã gửi
 
       // Kiểm tra chế độ sửa hay thêm mới
       if (editMode) {
-        await stock_ReceiptsAPi.update(res.id, res);
+        await stock_ReceiptsAPi.update(editMode.id, res);
         message.success("Cập nhật phiếu nhập kho thành công!");
       } else {
         await stock_ReceiptsAPi.create(res);
@@ -187,6 +199,7 @@ const Stock_Receipts = () => {
       }
 
       setWorkSomeThing([!workSomeThing]); // Trigger to refresh the data
+      setEditMode(null);
       setModalVisible(false); // Close modal
       form.resetFields(); // Reset form fields
     } catch (error) {
@@ -245,6 +258,7 @@ const Stock_Receipts = () => {
         </div>
       ),
     },
+
     {
       title: "⚙️ Hành động",
       key: "actions",
@@ -307,9 +321,9 @@ const Stock_Receipts = () => {
             >
               <Select placeholder="Chọn nhà cung cấp">
                 {suppliers.map((s) => (
-                  <Option key={s.id} value={s.id}>
-                    {s.name}
-                  </Option>
+                  <Select.Option key={s.id} value={s.id}>
+                    {s.name} {/* Hiển thị tên nhà cung cấp */}
+                  </Select.Option>
                 ))}
               </Select>
             </Form.Item>
@@ -321,9 +335,9 @@ const Stock_Receipts = () => {
             >
               <Select placeholder="Chọn thương hiệu">
                 {brands.map((b) => (
-                  <Option key={b.id} value={b.id}>
-                    {b.name}
-                  </Option>
+                  <Select.Option key={b.id} value={b.id}>
+                    {b.name} {/* Hiển thị tên thương hiệu */}
+                  </Select.Option>
                 ))}
               </Select>
             </Form.Item>
@@ -354,7 +368,9 @@ const Stock_Receipts = () => {
                 <>
                   {fields.map(
                     ({ fieldKey, fieldName, name, fieldClassName }) => (
-                      <Row gutter={16} key={fieldName}>
+                      <Row gutter={16} key={fieldKey}>
+                        {" "}
+                        {/* Use fieldKey instead of fieldName */}
                         <Col span={8}>
                           <Form.Item
                             {...fieldClassName}
@@ -373,7 +389,6 @@ const Stock_Receipts = () => {
                             </Select>
                           </Form.Item>
                         </Col>
-
                         <Col span={8}>
                           <Form.Item
                             {...fieldClassName}
@@ -386,7 +401,6 @@ const Stock_Receipts = () => {
                             <InputNumber min={1} style={{ width: "100%" }} />
                           </Form.Item>
                         </Col>
-
                         <Col span={8}>
                           <Form.Item
                             {...fieldClassName}
@@ -397,7 +411,6 @@ const Stock_Receipts = () => {
                             <InputNumber min={0} style={{ width: "100%" }} />
                           </Form.Item>
                         </Col>
-
                         <Col span={24} style={{ textAlign: "right" }}>
                           <Button
                             danger
@@ -421,7 +434,6 @@ const Stock_Receipts = () => {
             </Form.List>
           </Form>
         </Modal>
-
         <Modal
           title="Chi Tiết Phiếu Nhập Kho"
           open={printModalVisible}

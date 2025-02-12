@@ -20,7 +20,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-
 @Entity
 @Data
 @Table(name = "stock_receipts")
@@ -41,7 +40,7 @@ public class StockReceipt {
     private LocalDate orderDate;
 
     @OneToMany(mappedBy = "stockReceipt", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference // Đảm bảo sử dụng annotation này để tránh vòng lặp vô hạn
+    @JsonManagedReference // Tránh vòng lặp khi serialize
     private List<ReceiptProduct> receiptProducts;
 
 }

@@ -3,6 +3,7 @@ package com.shopethethao.modules.Receipt_Products;
 import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shopethethao.modules.products.Product;
 import com.shopethethao.modules.stock_receipts.StockReceipt;
 
@@ -30,13 +31,14 @@ public class ReceiptProduct {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("receiptId")
-    @JoinColumn(name = "receipt_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @JsonBackReference // Tránh vòng lặp vô hạn trong serialization
+    @JoinColumn(name = "receipt_id", referencedColumnName = "id")
+    @JsonBackReference // Tránh vòng lặp khi serialize
     private StockReceipt stockReceipt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("productId")
-    @JoinColumn(name = "product_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JsonIgnore // Tránh serialize proxy Hibernate
     private Product product;
 
     @Column(name = "quantity", nullable = false)
