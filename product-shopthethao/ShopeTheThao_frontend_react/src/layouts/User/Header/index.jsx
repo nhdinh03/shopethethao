@@ -1,81 +1,90 @@
 import React, { useState } from "react";
-import { ChevronDown, Menu, ShoppingCart, User, Search } from "lucide-react";
+import { ShoppingCart, User, Search, Menu as MenuIcon, ChevronDown } from "lucide-react";
+import './header.scss';
 
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [subMenuOpen, setSubMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
+  const [scrolling, setScrolling] = useState(false);
+
+  const handleScroll = () => {
+    setScrolling(window.scrollY > 80);
+  };
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleSubMenu = () => setIsSubMenuOpen(!isSubMenuOpen);
+
+  React.useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
-    <header className="bg-gray-900 text-white p-4 shadow-md">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        
+    <header className={`header ${scrolling ? 'header-sticky' : ''}`}>
+      <div className="header-container">
         {/* Logo */}
-        <div className="text-2xl font-bold tracking-wide flex items-center gap-2">
-          <span className="bg-white text-blue-600 px-2 py-1 rounded">SPORT</span> SHOP
+        <div className="logo">
+          <span className="logo-text">SPORT SHOP</span>
         </div>
 
-        {/* Menu chính */}
-        <nav className="hidden md:flex gap-6 text-sm font-semibold">
-          <a href="#" className="hover:text-blue-400">Home</a>
-          <a href="#" className="hover:text-blue-400">Features</a>
-          <a href="#" className="hover:text-blue-400">Marketplace</a>
-
-          {/* Dropdown */}
-          <div className="relative">
-            <button 
-              onClick={() => setIsOpen(!isOpen)} 
-              className="flex items-center gap-1 hover:text-blue-400">
+        {/* Main Navigation */}
+        <nav className="nav-desktop">
+          <a href="#">Home</a>
+          <a href="#">Features</a>
+          <a href="#">Marketplace</a>
+          <div className="dropdown">
+            <button onClick={toggleSubMenu} className="dropdown-btn">
               Company <ChevronDown size={16} />
             </button>
-            {isOpen && (
-              <div className="absolute left-0 mt-2 w-56 bg-gray-800 shadow-lg rounded-lg">
-                <ul className="p-2 space-y-2">
-                  <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Audience</li>
-                  <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Marketing Automation</li>
-                  <li className="relative group">
-                    <button 
-                      onClick={() => setSubMenuOpen(!subMenuOpen)} 
-                      className="w-full text-left px-4 py-2 hover:bg-gray-700 flex justify-between">
-                      Creative Tools <ChevronDown size={14} />
-                    </button>
-                    {subMenuOpen && (
-                      <ul className="absolute left-full top-0 ml-2 w-48 bg-gray-800 shadow-lg rounded-lg">
-                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Marketing CRM</li>
-                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Sign up forms</li>
-                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Segmentation</li>
-                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Dynamic content</li>
-                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">A/B Testing</li>
-                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer text-blue-400">Behavioural targeting</li>
-                        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Integrations</li>
-                      </ul>
-                    )}
-                  </li>
-                  <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Insights & Analytics</li>
-                  <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Demographics</li>
-                  <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">Contact Profiles</li>
-                </ul>
-              </div>
+            {isSubMenuOpen && (
+              <ul className="dropdown-menu">
+                <li>About Us</li>
+                <li>Careers</li>
+                <li>Contact</li>
+              </ul>
             )}
           </div>
-
-          <a href="#" className="hover:text-blue-400">Team</a>
-          <a href="#" className="hover:text-blue-400">Contact</a>
+          <a href="#">Team</a>
+          <a href="#">Contact</a>
         </nav>
 
-        {/* Thanh tìm kiếm + Giỏ hàng + Tài khoản */}
-        <div className="hidden md:flex items-center gap-4">
-          <div className="relative cursor-pointer">
+        {/* Search Bar */}
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Search size={20} className="search-icon" />
+        </div>
+
+        {/* Cart and User */}
+        <div className="header-actions">
+          <div className="cart">
             <ShoppingCart size={24} />
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 rounded-full">3</span>
+            <span className="cart-badge">3</span>
           </div>
-          <User size={24} className="cursor-pointer" />
-          <button className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg">Login</button>
-          <button className="px-4 py-2 bg-blue-500 hover:bg-blue-400 rounded-lg">Sign Up</button>
+          <User size={24} />
+          <button className="login-btn">Login</button>
+          <button className="signup-btn">Sign Up</button>
         </div>
 
         {/* Mobile Menu */}
-        <div className="md:hidden">
-          <Menu size={24} className="cursor-pointer" />
+        <div className="menu-mobile">
+          <MenuIcon size={24} onClick={toggleMenu} />
+          {isMenuOpen && (
+            <div className="mobile-menu">
+              <a href="#">Home</a>
+              <a href="#">Features</a>
+              <a href="#">Marketplace</a>
+              <a href="#">Team</a>
+              <a href="#">Contact</a>
+            </div>
+          )}
         </div>
       </div>
     </header>

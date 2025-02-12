@@ -8,3 +8,4 @@ export { default as suppliersApi } from './Suppliers/suppliersApi';
 export { default as rolesApi } from './Roles/rolesApi';
 export { default as accountsUserApi } from './AccountsUsers/accountsUserApi';
 export { default as lockreasonsApi } from './LockReasons/lockreasonsApi';
+export { default as productattributesApi } from './Product_Attributes/productattributesApi';

@@ -1,36 +1,20 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  message,
-  Button,
-  Space,
-  Modal,
-  Form,
-  Input,
-  Popconfirm,
-  Tooltip,
-  Select,
-  Row,
-  Typography,
-} from "antd";
-import { FileTextOutlined, FolderOpenOutlined, PlusOutlined, RedoOutlined, SaveOutlined, SearchOutlined } from "@ant-design/icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import Highlighter from "react-highlight-words";
-import { BaseModal } from "components/Admin";
-import PaginationComponent from "components/PaginationComponent";
+import { message, Button, Form, Tooltip, Row, Typography } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import { categoriesApi } from "api/Admin";
 import "..//index.scss";
+import {
+  CategoryTable,
+  CategoryPagination,
+  CategoryModal,
+} from "components/Admin";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 const Categories = () => {
-  const { Title, Text } = Typography;
-
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-  const [searchText, setSearchText] = useState("");
   const [categories, setCategories] = useState([]);
 
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -45,12 +29,7 @@ const Categories = () => {
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await categoriesApi.getByPage(
-          currentPage,
-          pageSize,
-          searchText
-        );
-        // console.log(res);
+        const res = await categoriesApi.getByPage(currentPage, pageSize);
         if (isMounted) {
           setCategories(res.data);
           setTotalItems(res.totalItems);
@@ -61,47 +40,8 @@ const Categories = () => {
       }
     };
     getList();
-  }, [currentPage, pageSize, searchText, workSomeThing]);
+  }, [currentPage, pageSize, workSomeThing]);
 
-  const handleEditData = (category) => {
-    setEditingCategory(category);
-    form.setFieldsValue(category);
-    setOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      const response = await categoriesApi.delete(id);
-      message.success(response.data || "Xóa danh mục thành công!");
-      console.log(response);
-      setWorkSomeThing([!workSomeThing]);
-    } catch (error) {
-      if (error.response) {
-        if (error.response.status === 409) {
-          message.error(
-            error.response.data ||
-              "Không thể xóa danh mục do dữ liệu tham chiếu!"
-          );
-        } else if (error.response.status === 404) {
-          message.error("Danh mục không tồn tại hoặc đã bị xóa!");
-        } else {
-          message.error("Lỗi không xác định khi xóa danh mục!");
-        }
-      } else {
-        message.error("Không thể kết nối đến máy chủ!");
-      }
-    }
-  };
-
-  const handleResetForm = () => {
-    form.resetFields();
-    setEditingCategory(null);
-  };
-
-  const handleCancel = () => {
-    setOpen(false);
-    handleResetForm();
-  };
 
   const handleModalOk = async () => {
     try {
@@ -136,73 +76,40 @@ const Categories = () => {
     }
   };
 
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
+  const handleDelete = async (id) => {
+    try {
+      const response = await categoriesApi.delete(id);
+      message.success(response.data || "Xóa danh mục thành công!");
+      console.log(response);
+      setWorkSomeThing([!workSomeThing]);
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 409) {
+          message.error(
+            error.response.data ||
+              "Không thể xóa danh mục do dữ liệu tham chiếu!"
+          );
+        } else if (error.response.status === 404) {
+          message.error("Danh mục không tồn tại hoặc đã bị xóa!");
+        } else {
+          message.error("Lỗi không xác định khi xóa danh mục!");
+        }
+      } else {
+        message.error("Không thể kết nối đến máy chủ!");
+      }
+    }
   };
-  const handleReset = (clearFilters) => {
-    clearFilters();
-    setSearchText("");
+
+  const handleEditData = (category) => {
+    setEditingCategory(category);
+    form.setFieldsValue(category);
+    setOpen(true);
   };
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          placeholder={`Tìm kiếm ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ marginBottom: 8, display: "block" }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Tìm
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Đặt lại
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ""}
-        />
-      ) : (
-        text
-      ),
-  });
+
   //phan trang 50
   const handlePageSizeChange = (value) => {
     setPageSize(value);
-    setCurrentPage(1); // 🔥 Reset về trang 1 mỗi khi thay đổi số hàng hiển thị
+    setCurrentPage(1); 
   };
 
   const columns = [
@@ -211,7 +118,6 @@ const Categories = () => {
       title: "📂 Tên danh mục",
       dataIndex: "name",
       key: "name",
-      ...getColumnSearchProps("name"),
       render: (text) => (
         <Tooltip title={text || "Không có tên dan mục"} placement="top">
           <span className="ellipsis-text">
@@ -252,103 +158,29 @@ const Categories = () => {
             Thêm danh mục
           </Button>
         </div>
-        <Modal
-          title={
-            editingCategory ? "✏️ Cập nhật danh mục" : "➕ Thêm danh mục mới"
-          }
-          open={open}
-          footer={null}
-          onCancel={handleCancel}
-        >
-          <Form form={form} layout="vertical">
-            {/* Tên danh mục */}
-            <Form.Item
-              name="name"
-              label="📂 Tên danh mục"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên danh mục!" },
-              ]}
-            >
-              <Input
-                prefix={<FolderOpenOutlined />}
-                placeholder="Nhập tên danh mục"
-              />
-            </Form.Item>
-
-            {/* Mô tả danh mục */}
-            <Form.Item
-              name="description"
-              label="📝 Mô tả danh mục"
-              rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
-            >
-              <Input prefix={<FileTextOutlined />} placeholder="Nhập mô tả" />
-            </Form.Item>
-
-            {/* Nút hành động */}
-            <Space
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                width: "100%",
-              }}
-            >
-              {!editingCategory && (
-                <Button icon={<RedoOutlined />} onClick={handleResetForm}>
-                  Làm mới
-                </Button>
-              )}
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                onClick={handleModalOk}
-              >
-                {editingCategory ? "Cập nhật" : "Thêm mới"}
-              </Button>
-            </Space>
-          </Form>
-        </Modal>
       </Row>
-      <div className="table-container">
-        <Table
-          pagination={false}
-          columns={columns}
-          loading={loading}
-          scroll={{ x: "max-content" }}
-          dataSource={categories.map((categorie) => ({
-            ...categorie,
-            key: categorie.id,
-          }))}
-        />
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 10,
-            gap: 10,
-          }}
-        >
-          {/* Gọi component phân trang */}
-          <PaginationComponent
-            totalPages={totalPages}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
+      <CategoryModal
+        open={open}
+        setOpen={setOpen}
+        form={form}
+        handleModalOk={handleModalOk}
+        handleResetForm={() => form.resetFields()}
+        editingCategory={editingCategory}
+      />
+      <CategoryTable
+        categories={categories}
+        loading={loading}
+        columns={columns}
+      />
 
-          {/* Dropdown chọn số lượng hàng */}
-          <Select
-            value={pageSize}
-            style={{ width: 120, marginTop: 20 }}
-            onChange={handlePageSizeChange} // ✅ Gọi hàm mới để reset trang về 1
-          >
-            <Select.Option value={5}>5 hàng</Select.Option>
-            <Select.Option value={10}>10 hàng</Select.Option>
-            <Select.Option value={20}>20 hàng</Select.Option>
-            <Select.Option value={50}>50 hàng</Select.Option>
-          </Select>
-        </div>
-      </div>
+      <CategoryPagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        pageSize={pageSize}
+        handlePageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 };

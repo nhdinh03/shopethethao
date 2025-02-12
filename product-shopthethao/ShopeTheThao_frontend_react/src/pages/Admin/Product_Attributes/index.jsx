@@ -13,21 +13,21 @@ import {
   Row,
 } from "antd";
 import { PlusOutlined, SearchOutlined, UserOutlined } from "@ant-design/icons";
-import { BaseModal } from "components/Admin";
-import PaginationComponent from "components/PaginationComponent";
+import {
+  ProductAttributesModal,
+  ProductAttributesPagination,
+  ProductAttributesTable,
+} from "components/Admin";
+
 import "..//index.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
-import productattributesApi from "api/Admin/Product_Attributes/productattributesApi";
-
-
+import { productattributesApi } from "api/Admin";
 
 const ProductAttributes = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-
-  const [searchText, setSearchText] = useState("");
 
   const [open, setOpen] = useState(false);
   const [editProductAttributes, setEditProductAttributes] = useState(null);
@@ -36,13 +36,12 @@ const ProductAttributes = () => {
   const [form] = Form.useForm();
   const [productattributes, setProductAttributes] = useState([]);
 
-  // Fetch product size data with pagination and search
   useEffect(() => {
     let isMounted = true;
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await productattributesApi.getByPage(currentPage, pageSize, searchText);
+        const res = await productattributesApi.getByPage(currentPage, pageSize);
         if (isMounted) {
           setProductAttributes(res.data);
           setTotalItems(res.totalItems);
@@ -57,33 +56,7 @@ const ProductAttributes = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, searchText, workSomeThing]);
-
-  const handleEditData = (ProductAttributes) => {
-    setEditProductAttributes(ProductAttributes);
-    form.setFieldsValue(ProductAttributes);
-    setOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await productattributesApi.delete(id);
-      message.success("Xóa kích thước thành công!");
-      setWorkSomeThing([!workSomeThing]); // Update list
-    } catch (error) {
-      message.error("Không thể xóa kích thước!");
-    }
-  };
-
-  const handleResetForm = () => {
-    form.resetFields();
-    setEditProductAttributes(null);
-  };
-
-  const handleCancel = () => {
-    setOpen(false);
-    handleResetForm();
-  };
+  }, [currentPage, pageSize, workSomeThing]);
 
   const handleModalOk = async () => {
     try {
@@ -107,9 +80,34 @@ const ProductAttributes = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await productattributesApi.delete(id);
+      message.success("Xóa kích thước thành công!");
+      setWorkSomeThing([!workSomeThing]);
+    } catch (error) {
+      message.error("Không thể xóa kích thước!");
+    }
+  };
+  const handleEditData = (ProductAttributes) => {
+    setEditProductAttributes(ProductAttributes);
+    form.setFieldsValue(ProductAttributes);
+    setOpen(true);
+  };
+
+  const handleResetForm = () => {
+    form.resetFields();
+    setEditProductAttributes(null);
+  };
+
+  const handleCancel = () => {
+    setOpen(false);
+    handleResetForm();
+  };
+
   const handlePageSizeChange = (value) => {
     setPageSize(value);
-    setCurrentPage(1); // Reset page to 1 when page size changes
+    setCurrentPage(1);
   };
 
   const columns = [
@@ -122,7 +120,7 @@ const ProductAttributes = () => {
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Thuộc tính sản phẩm</h2>
-     
+
         <div className="header-container">
           <Button
             type="primary"
@@ -133,77 +131,29 @@ const ProductAttributes = () => {
             Thêm kích thước
           </Button>
         </div>
-        <Modal
-          title={editProductAttributes ? "Cập nhật kích thước" : "Thêm kích thước mới"}
-          open={open}
-          footer={null}
-          onCancel={handleCancel}
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              name="name"
-              label="Tên kích thước"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên kích thước!" },
-              ]}
-            >
-              <Input prefix={<UserOutlined />} placeholder="Nhập tên kích thước" />
-            </Form.Item>
-            <Space
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                width: "100%",
-              }}
-            >
-              {!editProductAttributes && <Button onClick={handleResetForm}>Làm mới</Button>}
-              <Button type="primary" onClick={handleModalOk}>
-                {editProductAttributes ? "Cập nhật" : "Thêm mới"}
-              </Button>
-            </Space>
-          </Form>
-        </Modal>
       </Row>
-      <div className="table-container">
-        <Table
-          pagination={false}
-          columns={columns}
-          loading={loading}
-          scroll={{ x: "max-content" }}
-          dataSource={productattributes.map((sizes) => ({
-            ...sizes,
-            key: sizes.id,
-          }))}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: 10,
-            gap: 10,
-          }}
-        >
-          <PaginationComponent
-            totalPages={totalPages}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
-          <Select
-            value={pageSize}
-            style={{ width: 120, marginTop: 20 }}
-            onChange={handlePageSizeChange} // Reset to page 1 when page size changes
-          >
-            <Select.Option value={5}>5 hàng</Select.Option>
-            <Select.Option value={10}>10 hàng</Select.Option>
-            <Select.Option value={20}>20 hàng</Select.Option>
-            <Select.Option value={50}>50 hàng</Select.Option>
-          </Select>
-        </div>
-      </div>
+      <ProductAttributesModal
+        open={open}
+        form={form}
+        handleModalOk={handleModalOk}
+        handleCancel={handleCancel}
+        editProductAttributes={editProductAttributes}
+        handleResetForm={handleResetForm}
+      />
+      <ProductAttributesTable
+        columns={columns}
+        productattributes={productattributes}
+        loading={loading}
+        handlePageSizeChange={handlePageSizeChange}
+      />
+      <ProductAttributesPagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        pageSize={pageSize}
+      />
     </div>
   );
 };
 
-
-  export default ProductAttributes;
-  
+export default ProductAttributes;

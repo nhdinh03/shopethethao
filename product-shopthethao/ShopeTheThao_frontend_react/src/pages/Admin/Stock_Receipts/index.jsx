@@ -129,14 +129,12 @@ const Stock_Receipts = () => {
   const handleEdit = (record) => {
     form.setFieldsValue({
       id: record.id,
-      supplierId: record.supplierId, // Lưu trữ ID nhà cung cấp
-      brandId: record.brandId, // Lưu trữ ID thương hiệu
+      supplierId: record.supplierId,
+      brandId: record.brandId,
       orderDate: record.orderDate ? dayjs(record.orderDate) : null,
       receiptProducts: record.receiptProducts || [],
     });
-console.log(record);
 
-    // Set lại tên nhà cung cấp và thương hiệu để hiển thị
     setEditMode(record);
     setModalVisible(true);
   };
@@ -180,16 +178,17 @@ console.log(record);
         totalAmount: product.quantity * product.price,
       }));
 
-      // Tạo đối tượng gửi tới backend
       const res = {
         ...restValues,
-        supplierId: parsedSupplierId, // Use parsed integer value
-        brandId: parsedBrandId, // Use parsed integer value
-        orderDate: moment(orderDate).format("YYYY-MM-DD"), // Định dạng ngày
-        receiptProducts: processedProducts, // Gán các sản phẩm đã xử lý
+        supplierId: parsedSupplierId,
+        brandId: parsedBrandId,
+        orderDate: values.orderDate
+          ? values.orderDate.format("YYYY-MM-DD")
+          : null,
+        receiptProducts: processedProducts,
       };
 
-      console.log("Sending request payload:", res); // Kiểm tra đối tượng dữ liệu đã gửi
+      console.log("Sending request payload:", res);
 
       // Kiểm tra chế độ sửa hay thêm mới
       if (editMode) {
@@ -345,22 +344,21 @@ console.log(record);
             </Form.Item>
 
             <Form.Item
-              label="📅 Ngày nhập"
+              label="Ngày nhập kho"
               name="orderDate"
-              rules={[{ required: true, message: "Chọn ngày nhập!" }]}
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày nhập kho" },
+              ]}
             >
               <DatePicker
                 style={{ width: "100%" }}
                 format="DD/MM/YYYY"
-                placeholder="Chọn ngày nhập"
+                // Nếu là chế độ thêm mới (editMode là null), cấm chọn ngày quá khứ
                 disabledDate={(current) =>
-                  current && current < moment().startOf("day")
-                } // Không cho phép chọn ngày quá khứ
-                onChange={(date, dateString) => {
-                  if (date) {
-                    form.setFieldsValue({ orderDate: date }); // Cập nhật ngày đã chọn vào form
-                  }
-                }}
+                  editMode
+                    ? false
+                    : current && current.isBefore(moment().startOf("day"))
+                }
               />
             </Form.Item>
 

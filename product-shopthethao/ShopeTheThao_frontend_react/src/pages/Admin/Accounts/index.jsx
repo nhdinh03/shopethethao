@@ -87,7 +87,6 @@ const Accounts = () => {
   }, [currentPage, pageSize, searchText, refresh, workSomeThing]);
   const [isStatusEditable, setIsStatusEditable] = useState(false);
 
-
   const handleChange = async ({ fileList }) => {
     setFileList(fileList);
 
@@ -111,10 +110,10 @@ const Accounts = () => {
   const handleEditData = (record) => {
     setEditUser(record);
     setOpen(true);
-  
+
     // Enable checkbox when editing
     setIsStatusEditable(true);
-  
+
     form.setFieldsValue({
       ...record,
       birthday: record.birthday ? dayjs(record.birthday) : null,
@@ -123,7 +122,7 @@ const Accounts = () => {
       verified: record.verified || false,
       lockReasons: record.lockReasons?.[0]?.reason || "",
     });
-  
+
     setStatusChecked(record.status === 1);
     const newUploadFile = record.image
       ? [
@@ -136,7 +135,7 @@ const Accounts = () => {
       : [];
     setFileList(newUploadFile);
   };
-  
+
   const handleStatus = (e) => {
     const isChecked = e.target.checked;
     setStatusChecked(isChecked); // Cập nhật trạng thái khi người dùng chọn hoặc bỏ chọn checkbox
@@ -189,7 +188,7 @@ const Accounts = () => {
       // Call the API to delete the lock reason
       await lockreasonsApi.delete(lockReasonId);
       message.success("Xóa lý do khóa thành công!");
-  
+
       // Set the status to active and hide the lock reason
       setEditUser((prevUser) => ({
         ...prevUser,
@@ -203,7 +202,6 @@ const Accounts = () => {
       message.error("Không thể xóa lý do khóa, vui lòng thử lại!");
     }
   };
-  
 
   const handleModalOk = async () => {
     try {
@@ -535,6 +533,9 @@ const Accounts = () => {
                   format="DD/MM/YYYY"
                   placeholder="Chọn ngày sinh"
                   style={{ width: "100%" }}
+                  disabledDate={(current) =>
+                    current && current > dayjs().endOf("day")
+                  }
                 />
               </Form.Item>
             </Col>
@@ -608,26 +609,26 @@ const Accounts = () => {
               </Col>
             )}
 
-{editUser && !statusChecked && (
-  <Col span={24}>
-    <Form.Item
-      name="lockReasons"
-      label="Lý do khóa"
-      rules={[
-        {
-          required: !statusChecked,
-          message: "Vui lòng nhập lý do khóa!",
-        },
-      ]}
-    >
-      <Input.TextArea
-        placeholder="Nhập lý do khóa"
-        rows={4}
-        defaultValue={editUser?.lockReasons?.[0]?.reason || ""}
-      />
-    </Form.Item>
-  </Col>
-)}
+            {editUser && !statusChecked && (
+              <Col span={24}>
+                <Form.Item
+                  name="lockReasons"
+                  label="Lý do khóa"
+                  rules={[
+                    {
+                      required: !statusChecked,
+                      message: "Vui lòng nhập lý do khóa!",
+                    },
+                  ]}
+                >
+                  <Input.TextArea
+                    placeholder="Nhập lý do khóa"
+                    rows={4}
+                    defaultValue={editUser?.lockReasons?.[0]?.reason || ""}
+                  />
+                </Form.Item>
+              </Col>
+            )}
 
             {/* Xóa lý do khóa Button */}
             {editUser && editUser.lockReasons?.length > 0 && (

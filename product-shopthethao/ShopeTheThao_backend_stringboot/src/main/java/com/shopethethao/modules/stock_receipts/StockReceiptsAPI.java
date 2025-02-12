@@ -1,7 +1,9 @@
 package com.shopethethao.modules.stock_receipts;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -80,34 +82,35 @@ public class StockReceiptsAPI {
         List<StockReceipt> stockReceipts = stockReceiptsDAO.findAll();
         return ResponseEntity.ok(stockReceipts);
     }
+
     @GetMapping
     public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
             @RequestParam("limit") Optional<Integer> limit) {
         try {
-            int page = pageNo.orElse(1) - 1;  
-            int size = limit.orElse(10);  
+            int page = pageNo.orElse(1) - 1;
+            int size = limit.orElse(10);
             if (page < 0) {
                 return handleError("Trang không hợp lệ, phải bắt đầu từ trang 1.", HttpStatus.BAD_REQUEST);
             }
             Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("id")));
             Page<StockReceipt> pageResult = stockReceiptsDAO.findAll(pageable);
-    
+
             List<StockReceiptDTO> stockReceiptDTOs = pageResult.getContent().stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
-    
+
             // Tạo đối tượng ResponseDTO chứa dữ liệu phân trang
             ResponseDTO<StockReceiptDTO> responseDTO = new ResponseDTO<>();
             responseDTO.setData(stockReceiptDTOs);
             responseDTO.setTotalItems(pageResult.getTotalElements());
             responseDTO.setTotalPages(pageResult.getTotalPages());
-    
+
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return handleError("Lỗi máy chủ, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     // Phương thức chuyển đổi StockReceipt thành StockReceiptDTO
     private StockReceiptDTO convertToDTO(StockReceipt stockReceipt) {
         StockReceiptDTO dto = new StockReceiptDTO();
@@ -117,16 +120,16 @@ public class StockReceiptsAPI {
         dto.setBrandId(stockReceipt.getBrand().getId());
         dto.setBrandName(stockReceipt.getBrand().getName());
         dto.setOrderDate(stockReceipt.getOrderDate());
-    
+
         // Chuyển đổi ReceiptProduct thành ReceiptProductDTO
         List<ReceiptProductDTO> receiptProductDTOs = stockReceipt.getReceiptProducts().stream()
                 .map(this::convertReceiptProductToDTO)
                 .collect(Collectors.toList());
-    
+
         dto.setReceiptProducts(receiptProductDTOs);
         return dto;
     }
-    
+
     // Phương thức chuyển đổi ReceiptProduct thành ReceiptProductDTO
     private ReceiptProductDTO convertReceiptProductToDTO(ReceiptProduct receiptProduct) {
         ReceiptProductDTO dto = new ReceiptProductDTO();
@@ -137,7 +140,7 @@ public class StockReceiptsAPI {
         dto.setTotalAmount(receiptProduct.getTotalAmount());
         return dto;
     }
-    
+
     // ✅ Tạo phiếu nhập kho
     @Transactional
     @PostMapping
@@ -162,7 +165,9 @@ public class StockReceiptsAPI {
             StockReceipt stockReceipt = new StockReceipt();
             stockReceipt.setSupplier(supplier.get());
             stockReceipt.setBrand(brand.get());
-            stockReceipt.setOrderDate(request.getOrderDate());
+            LocalDate orderDate = request.getOrderDate();
+            stockReceipt.setOrderDate(orderDate);
+
             stockReceipt.setReceiptProducts(new ArrayList<>());
 
             StockReceipt savedStockReceipt = stockReceiptsDAO.save(stockReceipt);
@@ -224,7 +229,8 @@ public class StockReceiptsAPI {
 
             existingStockReceipt.setSupplier(supplier);
             existingStockReceipt.setBrand(brand);
-            existingStockReceipt.setOrderDate(request.getOrderDate());
+            existingStockReceipt.setOrderDate(request.getOrderDate());;
+            
 
             Map<ReceiptProductPK, ReceiptProduct> existingReceiptProductMap = existingStockReceipt.getReceiptProducts()
                     .stream()

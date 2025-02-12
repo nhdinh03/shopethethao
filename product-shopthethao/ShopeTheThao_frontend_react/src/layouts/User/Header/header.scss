@@ -1,103 +1,157 @@
-/* Header Styles for Sport Shop */
-
+/* General styling for header */
 .header {
-    background-color: #1e3a8a;
-    color: white;
-    padding: 1rem 0;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+  background-color: #1F2937; /* Dark Gray */
+  color: #fff;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  .logo-text {
+    color: #3B82F6; /* Blue */
+    background-color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+}
+
+.nav-desktop {
+  display: flex;
+  gap: 20px;
+
+  a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+    &:hover {
+      color: #3B82F6; /* Blue */
     }
-  
-    .logo {
-      font-size: 1.8rem;
+  }
+
+  .dropdown {
+    position: relative;
+    .dropdown-btn {
+      background: none;
+      border: none;
+      color: white;
       font-weight: bold;
+      cursor: pointer;
       display: flex;
       align-items: center;
-  
-      span {
-        background-color: white;
-        color: #1e3a8a;
-        padding: 0.3rem 0.6rem;
-        border-radius: 5px;
-        margin-right: 5px;
-      }
     }
-  
-    .search-bar {
-      display: flex;
-      align-items: center;
-      background-color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-  
-      input {
-        border: none;
-        outline: none;
-        margin-left: 8px;
-        font-size: 1rem;
-        width: 250px;
-      }
-    }
-  
-    .user-actions {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-  
-      .cart {
-        position: relative;
+
+    .dropdown-menu {
+      position: absolute;
+      background-color: #2D3748; /* Gray */
+      padding: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      list-style: none;
+      margin-top: 5px;
+      border-radius: 5px;
+      width: 150px;
+
+      li {
+        padding: 10px;
         cursor: pointer;
-  
-        .cart-count {
-          position: absolute;
-          top: -5px;
-          right: -10px;
-          background-color: red;
-          color: white;
-          font-size: 0.8rem;
-          padding: 2px 6px;
-          border-radius: 50%;
-        }
-      }
-  
-      .user-icon {
-        cursor: pointer;
-      }
-    }
-  
-    .nav {
-      margin-top: 1rem;
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      font-weight: 600;
-  
-      a {
-        color: white;
-        text-decoration: none;
-        transition: color 0.3s;
-  
         &:hover {
-          color: #a5b4fc;
+          background-color: #4A5568; /* Darker Gray */
         }
-      }
-    }
-  
-    @media (max-width: 768px) {
-      .search-bar {
-        display: none;
-      }
-  
-      .nav {
-        flex-wrap: wrap;
-        gap: 1rem;
       }
     }
   }
-  
+}
+
+.search-bar {
+  position: relative;
+  input {
+    padding: 10px;
+    border-radius: 30px;
+    border: 1px solid #ddd;
+    width: 250px;
+  }
+  .search-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+
+  .cart {
+    position: relative;
+    .cart-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background-color: red;
+      color: white;
+      font-size: 12px;
+      padding: 5px;
+      border-radius: 50%;
+    }
+  }
+
+  .login-btn,
+  .signup-btn {
+    padding: 10px 20px;
+    background-color: #3B82F6; /* Blue */
+    color: white;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    &:hover {
+      background-color: #2563EB; /* Darker Blue */
+    }
+  }
+}
+
+.menu-mobile {
+  display: none;
+  .mobile-menu {
+    position: absolute;
+    background-color: #1F2937;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      &:hover {
+        color: #3B82F6;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-desktop {
+    display: none;
+  }
+  .menu-mobile {
+    display: block;
+  }
+}
