@@ -17,7 +17,6 @@ const Categories = () => {
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
   const [categories, setCategories] = useState([]);
 
-  const [searchedColumn, setSearchedColumn] = useState("");
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
