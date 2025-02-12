@@ -80,26 +80,18 @@ public class StockReceiptsAPI {
         List<StockReceipt> stockReceipts = stockReceiptsDAO.findAll();
         return ResponseEntity.ok(stockReceipts);
     }
-    
-    // ✅ Lấy danh sách phiếu nhập kho có phân trang
     @GetMapping
     public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
             @RequestParam("limit") Optional<Integer> limit) {
         try {
-            // Kiểm tra giá trị của page và limit
-            int page = pageNo.orElse(1) - 1;  // Giảm đi 1 để bắt đầu từ trang 0
-            int size = limit.orElse(10);  // Mặc định là 10 sản phẩm một trang
-    
+            int page = pageNo.orElse(1) - 1;  
+            int size = limit.orElse(10);  
             if (page < 0) {
                 return handleError("Trang không hợp lệ, phải bắt đầu từ trang 1.", HttpStatus.BAD_REQUEST);
             }
-    
-            // Tạo đối tượng Pageable để phân trang
             Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("id")));
-            // Lấy dữ liệu phân trang từ database
             Page<StockReceipt> pageResult = stockReceiptsDAO.findAll(pageable);
     
-            // Chuyển đổi kết quả thành DTO
             List<StockReceiptDTO> stockReceiptDTOs = pageResult.getContent().stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());

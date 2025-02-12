@@ -45,6 +45,7 @@ import {
 } from "@ant-design/icons";
 import brandsApi from "api/Admin/Brands/Brands";
 import styles from "..//modalStyles.module.scss";
+import dayjs from "dayjs";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -68,7 +69,7 @@ const Stock_Receipts = () => {
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
   const [brands, setBrands] = useState([]);
   const [open, setOpen] = useState(false);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -130,9 +131,10 @@ const Stock_Receipts = () => {
       id: record.id,
       supplierId: record.supplierId, // Lưu trữ ID nhà cung cấp
       brandId: record.brandId, // Lưu trữ ID thương hiệu
-      orderDate: moment(record.orderDate),
+      orderDate: record.orderDate ? dayjs(record.orderDate) : null,
       receiptProducts: record.receiptProducts || [],
     });
+console.log(record);
 
     // Set lại tên nhà cung cấp và thương hiệu để hiển thị
     setEditMode(record);
@@ -347,8 +349,21 @@ const Stock_Receipts = () => {
               name="orderDate"
               rules={[{ required: true, message: "Chọn ngày nhập!" }]}
             >
-              <DatePicker style={{ width: "100%" }} />
+              <DatePicker
+                style={{ width: "100%" }}
+                format="DD/MM/YYYY"
+                placeholder="Chọn ngày nhập"
+                disabledDate={(current) =>
+                  current && current < moment().startOf("day")
+                } // Không cho phép chọn ngày quá khứ
+                onChange={(date, dateString) => {
+                  if (date) {
+                    form.setFieldsValue({ orderDate: date }); // Cập nhật ngày đã chọn vào form
+                  }
+                }}
+              />
             </Form.Item>
+
             <Form.List
               name="receiptProducts"
               initialValue={[]}
