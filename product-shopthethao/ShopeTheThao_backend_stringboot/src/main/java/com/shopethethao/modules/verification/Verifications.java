@@ -47,4 +47,6 @@ public class Verifications {
     @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)
     private Account account;
 
+    
+
 }

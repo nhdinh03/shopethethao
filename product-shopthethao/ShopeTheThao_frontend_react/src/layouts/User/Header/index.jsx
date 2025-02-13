@@ -1,94 +1,159 @@
-import React, { useState } from "react";
-import { ShoppingCart, User, Search, Menu as MenuIcon, ChevronDown } from "lucide-react";
-import './header.scss';
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSpring, animated } from 'react-spring';
+import {
+  FiShoppingCart, FiUser, FiSearch, FiMenu, FiHeart,
+  FiChevronDown, FiPhone, FiMail, FiTruck, FiGift
+} from "react-icons/fi";
+import { Link } from "react-router-dom";
+import "./header.scss";
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
-  const [scrolling, setScrolling] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  const handleScroll = () => {
-    setScrolling(window.scrollY > 80);
-  };
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const toggleSubMenu = () => setIsSubMenuOpen(!isSubMenuOpen);
-
-  React.useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+  const springProps = useSpring({
+    transform: isScrolled ? 'translateY(-42px)' : 'translateY(0)',
+    config: { tension: 280, friction: 20 }
+  });
 
   return (
-    <header className={`header ${scrolling ? 'header-sticky' : ''}`}>
-      <div className="header-container">
-        {/* Logo */}
-        <div className="logo">
-          <span className="logo-text">SPORT SHOP</span>
-        </div>
-
-        {/* Main Navigation */}
-        <nav className="nav-desktop">
-          <a href="#">Home</a>
-          <a href="#">Features</a>
-          <a href="#">Marketplace</a>
-          <div className="dropdown">
-            <button onClick={toggleSubMenu} className="dropdown-btn">
-              Company <ChevronDown size={16} />
-            </button>
-            {isSubMenuOpen && (
-              <ul className="dropdown-menu">
-                <li>About Us</li>
-                <li>Careers</li>
-                <li>Contact</li>
-              </ul>
-            )}
-          </div>
-          <a href="#">Team</a>
-          <a href="#">Contact</a>
-        </nav>
-
-        {/* Search Bar */}
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <Search size={20} className="search-icon" />
-        </div>
-
-        {/* Cart and User */}
-        <div className="header-actions">
-          <div className="cart">
-            <ShoppingCart size={24} />
-            <span className="cart-badge">3</span>
-          </div>
-          <User size={24} />
-          <button className="login-btn">Login</button>
-          <button className="signup-btn">Sign Up</button>
-        </div>
-
-        {/* Mobile Menu */}
-        <div className="menu-mobile">
-          <MenuIcon size={24} onClick={toggleMenu} />
-          {isMenuOpen && (
-            <div className="mobile-menu">
-              <a href="#">Home</a>
-              <a href="#">Features</a>
-              <a href="#">Marketplace</a>
-              <a href="#">Team</a>
-              <a href="#">Contact</a>
+    <animated.header style={springProps} className="header">
+      {/* Enhanced Announcement Bar */}
+      <div className="announcement-bar">
+        <div className="container">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="announcement-content"
+          >
+            <div className="announcement-item">
+              <FiTruck className="icon" />
+              <span>Miễn phí vận chuyển đơn hàng trên 500K</span>
             </div>
-          )}
+            <div className="announcement-item">
+              <FiGift className="icon" />
+              <span>Ưu đãi 20% cho thành viên mới</span>
+            </div>
+          </motion.div>
         </div>
       </div>
-    </header>
+
+      {/* Enhanced Header Top */}
+      <div className="header-top">
+        <div className="container">
+          <div className="header-top-content">
+            <div className="contact-info">
+              <motion.a 
+                whileHover={{ scale: 1.05 }}
+                href="tel:19001234"
+                className="contact-item"
+              >
+                <FiPhone className="icon" />
+                <span>1900 1234</span>
+              </motion.a>
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                href="nhdinhpc03@gmail.com"
+                className="contact-item"
+              >
+                <FiMail className="icon" />
+                <span>nhdinhpc03@gmail.co</span>
+              </motion.a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Main Header */}
+      <div className="header-main">
+        <div className="container">
+          <motion.div 
+            className="logo"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link to="/">
+              <h1 className="logo-text">SPORT SHOP</h1>
+            </Link>
+          </motion.div>
+
+          <div className="search-bar-wrapper">
+            <motion.div 
+              className="search-bar"
+              // whileFocus={{ scale: 1.02 }}
+            >
+              <input 
+                type="text" 
+                placeholder="Tìm kiếm sản phẩm..."
+                className="search-input" 
+              />
+              <motion.button
+                // whileHover={{ scale: 1.1 }}
+                // whileTap={{ scale: 0.9 }}
+                className="search-button"
+              >
+                <FiSearch />
+              </motion.button>
+            </motion.div>
+          </div>
+
+          <div className="header-actions">
+            <HeaderAction icon={<FiHeart />} label="Yêu thích" badge={2} />
+            <HeaderAction icon={<FiShoppingCart />} label="Giỏ hàng" badge={3} />
+            <HeaderAction icon={<FiUser />} label="Tài khoản" />
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Navigation */}
+      <nav className="header-nav">
+        <div className="container">
+          <ul className="nav-list">
+            <NavItem to="/" label="Trang chủ" />
+            <NavItem to="/products" label="Sản phẩm" hasSubmenu />
+            <NavItem to="/new-arrivals" label="Hàng mới về" isNew />
+            <NavItem to="/sale" label="Khuyến mãi" />
+            <NavItem to="/blog" label="Tin tức" />
+            <NavItem to="/contact" label="Liên hệ" />
+          </ul>
+        </div>
+      </nav>
+    </animated.header>
   );
 };
+
+// Helper Components
+const HeaderAction = ({ icon, label, badge }) => (
+  <motion.div
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.95 }}
+    className="action-item"
+  >
+    {icon}
+    {badge && (
+      <motion.span
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        className="badge"
+      >
+        {badge}
+      </motion.span>
+    )}
+    <span className="label">{label}</span>
+  </motion.div>
+);
+
+const NavItem = ({ to, label, hasSubmenu, isNew }) => (
+  <motion.li
+    whileHover={{ scale: 1.05 }}
+    className="nav-item"
+  >
+    <Link to={to} className="nav-link">
+      {label}
+      {hasSubmenu && <FiChevronDown className="submenu-icon" />}
+      {isNew && <span className="new-badge">Mới</span>}
+    </Link>
+  </motion.li>
+);
 
 export default Header;

@@ -204,7 +204,7 @@ public class AuthController {
 
         // ✅ Tạo Verifications
         Verifications verifications = new Verifications();
-        verifications.setAccountId(account.getId()); // Đảm bảo `account_id` là String
+        verifications.setAccount(account); 
         verifications.setCode(otp);
         verifications.setActive(false);
         verifications.setCreatedAt(LocalDateTime.now());

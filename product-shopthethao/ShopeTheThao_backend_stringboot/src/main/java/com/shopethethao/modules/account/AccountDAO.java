@@ -41,6 +41,9 @@ public interface AccountDAO extends JpaRepository<Account, String> {
     @Query("DELETE FROM Account a WHERE a.id = :id")
     void deleteById(@Param("id") String id);
 
+
+
+    
     // jwt
 
     List<Account> findByStatus(int status);
