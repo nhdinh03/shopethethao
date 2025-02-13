@@ -122,22 +122,6 @@ const Footer = () => {
         </div>
       </motion.div>
 
-
-      {/* Scroll to Top Button */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            className="scroll-top"
-            onClick={scrollToTop}
-            variants={scrollTopButtonVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            <FiArrowUp />
-          </motion.button>
-        )}
-      </AnimatePresence>
     </footer>
   );
 };
