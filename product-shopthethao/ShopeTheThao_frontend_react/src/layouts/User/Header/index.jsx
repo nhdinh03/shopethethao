@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSpring, animated } from 'react-spring';
 import {
@@ -7,6 +7,8 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import "./header.scss";
+import Nav from "../Nav";
+
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -53,11 +55,11 @@ const Header = () => {
               </motion.a>
               <motion.a
                 whileHover={{ scale: 1.05 }}
-                href="nhdinhpc03@gmail.com"
+                href="mailto:nhdinhpc03@gmail.com"
                 className="contact-item"
               >
                 <FiMail className="icon" />
-                <span>nhdinhpc03@gmail.co</span>
+                <span>nhdinhpc03@gmail.com</span>
               </motion.a>
             </div>
           </div>
@@ -80,7 +82,6 @@ const Header = () => {
           <div className="search-bar-wrapper">
             <motion.div 
               className="search-bar"
-              // whileFocus={{ scale: 1.02 }}
             >
               <input 
                 type="text" 
@@ -88,8 +89,6 @@ const Header = () => {
                 className="search-input" 
               />
               <motion.button
-                // whileHover={{ scale: 1.1 }}
-                // whileTap={{ scale: 0.9 }}
                 className="search-button"
               >
                 <FiSearch />
@@ -105,19 +104,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Enhanced Navigation */}
-      <nav className="header-nav">
-        <div className="container">
-          <ul className="nav-list">
-            <NavItem to="/" label="Trang chủ" />
-            <NavItem to="/products" label="Sản phẩm" hasSubmenu />
-            <NavItem to="/new-arrivals" label="Hàng mới về" isNew />
-            <NavItem to="/sale" label="Khuyến mãi" />
-            <NavItem to="/blog" label="Tin tức" />
-            <NavItem to="/contact" label="Liên hệ" />
-          </ul>
-        </div>
-      </nav>
+      <Nav />
     </animated.header>
   );
 };
@@ -141,19 +128,6 @@ const HeaderAction = ({ icon, label, badge }) => (
     )}
     <span className="label">{label}</span>
   </motion.div>
-);
-
-const NavItem = ({ to, label, hasSubmenu, isNew }) => (
-  <motion.li
-    whileHover={{ scale: 1.05 }}
-    className="nav-item"
-  >
-    <Link to={to} className="nav-link">
-      {label}
-      {hasSubmenu && <FiChevronDown className="submenu-icon" />}
-      {isNew && <span className="new-badge">Mới</span>}
-    </Link>
-  </motion.li>
 );
 
 export default Header;

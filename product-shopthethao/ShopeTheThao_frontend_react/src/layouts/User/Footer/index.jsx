@@ -1,145 +1,185 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiFacebook,
-  FiInstagram,
-  FiTwitter,
-  FiYoutube,
-  FiMapPin,
-  FiPhone,
-  FiMail,
+  FiFacebook, FiInstagram, FiTwitter, FiYoutube, FiMapPin,
+  FiPhone, FiMail, FiClock, FiCheck, FiArrowUp, FiShield,
+  FiTruck, FiCreditCard, FiGift, FiHelpCircle
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import "./footer.scss";
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Using useCallback for handleScroll to prevent unnecessary re-renders
+  const handleScroll = useCallback(() => {
+    setShowScrollTop(window.scrollY > 300);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]); // Dependency array includes handleScroll
+
+  // Using useCallback for handleSubscribe
+  const handleSubscribe = useCallback((e) => {
+    e.preventDefault();
+    if (email) {
+      setIsSubscribed(true);
+      setTimeout(() => setIsSubscribed(false), 3000);
+      setEmail("");
+    }
+  }, [email]); // Dependency array includes email
+
+  // Using useCallback for scrollToTop
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  // Variants for animations
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const listItemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (index) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: index * 0.1,
+        duration: 0.3,
+        ease: "easeOut",
+      },
+    }),
+  };
+
+  const successMessageVariants = {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0 },
+  };
+
+  const scrollTopButtonVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 20 },
+  };
+
+  const footerLinks = [
+    { text: "Trang chủ", to: "/" },
+    { text: "Sản phẩm", to: "/products" },
+    { text: "Về chúng tôi", to: "/about" },
+    { text: "Tin tức", to: "/blog" },
+    { text: "Liên hệ", to: "/contact" },
+    { text: "Chính sách bảo mật", to: "/privacy" },
+    { text: "Điều khoản sử dụng", to: "/terms" },
+    { text: "Chính sách đổi trả", to: "/returns" },
+  ];
 
   return (
-    <footer className="bg-gradient-to-r from-gray-900 to-gray-800">
-      {/* Main Footer Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* About Section */}
-          <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-white mb-4">SPORT SHOP</h3>
-            <p className="text-gray-300 text-sm leading-relaxed">
-              Chúng tôi cung cấp các sản phẩm thể thao chính hãng với chất lượng
-              tốt nhất, đảm bảo sự hài lòng cho khách hàng.
-            </p>
-            <div className="flex space-x-4 pt-4">
-              <SocialLink Icon={FiFacebook} href="https://facebook.com" />
-              <SocialLink Icon={FiInstagram} href="https://instagram.com" />
-              <SocialLink Icon={FiTwitter} href="https://twitter.com" />
-              <SocialLink Icon={FiYoutube} href="https://youtube.com" />
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-4">
-              Liên kết nhanh
-            </h4>
-            <ul className="space-y-2">
-              {[
-                "Trang chủ",
-                "Sản phẩm",
-                "Về chúng tôi",
-                "Liên hệ",
-                "Chính sách",
-              ].map((item) => (
-                <FooterLink key={item} text={item} />
-              ))}
-            </ul>
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Danh mục</h4>
-            <ul className="space-y-2">
-              {["Giày thể thao", "Quần áo", "Phụ kiện", "Dụng cụ thể thao"].map(
-                (item) => (
-                  <FooterLink key={item} text={item} />
-                )
-              )}
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h4 className="text-lg font-semibold text-white mb-4">
-              Thông tin liên hệ
-            </h4>
-            <ul className="space-y-4">
-              <ContactInfo
-                Icon={FiMapPin}
-                text="123 Đường ABC, Quận XYZ, TP.HCM"
-              />
-              <ContactInfo Icon={FiPhone} text="Hotline: 1900 1234" />
-              <ContactInfo Icon={FiMail} text="Email: support@sportshop.com" />
-            </ul>
+    <footer className="footer">
+      {/* Services Section */}
+      <motion.div
+        className="footer-services"
+        variants={sectionVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="container">
+          <div className="services-grid">
+            <ServiceCard
+              icon={<FiTruck />}
+              title="Miễn phí vận chuyển"
+              description="Đơn hàng từ 500K"
+            />
+            <ServiceCard
+              icon={<FiShield />}
+              title="Bảo hành 365 ngày"
+              description="1 đổi 1 trong 7 ngày"
+            />
+            <ServiceCard
+              icon={<FiCreditCard />}
+              title="Thanh toán an toàn"
+              description="Nhiều phương thức"
+            />
+            <ServiceCard
+              icon={<FiHelpCircle />}
+              title="Hỗ trợ 24/7"
+              description="Tư vấn nhiệt tình"
+            />
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Newsletter Section */}
-      <div className="border-t border-gray-700">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-4 md:mb-0">
-              <h5 className="text-white text-lg font-semibold">
-                Đăng ký nhận thông tin
-              </h5>
-              <p className="text-gray-400 text-sm">
-                Nhận thông tin về sản phẩm mới và khuyến mãi
-              </p>
-            </div>
-            <div className="flex w-full md:w-auto">
-              <input
-                type="email"
-                placeholder="Nhập email của bạn"
-                className="px-4 py-2 w-full md:w-64 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-r-md transition-colors duration-300">
-                Đăng ký
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Copyright Section */}
-      
+      {/* Scroll to Top Button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            className="scroll-top"
+            onClick={scrollToTop}
+            variants={scrollTopButtonVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            <FiArrowUp />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </footer>
   );
 };
 
 // Helper Components
-const SocialLink = ({ Icon, href }) => (
-  <a
+const ServiceCard = React.memo(({ icon, title, description }) => (
+  <motion.div
+    whileHover={{ y: -5 }}
+    className="service-card"
+  >
+    <div className="icon">{icon}</div>
+    <div className="content">
+      <h5>{title}</h5>
+      <p>{description}</p>
+    </div>
+  </motion.div>
+));
+
+const SocialLink = React.memo(({ Icon, href }) => (
+  <motion.a
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.9 }}
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className="w-8 h-8 rounded-full bg-gray-700 hover:bg-blue-600 flex items-center justify-center transition-colors duration-300"
+    className="social-link"
   >
-    <Icon className="w-4 h-4 text-white" />
-  </a>
-);
+    <Icon />
+  </motion.a>
+));
 
-const FooterLink = ({ text }) => (
+const FooterLink = React.memo(({ text, to }) => (
+  <Link to={to}>
+    {text}
+  </Link>
+));
+
+const ContactInfo = React.memo(({ Icon, text }) => (
   <li>
-    <Link
-      to={`/${text.toLowerCase().replace(/\s+/g, "-")}`}
-      className="text-gray-400 hover:text-white transition-colors duration-300"
-    >
-      {text}
-    </Link>
+    <Icon />
+    <span>{text}</span>
   </li>
-);
-
-const ContactInfo = ({ Icon, text }) => (
-  <li className="flex items-start space-x-3">
-    <Icon className="w-5 h-5 text-blue-500 mt-1" />
-    <span className="text-gray-400">{text}</span>
-  </li>
-);
+));
 
 export default Footer;

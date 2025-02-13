@@ -1,0 +1,532 @@
+// Variables
+$colors: (
+  primary: #0099ff,
+  secondary: #2c3e50,
+  accent: #e74c3c,
+  success: #2ecc71,
+  warning: #f1c40f,
+  background: #ffffff,
+  text: (
+    primary: #2d3748,
+    secondary: #64748b,
+    light: #ffffff,
+  ),
+);
+
+// Theme Variables
+$theme: (
+  colors: (
+    primary: #3498db,
+    secondary: #2c3e50,
+    accent: #e74c3c,
+    success: #2ecc71,
+    warning: #f1c40f,
+    background: #ffffff,
+    text: (
+      primary: #2d3748,
+      secondary: #64748b,
+      light: #ffffff,
+    ),
+  ),
+  shadows: (
+    card: 0 10px 30px -5px rgba(0, 0, 0, 0.1),
+    submenu: 0 15px 50px -12px rgba(0, 0, 0, 0.25),
+    subtle: -3px -3px 5px rgba(0, 0, 0, 0.04),
+  ),
+  transitions: (
+    default: all 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+  ),
+  breakpoints: (
+    tablet: 1024px,
+    mobile: 768px,
+  ),
+);
+
+// Mixins
+@mixin glass-effect {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+@mixin card-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: map-get($theme, transitions, default);
+}
+
+@mixin hover-lift {
+  &:hover {
+    transform: translateY(-2px) translateZ(10px);
+    box-shadow: map-get($theme, shadows, card);
+  }
+}
+
+$card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+$hover-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Mixins
+@mixin glass-effect {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+@mixin gradient-text {
+  background: linear-gradient(
+    45deg,
+    map-get($colors, secondary),
+    map-get($colors, primary)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@mixin card-3d-effect {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: $hover-transition;
+}
+
+@mixin hover-lift {
+  &:hover {
+    transform: translateY(-2px) translateZ(10px);
+    box-shadow: $card-shadow;
+  }
+}
+
+// Animations
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes iconBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes fireworks {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+
+  20% {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 1),
+      0 0 20px rgba(255, 255, 255, 0.8);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 1),
+      0 0 40px rgba(255, 255, 255, 0.6);
+  }
+
+  80% {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 1),
+      0 0 50px rgba(255, 255, 255, 0.3);
+  }
+}
+
+// Header Navigation
+.header-nav {
+  background: linear-gradient(
+    to right,
+    map-get($colors, secondary),
+    darken(map-get($colors, secondary), 5%)
+      map-get(map-get($theme, colors), secondary)
+  );
+  padding: 0;
+  border-radius: 0 0 15px 15px;
+
+  .container {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+  }
+
+  .nav-list {
+    @include flex-center;
+    justify-content: center;
+    gap: 32px;
+    padding: 15px 0;
+    margin-top: 10px;
+    list-style: none;
+
+    .nav-item {
+      position: relative;
+
+      .nav-link {
+        @include flex-center;
+        gap: 4px;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+        font-size: 18px;
+        padding: 8px 0;
+        transition: all 0.3s ease;
+
+        &:hover {
+          color: map-get($colors, primary);
+        }
+
+        .new-badge {
+          background: map-get($colors, accent);
+          color: white;
+          font-size: 11px;
+          padding: 2px 6px;
+          border-radius: 10px;
+          margin-left: 4px;
+        }
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: map-get($colors, primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+        transform-origin: right;
+      }
+
+      &:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
+    }
+
+    &:hover {
+      .nav-link {
+        color: #2c3e50;
+      }
+    }
+  }
+
+  .submenu-icon {
+    transition: transform 0.3s ease;
+  }
+}
+
+// Media Queries for Responsiveness
+@media (max-width: 1024px) {
+  .submenu {
+    min-width: 600px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .submenu {
+    position: static !important;
+    min-width: 100% !important;
+    transform: none !important;
+    padding: 16px !important;
+    grid-template-columns: 1fr;
+    opacity: 1;
+    visibility: visible;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+}
+
+// 3D Effect Variables
+$card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+$hover-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$perspective: 1000px; // Tạo chiều sâu cho hiệu ứng 3D
+
+// Mixin for 3D Effect
+@mixin card-3d-effect {
+  transform-style: preserve-3d;
+  perspective: $perspective;
+  transition: $hover-transition;
+}
+
+@mixin hover-lift {
+  &:hover {
+    transform: translateY(-2px) translateZ(10px);
+    box-shadow: $card-shadow;
+  }
+}
+
+// Navigation Item Styles
+.nav-item {
+  @include card-3d-effect; // Áp dụng hiệu ứng 3D
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    font-size: 18px;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+
+    &:hover {
+      color: map-get($colors, primary);
+    }
+
+    .new-badge {
+      background: map-get($colors, accent);
+      color: white;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      margin-left: 4px;
+    }
+
+    .submenu-icon {
+      transition: transform 0.3s ease;
+    }
+  }
+
+  // Hover state for nav-item
+  &:hover {
+    .submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) rotateX(0);
+    }
+  }
+}
+
+
+
+// Theme Variables
+$theme: (
+  colors: (
+    primary: #3498db,
+    secondary: #2c3e50,
+    accent: #e74c3c,
+    success: #2ecc71,
+    warning: #f1c40f,
+    background: #ffffff,
+    text: (
+      primary: #2d3748,
+      secondary: #64748b,
+      light: #ffffff,
+    ),
+  ),
+  shadows: (
+    card: 0 10px 30px -5px rgba(0, 0, 0, 0.1),
+    submenu: 0 15px 50px -12px rgba(0, 0, 0, 0.25),
+    subtle: -3px -3px 5px rgba(0, 0, 0, 0.04),
+  ),
+  transitions: (
+    default: all 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+  ),
+  breakpoints: (
+    tablet: 1024px,
+    mobile: 768px,
+  )
+);
+
+// Mixins
+@mixin glass-effect {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+@mixin card-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: map-get($theme, transitions, default);
+}
+
+@mixin hover-lift {
+  &:hover {
+    transform: translateY(-2px) translateZ(10px);
+    box-shadow: map-get($theme, shadows, card);
+  }
+}
+
+
+
+// Submenu Styles
+.submenu {
+  position: absolute;
+  top: 150%;
+    // left: -150%;
+  transform: translateX(-50%) rotateX(-15deg);
+  min-width: 800px;
+  @include glass-effect;
+  border-radius: 1rem;
+  box-shadow: map-get($theme, shadows, submenu);
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: map-get($theme, transitions, smooth);
+  @include card-3d;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: inherit;
+    border-radius: 0.25rem;
+    box-shadow: map-get($theme, shadows, subtle);
+    z-index: -1;
+  }
+
+  &-category {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.5);
+    @include hover-lift;
+
+    h4 {
+      color: map-get($colors, text, primary);
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(map-get($colors, primary), 0.1);
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 3rem;
+        height: 2px;
+        background: map-get(map-get($theme, colors), primary);
+        transition: width 0.3s ease;
+      }
+    }
+
+    &:hover h4::after {
+      width: 100%;
+    }
+
+    ul li {
+      margin: 0.5rem 0;
+
+      a {
+        display: block;
+        color: map-get($colors, text, secondary);
+        font-size: 14px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: $hover-transition;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: map-get(map-get($theme, colors), primary);
+          opacity: 0;
+          transform: translateX(-100%) rotate(-45deg);
+          transition: map-get($theme, transitions, smooth);
+          z-index: -1;
+        }
+
+        &:hover {
+          color: white;
+          transform: translateX(5px);
+
+          &::before {
+            opacity: 1;
+            transform: translateX(0) rotate(0);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: map-get($theme, breakpoints, tablet)) {
+  .submenu {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: map-get($theme, breakpoints, mobile)) {
+  .submenu {
+    position: static;
+    min-width: 100%;
+    transform: none;
+    padding: 1rem;
+    grid-template-columns: 1fr;
+    opacity: 1;
+    visibility: visible;
+    box-shadow: none;
+    backdrop-filter: none;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .nav-list {
+    flex-direction: column;
+    padding: 0.5rem;
+  }
+}

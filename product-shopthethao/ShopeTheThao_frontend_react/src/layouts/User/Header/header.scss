@@ -93,6 +93,7 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
   @include glass-effect;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+ 
   
 
   // Announcement Bar Styles
@@ -211,7 +212,7 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
 
   // Main Header
   .header-main {
-    padding: 20px 0;
+    padding: 25px 0;
     background: map-get($colors, background);
 
     .container {
@@ -337,7 +338,7 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
           bottom: -20px;
           left: 50%;
           transform: translateX(-50%);
-          font-size: 12px;
+          font-size: 15px;
           white-space: nowrap;
           color: map-get($colors, text, secondary);
           opacity: 0;
@@ -374,30 +375,38 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
     );
     padding: 0;
     border-radius: 0 0 15px 15px;
-
+    margin-top: 10px;
+    .container {
+      display: flex; /* Add this */
+      justify-content: center; /* Add this */
+      margin: 0 auto;
+    }
+  
     .nav-list {
       @include flex-center;
-      justify-content: center;
+      justify-content: center; /* Keep this */
       gap: 32px;
       padding: 15px 0;
-      margin-top: 10px;
+      margin-top: 5px;
       list-style: none;
-
+      
+  
       .nav-item {
         position: relative;
-
+  
         .nav-link {
           @include flex-center;
           gap: 4px;
           color: rgba(255, 255, 255, 0.9);
           font-weight: 500;
+          font-size: 18px;
           padding: 8px 0;
           transition: all 0.3s ease;
-
+  
           &:hover {
             color: map-get($colors, primary);
           }
-
+  
           .new-badge {
             background: map-get($colors, accent);
             color: white;
@@ -407,7 +416,7 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
             margin-left: 4px;
           }
         }
-
+  
         &::after {
           content: "";
           position: absolute;
@@ -420,7 +429,7 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
           transition: transform 0.3s ease;
           transform-origin: right;
         }
-
+  
         &:hover::after {
           transform: scaleX(1);
           transform-origin: left;
@@ -435,6 +444,7 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
   .header {
     .container {
       padding: 0 20px;
+      
     }
 
     .header-main {
@@ -444,7 +454,36 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
     }
   }
 }
+
 @media (max-width: 768px) {
+  .header {
+    .header-main {
+      flex-direction: column; /* Stack items vertically */
+      align-items: center; /* Center items horizontally */
+
+      .logo {
+        margin-bottom: 10px; /* Add spacing below logo */
+      }
+
+      .search-bar-wrapper {
+        width: 100%; /* Take full width */
+        max-width: none; /* Remove max width */
+        margin-bottom: 10px; /* Add spacing below search bar */
+      }
+
+      .header-actions {
+        justify-content: space-around; /* Distribute items evenly */
+        width: 100%; /* Take full width */
+      }
+    }
+
+    .header-nav .nav-list {
+      flex-direction: column; /* Stack navigation items */
+      align-items: center; /* Center navigation items */
+      gap: 10px; /* Reduce gap between nav items */
+    }
+  }
+
   .announcement-bar {
     height: auto;
     padding: 8px 0;
@@ -461,6 +500,20 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
   }
 }
 
+// Very small screens (e.g., mobile devices at 20% zoom)
+@media (max-width: 320px) {
+  .header {
+    .header-main .header-actions {
+      flex-direction: column; /* Stack action items */
+      align-items: center; /* Center action items */
+    }
+
+    .header-nav .nav-list {
+      gap: 5px; /* Further reduce gap between nav items */
+    }
+  }
+}
+
 // Dark mode support
 @media (prefers-color-scheme: dark) {
   .announcement-bar {
@@ -468,6 +521,52 @@ $announcement-gradient: linear-gradient(to right, #2c3e50, #3498db);
 
     .announcement-item {
       background: rgba(255, 255, 255, 0.05);
+    }
+  }
+}
+
+// 2K and 4K screen optimization
+@media (min-width: 1440px) {
+  .header {
+    .container {
+      max-width: 1920px; // Wider container for 2K screens
+      padding: 0 40px;
+    }
+
+    .header-main {
+      padding: 30px 0; // Increased padding for better spacing
+
+      .logo {
+        margin-top: -30px; // Adjust logo position
+      }
+
+      .search-bar-wrapper {
+        max-width: 800px; // Wider search bar
+      }
+    }
+
+    .header-nav .nav-list {
+      gap: 64px; // Increased gap between nav items
+      padding: 20px 0; // Increased padding for nav list
+    }
+  }
+}
+
+@media (min-width: 2560px) {
+  .header {
+    .container {
+      max-width: 2560px; // Wider container for 4K screens
+      padding: 0 60px;
+    }
+
+    .header-main {
+      .search-bar-wrapper {
+        max-width: 1000px; // Even wider search bar
+      }
+    }
+
+    .header-nav .nav-list {
+      gap: 80px; // Further increased gap between nav items
     }
   }
 }
