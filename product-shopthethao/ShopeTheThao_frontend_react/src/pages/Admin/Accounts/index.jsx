@@ -1,36 +1,14 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  message,
-  Button,
-  Space,
-  Modal,
-  Form,
-  Input,
-  Select,
-  Row,
-  Checkbox,
-  Col,
-  Upload,
-  DatePicker,
-  Tag,
-  Tabs,
-} from "antd";
-import {
-  HomeOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  PlusOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { message, Button, Form, Row, Select, Tag, Space } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import AccountModal from "./components/AccountModal";
+import AccountTabs from "./components/AccountTabs";
 import PaginationComponent from "components/PaginationComponent";
-import "..//index.scss";
-import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { accountsUserApi, lockreasonsApi } from "api/Admin";
-import dayjs from "dayjs";
+import "../index.scss";
 import uploadApi from "api/service/uploadApi";
-
-const { TabPane } = Tabs;
+import dayjs from "dayjs";
+import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 const Accounts = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -425,12 +403,7 @@ const Accounts = () => {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      {/* Tiêu đề */}
-      <Row
-        justify="space-between"
-        align="middle"
-        style={{ marginBottom: "20px" }}
-      >
+      <Row justify="space-between" align="middle" style={{ marginBottom: "20px" }}>
         <h2>Quản lý tài khoản</h2>
         <Button
           type="primary"
@@ -442,277 +415,37 @@ const Accounts = () => {
         </Button>
       </Row>
 
-      {/* Modal chỉnh sửa tài khoản */}
-      <Modal
-        title={editUser ? "Cập nhật tài khoản" : "Thêm tài khoản mới"}
+      <AccountModal
         open={open}
-        footer={null}
-        onCancel={handleCancel}
-        width={700}
-      >
-        <Form form={form} layout="vertical" validateTrigger="onBlur">
-          <Row gutter={16}>
-            {/* User Name */}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="id"
-                label="User Name"
-                rules={[
-                  { required: true, message: "Vui lòng nhập User Name!" },
-                ]}
-              >
-                <Input prefix={<UserOutlined />} placeholder="Nhập User Name" />
-              </Form.Item>
-            </Col>
+        editUser={editUser}
+        form={form}
+        FileList={FileList}
+        statusChecked={statusChecked}
+        isStatusEditable={isStatusEditable}
+        handleCancel={handleCancel}
+        handleChange={handleChange}
+        onPreview={onPreview}
+        handleStatus={handleStatus}
+        handleStatusChange={handleStatusChange}
+        handleResetForm={handleResetForm}
+        handleModalOk={handleModalOk}
+      />
 
-            {/* Fullname */}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="fullname"
-                label="Họ tên"
-                rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
-              >
-                <Input prefix={<UserOutlined />} placeholder="Nhập họ tên" />
-              </Form.Item>
-            </Col>
+      <AccountTabs
+        loading={loading}
+        user={user}
+        lockedUser={lockedUser}
+        columns={columns}
+        lockedColumns={lockedColumns}
+      />
 
-            {/* Phone */}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="phone"
-                label="Số điện thoại"
-                rules={[
-                  { required: true, message: "Vui lòng nhập số điện thoại!" },
-                ]}
-              >
-                <Input
-                  prefix={<PhoneOutlined />}
-                  placeholder="Nhập số điện thoại"
-                />
-              </Form.Item>
-            </Col>
-
-            {/* Email */}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  {
-                    required: true,
-                    type: "email",
-                    message: "Vui lòng nhập email hợp lệ!",
-                  },
-                ]}
-              >
-                <Input prefix={<MailOutlined />} placeholder="Nhập email" />
-              </Form.Item>
-            </Col>
-
-            {/* Address */}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="address"
-                label="Địa chỉ"
-                rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
-              >
-                <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
-              </Form.Item>
-            </Col>
-
-            {/* Birthday */}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="birthday"
-                label="Ngày sinh"
-                rules={[
-                  { required: true, message: "Vui lòng chọn ngày sinh!" },
-                ]}
-              >
-                <DatePicker
-                  format="DD/MM/YYYY"
-                  placeholder="Chọn ngày sinh"
-                  style={{ width: "100%" }}
-                  disabledDate={(current) =>
-                    current && current > dayjs().endOf("day")
-                  }
-                />
-              </Form.Item>
-            </Col>
-
-            {/* Gender */}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="gender"
-                label="Giới tính"
-                rules={[
-                  { required: true, message: "Vui lòng chọn giới tính!" },
-                ]}
-              >
-                <Select placeholder="Chọn giới tính">
-                  <Select.Option value="M">Nam giới</Select.Option>
-                  <Select.Option value="F">Nữ giới</Select.Option>
-                  <Select.Option value="O">Khác</Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-
-            {/* Image Upload */}
-            <Col xs={24} sm={12}>
-              <Form.Item
-                label="Ảnh đại diện"
-                name="image"
-                rules={[{ required: true, message: "Vui lòng chọn ảnh!" }]}
-              >
-                <Upload
-                  beforeUpload={() => false}
-                  accept=".png, .jpg"
-                  listType="picture-card"
-                  onChange={handleChange}
-                  onPreview={onPreview}
-                  fileList={FileList}
-                  maxCount={1}
-                >
-                  {FileList.length < 1 && "+ Upload"}
-                </Upload>
-              </Form.Item>
-            </Col>
-
-            {/* Verified Status */}
-            {editUser && (
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  name="verified"
-                  label="Xác thực"
-                  valuePropName="checked"
-                  initialValue={true}
-                >
-                  <Checkbox>Đã xác thực</Checkbox>
-                </Form.Item>
-              </Col>
-            )}
-
-            {/* Status */}
-            {editUser && (
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  name="status"
-                  label="Trạng thái"
-                  valuePropName="checked"
-                  initialValue={statusChecked}
-                  disabled={!isStatusEditable}
-                >
-                  <Checkbox onChange={handleStatus}>
-                    Tình Trạng Tài khoản
-                  </Checkbox>
-                </Form.Item>
-              </Col>
-            )}
-
-            {editUser && !statusChecked && (
-              <Col span={24}>
-                <Form.Item
-                  name="lockReasons"
-                  label="Lý do khóa"
-                  rules={[
-                    {
-                      required: !statusChecked,
-                      message: "Vui lòng nhập lý do khóa!",
-                    },
-                  ]}
-                >
-                  <Input.TextArea
-                    placeholder="Nhập lý do khóa"
-                    rows={4}
-                    defaultValue={editUser?.lockReasons?.[0]?.reason || ""}
-                  />
-                </Form.Item>
-              </Col>
-            )}
-
-            {/* Xóa lý do khóa Button */}
-            {editUser && editUser.lockReasons?.length > 0 && (
-              <Col span={24}>
-                <Button
-                  type="danger"
-                  onClick={() => handleStatusChange(editUser.lockReasons[0].id)}
-                >
-                  Xóa lý do khóa
-                </Button>
-              </Col>
-            )}
-
-            {/* Password */}
-            {!editUser && (
-              <Col xs={24}>
-                <Form.Item
-                  name="password"
-                  label="Mật khẩu"
-                  rules={[
-                    { required: true, message: "Vui lòng nhập mật khẩu!" },
-                    { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
-                  ]}
-                >
-                  <Input.Password placeholder="Nhập mật khẩu" />
-                </Form.Item>
-              </Col>
-            )}
-          </Row>
-
-          {/* Action Buttons */}
-          <Space
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              width: "100%",
-            }}
-          >
-            <Button onClick={handleResetForm}>Làm mới</Button>
-            <Button type="primary" onClick={handleModalOk}>
-              {editUser ? "Cập nhật" : "Thêm mới"}
-            </Button>
-          </Space>
-        </Form>
-      </Modal>
-
-      {/* Tab chứa các bảng */}
-      <Tabs defaultActiveKey="1">
-        <TabPane tab="Tài khoản đang hoạt động" key="1">
-          <Table
-            pagination={false}
-            columns={columns}
-            loading={loading}
-            dataSource={user.map((user, index) => ({
-              ...user,
-              key: user.id || `active-${index}`,
-            }))}
-            scroll={{ x: "max-content" }}
-          />
-        </TabPane>
-        <TabPane tab="Tài khoản bị khóa" key="2">
-          <Table
-            pagination={false}
-            columns={lockedColumns}
-            loading={loading}
-            dataSource={lockedUser.map((user, index) => ({
-              ...user,
-              key: user.id || `locked-${index}`,
-            }))}
-            scroll={{ x: "max-content" }}
-          />
-        </TabPane>
-      </Tabs>
-
-      {/* Pagination */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: "10px",
-          gap: "10px",
-        }}
-      >
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: "10px",
+        gap: "10px",
+      }}>
         <PaginationComponent
           totalPages={totalPages}
           currentPage={currentPage}

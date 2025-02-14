@@ -1,63 +1,37 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  message,
-  Button,
-  Space,
-  Modal,
-  Form,
-  Input,
-  Popconfirm,
-  Tooltip,
-  Select,
-  Row,
-} from "antd";
-import {
-  HomeOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  PlusOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import PaginationComponent from "components/PaginationComponent";
+import { Button, message, Modal, Form, Row } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import { suppliersApi } from "api/Admin";
 import "..//index.scss";
 import styles from "..//modalStyles.module.scss";
-import ActionColumn from "components/Admin/tableColumns/ActionColumn";
+import SupplierForm from "./components/SupplierForm";
+import SuppliersTable from "./components/SuppliersTable";
 
 const Suppliers = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-
   const [editsuppliers, setEditSuppliers] = useState(null);
-
   const [searchText, setSearchText] = useState("");
   const [suppliers, setSuppliers] = useState([]);
   const [open, setOpen] = useState(false);
-
   const [workSomeThing, setWorkSomeThing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
-  // Fetch product size data with pagination and search
+  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
+
   useEffect(() => {
     let isMounted = true;
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await suppliersApi.getByPage(
-          currentPage,
-          pageSize,
-          searchText
-        );
+        const res = await suppliersApi.getByPage(currentPage, pageSize, searchText);
         if (isMounted) {
           setSuppliers(res.data);
           setTotalItems(res.totalItems);
           setLoading(false);
         }
-        console.log(res);
       } catch (error) {
         message.error("Không thể lấy danh sách sản phẩm. Vui lòng thử lại!");
         setLoading(false);
@@ -122,20 +96,10 @@ const Suppliers = () => {
     setCurrentPage(1); // Reset page to 1 when page size changes
   };
 
-  const columns = [
-    { title: "📋 Danh sách", dataIndex: "id", key: "id" },
-    { title: "🏢 Nhà cung cấp", dataIndex: "name", key: "name" },
-    { title: "📧 Email", dataIndex: "email", key: "email" },
-    { title: "📞 Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
-    { title: "🏠 Địa chỉ", dataIndex: "address", key: "address" },
-    ActionColumn(handleEditData, handleDelete),
-  ];
-
   return (
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Quản lý Nhà cung cấp sản phẩm</h2>
-
         <div className="header-container">
           <Button
             type="primary"
@@ -160,91 +124,20 @@ const Suppliers = () => {
           centered
           className={styles.modalWidth}
         >
-          <Form form={form} layout="vertical">
-            {/* Tên Thương hiệu */}
-            <Form.Item
-              name="name"
-              label="Tên Thương hiệu"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên Thương hiệu!" },
-              ]}
-            >
-              <Input
-                prefix={<UserOutlined />}
-                placeholder="Nhập tên Thương hiệu"
-              />
-            </Form.Item>
-
-            {/* Số điện thoại */}
-            <Form.Item
-              name="phoneNumber"
-              label="Số điện thoại"
-              rules={[
-                { required: true, message: "Vui lòng nhập Số điện thoại!" },
-              ]}
-            >
-              <Input
-                prefix={<PhoneOutlined />}
-                placeholder="Vui lòng nhập Số điện thoại"
-              />
-            </Form.Item>
-
-            {/* Email */}
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[{ required: true, message: "Vui lòng nhập email!" }]}
-            >
-              <Input prefix={<MailOutlined />} placeholder="Nhập email" />
-            </Form.Item>
-
-            {/* Địa chỉ */}
-            <Form.Item
-              name="address"
-              label="Địa chỉ"
-              rules={[{ required: true, message: "Vui lòng nhập Địa chỉ!" }]}
-            >
-              <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
-            </Form.Item>
-          </Form>
+          <SupplierForm form={form} />
         </Modal>
       </Row>
-      <div className="table-container">
-        <Table
-          pagination={false}
-          columns={columns}
-          loading={loading}
-          scroll={{ x: "max-content" }}
-          dataSource={suppliers.map((supplier) => ({
-            ...supplier,
-            key: supplier.id,
-          }))}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: 10,
-            gap: 10,
-          }}
-        >
-          <PaginationComponent
-            totalPages={totalPages}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
-          <Select
-            value={pageSize}
-            style={{ width: 120, marginTop: 20 }}
-            onChange={handlePageSizeChange} // Reset to page 1 when page size changes
-          >
-            <Select.Option value={5}>5 hàng</Select.Option>
-            <Select.Option value={10}>10 hàng</Select.Option>
-            <Select.Option value={20}>20 hàng</Select.Option>
-            <Select.Option value={50}>50 hàng</Select.Option>
-          </Select>
-        </div>
-      </div>
+      <SuppliersTable
+        loading={loading}
+        suppliers={suppliers}
+        handleEditData={handleEditData}
+        handleDelete={handleDelete}
+        totalPages={totalPages}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        pageSize={pageSize}
+        handlePageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 };
