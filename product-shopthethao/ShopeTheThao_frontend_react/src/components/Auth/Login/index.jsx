@@ -1,42 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiUser } from 'react-icons/fi';
-import { FaFacebookF, FaGoogle } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
-import './login.scss';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FiMail, FiLock, FiEye, FiEyeOff, FiUser } from "react-icons/fi";
+import { FaFacebookF, FaGoogle } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import "./login.scss";
 import img from "assets/Img";
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    remember: false
+    email: "",
+    password: "",
+    remember: false,
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+  // Optimized state management
+  const [{ showPassword, loading }, setUIState] = useState({
+    showPassword: false,
+    loading: false,
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value.trim(),
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+    setUIState((prev) => ({ ...prev, loading: true }));
+
+    try {
+      // API call simulation
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      navigate("/");
+    } catch (error) {
+      // Error handling here
+    } finally {
+      setUIState((prev) => ({ ...prev, loading: false }));
+    }
   };
 
   return (
     <div className="login-wrapper">
-      {/* Left Side with Parallax Effect */}
-      <motion.div 
+      {/* Right Side with Welcome Content */}
+      <motion.div
         className="login-left"
-        initial={{ opacity: 0, x: -100 }}
+        initial={{ opacity: 0, x: 100 }}  // Changed from -100 to 100
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
       >
@@ -53,23 +64,23 @@ const Login = () => {
         </div>
       </motion.div>
 
-      {/* Right Side with Form */}
-      <motion.div 
+      {/* Left Side with Form */}
+      <motion.div
         className="login-right"
-        initial={{ opacity: 0, x: 100 }}
+        initial={{ opacity: 0, x: -100 }}  // Changed from 100 to -100
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <motion.div 
+        <motion.div
           className="form-container"
           whileHover={{ scale: 1.01 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
           {/* Form Header with Hover Effect */}
           <motion.div className="form-header">
-            <motion.img 
-            src={img.Co_VN}
-              alt="Logo" 
+            <motion.img
+              src={img.Co_VN}
+              alt="Logo"
               className="brand-logo"
               whileHover={{ scale: 1.1, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
@@ -96,7 +107,7 @@ const Login = () => {
 
             <InputField
               icon={<FiLock />}
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Nhập mật khẩu của bạn"
               value={formData.password}
@@ -105,7 +116,12 @@ const Login = () => {
                 <motion.button
                   type="button"
                   className="visibility-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() =>
+                    setUIState((prev) => ({
+                      ...prev,
+                      showPassword: !prev.showPassword,
+                    }))
+                  }
                   whileTap={{ scale: 0.9 }}
                 >
                   {showPassword ? <FiEyeOff /> : <FiEye />}
@@ -114,11 +130,8 @@ const Login = () => {
             />
 
             {/* Enhanced Checkbox */}
-            <motion.div 
-              className="form-options"
-              whileHover={{ scale: 1.02 }}
-            >
-              <CustomCheckbox
+            <motion.div className="form-options" whileHover={{ scale: 1.02 }}>
+              <CustomCheckbox 
                 checked={formData.remember}
                 onChange={(e) => handleChange(e)}
                 name="remember"
@@ -161,7 +174,7 @@ const Login = () => {
 
             {/* Enhanced Social Login */}
             <div className="social-login">
-              <motion.div 
+              <motion.div
                 className="social-buttons"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -186,15 +199,16 @@ const Login = () => {
   );
 };
 
-// Helper Components
+// Optimized helper components
 const InputField = ({ icon, endIcon, ...props }) => (
-  <motion.div 
+  <motion.div
     className="form-group"
-    whileHover={{ scale: 1.01 }}
-    whileTap={{ scale: 0.99 }}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    transition={{ duration: 0.2 }}
   >
     <div className="input-field">
-      <motion.span 
+      <motion.span
         className="field-icon"
         initial={{ opacity: 0.5 }}
         whileHover={{ opacity: 1 }}
@@ -208,30 +222,23 @@ const InputField = ({ icon, endIcon, ...props }) => (
 );
 
 const CustomCheckbox = ({ label, ...props }) => (
-  <motion.label 
-    className="custom-checkbox"
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-  >
+  <label className="custom-checkbox">
     <input type="checkbox" {...props} />
-    <motion.span 
-      className="checkmark"
-      whileHover={{ backgroundColor: "rgba(79, 70, 229, 0.1)" }}
-    />
+    <span className="checkmark" />
     <span>{label}</span>
-  </motion.label>
+  </label>
 );
 
 const SocialButton = ({ icon, label, color }) => (
   <motion.button
     type="button"
-    className="social-button"
+    className={`social-button ${label.toLowerCase()}`}
     style={{ "--button-color": color }}
-    whileHover={{ 
-      scale: 1.05,
-      boxShadow: `0 0 20px ${color}33`
+    whileHover={{
+      scale: 1.03,
+      boxShadow: `0 4px 12px ${color}33`,
     }}
-    whileTap={{ scale: 0.95 }}
+    transition={{ type: "spring", stiffness: 400, damping: 10 }}
   >
     <motion.span className="icon">{icon}</motion.span>
     <span className="label">{label}</span>

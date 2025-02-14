@@ -9,10 +9,8 @@ import PaginationComponent from "components/PaginationComponent";
 import brandsApi from "api/Admin/Brands/Brands";
 import styles from "..//modalStyles.module.scss";
 import dayjs from "dayjs";
+import { PrintReceiptModal, StockReceiptForm, TableActions } from "components/Admin";
 
-import StockReceiptForm from './components/StockReceiptForm';
-import PrintReceiptModal from './components/PrintReceiptModal';
-import TableActions from './components/TableActions';
 
 const Stock_Receipts = () => {
   const printRef = useRef(null);
@@ -255,7 +253,7 @@ const Stock_Receipts = () => {
           onOk={handleModalOk}
           className={styles.modalWidth}
         >
-          <StockReceiptForm 
+          <StockReceiptForm
             form={form}
             suppliers={suppliers}
             brands={brands}

@@ -229,25 +229,27 @@ public class StockReceiptsAPI {
 
             existingStockReceipt.setSupplier(supplier);
             existingStockReceipt.setBrand(brand);
-            existingStockReceipt.setOrderDate(request.getOrderDate());;
-            
+            existingStockReceipt.setOrderDate(request.getOrderDate());
 
-            Map<ReceiptProductPK, ReceiptProduct> existingReceiptProductMap = existingStockReceipt.getReceiptProducts()
-                    .stream()
-                    .collect(Collectors.toMap(ReceiptProduct::getId, Function.identity()));
+            // Clear existing receipt products
+            receiptProductDAO.deleteByStockReceiptId(existingStockReceipt.getId());
+            existingStockReceipt.getReceiptProducts().clear();
 
-            Set<Integer> newProductIds = new HashSet<>();
+            // Add new receipt products
             for (ReceiptProductRequestDTO productRequest : request.getReceiptProducts()) {
                 Product product = productsDAO.findById(productRequest.getProductId())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                                 "Sản phẩm không tồn tại với ID: " + productRequest.getProductId()));
 
+                ReceiptProduct receiptProduct = new ReceiptProduct();
+                
+                // Set the composite key
                 ReceiptProductPK productPK = new ReceiptProductPK();
                 productPK.setReceiptId(existingStockReceipt.getId());
                 productPK.setProductId(productRequest.getProductId());
+                receiptProduct.setId(productPK);
 
-                ReceiptProduct receiptProduct = existingReceiptProductMap.getOrDefault(productPK, new ReceiptProduct());
-
+                // Set other properties
                 receiptProduct.setStockReceipt(existingStockReceipt);
                 receiptProduct.setProduct(product);
                 receiptProduct.setQuantity(productRequest.getQuantity());
@@ -255,22 +257,20 @@ public class StockReceiptsAPI {
                 receiptProduct.setTotalAmount(
                         receiptProduct.getPrice().multiply(BigDecimal.valueOf(receiptProduct.getQuantity())));
 
-                receiptProductDAO.save(receiptProduct);
-
-                newProductIds.add(productRequest.getProductId());
+                // Save the new receipt product
+                receiptProduct = receiptProductDAO.save(receiptProduct);
+                existingStockReceipt.getReceiptProducts().add(receiptProduct);
             }
 
-            existingStockReceipt.getReceiptProducts().stream()
-                    .filter(receiptProduct -> !newProductIds.contains(receiptProduct.getProduct().getId()))
-                    .forEach(receiptProduct -> receiptProductDAO.delete(receiptProduct));
-
+            // Save the updated stock receipt
             stockReceiptsDAO.save(existingStockReceipt);
 
             return ResponseEntity.ok(existingStockReceipt);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getReason(), e.getStatusCode());
         } catch (Exception e) {
-            return handleError("Lỗi khi cập nhật phiếu nhập kho!", HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error updating stock receipt", e);
+            return handleError("Lỗi khi cập nhật phiếu nhập kho: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

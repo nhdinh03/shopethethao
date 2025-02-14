@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { message, Button, Form, Row, Select, Tag, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import AccountModal from "./components/AccountModal";
-import AccountTabs from "./components/AccountTabs";
+
 import PaginationComponent from "components/PaginationComponent";
+import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { accountsUserApi, lockreasonsApi } from "api/Admin";
 import "../index.scss";
 import uploadApi from "api/service/uploadApi";
 import dayjs from "dayjs";
-import ActionColumn from "components/Admin/tableColumns/ActionColumn";
+import { AccountModal, AccountTabs } from "components/Admin";
+
 
 const Accounts = () => {
   const [totalItems, setTotalItems] = useState(0);

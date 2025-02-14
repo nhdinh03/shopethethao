@@ -8,20 +8,22 @@
 
   .login-left {
     background: linear-gradient(135deg, #4F46E5, #7C3AED);
-    padding: 3rem;
+    padding: 4rem 3rem;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    order: 2;  // Move to right side
 
     .welcome-content {
-      max-width: 480px;
+      max-width: 520px;
+      margin: 0 auto;
 
       h1 {
-        font-size: 2.5rem;
+        font-size: 2.75rem;
         font-weight: 700;
-        margin-bottom: 1rem;
-        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        line-height: 1.3;
       }
 
       p {
@@ -31,43 +33,48 @@
       }
 
       .features {
+        margin-top: 2.5rem;
+
         .feature-item {
           display: flex;
           align-items: center;
           gap: 1rem;
           margin-bottom: 1rem;
-          
+          padding: 0.75rem 0;
+
           svg {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
           }
         }
       }
     }
   }
+  
 
   .login-right {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3rem;
+    padding: 2rem 4rem;
     background: #F8FAFC;
+    order: 1;  // Move to left side
 
     .form-container {
       width: 100%;
       max-width: 420px;
       background: white;
-      padding: 2.5rem;
+      padding: 3rem 2.5rem;
       border-radius: 1rem;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 
       .form-header {
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
 
         .brand-logo {
-          width: 200px;
-          height: 110px;
+          width: 220px;
+          height: 120px;
           margin-bottom: 1rem;
         }
 
@@ -85,7 +92,7 @@
       }
 
       .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
 
         .input-label {
           display: flex;
@@ -130,7 +137,7 @@
 
           .field-icon {
             position: absolute;
-            left: 1rem;
+            left: 1.2rem;
             top: 50%;
             transform: translateY(-50%);
             color: #94A3B8;
@@ -144,10 +151,10 @@
 
           input {
             width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            padding: 1rem 1rem 1rem 3rem;
             border: 1px solid #E2E8F0;
             border-radius: 0.5rem;
-            font-size: 0.875rem;
+            font-size: 1rem;
             transition: all 0.2s;
 
             &:focus {
@@ -178,7 +185,7 @@
 
       .submit-button {
         width: 100%;
-        padding: 0.75rem;
+        padding: 1rem;
         background: #4F46E5;
         color: white;
         border: none;
@@ -186,6 +193,7 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s;
+        margin: 1.5rem 0;
 
         &:hover:not(:disabled) {
           background: #4338CA;
@@ -210,7 +218,7 @@
       }
 
       .social-login {
-        margin-top: 2rem;
+        margin-top: 2.5rem;
 
         .divider {
           text-align: center;
@@ -241,7 +249,8 @@
         .social-buttons {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1rem;
+          gap: 1.5rem;
+          padding: 0.5rem 0;
 
           .social-button {
             display: flex;
@@ -336,21 +345,58 @@
   }
 
   .custom-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #64748B;
+    user-select: none;
+    gap: 0.5rem;
+
     .checkmark {
-      transition: all 0.2s ease;
+      width: 10px;
+      height: 10px;
+      border: 1px solid #E2E8F0;
+      border-radius: 2px;
+      display: inline-block;
+      position: relative;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
       
       &::after {
         content: '';
         position: absolute;
+        left: 3px;
+        top: 1px;
+        width: 2px;
+        height: 5px;
+        border: solid white;
+        border-width: 0 1px 1px 0;
         opacity: 0;
-        transform: rotate(45deg) scale(0);
-        transition: all 0.2s ease;
+        transform: rotate(45deg);
+        transition: opacity 0.2s ease;
       }
     }
 
-    input:checked ~ .checkmark::after {
-      opacity: 1;
-      transform: rotate(45deg) scale(1);
+    input {
+      display: none;
+      
+      &:checked ~ .checkmark {
+        background-color: #4F46E5;
+        border-color: #4F46E5;
+        
+        &::after {
+          opacity: 1;
+        }
+      }
+    }
+
+    &:hover .checkmark {
+      border-color: #4F46E5;
+    }
+
+    span:last-child {
+      position: relative;
+      top: 1px; // Align text with checkbox
     }
   }
 
@@ -368,6 +414,10 @@
   .login-wrapper {
     grid-template-columns: 1fr;
 
+    .login-right {
+      order: 1;
+    }
+    
     .login-left {
       display: none;
     }
@@ -376,10 +426,11 @@
 
 @media (max-width: 640px) {
   .login-right {
-    padding: 1.5rem;
+    padding: 1rem;
 
     .form-container {
       padding: 1.5rem;
+      box-shadow: none;
     }
   }
 }
