@@ -34,11 +34,11 @@ import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.auth.repository.RoleRepository;
 import com.shopethethao.dto.AccountServiceDTO;
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.categories.Categorie;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
+
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
@@ -80,11 +80,15 @@ public class AccountAPI {
         try {
             int page = pageNo.orElse(1);
             int pageSize = limit.orElse(10);
-            Sort sort = Sort.by(Sort.Order.desc("id"));
+            // Sort by multiple fields in descending order
+            Sort sort = Sort.by(
+                Sort.Order.desc("createdDate"),
+                Sort.Order.desc("id")
+            );
             Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
             Page<Account> accountPage = accountDao.findAll(pageable);
             List<Account> accounts = accountPage.getContent();
-            long totalItems = accountPage.getTotalElements(); // Tổng số tài khoản
+            long totalItems = accountPage.getTotalElements();
             ResponseDTO<Account> responseDTO = new ResponseDTO<>();
             responseDTO.setData(accounts);
             responseDTO.setTotalItems(totalItems);

@@ -232,6 +232,7 @@ function Sidebar({ onClose }) {
         ),
       ]
     ),
+    
   ];
 
   return (

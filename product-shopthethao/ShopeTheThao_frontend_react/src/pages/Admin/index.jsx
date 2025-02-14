@@ -21,4 +21,6 @@ export { default as Suppliers } from "./Suppliers";
 export { default as User_Histories } from "./User_Histories";
 
 
+export { default as Charts } from "./Charts/charts";
+
 

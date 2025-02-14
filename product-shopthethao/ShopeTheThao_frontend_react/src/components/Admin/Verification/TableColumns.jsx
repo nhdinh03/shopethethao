@@ -1,7 +1,7 @@
 import { Tag } from 'antd';
 import AccountInfoCard from './AccountInfoCard';
 
-export const getColumns = () => [
+export const TableColumns = () => [
   { title: "🆔 ID", dataIndex: "id", key: "id" },
   {
     title: "📅 Thời gian ngày tạo",

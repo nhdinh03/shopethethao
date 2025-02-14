@@ -109,6 +109,13 @@ const privateRoutes = [
     component: PageAdmin.Verification,
     layout: AdminLayout,
   },
+
+
+  {
+    path: "/admin/charts",
+    component: PageAdmin.Charts,
+    layout: AdminLayout,
+  },
 ];
 
 export { publicRoutes, privateRoutes };

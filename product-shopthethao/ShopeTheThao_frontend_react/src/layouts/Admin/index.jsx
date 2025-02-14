@@ -50,7 +50,7 @@ const AdminLayout = ({ children }) => {
         theme="light"
         collapsible
         collapsed={collapsed}
-        width={300}
+        width={320}
         className="hidden lg:block transition-all duration-300"
       >
         <Header className="flex items-center bg-white px-4">

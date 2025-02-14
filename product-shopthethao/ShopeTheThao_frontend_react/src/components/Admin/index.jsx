@@ -25,3 +25,7 @@ export { default as TableActions } from "./Stock_Receipts/TableActions";
 
 export { default as SupplierForm } from "./Suppliers/SupplierForm";
 export { default as SuppliersTable } from "./Suppliers/SuppliersTable";
+
+export { default as AccountInfoCard } from "./Verification/AccountInfoCard";
+
+
