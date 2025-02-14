@@ -4,8 +4,8 @@ import { PlusOutlined } from "@ant-design/icons";
 import { suppliersApi } from "api/Admin";
 import "..//index.scss";
 import styles from "..//modalStyles.module.scss";
-import SupplierForm from "./components/SupplierForm";
-import SuppliersTable from "./components/SuppliersTable";
+import { SupplierForm, SuppliersTable } from "components/Admin";
+
 
 const Suppliers = () => {
   const [totalItems, setTotalItems] = useState(0);

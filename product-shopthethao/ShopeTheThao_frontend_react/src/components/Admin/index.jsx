@@ -22,3 +22,6 @@ export { default as AccountTabs } from "./Accounts/AccountTabs";
 export { default as PrintReceiptModal } from "./Stock_Receipts/PrintReceiptModal";
 export { default as StockReceiptForm } from "./Stock_Receipts/StockReceiptForm";
 export { default as TableActions } from "./Stock_Receipts/TableActions";
+
+export { default as SupplierForm } from "./Suppliers/SupplierForm";
+export { default as SuppliersTable } from "./Suppliers/SuppliersTable";
