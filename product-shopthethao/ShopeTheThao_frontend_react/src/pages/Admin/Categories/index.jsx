@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { message, Button, Form, Tooltip, Row, Typography } from "antd";
+import React, { useState } from "react";
+import { Button, Form, Tooltip, Row, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import { categoriesApi } from "api/Admin";
 import "..//index.scss";
 import {
   CategoryTable,
@@ -9,93 +8,55 @@ import {
   CategoryModal,
 } from "components/Admin";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
+import useCategories from "hooks/useCategories";
 
 const Categories = () => {
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-  const [categories, setCategories] = useState([]);
-
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
-  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    let isMounted = true;
-    const getList = async () => {
-      setLoading(true);
-      try {
-        const res = await categoriesApi.getByPage(currentPage, pageSize);
-        if (isMounted) {
-          setCategories(res.data);
-          setTotalItems(res.totalItems);
-          setLoading(false);
-        }
-      } catch (error) {
-        message.error("Không thể lấy danh sách danh mục. Vui lòng thử lại!");
-      }
-    };
-    getList();
-  }, [currentPage, pageSize, workSomeThing]);
-
+  const {
+    categories,
+    loading,
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    totalPages,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    handlePageSizeChange,
+  } = useCategories();
 
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      console.log(values);
 
       const isDuplicate = categories.some(
         (category) =>
-          category.name.trim().toLowerCase() ===
-            values.name.trim().toLowerCase() &&
+          category.name.trim().toLowerCase() === values.name.trim().toLowerCase() &&
           (!editingCategory || category.id !== editingCategory.id)
       );
+      
       if (isDuplicate) {
         message.error("Tên danh mục đã tồn tại, vui lòng chọn tên khác!");
         return;
       }
 
+      let success;
       if (editingCategory) {
-        await categoriesApi.update(editingCategory.id, values);
-        message.success("Cập nhật danh mục thành công!");
+        success = await updateCategory(editingCategory.id, values);
       } else {
-        await categoriesApi.create(values);
-        message.success("Thêm danh mục thành công!");
+        success = await createCategory(values);
       }
 
-      setOpen(false);
-      form.resetFields();
-      setEditingCategory(null);
-      setWorkSomeThing([!workSomeThing]);
-    } catch (error) {
-      message.error("Không thể thực hiện thao tác. Vui lòng thử lại!");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      const response = await categoriesApi.delete(id);
-      message.success(response.data || "Xóa danh mục thành công!");
-      console.log(response);
-      setWorkSomeThing([!workSomeThing]);
-    } catch (error) {
-      if (error.response) {
-        if (error.response.status === 409) {
-          message.error(
-            error.response.data ||
-              "Không thể xóa danh mục do dữ liệu tham chiếu!"
-          );
-        } else if (error.response.status === 404) {
-          message.error("Danh mục không tồn tại hoặc đã bị xóa!");
-        } else {
-          message.error("Lỗi không xác định khi xóa danh mục!");
-        }
-      } else {
-        message.error("Không thể kết nối đến máy chủ!");
+      if (success) {
+        setOpen(false);
+        form.resetFields();
+        setEditingCategory(null);
       }
+    } catch (error) {
+      console.error("Form validation failed:", error);
     }
   };
 
@@ -103,12 +64,6 @@ const Categories = () => {
     setEditingCategory(category);
     form.setFieldsValue(category);
     setOpen(true);
-  };
-
-  //phan trang 50
-  const handlePageSizeChange = (value) => {
-    setPageSize(value);
-    setCurrentPage(1); 
   };
 
   const columns = [
@@ -139,7 +94,7 @@ const Categories = () => {
         </Tooltip>
       ),
     },
-    ActionColumn(handleEditData, handleDelete),
+    ActionColumn(handleEditData, deleteCategory),
   ];
 
   return (
