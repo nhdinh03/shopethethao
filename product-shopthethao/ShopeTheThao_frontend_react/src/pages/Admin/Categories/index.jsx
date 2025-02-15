@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Form, Tooltip, Row, message } from "antd";
+import { Button, Form, Row, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import "..//index.scss";
 import {
@@ -7,7 +7,6 @@ import {
   CategoryPagination,
   CategoryModal,
 } from "components/Admin";
-import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import useCategories from "hooks/useCategories";
 
 const Categories = () => {
@@ -66,42 +65,10 @@ const Categories = () => {
     setOpen(true);
   };
 
-  const columns = [
-    { title: "🆔 ID", dataIndex: "id", key: "id" },
-    {
-      title: "📂 Tên danh mục",
-      dataIndex: "name",
-      key: "name",
-      render: (text) => (
-        <Tooltip title={text || "Không có tên dan mục"} placement="top">
-          <span className="ellipsis-text">
-            {text?.length > 35
-              ? `${text.substring(0, 15)}...`
-              : text || "Không có tên danh mục"}
-          </span>
-        </Tooltip>
-      ),
-    },
-    {
-      title: "📝 Mô tả danh mục",
-      dataIndex: "description",
-      key: "description",
-      render: (text) => (
-        <Tooltip title={text.length > 50 ? text : ""} placement="top">
-          <span className="ellipsis-text">
-            {text.length > 50 ? `${text.substring(0, 50)}...` : text}
-          </span>
-        </Tooltip>
-      ),
-    },
-    ActionColumn(handleEditData, deleteCategory),
-  ];
-
   return (
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Quản lý danh mục</h2>
-
         <div className="header-container">
           <Button
             type="primary"
@@ -122,10 +89,12 @@ const Categories = () => {
         handleResetForm={() => form.resetFields()}
         editingCategory={editingCategory}
       />
+      
       <CategoryTable
         categories={categories}
         loading={loading}
-        columns={columns}
+        handleEditData={handleEditData}
+        handleDelete={deleteCategory}
       />
 
       <CategoryPagination

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { message, Button, Form, Row, Select, Tag, Space } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { message, Button, Form, Row, Select, Tag, Space, Tooltip, Popconfirm, Alert } from "antd";
+import { PlusOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, DeleteOutlined, LockOutlined, EyeOutlined } from "@ant-design/icons";
 
 import PaginationComponent from "components/PaginationComponent";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
@@ -233,173 +233,209 @@ const Accounts = () => {
   };
 
   const columns = [
-    { title: "🆔 ID", dataIndex: "id", key: "id" },
-    { title: "📞 Số điện thoại", dataIndex: "phone", key: "phone" },
-    { title: "👤 Họ tên", dataIndex: "fullname", key: "fullname" },
-    { title: "🏠 Địa chỉ", dataIndex: "address", key: "address" },
-    { title: "✉️ Email", dataIndex: "email", key: "email" },
-    { title: "🎂 Ngày sinh", dataIndex: "birthday", key: "birthday" },
     {
-      title: "👫 Giới tính",
-      dataIndex: "gender",
-      key: "gender",
-      render: (gender) => {
-        switch (gender) {
-          case "M":
-            return "Nam giới";
-          case "F":
-            return "Nữ giới";
-          case "O":
-            return "Khác";
-          default:
-            return "Không xác định";
-        }
-      },
-    },
-    {
-      title: "🖼️ Ảnh đại diện",
-      dataIndex: "image",
-      key: "image",
-      render: (image) =>
-        image ? (
-          <img
-            src={`http://localhost:8081/api/upload/${image}`}
-            alt="Ảnh đại diện"
-            width={80}
-            height={80}
-            style={{
-              objectFit: "contain",
-              borderRadius: "8px",
-              border: "1px solid #ddd",
-            }}
-          />
-        ) : (
-          <span>Không có ảnh</span>
-        ),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "verified",
-      key: "verified",
-      render: (verified) =>
-        verified ? (
-          <Tag color="green">Đã xác minh</Tag>
-        ) : (
-          <Tag color="red">Chưa xác minh</Tag>
-        ),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) =>
-        status === 0 ? (
-          <Tag color="red">Tạm Khóa</Tag>
-        ) : (
-          <Tag color="green">Đang hoạt động</Tag>
-        ),
-    },
-    { title: "⭐ Điểm", dataIndex: "points", key: "points" },
-    {
-      title: "Vai trò",
-      dataIndex: "roles",
-      key: "roles",
-      render: (roles) => {
-        if (Array.isArray(roles)) {
-          return roles.length > 0 ? (
-            roles.map((role) => (
-              <Tag color="blue" key={role.id}>
-                {role.name}
-              </Tag>
-            ))
-          ) : (
-            <Tag color="gray">Chưa có</Tag>
-          );
-        }
-        return <Tag color="gray">Chưa có</Tag>;
-      },
-    },
-    ActionColumn(handleEditData, handleDelete),
-  ];
-  const lockedColumns = [
-    // Ẩn cột ID
-    { title: "🆔 ID", dataIndex: "id", key: "id" },
-
-    // Ẩn cột Số điện thoại
-    {
-      title: "📞 Số điện thoại",
-      dataIndex: "phone",
-      key: "phone",
-    },
-
-    // Hiển thị cột Họ tên
-    { title: "👤 Họ tên", dataIndex: "fullname", key: "fullname" },
-
-    // Ẩn cột Địa chỉ
-    {
-      title: "🏠 Địa chỉ",
-      dataIndex: "address",
-      key: "address",
-    },
-
-    // Hiển thị cột Email
-    { title: "✉️ Email", dataIndex: "email", key: "email" },
-
-    // Ẩn cột Ngày sinh
-    {
-      title: "🎂 Ngày sinh",
-      dataIndex: "birthday",
-      key: "birthday",
-    },
-
-    // Cột Trạng thái
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <span>
-          {status === 0 ? (
-            <Tag color="red">Đã khóa</Tag>
-          ) : (
-            <Tag color="green">Đang hoạt động</Tag>
-          )}
-        </span>
-      ),
-      editable: true,
-    },
-
-    // Cột Lý do khóa
-    {
-      title: "Lý do khóa",
-      dataIndex: "lockReasons",
-      key: "lockReasons",
-      render: (lockReasons) => {
-        return lockReasons && lockReasons.length > 0 ? (
-          lockReasons.map((lockReason) => (
-            <div key={lockReason.id}>
-              <span>{lockReason.reason}</span>
+      title: "Thông tin cơ bản",
+      children: [
+        {
+          title: "ID",
+          dataIndex: "id",
+          key: "id",
+          width: 80,
+          className: "column-id"
+        },
+        {
+          title: "Họ tên",
+          dataIndex: "fullname",
+          key: "fullname",
+          width: 180,
+          render: (text, record) => (
+            <div className="user-info-cell">
+              <div className="avatar">
+                {record.image ? (
+                  <img
+                    src={`http://localhost:8081/api/upload/${record.image}`}
+                    alt={text}
+                  />
+                ) : (
+                  <div className="avatar-placeholder">{text?.[0]?.toUpperCase()}</div>
+                )}
+              </div>
+              <div className="user-details">
+                <div className="fullname">{text}</div>
+                <div className="email">{record.email}</div>
+              </div>
             </div>
-          ))
-        ) : (
-          <span>Không có lý do</span>
-        );
-      },
-      editable: true, // Cho phép chỉnh sửa
+          )
+        },
+      ]
     },
-
-    // Cột hành động
+    {
+      title: "Thông tin liên hệ",
+      children: [
+        {
+          title: "Số điện thoại",
+          dataIndex: "phone",
+          key: "phone",
+          width: 140,
+          render: (phone) => (
+            <Tag icon={<PhoneOutlined />} color="blue">{phone}</Tag>
+          )
+        },
+        {
+          title: "Địa chỉ",
+          dataIndex: "address",
+          key: "address",
+          width: 200,
+          render: (address) => (
+            <Tooltip title={address}>
+              <div className="address-cell">
+                <EnvironmentOutlined /> {address || "Chưa cập nhật"}
+              </div>
+            </Tooltip>
+          )
+        },
+      ]
+    },
+    {
+      title: "Thông tin chi tiết",
+      children: [
+        {
+          title: "Trạng thái",
+          width: 150,
+          render: (_, record) => (
+            <Space direction="vertical" size={4}>
+              <Tag color={record.verified ? "green" : "red"}>
+                {record.verified ? "Đã xác minh" : "Chưa xác minh"}
+              </Tag>
+              <Tag color={record.status === 1 ? "green" : "red"}>
+                {record.status === 1 ? "Đang hoạt động" : "Tạm khóa"}
+              </Tag>
+            </Space>
+          )
+        },
+        {
+          title: "Vai trò",
+          dataIndex: "roles",
+          key: "roles",
+          width: 150,
+          render: (roles) => (
+            <Space size={[0, 4]} wrap>
+              {Array.isArray(roles) && roles.length > 0 ? (
+                roles.map((role) => (
+                  <Tag color="blue" key={role.id}>
+                    {role.name}
+                  </Tag>
+                ))
+              ) : (
+                <Tag color="default">Chưa có</Tag>
+              )}
+            </Space>
+          )
+        },
+      ]
+    },
     {
       title: "Hành động",
-      key: "action",
-      render: (text, record) => (
-        <Space size="middle">
-          <Button type="primary" onClick={() => handleEditData(record)}>
-            Xem chi tiết
-          </Button>
+      fixed: 'right',
+      width: 120,
+      render: (_, record) => (
+        <Space size="middle" className="action-buttons">
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => handleEditData(record)}
+            size="small"
+          />
+          <Popconfirm
+            title="Bạn có chắc chắn muốn xóa?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Có"
+            cancelText="Không"
+          >
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+            />
+          </Popconfirm>
         </Space>
-      ),
+      )
+    }
+  ];
+  
+  const lockedColumns = [
+    {
+      title: "Thông tin người dùng",
+      children: [
+        {
+          title: "ID",
+          dataIndex: "id",
+          width: 80,
+        },
+        {
+          title: "Họ tên & Email",
+          dataIndex: "fullname",
+          width: 250,
+          render: (text, record) => (
+            <div className="locked-user-info">
+              <div className="name">{text}</div>
+              <div className="email">{record.email}</div>
+            </div>
+          )
+        },
+      ]
     },
+    {
+      title: "Thông tin khóa",
+      children: [
+        {
+          title: "Trạng thái",
+          width: 120,
+          render: () => (
+            <Tag icon={<LockOutlined />} color="red">
+              Đã khóa
+            </Tag>
+          )
+        },
+        {
+          title: "Lý do khóa",
+          dataIndex: "lockReasons",
+          width: 300,
+          render: (lockReasons) => (
+            <div className="lock-reason">
+              {lockReasons && lockReasons.length > 0 ? (
+                lockReasons.map((reason) => (
+                  <Alert
+                    key={reason.id}
+                    message={reason.reason}
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 8 }}
+                  />
+                ))
+              ) : (
+                <span className="no-reason">Không có lý do</span>
+              )}
+            </div>
+          )
+        },
+      ]
+    },
+    {
+      title: "Hành động",
+      fixed: 'right',
+      width: 100,
+      render: (_, record) => (
+        <Button
+          type="primary"
+          icon={<EyeOutlined />}
+          onClick={() => handleEditData(record)}
+          size="small"
+        >
+          Chi tiết
+        </Button>
+      )
+    }
   ];
 
   return (

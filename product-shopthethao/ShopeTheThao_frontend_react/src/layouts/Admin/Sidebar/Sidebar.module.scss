@@ -79,4 +79,55 @@ $border-radius: 8px; // Bo tròn góc
       }
     }
   }
+
+  .menu-icon {
+    font-size: 18px;
+    margin-right: 12px;
+    vertical-align: middle;
+    transition: all 0.3s;
+
+    &.dashboard-icon { color: #4CAF50; }
+    &.product-icon { color: #00BCD4; }
+    &.feature-icon { color: #FFC107; }
+    &.supplier-icon { color: #FF5722; }
+    &.sales-icon { color: #FF9800; }
+    &.user-icon { color: #3F51B5; }
+    &.report-icon { color: #607D8B; }
+  }
+
+  .submenu-icon {
+    font-size: 14px;
+    margin-right: 10px;
+    opacity: 0.8;
+  }
+
+  .menu-group {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .menu-item-label {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .menu-label {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  // Hiệu ứng hover nâng cao
+  .ant-menu-item, .ant-menu-submenu-title {
+    &:hover {
+      transform: translateX(5px);
+      .menu-icon, .submenu-icon {
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  // Shadow cho submenu
+  .ant-menu-sub {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
 }

@@ -43,7 +43,7 @@ public class StockReceipt {
     private LocalDate orderDate;
 
     @OneToMany(mappedBy = "stockReceipt", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference // Tránh vòng lặp khi serialize
+    @JsonManagedReference 
     private List<ReceiptProduct> receiptProducts;
 
 }

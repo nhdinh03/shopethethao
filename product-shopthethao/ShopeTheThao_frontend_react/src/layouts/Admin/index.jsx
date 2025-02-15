@@ -48,7 +48,7 @@ const AdminLayout = ({ children }) => {
       {/* Sidebar - Desktop */}
       <Sider
         theme="light"
-        collapsible
+        // collapsible
         collapsed={collapsed}
         width={320}
         className="hidden lg:block transition-all duration-300"

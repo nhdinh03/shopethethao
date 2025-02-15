@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, Form, Input, Button, Space } from "antd";
 import { FolderOpenOutlined, FileTextOutlined, RedoOutlined, SaveOutlined } from "@ant-design/icons";
+import "pages/Admin/Categories/Categories.scss"
 
 const CategoryModal = ({
   open,
@@ -17,16 +18,22 @@ const CategoryModal = ({
 
   return (
     <Modal
-      title={editingCategory ? "✏️ Cập nhật danh mục" : "➕ Thêm danh mục mới"}
+      title={
+        <span>
+          {editingCategory ? "✏️ Cập nhật danh mục" : "➕ Thêm danh mục mới"}
+        </span>
+      }
       open={open}
       footer={null}
       onCancel={handleCancel}
+      width={520}
+      className="custom-modal"
+      centered
     >
       <Form form={form} layout="vertical">
-        {/* Tên danh mục */}
         <Form.Item
           name="name"
-          label="📂 Tên danh mục"
+          label="Tên danh mục"
           rules={[{ required: true, message: "Vui lòng nhập tên danh mục!" }]}
         >
           <Input
@@ -35,25 +42,26 @@ const CategoryModal = ({
           />
         </Form.Item>
 
-        {/* Mô tả danh mục */}
         <Form.Item
           name="description"
-          label="📝 Mô tả danh mục"
+          label="Mô tả danh mục"
           rules={[{ required: true, message: "Vui lòng nhập mô tả!" }]}
         >
-          <Input prefix={<FileTextOutlined />} placeholder="Nhập mô tả" />
+          <Input.TextArea
+            prefix={<FileTextOutlined />}
+            placeholder="Nhập mô tả chi tiết cho danh mục"
+            rows={4}
+            autoSize={{ minRows: 4, maxRows: 6 }}
+          />
         </Form.Item>
 
-        {/* Nút hành động */}
-        <Space
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            width: "100%",
-          }}
-        >
+        <div className="modal-footer">
           {!editingCategory && (
-            <Button icon={<RedoOutlined />} onClick={handleResetForm}>
+            <Button
+              icon={<RedoOutlined />}
+              onClick={handleResetForm}
+              className="reset-button"
+            >
               Làm mới
             </Button>
           )}
@@ -61,10 +69,11 @@ const CategoryModal = ({
             type="primary"
             icon={<SaveOutlined />}
             onClick={handleModalOk}
+            className="submit-button"
           >
             {editingCategory ? "Cập nhật" : "Thêm mới"}
           </Button>
-        </Space>
+        </div>
       </Form>
     </Modal>
   );

@@ -22,7 +22,6 @@ import {
   PlusOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -80,29 +79,17 @@ const Products = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
+      const imagesFileList = values.images?.fileList || [];
       let uploadedImages = [];
-
-      if (editingProduct) {
-        // Chế độ sửa
-        const existingImages = FileList.filter(
-          (file) => !file.originFileObj
-        ).map((file) => file.url.split("/").pop());
-        const newImages = FileList.filter((file) => file.originFileObj);
-
-        // Upload ảnh mới (nếu có)
-        const newUploadedImages = await Promise.all(
-          newImages.map((file) => uploadApi.post(file.originFileObj))
-        );
-
-        uploadedImages = [...existingImages, ...newUploadedImages];
-      } else {
-        // Chế độ thêm mới
-        if (FileList.length === 0) {
-          message.error("Vui lòng tải lên ít nhất một hình ảnh!");
-          return;
-        }
+      // ✅ Upload ảnh trước khi gửi API
+      if (imagesFileList.length > 0) {
         uploadedImages = await Promise.all(
-          FileList.map((file) => uploadApi.post(file.originFileObj))
+          imagesFileList.map(async (file) => {
+            if (file.originFileObj) {
+              return await uploadApi.post(file.originFileObj);
+            }
+            return file.url;
+          })
         );
       }
 
@@ -114,6 +101,7 @@ const Products = () => {
         images: uploadedImages.map((imageUrl) => ({ imageUrl })),
         price: parseFloat(values.price),
         sizes: values.sizes.map((size) => ({
+          // size: { id: parseInt(size.size) },
           size: { id: size.size },
           quantity: parseInt(size.quantity),
           price: parseFloat(size.price),
@@ -147,8 +135,6 @@ const Products = () => {
           uid: `${record.id}-${index}`,
           name: img.imageUrl,
           url: `http://localhost:8081/api/upload/${img.imageUrl}`,
-          status: "done",
-          isExisting: true, // Đánh dấu ảnh cũ
         }))
       : [];
 
@@ -212,7 +198,7 @@ const Products = () => {
     setPreviewOpen(true);
   };
 
-  //kiểm tra kích cở trùng không
+//kiểm tra kích cở trùng không
   const handleSizeChange = (value, name) => {
     const sizes = form.getFieldValue("sizes") || [];
     // Kiểm tra nếu kích cỡ đã tồn tại trong danh sách, ngoại trừ phần tử hiện tại (name)
@@ -232,65 +218,25 @@ const Products = () => {
     });
   };
 
+
+
   //trùng ảnh
-  const handleUploadChange = ({ fileList: newFileList, file }) => {
-    // Xử lý khi xóa ảnh
-    if (file.status === "removed") {
-      const updatedFileList = FileList.filter((f) => f.uid !== file.uid);
-      setFileList(updatedFileList);
-      return;
-    }
+  const handleUploadChange = ({ fileList }) => {
+    // ✅ Lọc ra danh sách ảnh không trùng lặp
+    const uniqueFiles = [];
+    const fileNames = new Set();
 
-    // Xử lý thêm ảnh mới
-    const existingImages = editingProduct
-      ? FileList.filter((f) => !f.originFileObj)
-      : [];
-    const newImages = newFileList.filter((f) => f.originFileObj);
-
-    // Kiểm tra ảnh mới
-    const uniqueNewImages = [];
-    const seenFiles = new Set(existingImages.map((f) => f.name));
-
-    for (const file of newImages) {
-      // Kiểm tra định dạng
-      if (
-        file.type &&
-        !["image/jpeg", "image/png", "image/jpg"].includes(file.type)
-      ) {
-        message.error(
-          `File "${file.name}" không đúng định dạng. Chỉ chấp nhận JPG, JPEG hoặc PNG!`
-        );
-        return;
-      }
-
-      // Kiểm tra kích thước
-      if (file.size && file.size > 2 * 1024 * 1024) {
-        message.error(
-          `File "${file.name}" vượt quá kích thước cho phép (tối đa 2MB)!`
-        );
-        return;
-      }
-
-      // Kiểm tra trùng lặp
-      const fileName = file.name || file.originFileObj?.name;
-      if (!seenFiles.has(fileName)) {
-        seenFiles.add(fileName);
-        uniqueNewImages.push(file);
+    fileList.forEach((file) => {
+      const fileName = file.name || file.url;
+      if (!fileNames.has(fileName)) {
+        fileNames.add(fileName);
+        uniqueFiles.push(file);
       } else {
-        message.warning(`Ảnh "${fileName}" đã tồn tại trong danh sách!`);
+        message.error(`Ảnh ${fileName} đã tồn tại!`);
       }
-    }
+    });
 
-    // Kết hợp ảnh cũ và ảnh mới
-    const finalFileList = [...existingImages, ...uniqueNewImages];
-
-    // Giới hạn tổng số ảnh
-    if (finalFileList.length > 5) {
-      message.warning("Chỉ được phép tải lên tối đa 5 ảnh!");
-      return;
-    }
-
-    setFileList(finalFileList);
+    setFileList(uniqueFiles); // Cập nhật danh sách file không trùng
   };
 
   //cancel
@@ -441,6 +387,7 @@ const Products = () => {
 
     ActionColumn(handleEditData, handleDelete),
   ];
+
   return (
     <div style={{ padding: 10 }}>
       <Row>
@@ -557,26 +504,6 @@ const Products = () => {
                   listType="picture-card"
                   fileList={FileList}
                   onChange={handleUploadChange}
-                  onPreview={handlePreview}
-                  onRemove={(file) => {
-                    Modal.confirm({
-                      title: "Xác nhận xóa",
-                      icon: <ExclamationCircleOutlined />,
-                      content: "Bạn có chắc chắn muốn xóa ảnh này không?",
-                      okText: "Xóa",
-                      cancelText: "Hủy",
-                      okButtonProps: {
-                        danger: true,
-                      },
-                      onOk: () => {
-                        return true;
-                      },
-                      onCancel: () => {
-                        return false;
-                      },
-                    });
-                    return false;
-                  }}
                   multiple
                 >
                   {FileList.length < 5 && "+ Upload"}
