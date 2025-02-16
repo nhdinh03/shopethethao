@@ -18,6 +18,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Min;
 
 @Data
 @AllArgsConstructor
@@ -39,9 +40,10 @@ public class DetailedInvoices {
     private Product product;
 
     @Column(name = "quantity", nullable = false)
+    @Min(value = 0, message = "Quantity must be greater than or equal to 0")
     private int quantity;
 
-    @Column(name = "unit_price", nullable = false, precision = 18, scale = 2)
+    @Column(name = "unitPrice", nullable = false, precision = 18, scale = 2)
     private BigDecimal unitPrice;
 
     @Column(name = "payment_method", nullable = false, length = 200)

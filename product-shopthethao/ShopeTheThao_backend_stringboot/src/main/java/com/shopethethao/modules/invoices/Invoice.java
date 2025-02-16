@@ -7,6 +7,8 @@ import com.shopethethao.modules.account.Account;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,6 +20,8 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import jakarta.validation.constraints.Pattern;
 
 @Data
 @AllArgsConstructor
@@ -37,12 +41,13 @@ public class Invoice {
     private String address;
 
     @Column(name = "status", nullable = false, length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private InvoiceStatus status;
 
-    @Column(name = "note", length = 200)
-    private String note;
+    @Column(name = "note", length = 200)  
+    private String note;  
 
-    @Column(name = "total_amount", nullable = false, precision = 18, scale = 2)
+    @Column(name = "totalAmount", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalAmount;
 
     @ManyToOne
@@ -55,7 +60,7 @@ public class Invoice {
             this.orderDate = LocalDateTime.now();
         }
         if (this.status == null) {
-            this.status = "Pending";
+            this.status = InvoiceStatus.PENDING;
         }
         if (this.totalAmount == null) {
             this.totalAmount = BigDecimal.ZERO;

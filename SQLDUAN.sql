@@ -183,25 +183,30 @@ CREATE TABLE Invoices (
     id INT IDENTITY(1,1) PRIMARY KEY,
     order_date DATETIME NOT NULL DEFAULT GETDATE(),
     address NVARCHAR(200),
-    status NVARCHAR(50) NOT NULL DEFAULT 'Pending',
-    note NVARCHAR(200),
-    user_id NVARCHAR(100)  NOT NULL, -- Đổi từ NVARCHAR(20) sang INT
-    total_amount DECIMAL(18,2) NOT NULL DEFAULT 0.00, -- Thêm trường total_amount 
-    FOREIGN KEY (user_id) REFERENCES Accounts(id) ON DELETE CASCADE
+    status NVARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    note NVARCHAR(200),                    -- Changed from 'node' to 'note'
+    total_amount DECIMAL(18,2) NOT NULL DEFAULT 0.00,  -- Changed from 'totalAmount' to 'total_amount'
+    user_id NVARCHAR(100) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Accounts(id) ON DELETE CASCADE,
+    CONSTRAINT CHK_Invoice_Status CHECK (status IN ('PENDING', 'SHIPPING', 'DELIVERED', 'CANCELLED'))
 );
 GO
 
--- Tạo bảng Detailed_Invoices (Chi tiết hóa đơn)
+-- Recreate Detailed_Invoices table with correct column names
 CREATE TABLE Detailed_Invoices (
     id INT IDENTITY(1,1) PRIMARY KEY,
     invoice_id INT NOT NULL,
     product_id INT NOT NULL,
-    quantity INT NOT NULL CHECK (quantity >= 0), -- Thêm ràng buộc CHECK
-    unit_price DECIMAL(18,2) NOT NULL DEFAULT 0.00, -- Thêm trường unit_price
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    unit_price DECIMAL(18,2) NOT NULL DEFAULT 0.00,  -- Changed from 'unitPrice' to 'unit_price'
     payment_method NVARCHAR(200) NOT NULL,
     FOREIGN KEY (invoice_id) REFERENCES Invoices(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE
 );
+
+CREATE INDEX IX_Invoices_Status ON Invoices(status);
+CREATE INDEX IX_Invoices_UserId ON Invoices(user_id);
+CREATE INDEX IX_DetailedInvoices_InvoiceId ON Detailed_Invoices(invoice_id);
 GO
 
 -- Tạo bảng Product_Attributes (Đặc điểm sản phẩm)
