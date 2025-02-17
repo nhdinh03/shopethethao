@@ -363,10 +363,10 @@ const Invoices = () => {
 
     const getStatusBadge = (status) => {
       const statusConfig = {
-        PENDING: { color: "#faad14", text: "Chờ xử lý" },
-        SHIPPING: { color: "#1890ff", text: "Đang giao hàng" },
-        DELIVERED: { color: "#52c41a", text: "Đã giao hàng" },
-        CANCELLED: { color: "#ff4d4f", text: "Đã hủy" },
+        "Chờ xử lý": { color: "#faad14", text: "Chờ xử lý" },
+        "Đang giao hàng": { color: "#1890ff", text: "Đang giao hàng" },
+        "Đã giao hàng": { color: "#52c41a", text: "Đã giao hàng" },
+        "Đã hủy": { color: "#ff4d4f", text: "Đã hủy" },
       };
       const config = statusConfig[status] || { color: "default", text: status };
       return <Tag color={config.color}>{config.text}</Tag>;
@@ -375,11 +375,12 @@ const Invoices = () => {
     return (
       <Modal
         title={
-          <Space>
+          <Space align="center">
             <TagOutlined />
             <span style={{ fontSize: "18px", fontWeight: "bold" }}>
               Chi tiết đơn hàng #{invoiceDetails.id}
             </span>
+            {getStatusBadge(invoiceDetails.status)}
           </Space>
         }
         open={isModalVisible}
@@ -402,23 +403,15 @@ const Invoices = () => {
               bordered={false}
               className="invoice-card"
             >
-              <Descriptions column={1}>
+              <Descriptions column={1} labelStyle={{ fontWeight: "bold" }}>
                 <Descriptions.Item label="Mã đơn hàng">
-                  {invoiceDetails.id}
+                  #{invoiceDetails.id}
                 </Descriptions.Item>
                 <Descriptions.Item label="Ngày đặt">
                   {moment(invoiceDetails.orderDate).format("DD/MM/YYYY HH:mm")}
                 </Descriptions.Item>
-                <Descriptions.Item label="Trạng thái">
-                  {getStatusBadge(invoiceDetails.status)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Tổng tiền">
-                  <span style={{ color: "#f50", fontWeight: "bold" }}>
-                    {new Intl.NumberFormat("vi-VN", {
-                      style: "currency",
-                      currency: "VND",
-                    }).format(totalAmount)}
-                  </span>
+                <Descriptions.Item label="Ghi chú">
+                  {invoiceDetails.note || "Không có ghi chú"}
                 </Descriptions.Item>
               </Descriptions>
             </Card>
@@ -434,9 +427,12 @@ const Invoices = () => {
               bordered={false}
               className="invoice-card"
             >
-              <Descriptions column={1}>
+              <Descriptions column={1} labelStyle={{ fontWeight: "bold" }}>
                 <Descriptions.Item label="Tên khách hàng">
                   {invoiceDetails.fullnames}
+                </Descriptions.Item>
+                <Descriptions.Item label="Mã khách hàng">
+                  {invoiceDetails.userId}
                 </Descriptions.Item>
                 <Descriptions.Item label="Địa chỉ">
                   {invoiceDetails.address}
@@ -462,30 +458,68 @@ const Invoices = () => {
                   {
                     title: "Hình ảnh",
                     dataIndex: "productImages",
-                    key: "images",
+                    width: 120,
                     render: (images) => (
-                      <Space size="middle">
+                      <Image.PreviewGroup>
                         {images && images.length > 0 ? (
-                          images.map((imageUrl, index) => (
-                            <Image
-                              key={index}
-                              width={80}
-                              height={80}
-                              style={{ objectFit: "contain" }}
-                              src={`http://localhost:8081/api/upload/${imageUrl}`}
-                              alt={`Product ${index + 1}`}
-                            />
-                          ))
+                          <Image
+                            width={80}
+                            height={80}
+                            style={{ objectFit: "contain" }}
+                            src={`http://localhost:8081/api/upload/${images[0]}`}
+                            preview={{
+                              mask: "Xem",
+                            }}
+                          />
                         ) : (
-                          <span>Không có ảnh</span>
+                          <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description="Không có ảnh"
+                          />
                         )}
-                      </Space>
+                      </Image.PreviewGroup>
                     ),
                   },
                   {
-                    title: "Tên sản phẩm",
-                    dataIndex: "productName",
-                    width: "30%",
+                    title: "Kích thước",
+                    dataIndex: "productSizes",
+                    render: (sizes, record) => {
+                      if (!sizes || sizes.length === 0) {
+                        return "Không có";
+                      }
+
+                      // Convert both prices to numbers for comparison
+                      const selectedSize = sizes.find(
+                        (size) =>
+                          Number(size.price) === Number(record.unitPrice)
+                      );
+
+                      if (selectedSize) {
+                        return (
+                          <Tooltip
+                            title={`Giá: ${new Intl.NumberFormat("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            }).format(selectedSize.price)}`}
+                          >
+                            <Tag color="blue">{selectedSize.name}</Tag>
+                          </Tooltip>
+                        );
+                      }
+
+                      // If no exact match is found, show all available sizes
+                      return (
+                        <Tooltip title="Kích thước có sẵn">
+                          <span>
+                            {sizes.map((size) => (
+                              <Tag key={size.id} style={{ marginRight: 4 }}>
+                                {size.name}
+                              </Tag>
+                            ))}
+                          </span>
+                        </Tooltip>
+                      );
+                    },
                   },
                   {
                     title: "Số lượng",
@@ -515,7 +549,7 @@ const Invoices = () => {
                 summary={() => (
                   <Table.Summary fixed>
                     <Table.Summary.Row>
-                      <Table.Summary.Cell index={0} colSpan={4} align="right">
+                      <Table.Summary.Cell index={0} colSpan={5} align="right">
                         <Text strong>Tổng tiền:</Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={1} align="right">
@@ -533,6 +567,18 @@ const Invoices = () => {
             </Card>
           </Col>
         </Row>
+
+        <style jsx>{`
+          .invoice-card {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+          }
+          .invoice-card .ant-card-head {
+            background-color: #fafafa;
+          }
+          .ant-descriptions-item-label {
+            color: #666;
+          }
+        `}</style>
       </Modal>
     );
   };

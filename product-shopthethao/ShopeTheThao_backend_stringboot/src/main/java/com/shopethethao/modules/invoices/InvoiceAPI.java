@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shopethethao.dto.DetailedInvoicesDTO;
 import com.shopethethao.dto.InvoiceAllDTO;
 import com.shopethethao.dto.InvoiceListDTO;
+import com.shopethethao.dto.SizeDTO;
 import com.shopethethao.modules.cancelReason.CancelReason;
 import com.shopethethao.modules.cancelReason.CancelReasonDAO;
 import com.shopethethao.modules.detailed_invoices.DetailedInvoicesDAO;
@@ -116,14 +117,33 @@ public class InvoiceAPI {
                         detailedDTO.setQuantity(detailedInvoice.getQuantity());
                         detailedDTO.setUnitPrice(detailedInvoice.getUnitPrice());
                         detailedDTO.setPaymentMethod(detailedInvoice.getPaymentMethod());
-                        
+
                         // Add product images
                         List<String> imageUrls = detailedInvoice.getProduct().getImages()
                                 .stream()
                                 .map(ProductImages::getImageUrl)
                                 .collect(Collectors.toList());
                         detailedDTO.setProductImages(imageUrls);
-                        
+                        List<SizeDTO> sizeDTOs = detailedInvoice.getProduct().getSizes()
+                                .stream()
+                                .map(productSize -> {
+                                    SizeDTO sizeDTO = new SizeDTO();
+                                    sizeDTO.setId(productSize.getSize().getId());
+                                    sizeDTO.setName(productSize.getSize().getName());
+                                    sizeDTO.setQuantity(productSize.getQuantity());
+                                    sizeDTO.setPrice(productSize.getPrice());
+                                    return sizeDTO;
+                                })
+                                .collect(Collectors.toList());
+                        detailedDTO.setProductSizes(sizeDTOs);
+                
+                        detailedInvoice.getProduct().getSizes()
+                                .stream()
+                                .filter(productSize -> 
+                                    productSize.getPrice().equals(detailedInvoice.getUnitPrice().intValue()))
+                                .findFirst()
+                                .ifPresent(productSize -> 
+                                    detailedDTO.setSelectedSize(productSize.getSize().getName()));
                         return detailedDTO;
                     })
                     .collect(Collectors.toList());
@@ -137,8 +157,6 @@ public class InvoiceAPI {
         }
     }
 
-
-    
     @GetMapping("/pending")
     public ResponseEntity<?> getPendingInvoices() {
         try {

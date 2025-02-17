@@ -205,12 +205,16 @@ CREATE TABLE Detailed_Invoices (
     id INT IDENTITY(1,1) PRIMARY KEY,
     invoice_id INT NOT NULL,
     product_id INT NOT NULL,
+    size_id INT NOT NULL,  -- Thêm cột size_id
     quantity INT NOT NULL CHECK (quantity >= 0),
-    unit_price DECIMAL(18,2) NOT NULL DEFAULT 0.00,  -- Changed from 'unitPrice' to 'unit_price'
+    unit_price DECIMAL(18,2) NOT NULL DEFAULT 0.00,
     payment_method NVARCHAR(200) NOT NULL,
     FOREIGN KEY (invoice_id) REFERENCES Invoices(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
+    FOREIGN KEY (size_id) REFERENCES Sizes(id) ON DELETE CASCADE  -- Thêm khóa ngoại đến bảng Sizes
 );
+CREATE INDEX IX_DetailedInvoices_InvoiceId ON Detailed_Invoices(invoice_id);
+CREATE INDEX IX_DetailedInvoices_ProductSize ON Detailed_Invoices(product_id, size_id);
 
 CREATE INDEX IX_Invoices_Status ON Invoices(status);
 CREATE INDEX IX_Invoices_UserId ON Invoices(user_id);

@@ -2,6 +2,7 @@ package com.shopethethao.modules.detailed_invoices;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.shopethethao.modules.invoices.Invoice;
 import com.shopethethao.modules.products.Product;
 
@@ -15,10 +16,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import jakarta.validation.constraints.Min;
 
 @Data
 @AllArgsConstructor
@@ -33,6 +34,7 @@ public class DetailedInvoices {
 
     @ManyToOne
     @JoinColumn(name = "invoice_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "fk_detailed_invoice_invoice"))
+    @JsonBackReference
     private Invoice invoice;
 
     @ManyToOne
