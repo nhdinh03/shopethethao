@@ -20,6 +20,7 @@ import com.shopethethao.dto.InvoiceListDTO;
 import com.shopethethao.modules.cancelReason.CancelReason;
 import com.shopethethao.modules.cancelReason.CancelReasonDAO;
 import com.shopethethao.modules.detailed_invoices.DetailedInvoicesDAO;
+import com.shopethethao.modules.Product_Images.ProductImages;
 
 @RestController
 @RequestMapping("/api/invoice")
@@ -82,7 +83,7 @@ public class InvoiceAPI {
         }
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<?> findById(@PathVariable Integer id) {
         try {
             // Find the invoice by its ID
@@ -98,6 +99,7 @@ public class InvoiceAPI {
             dto.setNote(invoice.getNote());
             dto.setTotalAmount(invoice.getTotalAmount());
             dto.setUserId(invoice.getUser().getId());
+            dto.setFullnames(invoice.getUser().getFullname());
 
             // Set the cancel reason if available
             dto.setCancelReason(invoice.getCancelReason() != null ? invoice.getCancelReason().getReason() : null);
@@ -114,6 +116,14 @@ public class InvoiceAPI {
                         detailedDTO.setQuantity(detailedInvoice.getQuantity());
                         detailedDTO.setUnitPrice(detailedInvoice.getUnitPrice());
                         detailedDTO.setPaymentMethod(detailedInvoice.getPaymentMethod());
+                        
+                        // Add product images
+                        List<String> imageUrls = detailedInvoice.getProduct().getImages()
+                                .stream()
+                                .map(ProductImages::getImageUrl)
+                                .collect(Collectors.toList());
+                        detailedDTO.setProductImages(imageUrls);
+                        
                         return detailedDTO;
                     })
                     .collect(Collectors.toList());
@@ -127,6 +137,8 @@ public class InvoiceAPI {
         }
     }
 
+
+    
     @GetMapping("/pending")
     public ResponseEntity<?> getPendingInvoices() {
         try {

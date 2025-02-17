@@ -15,6 +15,8 @@ public class InvoiceAllDTO {
     private String note;
     private BigDecimal totalAmount;
     private String userId;
+    private String Fullnames;
     private String cancelReason; // Thêm lý do hủy hàng
     private List<DetailedInvoicesDTO> detailedInvoices;
 }
+

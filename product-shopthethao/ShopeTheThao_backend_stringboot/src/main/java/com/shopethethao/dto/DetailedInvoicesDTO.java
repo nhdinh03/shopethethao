@@ -14,5 +14,6 @@ public class DetailedInvoicesDTO {
     private int quantity;
     private BigDecimal unitPrice;
     private String paymentMethod;
+    private List<String> productImages; // Add this field
 
 }

@@ -9,3 +9,6 @@ export { default as rolesApi } from './Roles/rolesApi';
 export { default as accountsUserApi } from './AccountsUsers/accountsUserApi';
 export { default as lockreasonsApi } from './LockReasons/lockreasonsApi';
 export { default as productattributesApi } from './Product_Attributes/productattributesApi';
+
+export { default as detailedInvoicesAPI } from './DetailedInvoices/detailedInvoicesAPI';
+export { default as invoicesApi } from './invoices/InvoicesApi';

@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DetailedInvoicesDAO extends JpaRepository <DetailedInvoices, Integer> {
     List<DetailedInvoices> findAll();
+
+    List<DetailedInvoices> findByInvoiceId(Integer id);
 }

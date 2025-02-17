@@ -1,22 +1,53 @@
 import React, { useEffect, useState } from "react";
-import { Table, message, Row, Space, Button, Tooltip, Tabs } from "antd";
+import {
+  Table,
+  message,
+  Row,
+  Space,
+  Button,
+  Tooltip,
+  Tabs,
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  Select,
+  Image,
+  Tag,
+  Descriptions,
+  Empty,
+  Typography,
+} from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheckCircle,
   faTruck,
   faBan,
 } from "@fortawesome/free-solid-svg-icons";
-import invoicesApi from "api/Admin/invoices/InvoicesApi";
 import { PlusOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  CalendarOutlined,
+  HomeOutlined,
+  TagOutlined,
+  ShoppingOutlined,
+} from "@ant-design/icons";
+import { Card, Col, Row as AntRow, Divider, Statistic } from "antd";
 
-const { TabPane } = Tabs;
+import moment from "moment";
+import { invoicesApi } from "api/Admin";
+
+const { Text } = Typography;
 
 const Invoices = () => {
   const [pendingInvoices, setPendingInvoices] = useState([]);
   const [shippingInvoices, setShippingInvoices] = useState([]);
   const [deliveredInvoices, setDeliveredInvoices] = useState([]);
   const [cancelledInvoices, setCancelledInvoices] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [invoiceDetails, setInvoiceDetails] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchInvoices();
@@ -29,7 +60,6 @@ const Invoices = () => {
       const shippingResponse = await invoicesApi.getShipping();
       const deliveredResponse = await invoicesApi.getDelivered();
       const cancelledResponse = await invoicesApi.getCancelled();
-      
 
       setPendingInvoices(pendingResponse.data);
       setShippingInvoices(shippingResponse.data);
@@ -42,14 +72,58 @@ const Invoices = () => {
     }
   };
 
-  // Cập nhật trạng thái hóa đơn
-  const updateInvoiceStatus = async (id, newStatus) => {
+  // Helper function to extract numeric ID from invoiceId string
+  const getNumericId = (invoiceId) => {
+    if (!invoiceId) return null;
+    return parseInt(invoiceId.replace("#", ""));
+  };
+
+  const DetailedInvoices = async (invoiceId) => {
     try {
-      await invoicesApi.updateStatus(id, newStatus);
+      const numericId = getNumericId(invoiceId);
+      if (!numericId) {
+        message.error("ID hóa đơn không hợp lệ!");
+        return;
+      }
+      const response = await invoicesApi.getById(numericId);
+      setInvoiceDetails(response.data);
+      form.setFieldsValue({
+        ...response.data,
+        orderDate: moment(response.data.orderDate),
+      });
+      console.log(response);
+
+      setIsModalVisible(true);
+    } catch (error) {
+      message.error("Không thể lấy chi tiết hóa đơn!");
+    }
+  };
+
+  // Cập nhật trạng thái hóa đơn
+  const updateInvoiceStatus = async (invoiceId, newStatus) => {
+    try {
+      const numericId = getNumericId(invoiceId);
+      if (!numericId) {
+        message.error("ID hóa đơn không hợp lệ!");
+        return;
+      }
+      await invoicesApi.updateStatus(numericId, newStatus);
       message.success("Cập nhật trạng thái thành công!");
       fetchInvoices(); // Cập nhật lại dữ liệu
     } catch (error) {
       message.error("Cập nhật trạng thái thất bại!");
+    }
+  };
+
+  // Add new handler for edit submit
+  const handleEditSubmit = async (values) => {
+    try {
+      await invoicesApi.update(invoiceDetails.id, values);
+      message.success("Cập nhật hóa đơn thành công!");
+      setIsModalVisible(false);
+      fetchInvoices();
+    } catch (error) {
+      message.error("Cập nhật hóa đơn thất bại!");
     }
   };
 
@@ -78,7 +152,7 @@ const Invoices = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            // onClick={() => setOpen(true)}
+            onClick={() => DetailedInvoices(record.invoiceId)}
             className="add-btn"
           >
             Xem chi tiết
@@ -87,7 +161,7 @@ const Invoices = () => {
             <Button
               type="primary"
               icon={<FontAwesomeIcon icon={faCheckCircle} />}
-              onClick={() => updateInvoiceStatus(record.id, "SHIPPING")}
+              onClick={() => updateInvoiceStatus(record.invoiceId, "SHIPPING")}
             >
               Xác nhận đơn
             </Button>
@@ -97,7 +171,7 @@ const Invoices = () => {
             <Button
               type="danger"
               icon={<FontAwesomeIcon icon={faBan} />}
-              onClick={() => updateInvoiceStatus(record.id, "CANCELLED")}
+              onClick={() => updateInvoiceStatus(record.invoiceId, "CANCELLED")}
               disabled={record.status === "CANCELLED"} // Disable nếu đơn đã bị hủy
             >
               Hủy đơn
@@ -134,7 +208,7 @@ const Invoices = () => {
             <Button
               type="default"
               icon={<FontAwesomeIcon icon={faTruck} />}
-              onClick={() => updateInvoiceStatus(record.id, "DELIVERED")}
+              onClick={() => updateInvoiceStatus(record.invoiceId, "DELIVERED")}
             >
               Xác nhận giao
             </Button>
@@ -171,7 +245,7 @@ const Invoices = () => {
             <Button
               type="default"
               icon={<FontAwesomeIcon icon={faBan} />}
-              onClick={() => updateInvoiceStatus(record.id, "CANCELLED")}
+              onClick={() => updateInvoiceStatus(record.invoiceId, "CANCELLED")}
             >
               Hủy đơn
             </Button>
@@ -207,7 +281,7 @@ const Invoices = () => {
             <Button
               type="primary"
               icon={<FontAwesomeIcon icon={faCheckCircle} />}
-              onClick={() => updateInvoiceStatus(record.id, "PENDING")}
+              onClick={() => updateInvoiceStatus(record.invoiceId, "PENDING")}
             >
               Khôi phục
             </Button>
@@ -217,46 +291,259 @@ const Invoices = () => {
     },
   ];
 
+  // Define tab items with the recommended format
+  const items = [
+    {
+      key: "1",
+      label: "Chờ xử lý",
+      children: (
+        <Table
+          loading={loading}
+          columns={columnsPending}
+          dataSource={pendingInvoices.map((item, index) => ({
+            ...item,
+            key: item.id || index,
+          }))}
+        />
+      ),
+    },
+    {
+      key: "2",
+      label: "Đang giao hàng",
+      children: (
+        <Table
+          loading={loading}
+          columns={columnsShipping}
+          dataSource={shippingInvoices.map((item, index) => ({
+            ...item,
+            key: item.id || index,
+          }))}
+        />
+      ),
+    },
+    {
+      key: "3",
+      label: "Đã giao hàng",
+      children: (
+        <Table
+          loading={loading}
+          columns={columnsDelivered}
+          dataSource={deliveredInvoices.map((item, index) => ({
+            ...item,
+            key: item.id || index,
+          }))}
+        />
+      ),
+    },
+    {
+      key: "4",
+      label: "Đã hủy",
+      children: (
+        <Table
+          loading={loading}
+          columns={columnsCancelled}
+          dataSource={cancelledInvoices.map((item, index) => ({
+            ...item,
+            key: item.id || index,
+          }))}
+        />
+      ),
+    },
+  ];
+
+  // Replace renderInvoiceDetails with new edit form
+  const renderInvoiceDetails = () => {
+    if (!invoiceDetails) return null;
+
+    const totalAmount =
+      invoiceDetails.detailedInvoices?.reduce(
+        (sum, item) => sum + item.unitPrice * item.quantity,
+        0
+      ) || 0;
+
+    const getStatusBadge = (status) => {
+      const statusConfig = {
+        PENDING: { color: "#faad14", text: "Chờ xử lý" },
+        SHIPPING: { color: "#1890ff", text: "Đang giao hàng" },
+        DELIVERED: { color: "#52c41a", text: "Đã giao hàng" },
+        CANCELLED: { color: "#ff4d4f", text: "Đã hủy" },
+      };
+      const config = statusConfig[status] || { color: "default", text: status };
+      return <Tag color={config.color}>{config.text}</Tag>;
+    };
+
+    return (
+      <Modal
+        title={
+          <Space>
+            <TagOutlined />
+            <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+              Chi tiết đơn hàng #{invoiceDetails.id}
+            </span>
+          </Space>
+        }
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        width={1000}
+        footer={[
+          <Button key="close" onClick={() => setIsModalVisible(false)}>
+            Đóng
+          </Button>,
+        ]}
+      >
+        <Row gutter={[24, 24]}>
+          <Col span={12}>
+            <Card
+              title={
+                <>
+                  <CalendarOutlined /> Thông tin đơn hàng
+                </>
+              }
+              bordered={false}
+              className="invoice-card"
+            >
+              <Descriptions column={1}>
+                <Descriptions.Item label="Mã đơn hàng">
+                  {invoiceDetails.id}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày đặt">
+                  {moment(invoiceDetails.orderDate).format("DD/MM/YYYY HH:mm")}
+                </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái">
+                  {getStatusBadge(invoiceDetails.status)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tổng tiền">
+                  <span style={{ color: "#f50", fontWeight: "bold" }}>
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(totalAmount)}
+                  </span>
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          </Col>
+
+          <Col span={12}>
+            <Card
+              title={
+                <>
+                  <UserOutlined /> Thông tin khách hàng
+                </>
+              }
+              bordered={false}
+              className="invoice-card"
+            >
+              <Descriptions column={1}>
+                <Descriptions.Item label="Tên khách hàng">
+                  {invoiceDetails.fullnames}
+                </Descriptions.Item>
+                <Descriptions.Item label="Địa chỉ">
+                  {invoiceDetails.address}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          </Col>
+
+          <Col span={24}>
+            <Card
+              title={
+                <>
+                  <ShoppingOutlined /> Chi tiết sản phẩm
+                </>
+              }
+              bordered={false}
+              className="invoice-card"
+            >
+              <Table
+                dataSource={invoiceDetails.detailedInvoices}
+                pagination={false}
+                columns={[
+                  {
+                    title: "Hình ảnh",
+                    dataIndex: "productImages",
+                    key: "images",
+                    render: (images) => (
+                      <Space size="middle">
+                        {images && images.length > 0 ? (
+                          images.map((imageUrl, index) => (
+                            <Image
+                              key={index}
+                              width={80}
+                              height={80}
+                              style={{ objectFit: "contain" }}
+                              src={`http://localhost:8081/api/upload/${imageUrl}`}
+                              alt={`Product ${index + 1}`}
+                            />
+                          ))
+                        ) : (
+                          <span>Không có ảnh</span>
+                        )}
+                      </Space>
+                    ),
+                  },
+                  {
+                    title: "Tên sản phẩm",
+                    dataIndex: "productName",
+                    width: "30%",
+                  },
+                  {
+                    title: "Số lượng",
+                    dataIndex: "quantity",
+                    align: "center",
+                  },
+                  {
+                    title: "Đơn giá",
+                    dataIndex: "unitPrice",
+                    align: "right",
+                    render: (value) =>
+                      new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(value),
+                  },
+                  {
+                    title: "Thành tiền",
+                    align: "right",
+                    render: (_, record) =>
+                      new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(record.unitPrice * record.quantity),
+                  },
+                ]}
+                summary={() => (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell index={0} colSpan={4} align="right">
+                        <Text strong>Tổng tiền:</Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={1} align="right">
+                        <Text strong type="danger">
+                          {new Intl.NumberFormat("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          }).format(totalAmount)}
+                        </Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )}
+              />
+            </Card>
+          </Col>
+        </Row>
+      </Modal>
+    );
+  };
+
   return (
     <div style={{ padding: 10 }}>
       <Row>
         <h2>Quản lý Hóa Đơn</h2>
       </Row>
-
-      <Tabs defaultActiveKey="1">
-        <TabPane tab="Chờ xử lý" key="1">
-          <Table
-            loading={loading}
-            columns={columnsPending}
-            dataSource={pendingInvoices}
-            rowKey="id"
-          />
-        </TabPane>
-        <TabPane tab="Đang giao hàng" key="2">
-          <Table
-            loading={loading}
-            columns={columnsShipping}
-            dataSource={shippingInvoices}
-            rowKey="id"
-          />
-        </TabPane>
-        <TabPane tab="Đã giao hàng" key="3">
-          <Table
-            loading={loading}
-            columns={columnsDelivered}
-            dataSource={deliveredInvoices}
-            rowKey="id"
-          />
-        </TabPane>
-        <TabPane tab="Đã hủy" key="4">
-          <Table
-            loading={loading}
-            columns={columnsCancelled}
-            dataSource={cancelledInvoices}
-            rowKey="id"
-          />
-        </TabPane>
-      </Tabs>
+      <Tabs defaultActiveKey="1" items={items} />
+      {renderInvoiceDetails()}
     </div>
   );
 };

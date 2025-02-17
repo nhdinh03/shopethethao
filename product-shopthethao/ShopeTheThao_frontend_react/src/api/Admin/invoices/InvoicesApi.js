@@ -1,11 +1,14 @@
-import axiosClient from "api/global/axiosClient";
 import BaseApi from "api/global/baseApi";
+import axiosClient from "api/global/axiosClient";
+
 
 class InvoicesApi extends BaseApi {
   constructor() {
     super("invoice");
   }
-
+  async getById(id) {
+    return axiosClient.get(`${this.uri}/get/${id}`);
+  }
   async getPending() {
     return axiosClient.get(this.uri + "/pending");
   }
