@@ -64,8 +64,8 @@ public class WebSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/**", "/api/auth/regenerate-otp/**", "/users/me/**", "/api/upload/**",
-                            "/api/productimages/**", "/api/lockreasons/**")
-                            .permitAll();
+                            "/api/productimages/**", "/api/lockreasons/**", "/api/cancelreason/**").permitAll();
+
                     auth.requestMatchers("/test/test/**").permitAll();
                     auth.anyRequest().authenticated();
                 });

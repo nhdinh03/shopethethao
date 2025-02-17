@@ -188,9 +188,17 @@ CREATE TABLE Invoices (
     total_amount DECIMAL(18,2) NOT NULL DEFAULT 0.00,  -- Changed from 'totalAmount' to 'total_amount'
     user_id NVARCHAR(100) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Accounts(id) ON DELETE CASCADE,
+    FOREIGN KEY (cancel_reason_id) REFERENCES cancel_reasons(id) ON DELETE SET NULL,
     CONSTRAINT CHK_Invoice_Status CHECK (status IN ('PENDING', 'SHIPPING', 'DELIVERED', 'CANCELLED'))
 );
 GO
+
+--ly do huy
+CREATE TABLE CancelReasons (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    reason NVARCHAR(255) NOT NULL UNIQUE
+);
+
 
 -- Recreate Detailed_Invoices table with correct column names
 CREATE TABLE Detailed_Invoices (

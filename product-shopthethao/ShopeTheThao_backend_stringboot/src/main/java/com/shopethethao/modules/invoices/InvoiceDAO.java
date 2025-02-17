@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface InvoiceDAO extends JpaRepository<Invoice, Integer> {
     @Query("SELECT i FROM Invoice i WHERE i.status = :status ORDER BY i.orderDate DESC")
     List<Invoice> findByStatus(@Param("status") InvoiceStatus status);
+
+
 }
