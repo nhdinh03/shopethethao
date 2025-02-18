@@ -88,12 +88,12 @@ public class AccountAPI {
                 roleEnum = SecurityERole.fromString(roleName);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest()
-                        .body(new MessageResponse("Invalid role name: " + roleName));
+                        .body(new MessageResponse("Tên vai trò không hợp lệ: " + roleName));
             }
             
             // Get the role
             SecurityRole role = roleRepository.findByName(roleEnum)
-                    .orElseThrow(() -> new RuntimeException("Error: Role " + roleName + " not found"));
+                    .orElseThrow(() -> new RuntimeException("Error: Role " + roleName + " không tìm thấy"));
             
             // Sort by multiple fields in descending order
             Sort sort = Sort.by(

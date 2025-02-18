@@ -341,7 +341,7 @@ const Invoices = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
-             <Button
+          <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => DetailedInvoices(record.invoiceId)}
@@ -386,7 +386,7 @@ const Invoices = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
-             <Button
+          <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => DetailedInvoices(record.invoiceId)}
@@ -394,15 +394,6 @@ const Invoices = () => {
           >
             Xem chi tiết
           </Button>
-          <Tooltip title="Hủy đơn">
-            <Button
-              type="default"
-              icon={<FontAwesomeIcon icon={faBan} />}
-              onClick={() => updateInvoiceStatus(record.invoiceId, "CANCELLED")}
-            >
-              Hủy đơn
-            </Button>
-          </Tooltip>
         </Space>
       ),
     },

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.role.exception.RoleValidationException;
+import com.shopethethao.dto.RoleValidationException;
 
 @RestController
 @RequestMapping("/api/role")
@@ -47,7 +47,7 @@ public class RoleAPI {
             @RequestParam("limit") Optional<Integer> limit) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
-                return new ResponseEntity<>("Page not found", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Không tìm thấy trang", HttpStatus.NOT_FOUND);
             }
 
             Sort sort = Sort.by(Sort.Order.desc("id"));
@@ -61,7 +61,7 @@ public class RoleAPI {
 
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
-            return new ResponseEntity<>("Server error, please try again later!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi máy chủ, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -140,12 +140,12 @@ public class RoleAPI {
             Optional<Role> existingSize = roleDAO.findById(id);
             if (existingSize.isPresent()) {
                 roleDAO.deleteById(id);
-                return ResponseEntity.ok("Size deleted successfully!");
+                return ResponseEntity.ok("kích thước đã được xóa thành công!");
             } else {
-                return new ResponseEntity<>("Size not found!", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Không tìm thấy kích thước!", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to delete size!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Không thể xóa kích thước!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
