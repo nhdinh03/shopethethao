@@ -24,8 +24,11 @@ class InvoicesApi extends BaseApi {
     return axiosClient.get(this.uri + "/cancelled");
   }
 
-  async updateStatus(id, newStatus) {
-    return this.update(`${id}/status`, { status: newStatus });
+  async updateStatus(id, { status, cancelReasonId, note }) {
+    if (!status) {
+      throw new Error('Status is required');
+    }
+    return this.update(`${id}/status`, { status, cancelReasonId, note });
   }
 }
 

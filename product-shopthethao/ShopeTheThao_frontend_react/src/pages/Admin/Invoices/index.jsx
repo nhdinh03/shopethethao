@@ -17,6 +17,7 @@ import {
   Descriptions,
   Empty,
   Typography,
+  Card,
 } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -32,12 +33,14 @@ import {
   TagOutlined,
   ShoppingOutlined,
 } from "@ant-design/icons";
-import { Card, Col, Row as AntRow, Divider, Statistic } from "antd";
+import { Col, Row as AntRow, Divider, Statistic } from "antd";
 
 import moment from "moment";
 import { invoicesApi } from "api/Admin";
+import cancelReasonApi from "api/Admin/cancelReason/CancelReasonApi";
 
 const { Text } = Typography;
+const { Option } = Select;
 
 const Invoices = () => {
   const [pendingInvoices, setPendingInvoices] = useState([]);
@@ -47,10 +50,17 @@ const Invoices = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [invoiceDetails, setInvoiceDetails] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [form] = Form.useForm();
+  const [updateModal, setUpdateModal] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [cancelReasons, setCancelReasons] = useState([]); // Add this state
+
+  // Form instances
+  const [updateForm] = Form.useForm();
 
   useEffect(() => {
     fetchInvoices();
+    fetchCancelReasons(); // Add this call
   }, []);
 
   const fetchInvoices = async () => {
@@ -60,7 +70,6 @@ const Invoices = () => {
       const shippingResponse = await invoicesApi.getShipping();
       const deliveredResponse = await invoicesApi.getDelivered();
       const cancelledResponse = await invoicesApi.getCancelled();
-
       setPendingInvoices(pendingResponse.data);
       setShippingInvoices(shippingResponse.data);
       setDeliveredInvoices(deliveredResponse.data);
@@ -69,6 +78,17 @@ const Invoices = () => {
       message.error("Không thể lấy danh sách hóa đơn!");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCancelReasons = async () => {
+    try {
+      const response = await cancelReasonApi.getList();
+      console.log("Cancel reasons:", response.data); // Debug log
+      setCancelReasons(response.data);
+    } catch (error) {
+      console.error("Error fetching cancel reasons:", error); // Debug log
+      message.error("Không thể lấy danh sách lý do hủy");
     }
   };
 
@@ -86,20 +106,16 @@ const Invoices = () => {
         return;
       }
       const response = await invoicesApi.getById(numericId);
-      setInvoiceDetails(response.data);
-      form.setFieldsValue({
+      setInvoiceDetails({
         ...response.data,
         orderDate: moment(response.data.orderDate),
       });
       console.log(response);
-
       setIsModalVisible(true);
     } catch (error) {
       message.error("Không thể lấy chi tiết hóa đơn!");
     }
   };
-
-  // Cập nhật trạng thái hóa đơn
   const updateInvoiceStatus = async (invoiceId, newStatus) => {
     try {
       const numericId = getNumericId(invoiceId);
@@ -115,17 +131,139 @@ const Invoices = () => {
     }
   };
 
-  // Add new handler for edit submit
-  const handleEditSubmit = async (values) => {
+  // Handle status update with confirmation
+  const handleStatusUpdate = async (invoiceId, newStatus) => {
     try {
-      await invoicesApi.update(invoiceDetails.id, values);
-      message.success("Cập nhật hóa đơn thành công!");
-      setIsModalVisible(false);
-      fetchInvoices();
+      if (newStatus === "CANCELLED") {
+        setSelectedInvoice({ id: invoiceId });
+        setUpdateModal(true);
+        return;
+      }
+
+      Modal.confirm({
+        title: "Xác nhận thay đổi trạng thái",
+        content: `Bạn có chắc muốn ${
+          newStatus === "SHIPPING" ? "xác nhận" : "giao"
+        } đơn hàng này?`,
+        okText: "Xác nhận",
+        cancelText: "Hủy",
+        onOk: async () => {
+          try {
+            const numericId = getNumericId(invoiceId);
+            await invoicesApi.updateStatus(numericId, {
+              status: newStatus,
+              cancelReasonId: null,
+              note: null,
+            });
+            message.success("Cập nhật trạng thái thành công!");
+            await fetchInvoices();
+          } catch (error) {
+            message.error("Cập nhật trạng thái thất bại: " + error.message);
+          }
+        },
+      });
     } catch (error) {
-      message.error("Cập nhật hóa đơn thất bại!");
+      message.error("Có lỗi xảy ra: " + error.message);
     }
   };
+
+  // Handle cancellation with reason
+  const handleCancellation = async (values) => {
+    try {
+      setUpdateLoading(true);
+      const { cancelReasonId, note } = values;
+
+      if (!cancelReasonId) {
+        message.error("Vui lòng chọn lý do hủy");
+        return;
+      }
+
+      await invoicesApi.updateStatus(getNumericId(selectedInvoice.id), {
+        status: "CANCELLED",
+        cancelReasonId: cancelReasonId,
+        note: note || null,
+      });
+
+      message.success("Đã hủy đơn hàng thành công");
+      setUpdateModal(false);
+      updateForm.resetFields();
+      fetchInvoices();
+    } catch (error) {
+      message.error(
+        "Hủy đơn hàng thất bại: " + (error.response?.data || error.message)
+      );
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const generateUniqueId = (() => {
+    let counter = 0;
+    return () => `row-${counter++}`;
+  })();
+
+  // Cancel reason modal
+  const renderCancelModal = () => (
+    <Modal
+      title="Hủy đơn hàng"
+      open={updateModal}
+      onCancel={() => {
+        setUpdateModal(false);
+        setSelectedInvoice(null);
+        updateForm.resetFields();
+      }}
+      footer={null}
+      maskClosable={!updateLoading}
+    >
+      <Form
+        form={updateForm}
+        name="cancelForm"
+        onFinish={handleCancellation}
+        layout="vertical"
+      >
+        <Form.Item
+          name="cancelReasonId"
+          label="Lý do hủy"
+          rules={[{ required: true, message: "Vui lòng chọn lý do hủy" }]}
+        >
+          <Select placeholder="Chọn lý do hủy">
+            {cancelReasons.map((reason) => (
+              <Select.Option key={reason.id} value={reason.id}>
+                {reason.reason}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item name="note" label="Ghi chú thêm">
+          <Input.TextArea
+            rows={4}
+            placeholder="Nhập ghi chú thêm (nếu có)"
+            disabled={updateLoading}
+          />
+        </Form.Item>
+
+        <Form.Item>
+          <Space>
+            <Button
+              type="primary"
+              danger
+              htmlType="submit"
+              loading={updateLoading}
+            >
+              Xác nhận hủy
+            </Button>
+            <Button
+              onClick={() => setUpdateModal(false)}
+              disabled={updateLoading}
+            >
+              Đóng
+            </Button>
+          </Space>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
 
   // Các cột cho bảng trạng thái PENDING
   const columnsPending = [
@@ -161,17 +299,16 @@ const Invoices = () => {
             <Button
               type="primary"
               icon={<FontAwesomeIcon icon={faCheckCircle} />}
-              onClick={() => updateInvoiceStatus(record.invoiceId, "SHIPPING")}
+              onClick={() => handleStatusUpdate(record.invoiceId, "SHIPPING")}
             >
               Xác nhận đơn
             </Button>
           </Tooltip>
-
           <Tooltip title="Hủy đơn">
             <Button
               type="danger"
               icon={<FontAwesomeIcon icon={faBan} />}
-              onClick={() => updateInvoiceStatus(record.invoiceId, "CANCELLED")}
+              onClick={() => handleStatusUpdate(record.invoiceId, "CANCELLED")}
               disabled={record.status === "CANCELLED"} // Disable nếu đơn đã bị hủy
             >
               Hủy đơn
@@ -204,11 +341,19 @@ const Invoices = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
+             <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => DetailedInvoices(record.invoiceId)}
+            className="add-btn"
+          >
+            Xem chi tiết
+          </Button>
           <Tooltip title="Xác nhận giao hàng">
             <Button
               type="default"
               icon={<FontAwesomeIcon icon={faTruck} />}
-              onClick={() => updateInvoiceStatus(record.invoiceId, "DELIVERED")}
+              onClick={() => handleStatusUpdate(record.invoiceId, "DELIVERED")}
             >
               Xác nhận giao
             </Button>
@@ -241,6 +386,14 @@ const Invoices = () => {
       key: "actions",
       render: (_, record) => (
         <Space>
+             <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => DetailedInvoices(record.invoiceId)}
+            className="add-btn"
+          >
+            Xem chi tiết
+          </Button>
           <Tooltip title="Hủy đơn">
             <Button
               type="default"
@@ -351,7 +504,7 @@ const Invoices = () => {
     },
   ];
 
-  // Replace renderInvoiceDetails with new edit form
+  // Replace renderInvoiceDetails with optimized version
   const renderInvoiceDetails = () => {
     if (!invoiceDetails) return null;
 
@@ -375,9 +528,9 @@ const Invoices = () => {
     return (
       <Modal
         title={
-          <Space align="center">
+          <Space align="center" className="modal-title">
             <TagOutlined />
-            <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+            <span className="title-text">
               Chi tiết đơn hàng #{invoiceDetails.id}
             </span>
             {getStatusBadge(invoiceDetails.status)}
@@ -386,8 +539,13 @@ const Invoices = () => {
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         width={1000}
+        className="invoice-detail-modal"
         footer={[
-          <Button key="close" onClick={() => setIsModalVisible(false)}>
+          <Button
+            key="close"
+            onClick={() => setIsModalVisible(false)}
+            size="large"
+          >
             Đóng
           </Button>,
         ]}
@@ -403,7 +561,10 @@ const Invoices = () => {
               bordered={false}
               className="invoice-card"
             >
-              <Descriptions column={1} labelStyle={{ fontWeight: "bold" }}>
+              <Descriptions
+                column={1}
+                styles={{ label: { fontWeight: "bold" } }}
+              >
                 <Descriptions.Item label="Mã đơn hàng">
                   #{invoiceDetails.id}
                 </Descriptions.Item>
@@ -427,7 +588,10 @@ const Invoices = () => {
               bordered={false}
               className="invoice-card"
             >
-              <Descriptions column={1} labelStyle={{ fontWeight: "bold" }}>
+              <Descriptions
+                column={1}
+                styles={{ label: { fontWeight: "bold" } }}
+              >
                 <Descriptions.Item label="Tên khách hàng">
                   {invoiceDetails.fullnames}
                 </Descriptions.Item>
@@ -453,6 +617,14 @@ const Invoices = () => {
             >
               <Table
                 dataSource={invoiceDetails.detailedInvoices}
+                rowKey={(record) => {
+                  // First try to use existing IDs
+                  if (record.invoice_id && record.product_id) {
+                    return `${record.invoice_id}_${record.product_id}`;
+                  }
+                  // If either ID is missing, use generated ID
+                  return record.id || generateUniqueId();
+                }}
                 pagination={false}
                 columns={[
                   {
@@ -567,18 +739,6 @@ const Invoices = () => {
             </Card>
           </Col>
         </Row>
-
-        <style jsx>{`
-          .invoice-card {
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-          }
-          .invoice-card .ant-card-head {
-            background-color: #fafafa;
-          }
-          .ant-descriptions-item-label {
-            color: #666;
-          }
-        `}</style>
       </Modal>
     );
   };
@@ -590,6 +750,7 @@ const Invoices = () => {
       </Row>
       <Tabs defaultActiveKey="1" items={items} />
       {renderInvoiceDetails()}
+      {renderCancelModal()}
     </div>
   );
 };

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import com.shopethethao.dto.DetailedInvoicesDTO;
 import com.shopethethao.dto.InvoiceAllDTO;
 import com.shopethethao.dto.InvoiceListDTO;
 import com.shopethethao.dto.SizeDTO;
+import com.shopethethao.dto.UpdateStatusRequest;
 import com.shopethethao.modules.cancelReason.CancelReason;
 import com.shopethethao.modules.cancelReason.CancelReasonDAO;
 import com.shopethethao.modules.detailed_invoices.DetailedInvoicesDAO;
@@ -233,27 +235,36 @@ public class InvoiceAPI {
     }
 
     // ✅ API cập nhật trạng thái hóa đơn
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/status")
     public ResponseEntity<?> updateInvoiceStatus(
             @PathVariable Integer id,
-            @RequestParam InvoiceStatus status,
-            @RequestParam(required = false) Integer cancelReasonId) {
+            @RequestBody UpdateStatusRequest request) {
 
         try {
+            // Validate request
+            if (request.getStatus() == null) {
+                return ResponseEntity.badRequest().body("Status cannot be null");
+            }
+
             // 🚀 Tìm hóa đơn cần cập nhật
             Invoice invoice = invoiceDAO.findById(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + id));
 
             // 🚀 Cập nhật trạng thái
-            invoice.setStatus(status);
+            invoice.setStatus(request.getStatus());
+
+            // Set note if provided
+            if (request.getNote() != null && !request.getNote().trim().isEmpty()) {
+                invoice.setNote(request.getNote().trim());
+            }
 
             // Nếu trạng thái là "CANCELLED", cần có lý do hủy
-            if (status == InvoiceStatus.CANCELLED) {
-                if (cancelReasonId == null) {
+            if (request.getStatus() == InvoiceStatus.CANCELLED) {
+                if (request.getCancelReasonId() == null) {
                     return ResponseEntity.badRequest().body("Vui lòng cung cấp lý do hủy.");
                 }
-                CancelReason cancelReason = cancelReasonDAO.findById(cancelReasonId)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lý do hủy với ID: " + cancelReasonId));
+                CancelReason cancelReason = cancelReasonDAO.findById(request.getCancelReasonId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lý do hủy với ID: " + request.getCancelReasonId()));
                 invoice.setCancelReason(cancelReason);
             } else {
                 // Nếu không phải "CANCELLED", xóa lý do hủy nếu có
