@@ -35,7 +35,6 @@ import com.shopethethao.auth.OTP.util.AccountValidationUtil;
 import com.shopethethao.auth.OTP.util.EmailUtil;
 import com.shopethethao.auth.OTP.util.OtpUtil;
 import com.shopethethao.auth.models.SecurityERole;
-import com.shopethethao.auth.models.SecurityRole;
 import com.shopethethao.auth.payload.request.ChangePasswordRequest;
 import com.shopethethao.auth.payload.request.ForgotPassword;
 import com.shopethethao.auth.payload.request.LoginRequest;
@@ -44,11 +43,12 @@ import com.shopethethao.auth.payload.request.SignupRequest;
 import com.shopethethao.auth.payload.response.JwtResponseDTO;
 import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.auth.payload.response.TokenStore;
-import com.shopethethao.auth.repository.RoleRepository;
 import com.shopethethao.auth.security.jwt.JwtUtils;
 import com.shopethethao.auth.security.services.UserDetailsImpl;
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.account.AccountDAO;
+import com.shopethethao.modules.role.Role;
+import com.shopethethao.modules.role.RoleDAO;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
 
@@ -69,7 +69,7 @@ public class AuthController {
     AccountDAO accountDAO;
 
     @Autowired
-    RoleRepository roleRepository;
+    RoleDAO roleRepository;
 
     @Autowired
     private VerificationsDAO verificationDAO;
@@ -179,15 +179,15 @@ public class AuthController {
 
         // ✅ Xử lý vai trò (ROLE)
         Set<String> strRoles = signUpRequest.getRole();
-        Set<SecurityRole> roles = new HashSet<>();
+        Set<Role> roles = new HashSet<>();
         if (strRoles == null) {
-            SecurityRole userRole = roleRepository.findByName(SecurityERole.USER)
+            Role userRole = roleRepository.findByName(SecurityERole.USER)
                     .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò"));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 SecurityERole roleEnum = SecurityERole.fromString(role);
-                SecurityRole securityRole = roleRepository.findByName(roleEnum)
+                Role securityRole = roleRepository.findByName(roleEnum)
                         .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò - " + role));
                 roles.add(securityRole);
             });

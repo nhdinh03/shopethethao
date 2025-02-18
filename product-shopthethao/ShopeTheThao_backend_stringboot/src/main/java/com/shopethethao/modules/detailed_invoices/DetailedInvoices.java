@@ -33,12 +33,12 @@ public class DetailedInvoices {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "invoice_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "fk_detailed_invoice_invoice"))
+    @JoinColumn(name = "invoice_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "FK_DetailedInvoices_Invoice_New"))
     @JsonBackReference
     private Invoice invoice;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "fk_detailed_invoice_product"))
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "FK_DetailedInvoices_Product_New"))
     private Product product;
 
     @Column(name = "quantity", nullable = false)

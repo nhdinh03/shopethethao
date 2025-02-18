@@ -28,16 +28,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.auth.models.SecurityERole;
-import com.shopethethao.auth.models.SecurityRole;
 import com.shopethethao.auth.payload.request.AccountsUser;
 import com.shopethethao.auth.payload.response.MessageResponse;
-import com.shopethethao.auth.repository.RoleRepository;
 import com.shopethethao.dto.AccountServiceDTO;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.account.AccountDAO;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
+import com.shopethethao.modules.role.Role;
+import com.shopethethao.modules.role.RoleDAO;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
 
@@ -61,11 +61,10 @@ public class AccountStaff {
     private VerificationsDAO verificationDAO;
 
     @Autowired
-    private RoleRepository roleRepository;
+    private RoleDAO roleDAO;
 
     @Autowired
     private PasswordEncoder encoder;
-
 
     // ✅ Lấy danh sách tài khoản có phân trang
     @GetMapping
@@ -76,7 +75,7 @@ public class AccountStaff {
         try {
             int page = pageNo.orElse(1);
             int pageSize = limit.orElse(10);
-            
+
             // Convert role name to SecurityERole
             SecurityERole roleEnum;
             try {
@@ -85,29 +84,28 @@ public class AccountStaff {
                 return ResponseEntity.badRequest()
                         .body(new MessageResponse("Invalid role name: " + roleName));
             }
-            
+
             // Get the role
-            SecurityRole role = roleRepository.findByName(roleEnum)
+            Role role = roleDAO.findByName(roleEnum)
                     .orElseThrow(() -> new RuntimeException("Error: Role " + roleName + " not found"));
-            
+
             // Sort by multiple fields in descending order
             Sort sort = Sort.by(
-                Sort.Order.desc("createdDate"),
-                Sort.Order.desc("id")
-            );
-            
+                    Sort.Order.desc("createdDate"),
+                    Sort.Order.desc("id"));
+
             Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
-            
+
             // Find accounts with specified role
             Page<Account> accountPage = accountDao.findByRoles(role, pageable);
             List<Account> accounts = accountPage.getContent();
             long totalItems = accountPage.getTotalElements();
-            
+
             ResponseDTO<Account> responseDTO = new ResponseDTO<>();
             responseDTO.setData(accounts);
             responseDTO.setTotalItems(totalItems);
             responseDTO.setTotalPages(accountPage.getTotalPages());
-    
+
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -126,7 +124,8 @@ public class AccountStaff {
                     || accountDao.existsByPhone(accountsUser.getPhone());
 
             if (exists) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Thông tin nhân viên đã tồn tại trong hệ thống!"));
+                return ResponseEntity.badRequest()
+                        .body(new MessageResponse("Thông tin nhân viên đã tồn tại trong hệ thống!"));
             }
 
             // ✅ Tạo tài khoản mới
@@ -155,11 +154,11 @@ public class AccountStaff {
 
             // ✅ Xử lý vai trò (ROLE)
             Set<String> strRoles = accountsUser.getRole();
-            Set<SecurityRole> roles = new HashSet<>();
+            Set<Role> roles = new HashSet<>();
 
             // Nếu không có vai trò nào, gán vai trò mặc định là "STAFF"
             if (strRoles == null || strRoles.isEmpty()) {
-                SecurityRole staffRole = roleRepository.findByName(SecurityERole.STAFF)
+                Role staffRole = roleDAO.findByName(SecurityERole.STAFF)
                         .orElseThrow(() -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò STAFF"));
                 roles.add(staffRole);
             } else {
@@ -168,10 +167,10 @@ public class AccountStaff {
                     try {
                         // Chuyển đổi từ String role sang SecurityERole enum
                         SecurityERole roleEnum = SecurityERole.fromString(role); // Chuyển đổi role string sang enum
-                        SecurityRole securityRole = roleRepository.findByName(roleEnum)
+                        Role roleFromDB = roleDAO.findByName(roleEnum)
                                 .orElseThrow(
                                         () -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò - " + role));
-                        roles.add(securityRole);
+                        roles.add(roleFromDB);
                     } catch (IllegalArgumentException e) {
                         // Nếu không tìm thấy vai trò, trả về lỗi
                         return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: " + e.getMessage()));

@@ -8,10 +8,10 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.shopethethao.auth.models.Gender;
-import com.shopethethao.auth.models.SecurityRole;
 import com.shopethethao.modules.accountRole.AccountRole;
 import com.shopethethao.modules.comments.Comment;
 import com.shopethethao.modules.lock_reasons.LockReasons;
+import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.verification.Verifications;
 
 import jakarta.persistence.CascadeType;
@@ -95,7 +95,7 @@ public class Account {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "Accounts_Roles", joinColumns = @JoinColumn(name = "account_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<SecurityRole> roles = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

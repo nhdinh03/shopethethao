@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.ForeignKey;
 import lombok.Data;
 
 @Entity
@@ -26,7 +27,8 @@ public class ProductImages {
     private String imageUrl;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false,
+                foreignKey = @ForeignKey(name = "FK_ProductImages_Product"))
     @JsonBackReference
     private Product product;
 }

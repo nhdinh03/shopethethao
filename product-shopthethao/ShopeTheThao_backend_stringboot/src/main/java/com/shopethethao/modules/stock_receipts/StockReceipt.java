@@ -11,6 +11,7 @@ import com.shopethethao.modules.suppliers.Supplier;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,19 +32,22 @@ public class StockReceipt {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "supplier_id", nullable = false)
+    @JoinColumn(
+        name = "supplier_id",
+        foreignKey = @ForeignKey(name = "FK_StockReceipts_Supplier_Custom")
+    )
     private Supplier supplier;
 
     @ManyToOne
-    @JoinColumn(name = "brand_id", nullable = false)
+    @JoinColumn(name = "brand_id", foreignKey = @ForeignKey(name = "FK_StockReceipts_Brand"))
     private Brand brand;
 
-    @JsonFormat(pattern = "yyyy-MM-dd") 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Temporal(TemporalType.DATE)
     private LocalDate orderDate;
 
     @OneToMany(mappedBy = "stockReceipt", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference 
+    @JsonManagedReference
     private List<ReceiptProduct> receiptProducts;
 
 }

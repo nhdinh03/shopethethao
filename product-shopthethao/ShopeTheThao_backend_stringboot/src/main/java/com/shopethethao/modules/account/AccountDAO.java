@@ -4,13 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.shopethethao.auth.models.SecurityRole;
+import com.shopethethao.modules.role.Role;
 
 import jakarta.transaction.Transactional;
 
@@ -43,7 +44,7 @@ public interface AccountDAO extends JpaRepository<Account, String> {
     void deleteById(@Param("id") String id);
 
     @Query("SELECT a FROM Account a JOIN a.roles r WHERE r = :role")
-    Page<Account> findByRoles(@Param("role") SecurityRole role, org.springframework.data.domain.Pageable pageable);
+    Page<Account> findByRoles(@Param("role") Role role, Pageable pageable);
 
     // jwt
 

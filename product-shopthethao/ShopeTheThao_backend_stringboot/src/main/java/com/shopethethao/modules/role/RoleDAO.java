@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.shopethethao.auth.models.SecurityERole;
 
 public interface RoleDAO extends JpaRepository<Role, Long> {
-    boolean existsByName(String name);
-    List<Role> findAllByOrderByIdDesc();
+    Optional<Role> findByName(SecurityERole name);
 
-    Optional<Role> findByName(String name);
+    boolean existsByName(SecurityERole name);
+
+    List<Role> findAllByOrderByIdDesc();
 }

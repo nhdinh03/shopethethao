@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.ForeignKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,12 +36,13 @@ public class ProductSize {
     private Integer price;
 
     @ManyToOne
-    @JoinColumn(name = "size_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "size_id", referencedColumnName = "id", nullable = false, 
+                foreignKey = @ForeignKey(name = "FK_ProductSizes_Size"))
     private Size size;
 
-   
     @ManyToOne
     @JsonBackReference
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false,
+                foreignKey = @ForeignKey(name = "FK_ProductSizes_Product"))
     private Product product;
 }

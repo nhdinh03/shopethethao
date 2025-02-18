@@ -15,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import jakarta.persistence.ForeignKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,13 +32,13 @@ public class ReceiptProduct {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("receiptId")
-    @JoinColumn(name = "receipt_id", referencedColumnName = "id")
+    @JoinColumn(name = "receipt_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_ReceiptProducts_Receipt_V2"))
     @JsonBackReference // Tránh vòng lặp khi serialize
     private StockReceipt stockReceipt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("productId")
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(name = "product_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_ReceiptProducts_Product_V2"))
     @JsonIgnore // Tránh serialize proxy Hibernate
     private Product product;
 

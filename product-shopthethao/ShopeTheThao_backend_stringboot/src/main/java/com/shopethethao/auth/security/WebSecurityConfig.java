@@ -63,8 +63,15 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/**","/api/accounts/**", "/api/auth/regenerate-otp/**", "/users/me/**", "/api/upload/**",
-                            "/api/productimages/**", "/api/lockreasons/**", "/api/cancelreason/**").permitAll();
+                    auth.requestMatchers("/api/**", "/api/accounts/**", "/api/auth/**", "/api/auth/regenerate-otp/**",
+                            "/users/me/**", "/api/upload/**",
+                            "/api/productimages/**", "/api/lockreasons/**", "/api/cancelreason/**",
+                            "/api/accountRole/**", "/api/accountStaff/**", "/api/brands/**", "/api/cancel-reason/**",
+                            "/api/categories/**", "/api/comment/**", "/api/detailedInvoices/**", "/api/invoice/**",
+                            "/api/productattributemappings/**", "/api/productattributes/**", "/api/products/**",
+                            "/api/productsizes/**", "/api/receiptproduct/**", "/api/role/**", "/api/size/**",
+                            "/api/stockReceipts/**", "/api/suppliers/**", "/api/userHistories/**",
+                            "/api/verifications/**").permitAll();
 
                     auth.requestMatchers("/test/test/**").permitAll();
                     auth.anyRequest().authenticated();

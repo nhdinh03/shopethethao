@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.shopethethao.auth.models.SecurityERole;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.dto.RoleValidationException;
 
@@ -70,13 +71,14 @@ public class RoleAPI {
             throw new RoleValidationException("Role không được để trống");
         }
 
-        String name = role.getName();
-        if (name == null || name.trim().isEmpty()) {
+        if (role.getName() == null) {
             throw new RoleValidationException("Tên role không được để trống");
         }
 
-        if (!name.matches("^(ADMIN|USER|MANAGER|SUPPLIER|STAFF)$")) {
-            throw new RoleValidationException("Vai trò phải là một trong: ADMIN, USER, MANAGER, SUPPLIER, STAFF");
+        // Validate against allowed values
+        if (!SecurityERole.getAllowedValues().contains(role.getName().name())) {
+            throw new RoleValidationException("Vai trò phải là một trong: " + 
+                String.join(", ", SecurityERole.getAllowedValues()));
         }
 
         String description = role.getDescription();
@@ -113,7 +115,6 @@ public class RoleAPI {
             Role existingRole = roleDAO.findById(id)
                 .orElseThrow(() -> new RoleValidationException("Vai trò không tồn tại!"));
 
-            // Fix Optional handling
             Optional<Role> duplicateRoleOpt = roleDAO.findByName(role.getName());
             if (duplicateRoleOpt.isPresent()) {
                 Role duplicateRole = duplicateRoleOpt.get();

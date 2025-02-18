@@ -17,9 +17,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
   @Override
   @Transactional
-  public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
-    Account account = accountDAO.findById(id)
-        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng có Id: " + id));
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    Account account = accountDAO.findById(username)
+        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng có Id: " + username));
 
     return UserDetailsImpl.build(account);
   }

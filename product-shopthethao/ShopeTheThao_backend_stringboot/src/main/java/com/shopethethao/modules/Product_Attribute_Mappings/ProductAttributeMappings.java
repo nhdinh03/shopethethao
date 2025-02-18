@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.ForeignKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,11 +31,11 @@ public class ProductAttributeMappings {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", nullable = false, foreignKey = @ForeignKey(name = "FK_ProductAttributes_Product_New"))
     @JsonBackReference // ✅ Đánh dấu đây là phía "con"
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "attribute_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "attribute_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "FK_ProductAttributes_Attribute_New"))
     private ProductAttributes attribute;
 }

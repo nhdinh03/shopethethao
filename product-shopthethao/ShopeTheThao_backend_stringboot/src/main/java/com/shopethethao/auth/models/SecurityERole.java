@@ -1,5 +1,9 @@
 package com.shopethethao.auth.models;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public enum SecurityERole {
     ADMIN,
     USER,
@@ -8,11 +12,16 @@ public enum SecurityERole {
     STAFF;
 
     public static SecurityERole fromString(String role) {
-        for (SecurityERole securityRole : SecurityERole.values()) {
-            if (securityRole.name().equalsIgnoreCase(role)) {
-                return securityRole;
-            }
+        try {
+            return SecurityERole.valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Role không hợp lệ: " + role);
         }
-        throw new IllegalArgumentException("Không tìm thấy vai trò với tên: " + role);
+    }
+
+    public static List<String> getAllowedValues() {
+        return Arrays.stream(SecurityERole.values())
+                    .map(Enum::name)
+                    .collect(Collectors.toList());
     }
 }

@@ -54,14 +54,14 @@ public class Invoice {
     private BigDecimal totalAmount;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "cancel_reason_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_invoice_cancel_reason"), nullable = true)
+    @JoinColumn(name = "cancel_reason_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_Invoices_CancelReason"), nullable = true)
     private CancelReason cancelReason;
     
-        @OneToMany(mappedBy = "invoice", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "invoice", fetch = FetchType.LAZY)
     private List<DetailedInvoices> detailedInvoices;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "fk_invoice_user"))
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "FK_Invoices_User"))
     private Account user;
 
     @PrePersist
