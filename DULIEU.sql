@@ -1,174 +1,266 @@
-﻿INSERT INTO Roles
-    (name, description)
-VALUES
-    (N'ADMIN', N'Quản trị viên hệ thống'),
-    (N'USER', N'Khách hàng mua sản phẩm'),
-    (N'STAFF', N'Người bán hàng');
+﻿-- Thêm dữ liệu mẫu cho Accounts
+INSERT INTO Accounts (id, phone, fullname, email, password, birthday, gender) VALUES
+(N'U1', N'0123450001', N'Nguyễn Văn A', N'user1@mail.com', N'pass1', '1990-01-01', 'M'),
+(N'U2', N'0123450002', N'Trần Thị B', N'user2@mail.com', N'pass2', '1991-02-02', 'F'),
+(N'U3', N'0123450003', N'Lê Văn C', N'user3@mail.com', N'pass3', '1992-03-03', 'M'),
+(N'U4', N'0123450004', N'Phạm Thị D', N'user4@mail.com', N'pass4', '1993-04-04', 'F'),
+(N'U5', N'0123450005', N'Hoàng Văn E', N'user5@mail.com', N'pass5', '1994-05-05', 'O'),
+(N'U6', N'0123450006', N'Nguyễn Thị F', N'user6@mail.com', N'pass6', '1995-06-06', 'M'),
+(N'U7', N'0123450007', N'Trần Văn G', N'user7@mail.com', N'pass7', '1996-07-07', 'F'),
+(N'U8', N'0123450008', N'Lê Thị H', N'user8@mail.com', N'pass8', '1997-08-08', 'M'),
+(N'U9', N'0123450009', N'Phạm Văn I', N'user9@mail.com', N'pass9', '1998-09-09', 'O'),
+(N'U10', N'0123450010', N'Hoàng Thị K', N'user10@mail.com', N'pass10', '1999-10-10', 'M');
 
-INSERT INTO Accounts
-    (id, phone, fullname, image, email, address, password, birthday, gender, status, verified, created_date, points)
-VALUES
-    (N'U001', N'0987654321', N'Nguyễn Văn A', NULL, N'nguyenvana@example.com', N'123 Đường ABC, TP.HCM', N'hashed_password1', '1990-05-15', 1, 1, 1, GETDATE(), 100),
-    (N'U002', N'0977123456', N'Trần Thị B', NULL, N'tranthib@example.com', N'456 Đường XYZ, Hà Nội', N'hashed_password2', '1985-08-22', 0, 1, 1, GETDATE(), 200),
-    (N'U003', N'0966789123', N'Lê Văn C', NULL, N'levanc@example.com', N'789 Đường DEF, Đà Nẵng', N'hashed_password3', '1995-07-30', 1, 1, 1, GETDATE(), 150),
-    (N'U004', N'0952345678', N'Phạm Thị D', NULL, N'phamthid@example.com', N'321 Đường GHI, Hải Phòng', N'hashed_password4', '2000-12-10', 0, 1, 1, GETDATE(), 180),
-    (N'U005', N'0941234567', N'Đỗ Minh E', NULL, N'dohmine@example.com', N'654 Đường JKL, Cần Thơ', N'hashed_password5', '1992-03-25', 1, 1, 1, GETDATE(), 250);
+-- Thêm dữ liệu mẫu cho Roles
+INSERT INTO Roles (name, description) VALUES
+(N'Admin', N'Quản trị viên'),
+(N'User', N'Người dùng thông thường'),
+(N'Seller', N'Người bán hàng'),
+(N'Customer', N'Khách hàng'),
+(N'Manager', N'Quản lý'),
+(N'Staff', N'Nhân viên'),
+(N'Guest', N'Khách vãng lai'),
+(N'VIP', N'Khách hàng VIP'),
+(N'Support', N'Hỗ trợ khách hàng'),
+(N'Marketing', N'Tiếp thị');
 
-INSERT INTO Accounts_Roles
-    (account_id, role_id)
-VALUES
-    (N'U001', 1),
-    (N'U002', 2),
-    (N'U003', 3),
-    (N'U004', 4),
-    (N'U005', 5);
+-- Thêm dữ liệu mẫu cho Accounts_Roles
+INSERT INTO Accounts_Roles (account_id, role_id) VALUES
+(N'U1', 1),
+(N'U2', 2),
+(N'U3', 3),
+(N'U4', 4),
+(N'U5', 5),
+(N'U6', 6),
+(N'U7', 7),
+(N'U8', 8),
+(N'U9', 9),
+(N'U10', 10);
 
-INSERT INTO Categories
-    (name, description)
-VALUES
-    (N'Giày thể thao', N'Các loại giày thể thao chuyên dụng'),
-    (N'Quần áo thể thao', N'Các loại quần áo dành cho thể thao'),
-    (N'Dụng cụ thể thao', N'Dụng cụ tập luyện thể thao'),
-    (N'Phụ kiện thể thao', N'Các loại phụ kiện hỗ trợ thể thao'),
-    (N'Thiết bị điện tử thể thao', N'Thiết bị thông minh hỗ trợ thể thao');
+-- Thêm dữ liệu mẫu cho Verification
+INSERT INTO Verification (account_id, code, expires_at) VALUES
+(N'U1', N'CODE01', DATEADD(DAY, 14, GETDATE())),
+(N'U2', N'CODE02', DATEADD(DAY, 14, GETDATE())),
+(N'U3', N'CODE03', DATEADD(DAY, 14, GETDATE())),
+(N'U4', N'CODE04', DATEADD(DAY, 14, GETDATE())),
+(N'U5', N'CODE05', DATEADD(DAY, 14, GETDATE())),
+(N'U6', N'CODE06', DATEADD(DAY, 14, GETDATE())),
+(N'U7', N'CODE07', DATEADD(DAY, 14, GETDATE())),
+(N'U8', N'CODE08', DATEADD(DAY, 14, GETDATE())),
+(N'U9', N'CODE09', DATEADD(DAY, 14, GETDATE())),
+(N'U10', N'CODE10', DATEADD(DAY, 14, GETDATE()));
 
-INSERT INTO Products
-    (name, quantity, price, description, status, image1, image2, category_id)
-VALUES
-    (N'Giày chạy bộ Nike Air Zoom', 50, 2500000, N'Giày chạy bộ chuyên nghiệp Nike Air Zoom', 1, NULL, NULL, 1),
-    (N'Áo thể thao Adidas', 100, 800000, N'Áo thể thao thoáng khí Adidas', 1, NULL, NULL, 2),
-    (N'Dây nhảy thể dục', 200, 150000, N'Dây nhảy thể dục cao cấp', 1, NULL, NULL, 3),
-    (N'Balo thể thao Puma', 75, 1200000, N'Balo thể thao đa năng Puma', 1, NULL, NULL, 4),
-    (N'Đồng hồ Garmin Forerunner', 30, 6000000, N'Đồng hồ thông minh hỗ trợ thể thao Garmin', 1, NULL, NULL, 5);
+-- Thêm dữ liệu mẫu cho Categories
+INSERT INTO Categories (name, description) VALUES
+(N'Giày thể thao', N'Các loại giày dành cho hoạt động thể thao'),
+(N'Áo thể thao', N'Áo dành cho hoạt động thể thao'),
+(N'Quần thể thao', N'Quần dành cho hoạt động thể thao'),
+(N'Phụ kiện', N'Các phụ kiện thể thao'),
+(N'Dụng cụ thể thao', N'Dụng cụ hỗ trợ tập luyện thể thao'),
+(N'Balo thể thao', N'Balo và túi xách thể thao'),
+(N'Đồng hồ thể thao', N'Đồng hồ dành cho hoạt động thể thao'),
+(N'Kính thể thao', N'Kính bảo hộ và kính mát thể thao'),
+(N'Nón thể thao', N'Nón và mũ thể thao'),
+(N'Vớ thể thao', N'Vớ và tất thể thao');
+
+-- Thêm dữ liệu mẫu cho Products
+INSERT INTO Products (name, quantity, price, description, category_id) VALUES
+(N'Giày Nike Air Max', 100, 2500000, N'Giày thể thao Nike chính hãng', 1),
+(N'Áo Nike Dri-FIT', 150, 850000, N'Áo thể thao công nghệ Dri-FIT', 2),
+(N'Quần Adidas Runner', 120, 750000, N'Quần chạy bộ Adidas', 3),
+(N'Giày Adidas Ultra Boost', 80, 3200000, N'Giày chạy bộ Adidas', 1),
+(N'Áo Puma Sport', 200, 650000, N'Áo thể thao Puma', 2),
+(N'Balo thể thao Adidas', 50, 1200000, N'Balo thể thao Adidas', 6),
+(N'Đồng hồ Garmin', 30, 5000000, N'Đồng hồ thể thao Garmin', 7),
+(N'Kính Oakley', 40, 3000000, N'Kính thể thao Oakley', 8),
+(N'Nón Nike', 70, 450000, N'Nón thể thao Nike', 9),
+(N'Vớ Adidas', 90, 150000, N'Vớ thể thao Adidas', 10);
+
+-- Thêm dữ liệu mẫu cho Suppliers
+INSERT INTO Suppliers (name, phone_number, email, address) VALUES
+(N'Công ty TNHH Thể Thao Việt', '0901234570', 'thethao@gmail.com', N'Hà Nội'),
+(N'Công ty CP Thể Thao Sài Gòn', '0901234571', 'saigonsport@gmail.com', N'TP.HCM'),
+(N'Công ty TNHH Thể Thao Đà Nẵng', '0901234572', 'danangsport@gmail.com', N'Đà Nẵng'),
+(N'Công ty TNHH Thể Thao Cần Thơ', '0901234573', 'canthosport@gmail.com', N'Cần Thơ'),
+(N'Công ty TNHH Thể Thao Hải Phòng', '0901234574', 'haiphongsport@gmail.com', N'Hải Phòng'),
+(N'Công ty TNHH Thể Thao Huế', '0901234575', 'huesport@gmail.com', N'Huế'),
+(N'Công ty TNHH Thể Thao Nha Trang', '0901234576', 'nhatrangsport@gmail.com', N'Nha Trang'),
+(N'Công ty TNHH Thể Thao Vũng Tàu', '0901234577', 'vungtausport@gmail.com', N'Vũng Tàu'),
+(N'Công ty TNHH Thể Thao Bình Dương', '0901234578', 'binhduongsport@gmail.com', N'Bình Dương'),
+(N'Công ty TNHH Thể Thao Đồng Nai', '0901234579', 'dongnaisport@gmail.com', N'Đồng Nai');
+
+-- Thêm dữ liệu mẫu cho Brands
+INSERT INTO Brands (name, phone_number, email, address) VALUES
+('Nike', '0901234580', 'nike@nike.com', 'USA'),
+('Adidas', '0901234581', 'adidas@adidas.com', 'Germany'),
+('Puma', '0901234582', 'puma@puma.com', 'Germany'),
+('Under Armour', '0901234583', 'underarmour@ua.com', 'USA'),
+('Reebok', '0901234584', 'reebok@reebok.com', 'USA'),
+('New Balance', '0901234585', 'newbalance@nb.com', 'USA'),
+('Asics', '0901234586', 'asics@asics.com', 'Japan'),
+('Mizuno', '0901234587', 'mizuno@mizuno.com', 'Japan'),
+('Converse', '0901234588', 'converse@converse.com', 'USA'),
+('Vans', '0901234589', 'vans@vans.com', 'USA');
+
+-- Thêm dữ liệu mẫu cho Stock_Receipts
+INSERT INTO Stock_Receipts (supplier_id, brand_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8),
+(9, 9),
+(10, 10);
+
+
+
+-- Thêm dữ liệu mẫu cho Receipt_Products
+INSERT INTO Receipt_Products (receipt_id, product_id, quantity, price) VALUES
+(1, 1, 10, 2500000.00),
+(2, 2, 20, 850000.00),
+(3, 3, 30, 750000.00),
+(4, 4, 40, 3200000.00),
+(5, 5, 50, 650000.00),
+(6, 6, 60, 1200000.00),
+(7, 7, 70, 5000000.00),
+(8, 8, 80, 3000000.00),
+(9, 9, 90, 450000.00),
+(10, 10, 100, 150000.00);
+
+-- Thêm dữ liệu mẫu cho Product_Images
+INSERT INTO Product_Images (product_id, image_url) VALUES
+(1, N'https://example.com/img1.jpg'),
+(2, N'https://example.com/img2.jpg'),
+(3, N'https://example.com/img3.jpg'),
+(4, N'https://example.com/img4.jpg'),
+(5, N'https://example.com/img5.jpg'),
+(6, N'https://example.com/img6.jpg'),
+(7, N'https://example.com/img7.jpg'),
+(8, N'https://example.com/img8.jpg'),
+(9, N'https://example.com/img9.jpg'),
+(10, N'https://example.com/img10.jpg');
+
+-- Thêm dữ liệu mẫu cho Sizes
+INSERT INTO Sizes (name) VALUES 
+('S'),
+('M'),
+('L'),
+('XL'),
+('XXL'),
+('38'),
+('39'),
+('40'),
+('41'),
+('42');
+GO
+
+-- Thêm dữ liệu mẫu cho Product_Sizes
+INSERT INTO Product_Sizes (product_id, size_id, quantity, price) VALUES
+(1, 1, 10, 2500000),
+(2, 2, 20, 850000),
+(3, 3, 30, 750000),
+(4, 4, 40, 3200000),
+(5, 5, 50, 650000),
+(6, 6, 60, 1200000),
+(7, 7, 70, 5000000),
+(8, 8, 80, 3000000),
+(9, 9, 90, 450000),
+(10, 10, 100, 150000);
+
+-- Thêm dữ liệu mẫu cho Comments
+INSERT INTO Comments (content, user_id, product_id) VALUES
+(N'Sản phẩm rất tốt', N'U1', 1),
+(N'Chất lượng cao', N'U2', 2),
+(N'Đáng mua', N'U3', 3),
+(N'Giá hợp lý', N'U4', 4),
+(N'Tuyệt vời', N'U5', 5),
+(N'Rất hài lòng', N'U6', 6),
+(N'Sản phẩm đẹp', N'U7', 7),
+(N'Chất lượng tốt', N'U8', 8),
+(N'Giá cả phải chăng', N'U9', 9),
+(N'Sẽ mua lại', N'U10', 10);
+
+-- Thêm dữ liệu mẫu cho CancelReasons
+INSERT INTO cancel_reasons (reason) VALUES
+(N'Đổi ý không muốn mua'),
+(N'Đặt nhầm sản phẩm'),
+(N'Không hài lòng về chất lượng'),
+(N'Giá quá cao'),
+(N'Không cần thiết nữa'),
+(N'Phát hiện lỗi sản phẩm'),
+(N'Không đúng mô tả'),
+(N'Giao hàng chậm'),
+(N'Không liên lạc được với người bán'),
+(N'Lý do khác');
+
+-- Thêm dữ liệu mẫu cho Invoices
+INSERT INTO Invoices (address, user_id) VALUES
+(N'123 Đường ABC, Quận 1, TP.HCM', N'U1'),
+(N'456 Đường DEF, Quận 2, TP.HCM', N'U2'),
+(N'789 Đường GHI, Quận 3, TP.HCM', N'U3'),
+(N'101 Đường JKL, Quận 4, TP.HCM', N'U4'),
+(N'112 Đường MNO, Quận 5, TP.HCM', N'U5'),
+(N'131 Đường PQR, Quận 6, TP.HCM', N'U6'),
+(N'415 Đường STU, Quận 7, TP.HCM', N'U7'),
+(N'161 Đường VWX, Quận 8, TP.HCM', N'U8'),
+(N'718 Đường YZ, Quận 9, TP.HCM', N'U9'),
+(N'192 Đường ABC, Quận 10, TP.HCM', N'U10');
+
+
+-- Thêm dữ liệu mẫu cho Detailed_Invoices
+INSERT INTO Detailed_Invoices (invoice_id, product_id, size_id, quantity, unit_price, payment_method) VALUES
+(11, 1, 1, 2, 2500000.00 ,N'Tiền mặt'),
+(2, 2, 2, 2, 850000.00 ,N'Thẻ tín dụng'),
+(3, 3, 3, 3, 750000.00 ,N'Tiền mặt'),
+(4, 4, 4, 4, 3200000.00 ,N'Thẻ tín dụng'),
+(5, 5, 5, 5, 650000.00 ,N'Tiền mặt'),
+(6, 6, 6, 6, 1200000.00 ,N'Thẻ tín dụng'),
+(7, 7, 7, 7, 5000000.00 ,N'Tiền mặt'),
+(8, 8, 8, 8, 3000000.00 ,N'Thẻ tín dụng'),
+(9, 9, 9, 9, 450000.00 ,N'Tiền mặt'),
+(10, 10, 10, 10, 150000.00 ,N'Thẻ tín dụng');
 GO
 
 
 
--- Thêm các kích cỡ vào bảng Sizes
-INSERT INTO Sizes
-    (name)
-VALUES
-    ('S'),
-    ('M'),
-    ('L'),
-    ('XL'),
-    ('XXL');
-GO
+-- Thêm dữ liệu mẫu cho Product_Attributes
+INSERT INTO Product_Attributes (name) VALUES
+(N'Chống nước'),
+(N'Chống trượt'),
+(N'Chống sốc'),
+(N'Chống tia UV'),
+(N'Chống bám bụi'),
+(N'Chống mài mòn'),
+(N'Chống thấm'),
+(N'Chống nhiệt'),
+(N'Chống tĩnh điện'),
+(N'Chống cháy');
 
+-- Thêm dữ liệu mẫu cho Product_Attribute_Mappings
+INSERT INTO Product_Attribute_Mappings (product_id, attribute_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 6),
+(7, 7),
+(8, 8),
+(9, 9),
+(10, 10);
 
-
--- Thêm dữ liệu vào bảng Product_Sizes với khóa ngoại size_id
-INSERT INTO Product_Sizes
-    (product_id, size_id, quantity, price)
-VALUES
-    (1, (SELECT id
-        FROM Sizes
-        WHERE name = 'S'), 10, 100.00),
-    -- Giá 100 cho size S
-    (1, (SELECT id
-        FROM Sizes
-        WHERE name = 'M'), 15, 120.00),
-    -- Giá 120 cho size M
-    (1, (SELECT id
-        FROM Sizes
-        WHERE name = 'L'), 12, 130.00),
-    -- Giá 130 cho size L
-    (1, (SELECT id
-        FROM Sizes
-        WHERE name = 'XL'), 8, 140.00);  -- Giá 140 cho size XL
-GO
-
-
-
-INSERT INTO Brands
-    (name, phone_number, email, address)
-VALUES
-    (N'Nike', N'0912345678', N'contact@nike.com', N'USA'),
-    (N'Adidas', N'0923456789', N'contact@adidas.com', N'Germany'),
-    (N'Puma', N'0934567890', N'contact@puma.com', N'Germany'),
-    (N'Under Armour', N'0945678901', N'contact@underarmour.com', N'USA'),
-    (N'Garmin', N'0956789012', N'contact@garmin.com', N'USA');
-
-INSERT INTO Suppliers
-    (name, phone_number, email, address)
-VALUES
-    (N'Công ty TNHH ABC', N'0934567890', N'abc@suppliers.com', N'HCM, Việt Nam'),
-    (N'Công ty TNHH XYZ', N'0945678901', N'xyz@suppliers.com', N'Hà Nội, Việt Nam'),
-    (N'Công ty TNHH 123', N'0956789012', N'123@suppliers.com', N'Đà Nẵng, Việt Nam'),
-    (N'Công ty TNHH SportPro', N'0967890123', N'sportpro@suppliers.com', N'Hải Phòng, Việt Nam'),
-    (N'Công ty TNHH FitGear', N'0978901234', N'fitgear@suppliers.com', N'Cần Thơ, Việt Nam');
-
-INSERT INTO Stock_Receipts
-    (product_id, supplier_id, brand_id, quantity, price, order_date)
-VALUES
-    (1, 1, 1, 100, 2200000, GETDATE()),
-    (2, 2, 2, 200, 750000, GETDATE()),
-    (3, 3, 3, 150, 140000, GETDATE()),
-    (4, 4, 4, 120, 1100000, GETDATE()),
-    (5, 5, 5, 50, 5800000, GETDATE());
-
-INSERT INTO Distinctives
-    (name)
-VALUES
-    (N'Chống nước'),
-    (N'Bền bỉ'),
-    (N'Nhẹ và thoáng khí'),
-    (N'Hấp thụ sốc tốt'),
-    (N'Công nghệ mới nhất');
-
-INSERT INTO Invoices
-    (order_date, address, status, note, user_id)
-VALUES
-    (GETDATE(), N'789 Đường DEF, TP.HCM', N'Pending', N'Giao hàng nhanh', N'U001'),
-    (GETDATE(), N'101 Đường GHI, Hà Nội', N'Completed', N'Thanh toán qua ví điện tử', N'U002'),
-    (GETDATE(), N'222 Đường ABC, Đà Nẵng', N'Shipped', N'Miễn phí vận chuyển', N'U003'),
-    (GETDATE(), N'333 Đường XYZ, Hải Phòng', N'Processing', N'Đặt trước sản phẩm', N'U004'),
-    (GETDATE(), N'444 Đường MNP, Cần Thơ', N'Cancelled', N'Khách hủy đơn', N'U005');
-
-
-INSERT INTO Products_Distinctives
-    (product_id, distinctive_id)
-VALUES
-    (1, 1),
-    (1, 2),
-    (2, 3),
-    (3, 2),
-    (4, 5);
-
-INSERT INTO Detailed_Invoices
-    (invoice_id, product_id, quantity, payment_method)
-VALUES
-    (1, 1, 1, N'Chuyển khoản ngân hàng'),
-    (2, 2, 2, N'Thanh toán khi nhận hàng'),
-    (3, 3, 3, N'Ví điện tử Momo'),
-    (4, 4, 1, N'Thẻ tín dụng'),
-    (5, 5, 1, N'Tiền mặt');
-
-INSERT INTO Comments
-    (content, like_count, order_date, user_id, product_id)
-VALUES
-    (N'Giày chạy rất êm, đáng mua!', 10, GETDATE(), N'U001', 1),
-    (N'Áo thể thao đẹp, chất lượng tốt.', 5, GETDATE(), N'U002', 2),
-    (N'Dây nhảy rất bền, sợi chắc chắn.', 3, GETDATE(), N'U003', 3),
-    (N'Balo rất rộng, đựng được nhiều đồ.', 4, GETDATE(), N'U004', 4),
-    (N'Đồng hồ Garmin cực kỳ chính xác!', 8, GETDATE(), N'U005', 5);
-
-INSERT INTO Verification
-    (account_id, code, created_at, expires_at, active)
-VALUES
-    (N'U001', N'123456', GETDATE(), DATEADD(HOUR, 2, GETDATE()), 1),
-    (N'U002', N'654321', GETDATE(), DATEADD(HOUR, 2, GETDATE()), 1),
-    (N'U003', N'987654', GETDATE(), DATEADD(HOUR, 2, GETDATE()), 1),
-    (N'U004', N'135790', GETDATE(), DATEADD(HOUR, 2, GETDATE()), 1),
-    (N'U005', N'246802', GETDATE(), DATEADD(HOUR, 2, GETDATE()), 1);
-
-INSERT INTO User_Histories
-    (note, history_date, history_time, user_id)
-VALUES
-    (N'Đặt hàng thành công', GETDATE(), N'14:00', N'U001'),
-    (N'Đã nhận hàng', GETDATE(), N'15:30', N'U002'),
-    (N'Hủy đơn hàng', GETDATE(), N'16:00', N'U003'),
-    (N'Thêm sản phẩm vào giỏ hàng', GETDATE(), N'17:45', N'U004'),
-    (N'Đánh giá sản phẩm', GETDATE(), N'18:20', N'U005');
-
-
+-- Thêm dữ liệu mẫu cho User_Histories
+INSERT INTO User_Histories (note, user_id) VALUES
+(N'Mua hàng lần đầu', N'U1'),
+(N'Thêm sản phẩm vào giỏ hàng', N'U2'),
+(N'Đặt hàng thành công', N'U3'),
+(N'Hủy đơn hàng', N'U4'),
+(N'Đổi trả sản phẩm', N'U5'),
+(N'Nhận hàng thành công', N'U6'),
+(N'Viết đánh giá sản phẩm', N'U7'),
+(N'Liên hệ hỗ trợ', N'U8'),
+(N'Thêm địa chỉ mới', N'U9'),
+(N'Cập nhật thông tin cá nhân', N'U10');

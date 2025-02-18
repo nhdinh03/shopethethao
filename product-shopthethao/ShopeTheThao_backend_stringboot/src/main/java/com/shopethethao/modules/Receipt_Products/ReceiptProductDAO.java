@@ -1,4 +1,4 @@
-package com.shopethethao.modules.Receipt_Products;
+package com.shopethethao.modules.receipt_Products;
 
 import java.util.List;
 

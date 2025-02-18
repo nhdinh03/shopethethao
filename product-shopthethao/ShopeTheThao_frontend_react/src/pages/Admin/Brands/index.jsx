@@ -13,16 +13,20 @@ import {
   Select,
   Row,
 } from "antd";
-import { HomeOutlined, MailOutlined, PhoneOutlined, PlusOutlined, TagOutlined } from "@ant-design/icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-import PaginationComponent from "components/PaginationComponent";
+import {
+  HomeOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  PlusOutlined,
+  TagOutlined,
+} from "@ant-design/icons";
+
 import brandsApi from "api/Admin/Brands/Brands";
 import styles from "..//index.scss";
 
 import { Edit, Trash2, Search } from "lucide-react";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
-
+import { BrandsModal, BrandsPagination, BrandsTable } from "components/Admin";
 const Brands = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -148,102 +152,23 @@ const Brands = () => {
             Thêm Thương hiệu
           </Button>
         </div>
-        <Modal
-          title={
-            <div className={styles.modalTitle}>
-              {editBrand
-                ? "✏️ Cập nhật Thương hiệu"
-                : "➕ Thêm Thương hiệu mới"}
-            </div>
-          }
-          open={open}
-          onOk={handleModalOk}
-          onCancel={handleModalCancel}
-          centered
-          className={styles.modalWidth}
-        >
-          <Form form={form} layout="vertical">
-            {/* Tên Thương hiệu */}
-            <Form.Item
-              name="name"
-              label="Tên Thương hiệu"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên Thương hiệu!" },
-              ]}
-            >
-              <Input
-                prefix={<TagOutlined />}
-                placeholder="Nhập tên Thương hiệu"
-              />
-            </Form.Item>
-
-            {/* Số điện thoại */}
-            <Form.Item
-              name="phoneNumber"
-              label="Số điện thoại"
-              rules={[
-                { required: true, message: "Vui lòng nhập Số điện thoại!" },
-              ]}
-            >
-              <Input
-                prefix={<PhoneOutlined />}
-                placeholder="Nhập số điện thoại"
-              />
-            </Form.Item>
-
-            {/* Email */}
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[{ required: true, message: "Vui lòng nhập email!" }]}
-            >
-              <Input prefix={<MailOutlined />} placeholder="Nhập email" />
-            </Form.Item>
-
-            {/* Địa chỉ */}
-            <Form.Item
-              name="address"
-              label="Địa chỉ"
-              rules={[{ required: true, message: "Vui lòng nhập Địa chỉ!" }]}
-            >
-              <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
-            </Form.Item>
-          </Form>
-        </Modal>
       </Row>
-      <div className="table-container">
-        <Table
-          pagination={false}
-          columns={columns}
-          loading={loading}
-          scroll={{ x: "max-content" }}
-          dataSource={brands.map((brand) => ({ ...brand, key: brand.id }))}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: 10,
-            gap: 10,
-          }}
-        >
-          <PaginationComponent
-            totalPages={totalPages}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
-          <Select
-            value={pageSize}
-            style={{ width: 120, marginTop: 20 }}
-            onChange={handlePageSizeChange}
-          >
-            <Select.Option value={5}>5 hàng</Select.Option>
-            <Select.Option value={10}>10 hàng</Select.Option>
-            <Select.Option value={20}>20 hàng</Select.Option>
-            <Select.Option value={50}>50 hàng</Select.Option>
-          </Select>
-        </div>
-      </div>
+      <BrandsTable brands={brands} loading={loading} columns={columns} />
+
+      <BrandsModal
+        open={open}
+        editBrand={editBrand}
+        handleModalCancel={handleModalCancel}
+        handleModalOk={handleModalOk}
+        form={form}
+      />
+      <BrandsPagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        pageSize={pageSize}
+        handlePageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 };

@@ -1,165 +1,142 @@
-import React, { useEffect, useState } from "react";
-import { Table, message, Tag, Row, Select } from "antd";
-import verifications from "api/Admin/Verifications/verificationsApi";
+import React, { useState } from "react";
+import { Table, Row, Select, Card, Input, Col, Statistic, Space, DatePicker } from "antd";
+import { UserOutlined, CheckCircleOutlined, StopOutlined, SearchOutlined } from "@ant-design/icons";
+import { useVerificationsManagement } from "hooks/useVerificationsManagement";
 import PaginationComponent from "components/PaginationComponent";
-import "..//index.scss";
+
+import "../index.scss";
+import { TableColumns } from "components/Admin/Verification/TableColumns";
+
+
+
+const { RangePicker } = DatePicker;
 
 const Verifications = () => {
-  // const [workSomeThing, setWorkSomeThing] = useState(false);
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1; 
-  // Lấy dữ liệu với phân trang
-  useEffect(() => {
-    let isMounted = true;
-    const getList = async () => {
-      setLoading(true);
-      try {
-        const res = await verifications.getByPage(
-          currentPage,
-          pageSize,
-          searchText
-        );
-        if (isMounted) {
-          setData(res.data);
-          setTotalItems(res.totalItems);
-          setLoading(false);
-        }
-      } catch (error) {
-        message.error("Không thể lấy danh sách sản phẩm. Vui lòng thử lại!");
-        setLoading(false);
-      }
-    };
-    getList();
-    return () => {
-      isMounted = false;
-    };
-  }, [currentPage, pageSize, searchText]);
+  const [dateRange, setDateRange] = useState(null);
+  const [filterStatus, setFilterStatus] = useState("all");
 
-  const handlePageSizeChange = (value) => {
-    setPageSize(value);
-    setCurrentPage(1); // Reset page to 1 when page size changes
-  };
+  const {
+    data,
+    loading,
+    totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
+    setCurrentPage,
+    handlePageSizeChange
+  } = useVerificationsManagement();
 
-  const columns = [
-    { title: "🆔 ID", dataIndex: "id", key: "id" },
-    {
-      title: "📅 Thời gian ngày tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-    },
-    {
-      title: "⏳ Thời gian được xác minh",
-      dataIndex: "expiresAt",
-      key: "expiresAt",
-    },
-    {
-      title: "🔒 Trang Thái",
-      dataIndex: "account",
-      key: "status",
-      render: (account) => (
-        <Tag color={account.status === 1 ? "green" : "red"}>
-          {account.status === 1 ? "Hoạt động" : "Đã bị chặn"}
-        </Tag>
-      ),
-    },
-    {
-      title: "🧑‍💻 Thông tin tài khoản", 
-      key: "account",
-      render: (_, record) => {
-        const { account } = record;
-
-        // Hàm để làm mờ các thông tin nhạy cảm
-        const maskPhone = (phone) => {
-          return phone ? phone.replace(/(\d{3})\d{4}(\d{3})/, "$1****$2") : "";
-        };
-
-        const maskEmail = (email) => {
-          return email ? email.replace(/(^.{2})(.*?)(@.*)/, "$1****$3") : "";
-        };
-
-        const maskAddress = (address) => {
-          return address ? address.replace(/(.{5})(.*)/, "$1*****") : "";
-        };
-
-        return (
-          <div style={{ padding: 10 }}>
-            <Row>
-              <div>
-                <strong>Tên: </strong>
-                {account.fullname} <br />
-                <strong>Số điện thoại: </strong>
-                {maskPhone(account.phone)} <br />
-                <strong>Email: </strong>
-                {maskEmail(account.email)} <br />
-                <strong>Địa chỉ: </strong>
-                {maskAddress(account.address)} <br />
-                <strong>Ngày sinh: </strong>
-                {new Date(account.birthday).toLocaleDateString()} <br />
-                <strong>Điểm: </strong>
-                {account.points} <br />
-                <strong>Xác thực: </strong>
-                <Tag color={account.verified ? "blue" : "orange"}>
-                  {account.verified
-                    ? "Đã xác thực Tài khoản"
-                    : "Chưa xác thực Tài khoản"}
-                </Tag>
-              </div>
-            </Row>
-          </div>
-        );
-      },
-    },
-  ];
+  // Tính toán số liệu thống kê
+  const verifiedAccounts = data.filter(item => item.account.verified).length;
+  const blockedAccounts = data.filter(item => item.account.status === 0).length;
 
   return (
-    <div >
-      <Row>
-        <h2 className="H2_all">Thống Kê tài khoản
-        <p>Tổng số tài khoản hiện có: {totalItems}</p>
-        </h2>
-       
-        <br />
-        <br />
-        <br />
-        <br />
-        <div className="header-container"></div>
+    <div style={{ padding: "20px" }}>
+      {/* Thống kê tổng quan */}
+      <Row gutter={16} style={{ marginBottom: 24 }}>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Tổng số tài khoản"
+              value={totalItems}
+              prefix={<UserOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Đã xác thực"
+              value={verifiedAccounts}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#3f8600' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Chưa xác thực"
+              value={totalItems - verifiedAccounts}
+              prefix={<StopOutlined />}
+              valueStyle={{ color: '#cf1322' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Tài khoản bị chặn"
+              value={blockedAccounts}
+              prefix={<StopOutlined />}
+              valueStyle={{ color: '#cf1322' }}
+            />
+          </Card>
+        </Col>
       </Row>
-      <Table
-        pagination={false}
-        columns={columns}
-        loading={loading}
-        dataSource={data}
-        rowKey="id"
-      />
-      <div
-        style={{
+
+      {/* Bộ lọc và tìm kiếm */}
+      <Card style={{ marginBottom: 24 }}>
+        <Space size="large">
+          <Input
+            placeholder="Tìm kiếm theo tên/email/số điện thoại"
+            prefix={<SearchOutlined />}
+            style={{ width: 300 }}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <RangePicker
+            onChange={(dates) => setDateRange(dates)}
+            placeholder={["Từ ngày", "Đến ngày"]}
+          />
+          <Select
+            defaultValue="all"
+            style={{ width: 200 }}
+            onChange={(value) => setFilterStatus(value)}
+            options={[
+              { value: 'all', label: 'Tất cả trạng thái' },
+              { value: 'verified', label: 'Đã xác thực' },
+              { value: 'unverified', label: 'Chưa xác thực' },
+              { value: 'blocked', label: 'Đã bị chặn' },
+            ]}
+          />
+        </Space>
+      </Card>
+
+      {/* Bảng dữ liệu */}
+      <Card>
+        <Table
+          pagination={false}
+          columns={TableColumns()}
+          loading={loading}
+          dataSource={data}
+          rowKey="id"
+          scroll={{ x: 'max-content' }}
+        />
+
+        <div style={{
           display: "flex",
           justifyContent: "center",
-          marginTop: 10,
+          marginTop: 20,
           gap: 10,
-        }}
-      >
-        <PaginationComponent
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
-        <Select
-          value={pageSize}
-          style={{ width: 120, marginTop: 20 }}
-          onChange={handlePageSizeChange} // Reset to page 1 when page size changes
-        >
-          <Select.Option value={5}>5 hàng</Select.Option>
-          <Select.Option value={10}>10 hàng</Select.Option>
-          <Select.Option value={20}>20 hàng</Select.Option>
-          <Select.Option value={50}>50 hàng</Select.Option>
-        </Select>
-      </div>
+        }}>
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+          <Select
+            value={pageSize}
+            style={{ width: 120 }}
+            onChange={handlePageSizeChange}
+          >
+            <Select.Option value={5}>5 hàng</Select.Option>
+            <Select.Option value={10}>10 hàng</Select.Option>
+            <Select.Option value={20}>20 hàng</Select.Option>
+            <Select.Option value={50}>50 hàng</Select.Option>
+          </Select>
+        </div>
+      </Card>
     </div>
   );
 };

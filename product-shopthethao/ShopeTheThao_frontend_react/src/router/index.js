@@ -4,6 +4,12 @@ import * as PageUser from "..//pages/User";
 
 const publicRoutes = [
   { path: "/", component: PageUser.HomePage, layout: UserLayout },
+
+  {
+    path: "/login",
+    component: PageUser.Login,
+    layout: UserLayout,
+  },
   //   { path: "/contact", component: UserContact, layout: DefaultLayout },
 ];
 
@@ -103,7 +109,13 @@ const privateRoutes = [
     component: PageAdmin.Verification,
     layout: AdminLayout,
   },
-  
+
+
+  {
+    path: "/admin/charts",
+    component: PageAdmin.Charts,
+    layout: AdminLayout,
+  },
 ];
 
 export { publicRoutes, privateRoutes };

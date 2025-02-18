@@ -61,3 +61,29 @@
 .ant-table-cell {
   padding: 12px; /* Tăng khoảng cách trong các ô */
 }
+
+// Thêm styles cho drag and drop
+.row-dragging {
+  background: #fafafa;
+  border: 1px solid #ccc;
+  z-index: 100;
+
+  td {
+    padding: 16px;
+    visibility: hidden;
+  }
+
+  .drag-visible {
+    visibility: visible;
+  }
+}
+
+.row-dragging td {
+  background: #fafafa;
+  padding: 16px;
+  visibility: hidden;
+}
+
+.row-dragging .drag-visible {
+  visibility: visible;
+}

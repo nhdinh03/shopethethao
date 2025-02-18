@@ -1,4 +1,4 @@
-package com.shopethethao.modules.Size;
+package com.shopethethao.modules.size;
 
 
 
@@ -8,12 +8,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
-@Data
+
 @Entity
 @Table(name = "Sizes")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Size {
 
     @Id

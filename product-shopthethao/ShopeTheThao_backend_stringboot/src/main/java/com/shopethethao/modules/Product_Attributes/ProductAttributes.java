@@ -1,7 +1,7 @@
-package com.shopethethao.modules.Product_Attributes;
+package com.shopethethao.modules.product_Attributes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.shopethethao.modules.Product_Attribute_Mappings.ProductAttributeMappings;
+import com.shopethethao.modules.product_Attribute_Mappings.ProductAttributeMappings;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,12 +9,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
 
-
+@Entity
+@Table(name = "Product_Attributes")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "Product_Attributes")
+
 public class ProductAttributes {
 
     @Id

@@ -6,6 +6,7 @@ import com.shopethethao.modules.account.Account;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,11 +17,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "Verification")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "Verification")
+
 public class Verifications {
 
     @Id
@@ -44,7 +46,7 @@ public class Verifications {
     private Boolean active = true;
 
     @ManyToOne
-    @JoinColumn(name = "account_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "account_id", foreignKey = @ForeignKey(name = "FK_Verification_User"))
     private Account account;
 
 }

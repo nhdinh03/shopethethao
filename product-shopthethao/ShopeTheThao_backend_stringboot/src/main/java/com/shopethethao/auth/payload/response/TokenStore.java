@@ -22,7 +22,7 @@ public class TokenStore {
 
     // Lưu token mới với thời gian hết hạn mặc định (60 giây)
     public void saveNewToken(String userId, String token) {
-        Date expiryDate = new Date(System.currentTimeMillis() + 60 * 1000000000); // 60 giây test
+        Date expiryDate = new Date(System.currentTimeMillis() + 60 * 1000); 
         saveNewToken(userId, token, expiryDate);
     }
 

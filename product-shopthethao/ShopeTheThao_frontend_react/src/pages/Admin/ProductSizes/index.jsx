@@ -17,7 +17,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
 import Highlighter from "react-highlight-words";
 import "..//index.scss";
-import { BaseModal } from "components/Admin";
 import PaginationComponent from "components/PaginationComponent";
 import { productsSizeApi } from "api/Admin";
 
@@ -236,7 +235,7 @@ const ProductSizes = () => {
             Thêm kích thước
           </Button>
         </div>
-        <BaseModal
+        <Modal
           title={
             editingCategory ? "Cập nhật kích thước" : "Thêm kích thước mới"
           }
@@ -244,7 +243,7 @@ const ProductSizes = () => {
           footer={null}
           onCancel={handleCancel}
         >
-        </BaseModal>
+        </Modal>
       </Row>
       <div className="table-container">
         <Table

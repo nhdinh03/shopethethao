@@ -7,4 +7,9 @@ export { default as stock_ReceiptsAPi } from './Stock_Receipts/stock_ReceiptsApi
 export { default as suppliersApi } from './Suppliers/suppliersApi';
 export { default as rolesApi } from './Roles/rolesApi';
 export { default as accountsUserApi } from './AccountsUsers/accountsUserApi';
+export { default as accountsstaffApi } from './AccountsStaff/accountStaffApi';
 export { default as lockreasonsApi } from './LockReasons/lockreasonsApi';
+export { default as productattributesApi } from './Product_Attributes/productattributesApi';
+
+export { default as detailedInvoicesAPI } from './DetailedInvoices/detailedInvoicesAPI';
+export { default as invoicesApi } from './invoices/InvoicesApi';

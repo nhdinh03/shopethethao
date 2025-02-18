@@ -5,16 +5,17 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.shopethethao.modules.Product_Attribute_Mappings.ProductAttributeMappings;
-import com.shopethethao.modules.Product_Images.ProductImages;
-import com.shopethethao.modules.Receipt_Products.ReceiptProduct;
 import com.shopethethao.modules.categories.Categorie;
 import com.shopethethao.modules.productSizes.ProductSize;
+import com.shopethethao.modules.product_Attribute_Mappings.ProductAttributeMappings;
+import com.shopethethao.modules.product_Images.ProductImages;
+import com.shopethethao.modules.receipt_Products.ReceiptProduct;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -47,7 +48,8 @@ public class Product {
     private Boolean status;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    @JoinColumn(name = "category_id", nullable = false,referencedColumnName = "id" ,
+                foreignKey = @ForeignKey(name = "FK_Products_Category"))
     private Categorie categorie;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

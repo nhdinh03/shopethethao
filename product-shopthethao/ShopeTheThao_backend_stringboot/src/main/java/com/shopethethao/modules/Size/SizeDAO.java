@@ -1,4 +1,4 @@
-package com.shopethethao.modules.Size;
+package com.shopethethao.modules.size;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

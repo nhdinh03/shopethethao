@@ -1,0 +1,294 @@
+// Enhanced Variables
+$primary-color: #3498db;
+$secondary-color: #2c3e50;
+$success-color: #48bb78;
+$text-light: rgba(255, 255, 255, 0.7);
+$transition-base: all 0.3s ease;
+$border-radius: 0.5rem;
+$box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+
+// Enhanced Mixins
+@mixin flex-center($direction: row, $justify: center, $align: center) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+@mixin hover-lift($scale: 1.05, $y: -3px, $shadow: $box-shadow) {
+  transition: $transition-base;
+
+  &:hover {
+    transform: translateY($y) scale($scale);
+    box-shadow: $shadow;
+  }
+}
+
+// Footer Styles
+.footer {
+  background: linear-gradient(to right, #1a202c, #2d3748);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  .container {
+    margin: 0 auto;
+  }
+  // Services Section
+  &-services {
+    padding: 3rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+
+    .service-card {
+      @include flex-center(row, flex-start, center);
+      gap: 1rem;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: $border-radius;
+      transition: $transition-base;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        @include hover-lift;
+      }
+
+      .icon {
+        font-size: 1.5rem;
+        color: $primary-color;
+      }
+
+      .content {
+        h5 {
+          font-size: 1.1rem;
+          margin-bottom: 0.5rem;
+        }
+
+        p {
+          font-size: 0.9rem;
+          color: $text-light;
+        }
+      }
+    }
+  }
+
+  // Main Footer Content
+  &-main {
+    padding: 4rem 0;
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 3rem;
+    }
+
+    h4 {
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -0.5rem;
+        width: 50px;
+        height: 2px;
+        background: $primary-color;
+      }
+    }
+  }
+
+  // Newsletter Section
+  &-newsletter {
+    form {
+      margin-top: 1rem;
+
+      .newsletter-input {
+        position: relative;
+        margin-bottom: 1rem;
+
+        input {
+          width: 100%;
+          padding: 0.8rem 1rem;
+          border-radius: $border-radius;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          color: #fff;
+          transition: $transition-base;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+            box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+          }
+        }
+
+        .success-message {
+          position: absolute;
+          top: -1.5rem;
+          left: 0;
+          color: $success-color;
+          @include flex-center(row, flex-start, center);
+          gap: 0.5rem;
+        }
+      }
+
+      button {
+        width: 100%;
+        padding: 0.8rem;
+        background: $primary-color;
+        color: #fff;
+        border: none;
+        border-radius: $border-radius;
+        cursor: pointer;
+        transition: $transition-base;
+
+        &:hover {
+          background: darken($primary-color, 10%);
+        }
+      }
+    }
+  }
+
+  // Social Links
+  .social-links {
+    @include flex-center(row, flex-start, center);
+    gap: 1rem;
+    margin-top: 1.5rem;
+
+    .social-link {
+      width: 2.5rem;
+      height: 2.5rem;
+      @include flex-center;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      transition: $transition-base;
+
+      &:hover {
+        background: $primary-color;
+        @include hover-lift;
+      }
+    }
+  }
+
+  // Copyright Section
+  &-bottom {
+    padding: 1.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+    .copyright {
+      @include flex-center(row, space-between, center);
+      flex-wrap: wrap;
+      gap: 1rem;
+
+      p {
+        color: $text-light;
+      }
+
+      .footer-extra-links {
+        @include flex-center(row, flex-start, center);
+        gap: 2rem;
+
+        a {
+          color: $text-light;
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: $primary-color;
+          }
+        }
+      }
+    }
+  }
+
+  // Scroll to Top Button
+  .scroll-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 3rem;
+    height: 3rem;
+    background: $primary-color;
+    color: #fff;
+    border-radius: 50%;
+    @include flex-center;
+    cursor: pointer;
+    transition: $transition-base;
+    border: none;
+    box-shadow: $box-shadow;
+
+    &:hover {
+      background: darken($primary-color, 10%);
+      @include hover-lift;
+    }
+  }
+}
+
+// Responsive Design for Medium Screens (50% width)
+@media (max-width: 768px) {
+  .footer {
+    &-main {
+      padding: 2rem 0;
+
+      .footer-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+      }
+    }
+
+    &-bottom {
+      .copyright {
+        flex-direction: column;
+        text-align: center;
+
+        .footer-extra-links {
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+// Extra Small Screens (up to 375px)
+@media (max-width: 375px) {
+  .footer {
+    &-services {
+      padding: 2rem 0;
+
+      .services-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    &-main {
+      padding: 2rem 0;
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    &-bottom {
+      padding: 1rem 0;
+
+      .copyright {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+
+        .footer-extra-links {
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      }
+    }
+  }
+}

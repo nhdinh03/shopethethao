@@ -8,12 +8,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
-
+@Entity
+@Table(name = "Comments")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "Comments")
+
 public class Comment {
 
     @Id
@@ -31,10 +31,12 @@ public class Comment {
     private LocalDate createdAt;
     
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false,
+                foreignKey = @ForeignKey(name = "FK_Comments_User"))
     private Account account;
     
     @ManyToOne
-    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "product_id", referencedColumnName = "id", nullable = false,
+                foreignKey = @ForeignKey(name = "FK_Comments_Product"))
     private Product product;
 }

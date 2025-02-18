@@ -1,89 +1,54 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Table,
-  message,
   Button,
   Space,
   Modal,
   Form,
   Input,
-  Popconfirm,
-  Tooltip,
   Select,
   Row,
+  message,
 } from "antd";
 import {
   CheckOutlined,
   FileTextOutlined,
   PlusOutlined,
   RedoOutlined,
-  SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrashAlt, faEdit } from "@fortawesome/free-solid-svg-icons";
-
+import { useRolesManagement } from "hooks/useRolesManagement";
 import PaginationComponent from "components/PaginationComponent";
 import "..//index.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
-import { rolesApi } from "api/Admin";
 
 const Roles = () => {
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-
-  const [searchText, setSearchText] = useState("");
-  const [size, setSize] = useState([]);
   const [open, setOpen] = useState(false);
-  const [editSize, setEditSize] = useState(null);
-  const [workSomeThing, setWorkSomeThing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [editRole, setEditRole] = useState(null);
   const [form] = Form.useForm();
 
-  // Fetch product size data with pagination and search
-  useEffect(() => {
-    let isMounted = true;
-    const getList = async () => {
-      setLoading(true);
-      try {
-        const res = await rolesApi.getByPage(currentPage, pageSize, searchText);
-        if (isMounted) {
-          setSize(res.data);
-          setTotalItems(res.totalItems);
-          setLoading(false);
-        }
-      } catch (error) {
-        message.error("Không thể lấy danh sách sản phẩm. Vui lòng thử lại!");
-        setLoading(false);
-      }
-    };
-    getList();
-    return () => {
-      isMounted = false;
-    };
-  }, [currentPage, pageSize, searchText, workSomeThing]);
+  const {
+    roles,
+    loading,
+    totalPages,
+    currentPage,
+    pageSize,
+    setCurrentPage,
+    handlePageSizeChange,
+    createRole,
+    updateRole,
+    deleteRole
+  } = useRolesManagement();
 
-  const handleEditData = (category) => {
-    setEditSize(category);
-    form.setFieldsValue(category);
+  const handleEditData = (role) => {
+    setEditRole(role);
+    form.setFieldsValue(role);
     setOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await rolesApi.delete(id);
-      message.success("Xóa kích thước thành công!");
-      setWorkSomeThing([!workSomeThing]);
-    } catch (error) {
-      message.error("Không thể xóa kích thước!");
-    }
   };
 
   const handleResetForm = () => {
     form.resetFields();
-    setEditSize(null);
+    setEditRole(null);
   };
 
   const handleCancel = () => {
@@ -94,35 +59,26 @@ const Roles = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      if (editSize) {
-        await rolesApi.update(editSize.id, values);
-        message.success("Cập nhật kích thước thành công!");
-      } else {
-        const rolesData = {
-          ...values,
-        };
-        await rolesApi.create(rolesData);
-        message.success("Thêm kích thước thành công!");
+      const success = editRole 
+        ? await updateRole(editRole.id, values)
+        : await createRole(values);
+      
+      if (success) {
+        setOpen(false);
+        handleResetForm();
       }
-      setOpen(false);
-      form.resetFields();
-      setEditSize(null);
-      setWorkSomeThing([!workSomeThing]);
     } catch (error) {
-      message.error("Lỗi khi lưu kích thước!");
+      if (error.response?.data) {
+        message.error(error.response.data);
+      }
     }
-  };
-
-  const handlePageSizeChange = (value) => {
-    setPageSize(value);
-    setCurrentPage(1); // Reset page to 1 when page size changes
   };
 
   const columns = [
     { title: "🆔 Danh sách", dataIndex: "id", key: "id" },
     { title: "📏 Tên Vai trò", dataIndex: "name", key: "name" },
     { title: "📝 Mô tả vai trò", dataIndex: "description", key: "description" },
-    ActionColumn(handleEditData, handleDelete),
+    ActionColumn(handleEditData, deleteRole),
   ];
 
   return (
@@ -136,14 +92,14 @@ const Roles = () => {
             onClick={() => setOpen(true)}
             className="add-btn"
           >
-            Thêm kích thước
+            Thêm Vai trò mới
           </Button>
         </div>
 
         <Modal
           title={
             <>
-              {editSize ? "✏️ Cập nhật kích thước" : "➕ Thêm kích thước mới"}
+              {editRole ? "✏️ Cập nhật vai trò" : "➕ Thêm vai trò mới"}
             </>
           }
           open={open}
@@ -155,10 +111,20 @@ const Roles = () => {
               name="name"
               label="Tên Vai trò"
               rules={[
-                { required: true, message: "Vui lòng nhập Tên Vai trò!" },
+                { required: true, message: "Vui lòng chọn Vai trò!" },
+                {
+                  pattern: /^(ADMIN|USER|MANAGER|SUPPLIER|STAFF)$/,
+                  message: "Vai trò không hợp lệ!"
+                }
               ]}
             >
-              <Input prefix={<UserOutlined />} placeholder="Nhập Tên Vai trò" />
+              <Select placeholder="Chọn Vai trò">
+                <Select.Option value="ADMIN">ADMIN</Select.Option>
+                <Select.Option value="USER">USER</Select.Option>
+                <Select.Option value="MANAGER">MANAGER</Select.Option>
+                <Select.Option value="SUPPLIER">SUPPLIER</Select.Option>
+                <Select.Option value="STAFF">STAFF</Select.Option>
+              </Select>
             </Form.Item>
 
             {/* Trường Nhập Mô Tả Vai Trò */}
@@ -181,7 +147,7 @@ const Roles = () => {
                 width: "100%",
               }}
             >
-              {!editSize && (
+              {!editRole && (
                 <Button icon={<RedoOutlined />} onClick={handleResetForm}>
                   Làm mới
                 </Button>
@@ -191,7 +157,7 @@ const Roles = () => {
                 icon={<CheckOutlined />}
                 onClick={handleModalOk}
               >
-                {editSize ? "Cập nhật" : "Thêm mới"}
+                {editRole ? "Cập nhật" : "Thêm mới"}
               </Button>
             </Space>
           </Form>
@@ -203,9 +169,9 @@ const Roles = () => {
           columns={columns}
           loading={loading}
           scroll={{ x: "max-content" }}
-          dataSource={size.map((sizes) => ({
-            ...sizes,
-            key: sizes.id,
+          dataSource={roles.map((role) => ({
+            ...role,
+            key: role.id,
           }))}
         />
         <div

@@ -10,6 +10,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,19 +27,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
-
 import com.shopethethao.auth.models.SecurityERole;
-import com.shopethethao.auth.models.SecurityRole;
 import com.shopethethao.auth.payload.request.AccountsUser;
 import com.shopethethao.auth.payload.response.MessageResponse;
-import com.shopethethao.auth.repository.RoleRepository;
 import com.shopethethao.dto.AccountServiceDTO;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
+import com.shopethethao.modules.role.Role;
+import com.shopethethao.modules.role.RoleDAO;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
+
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
@@ -56,7 +59,7 @@ public class AccountAPI {
     private VerificationsDAO verificationDAO;
 
     @Autowired
-    private RoleRepository roleRepository;
+    private RoleDAO roleDAO;
 
     @Autowired
     private PasswordEncoder encoder;
@@ -73,29 +76,41 @@ public class AccountAPI {
     @GetMapping
     public ResponseEntity<?> getAllUsers(
             @RequestParam("page") Optional<Integer> pageNo,
-            @RequestParam("limit") Optional<Integer> limit) {
+            @RequestParam("limit") Optional<Integer> limit,
+            @RequestParam(value = "role", defaultValue = "USER") String roleName) {
         try {
             int page = pageNo.orElse(1);
             int pageSize = limit.orElse(10);
-
-            if (page <= 0) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Trang không hợp lệ");
-            }
-
-            int offset = (page - 1) * pageSize;
-            List<Account> accounts = accountDao.findAllUsersWithPagination(offset, pageSize);
-            long totalItems = accountDao.countAllUsers();
-
+            
+            // Convert role name to SecurityERole
+            SecurityERole roleEnum = SecurityERole.fromString(roleName);
+            
+            // Get the role
+            Role role = roleDAO.findByName(roleEnum)
+                    .orElseThrow(() -> new RuntimeException("Error: Role " + roleName + " không tìm thấy"));
+            
+            // Sort by multiple fields in descending order
+            Sort sort = Sort.by(
+                Sort.Order.desc("createdDate"),
+                Sort.Order.desc("id")
+            );
+            
+            Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
+            
+            // Find accounts with specified role
+            Page<Account> accountPage = accountDao.findByRoles(role, pageable);
+            List<Account> accounts = accountPage.getContent();
+            long totalItems = accountPage.getTotalElements();
+            
             ResponseDTO<Account> responseDTO = new ResponseDTO<>();
             responseDTO.setData(accounts);
             responseDTO.setTotalItems(totalItems);
-            responseDTO.setTotalPages((int) Math.ceil((double) totalItems / pageSize));
-
+            responseDTO.setTotalPages(accountPage.getTotalPages());
+    
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Server error, vui lòng thử lại sau!");
+                    .body(new MessageResponse("Server error: " + e.getMessage()));
         }
     }
 
@@ -139,11 +154,11 @@ public class AccountAPI {
 
             // ✅ Xử lý vai trò (ROLE)
             Set<String> strRoles = accountsUser.getRole();
-            Set<SecurityRole> roles = new HashSet<>();
+            Set<Role> roles = new HashSet<>();
 
             // Nếu không có vai trò nào, gán vai trò mặc định là "USER"
             if (strRoles == null || strRoles.isEmpty()) {
-                SecurityRole userRole = roleRepository.findByName(SecurityERole.USER)
+                Role userRole = roleDAO.findByName(SecurityERole.USER)
                         .orElseThrow(() -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò USER"));
                 roles.add(userRole); // Đảm bảo vai trò "USER" được gán khi không có vai trò nào được gửi
             } else {
@@ -152,10 +167,10 @@ public class AccountAPI {
                     try {
                         // Chuyển đổi từ String role sang SecurityERole enum
                         SecurityERole roleEnum = SecurityERole.fromString(role); // Chuyển đổi role string sang enum
-                        SecurityRole securityRole = roleRepository.findByName(roleEnum)
+                        Role roleFromDB = roleDAO.findByName(roleEnum)
                                 .orElseThrow(
                                         () -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò - " + role));
-                        roles.add(securityRole);
+                        roles.add(roleFromDB);
                     } catch (IllegalArgumentException e) {
                         // Nếu không tìm thấy vai trò, trả về lỗi
                         return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: " + e.getMessage()));

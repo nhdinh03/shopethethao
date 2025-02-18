@@ -1,4 +1,4 @@
-package com.shopethethao.modules.Product_Attributes;
+package com.shopethethao.modules.product_Attributes;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;

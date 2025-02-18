@@ -1,103 +1,64 @@
-/* Header Styles for Sport Shop */
+// Variables
+:root {
+  --header-height: 80px;
+  --header-mobile-height: 60px;
+  --color-primary: #1a1a1a;
+  --color-accent: #ff4400;
+  --color-text: #2c2c2c;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --dropdown-width: 200px;
+  --dropdown-bg: white;
+  --dropdown-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
 
 .header {
-    background-color: #1e3a8a;
-    color: white;
-    padding: 1rem 0;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  transition: var(--transition);
+
+  .top-bar {
+    background: linear-gradient(90deg, #f5f5f5, #ffffff);
+    padding: 8px max(20px, calc((100% - 1200px) / 2));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+    .brand-desc {
+      font-size: 14px;
+      color: var(--color-text);
     }
-  
-    .logo {
-      font-size: 1.8rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-  
-      span {
-        background-color: white;
-        color: #1e3a8a;
-        padding: 0.3rem 0.6rem;
-        border-radius: 5px;
-        margin-right: 5px;
-      }
-    }
-  
-    .search-bar {
-      display: flex;
-      align-items: center;
-      background-color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-  
-      input {
+
+    .auth-buttons {
+      button {
+        margin-left: 12px;
+        padding: 8px 16px;
         border: none;
-        outline: none;
-        margin-left: 8px;
-        font-size: 1rem;
-        width: 250px;
-      }
-    }
-  
-    .user-actions {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-  
-      .cart {
-        position: relative;
+        border-radius: 20px;
         cursor: pointer;
-  
-        .cart-count {
-          position: absolute;
-          top: -5px;
-          right: -10px;
-          background-color: red;
+        transition: var(--transition);
+
+        &.btn-login {
+          background: transparent;
+          color: var(--color-text);
+
+          &:hover {
+            background: rgba(0, 0, 0, 0.05);
+          }
+        }
+
+        &.btn-register {
+          background: var(--color-primary);
           color: white;
-          font-size: 0.8rem;
-          padding: 2px 6px;
-          border-radius: 50%;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          }
         }
-      }
-  
-      .user-icon {
-        cursor: pointer;
-      }
-    }
-  
-    .nav {
-      margin-top: 1rem;
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      font-weight: 600;
-  
-      a {
-        color: white;
-        text-decoration: none;
-        transition: color 0.3s;
-  
-        &:hover {
-          color: #a5b4fc;
-        }
-      }
-    }
-  
-    @media (max-width: 768px) {
-      .search-bar {
-        display: none;
-      }
-  
-      .nav {
-        flex-wrap: wrap;
-        gap: 1rem;
       }
     }
   }
-  
+}
