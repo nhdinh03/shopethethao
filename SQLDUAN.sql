@@ -124,7 +124,7 @@ CREATE TABLE Receipt_Products (
     product_id INT,
     quantity INT NOT NULL CHECK (quantity >= 0),
     price DECIMAL(15, 2) NOT NULL CHECK (price >= 0),
-    total_amount DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+    total_amount AS (quantity * price) PERSISTED,
     PRIMARY KEY (receipt_id, product_id),
     FOREIGN KEY (receipt_id) REFERENCES Stock_Receipts(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES Products(id) ON DELETE CASCADE,
@@ -181,9 +181,10 @@ CREATE TABLE Invoices (
     order_date DATETIME NOT NULL DEFAULT GETDATE(),
     address NVARCHAR(200),
     status NVARCHAR(50) NOT NULL DEFAULT 'PENDING',
-    note NVARCHAR(200),                    -- Changed from 'node' to 'note'
-    total_amount DECIMAL(18,2) NOT NULL DEFAULT 0.00,  -- Changed from 'totalAmount' to 'total_amount'
+    note NVARCHAR(200),
+    total_amount DECIMAL(18,2) NOT NULL DEFAULT 0.00,
     user_id NVARCHAR(100) NOT NULL,
+    cancel_reason_id INT, -- Add this column definition
     FOREIGN KEY (user_id) REFERENCES Accounts(id) ON DELETE CASCADE,
     FOREIGN KEY (cancel_reason_id) REFERENCES cancel_reasons(id) ON DELETE SET NULL,
     CONSTRAINT CHK_Invoice_Status CHECK (status IN ('PENDING', 'SHIPPING', 'DELIVERED', 'CANCELLED'))
@@ -191,11 +192,12 @@ CREATE TABLE Invoices (
 GO
 
 --ly do huy
-CREATE TABLE CancelReasons (
+
+CREATE TABLE cancel_reasons (
     id INT IDENTITY(1,1) PRIMARY KEY,
     reason NVARCHAR(255) NOT NULL UNIQUE
 );
-
+GO
 
 -- Recreate Detailed_Invoices table with correct column names
 CREATE TABLE Detailed_Invoices (

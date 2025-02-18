@@ -8,6 +8,7 @@ import {
   Input,
   Select,
   Row,
+  message,
 } from "antd";
 import {
   CheckOutlined,
@@ -67,7 +68,9 @@ const Roles = () => {
         handleResetForm();
       }
     } catch (error) {
-      // Form validation error will be handled by antd
+      if (error.response?.data) {
+        message.error(error.response.data);
+      }
     }
   };
 
@@ -89,14 +92,14 @@ const Roles = () => {
             onClick={() => setOpen(true)}
             className="add-btn"
           >
-            Thêm kích thước
+            Thêm Vai trò mới
           </Button>
         </div>
 
         <Modal
           title={
             <>
-              {editRole ? "✏️ Cập nhật kích thước" : "➕ Thêm kích thước mới"}
+              {editRole ? "✏️ Cập nhật vai trò" : "➕ Thêm vai trò mới"}
             </>
           }
           open={open}
@@ -108,10 +111,20 @@ const Roles = () => {
               name="name"
               label="Tên Vai trò"
               rules={[
-                { required: true, message: "Vui lòng nhập Tên Vai trò!" },
+                { required: true, message: "Vui lòng chọn Vai trò!" },
+                {
+                  pattern: /^(ADMIN|USER|MANAGER|SUPPLIER|STAFF)$/,
+                  message: "Vai trò không hợp lệ!"
+                }
               ]}
             >
-              <Input prefix={<UserOutlined />} placeholder="Nhập Tên Vai trò" />
+              <Select placeholder="Chọn Vai trò">
+                <Select.Option value="ADMIN">ADMIN</Select.Option>
+                <Select.Option value="USER">USER</Select.Option>
+                <Select.Option value="MANAGER">MANAGER</Select.Option>
+                <Select.Option value="SUPPLIER">SUPPLIER</Select.Option>
+                <Select.Option value="STAFF">STAFF</Select.Option>
+              </Select>
             </Form.Item>
 
             {/* Trường Nhập Mô Tả Vai Trò */}

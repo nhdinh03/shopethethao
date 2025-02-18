@@ -9,5 +9,5 @@ public interface RoleDAO extends JpaRepository<Role, Long> {
     boolean existsByName(String name);
     List<Role> findAllByOrderByIdDesc();
 
-        Optional<Role> findByName(String id);
+    Optional<Role> findByName(String name);
 }

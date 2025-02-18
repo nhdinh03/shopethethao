@@ -5,9 +5,7 @@ class AccountsUser extends BaseApi {
     super("accounts");
   }
 
-  // async signup(data) {
-  //   return this.post("Usersignup", data);
-  // }
+
 
 }
 

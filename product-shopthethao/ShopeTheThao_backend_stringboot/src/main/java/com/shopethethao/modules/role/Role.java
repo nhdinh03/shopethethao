@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,8 @@ public class Role {
     @Column(name = "id")
     private Long id;
 
+    @Pattern(regexp = "^(ADMIN|USER|MANAGER|SUPPLIER|STAFF)$", 
+            message = "Vai trò phải là một trong: ADMIN, USER, MANAGER, SUPPLIER, STAFF")
     @Column(name = "name", nullable = false, unique = true, length = 255)
     private String name;
 

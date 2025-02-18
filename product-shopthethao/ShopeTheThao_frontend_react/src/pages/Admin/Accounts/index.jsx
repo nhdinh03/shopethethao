@@ -1,15 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { message, Button, Form, Row, Select, Tag, Space, Tooltip, Popconfirm, Alert } from "antd";
-import { PlusOutlined, PhoneOutlined, EnvironmentOutlined, EditOutlined, DeleteOutlined, LockOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  message,
+  Button,
+  Form,
+  Row,
+  Select,
+  Tag,
+  Space,
+  Tooltip,
+  Popconfirm,
+  Alert,
+} from "antd";
+import {
+  PlusOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  LockOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 
 import PaginationComponent from "components/PaginationComponent";
-import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { accountsUserApi, lockreasonsApi } from "api/Admin";
 import "../index.scss";
 import uploadApi from "api/service/uploadApi";
 import dayjs from "dayjs";
 import { AccountModal, AccountTabs } from "components/Admin";
-
 
 const Accounts = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -17,7 +34,6 @@ const Accounts = () => {
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
-  const [searchText, setSearchText] = useState("");
   const [user, setUser] = useState([]);
   const [open, setOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
@@ -28,18 +44,14 @@ const Accounts = () => {
   const [FileList, setFileList] = useState([]);
   const [lockedUser, setLockedUser] = useState([]);
   const [statusChecked, setStatusChecked] = useState(editUser?.status === 1);
-
+  const [isStatusEditable, setIsStatusEditable] = useState(false);
   const [showLockReason, setShowLockReason] = useState(true);
   useEffect(() => {
     let isMounted = true;
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await accountsUserApi.getByPage(
-          currentPage,
-          pageSize,
-          searchText
-        );
+        const res = await accountsUserApi.getByPage(currentPage, pageSize);
 
         if (isMounted) {
           if (res.data && Array.isArray(res.data)) {
@@ -63,8 +75,7 @@ const Accounts = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, searchText, refresh, workSomeThing]);
-  const [isStatusEditable, setIsStatusEditable] = useState(false);
+  }, [currentPage, pageSize, refresh, workSomeThing]);
 
   const handleChange = async ({ fileList }) => {
     setFileList(fileList);
@@ -241,7 +252,7 @@ const Accounts = () => {
           dataIndex: "id",
           key: "id",
           width: 80,
-          className: "column-id"
+          className: "column-id",
         },
         {
           title: "Họ tên",
@@ -257,7 +268,9 @@ const Accounts = () => {
                     alt={text}
                   />
                 ) : (
-                  <div className="avatar-placeholder">{text?.[0]?.toUpperCase()}</div>
+                  <div className="avatar-placeholder">
+                    {text?.[0]?.toUpperCase()}
+                  </div>
                 )}
               </div>
               <div className="user-details">
@@ -265,9 +278,9 @@ const Accounts = () => {
                 <div className="email">{record.email}</div>
               </div>
             </div>
-          )
+          ),
         },
-      ]
+      ],
     },
     {
       title: "Thông tin liên hệ",
@@ -278,8 +291,10 @@ const Accounts = () => {
           key: "phone",
           width: 140,
           render: (phone) => (
-            <Tag icon={<PhoneOutlined />} color="blue">{phone}</Tag>
-          )
+            <Tag icon={<PhoneOutlined />} color="blue">
+              {phone}
+            </Tag>
+          ),
         },
         {
           title: "Địa chỉ",
@@ -292,9 +307,9 @@ const Accounts = () => {
                 <EnvironmentOutlined /> {address || "Chưa cập nhật"}
               </div>
             </Tooltip>
-          )
+          ),
         },
-      ]
+      ],
     },
     {
       title: "Thông tin chi tiết",
@@ -311,7 +326,7 @@ const Accounts = () => {
                 {record.status === 1 ? "Đang hoạt động" : "Tạm khóa"}
               </Tag>
             </Space>
-          )
+          ),
         },
         {
           title: "Vai trò",
@@ -330,13 +345,13 @@ const Accounts = () => {
                 <Tag color="default">Chưa có</Tag>
               )}
             </Space>
-          )
+          ),
         },
-      ]
+      ],
     },
     {
       title: "Hành động",
-      fixed: 'right',
+      fixed: "right",
       width: 120,
       render: (_, record) => (
         <Space size="middle" className="action-buttons">
@@ -352,17 +367,13 @@ const Accounts = () => {
             okText="Có"
             cancelText="Không"
           >
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-            />
+            <Button danger icon={<DeleteOutlined />} size="small" />
           </Popconfirm>
         </Space>
-      )
-    }
+      ),
+    },
   ];
-  
+
   const lockedColumns = [
     {
       title: "Thông tin người dùng",
@@ -381,9 +392,9 @@ const Accounts = () => {
               <div className="name">{text}</div>
               <div className="email">{record.email}</div>
             </div>
-          )
+          ),
         },
-      ]
+      ],
     },
     {
       title: "Thông tin khóa",
@@ -395,7 +406,7 @@ const Accounts = () => {
             <Tag icon={<LockOutlined />} color="red">
               Đã khóa
             </Tag>
-          )
+          ),
         },
         {
           title: "Lý do khóa",
@@ -417,13 +428,13 @@ const Accounts = () => {
                 <span className="no-reason">Không có lý do</span>
               )}
             </div>
-          )
+          ),
         },
-      ]
+      ],
     },
     {
       title: "Hành động",
-      fixed: 'right',
+      fixed: "right",
       width: 100,
       render: (_, record) => (
         <Button
@@ -434,13 +445,17 @@ const Accounts = () => {
         >
           Chi tiết
         </Button>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: "20px" }}>
+      <Row
+        justify="space-between"
+        align="middle"
+        style={{ marginBottom: "20px" }}
+      >
         <h2>Quản lý tài khoản</h2>
         <Button
           type="primary"
@@ -476,13 +491,15 @@ const Accounts = () => {
         lockedColumns={lockedColumns}
       />
 
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: "10px",
-        gap: "10px",
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: "10px",
+          gap: "10px",
+        }}
+      >
         <PaginationComponent
           totalPages={totalPages}
           currentPage={currentPage}

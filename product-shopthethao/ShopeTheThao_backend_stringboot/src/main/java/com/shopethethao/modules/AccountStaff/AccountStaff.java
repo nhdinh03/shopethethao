@@ -1,4 +1,4 @@
-package com.shopethethao.modules.account;
+package com.shopethethao.modules.AccountStaff;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +34,8 @@ import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.auth.repository.RoleRepository;
 import com.shopethethao.dto.AccountServiceDTO;
 import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.account.Account;
+import com.shopethethao.modules.account.AccountDAO;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
 import com.shopethethao.modules.verification.Verifications;
@@ -43,8 +45,8 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/accounts")
-public class AccountAPI {
+@RequestMapping("/api/accountStaff")
+public class AccountStaff {
 
     @Autowired
     private AccountDAO accountDao;
@@ -64,20 +66,13 @@ public class AccountAPI {
     @Autowired
     private PasswordEncoder encoder;
 
-    // ✅ Lấy tất cả tài khoản
-    @GetMapping("/get/all")
-    public ResponseEntity<List<Account>> findAll() {
-        List<Account> accounts = accountDao.findAll();
-
-        return ResponseEntity.ok(accounts);
-    }
 
     // ✅ Lấy danh sách tài khoản có phân trang
     @GetMapping
     public ResponseEntity<?> getAllUsers(
             @RequestParam("page") Optional<Integer> pageNo,
             @RequestParam("limit") Optional<Integer> limit,
-            @RequestParam(value = "role", defaultValue = "USER") String roleName) {
+            @RequestParam(value = "role", defaultValue = "STAFF") String roleName) {
         try {
             int page = pageNo.orElse(1);
             int pageSize = limit.orElse(10);
@@ -131,7 +126,7 @@ public class AccountAPI {
                     || accountDao.existsByPhone(accountsUser.getPhone());
 
             if (exists) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Tài khoản hoặc thông tin đã tồn tại!"));
+                return ResponseEntity.badRequest().body(new MessageResponse("Thông tin nhân viên đã tồn tại trong hệ thống!"));
             }
 
             // ✅ Tạo tài khoản mới
@@ -162,11 +157,11 @@ public class AccountAPI {
             Set<String> strRoles = accountsUser.getRole();
             Set<SecurityRole> roles = new HashSet<>();
 
-            // Nếu không có vai trò nào, gán vai trò mặc định là "USER"
+            // Nếu không có vai trò nào, gán vai trò mặc định là "STAFF"
             if (strRoles == null || strRoles.isEmpty()) {
-                SecurityRole userRole = roleRepository.findByName(SecurityERole.USER)
-                        .orElseThrow(() -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò USER"));
-                roles.add(userRole); // Đảm bảo vai trò "USER" được gán khi không có vai trò nào được gửi
+                SecurityRole staffRole = roleRepository.findByName(SecurityERole.STAFF)
+                        .orElseThrow(() -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò STAFF"));
+                roles.add(staffRole);
             } else {
                 // Nếu có vai trò, duyệt qua danh sách và gán vai trò
                 for (String role : strRoles) {
@@ -201,13 +196,13 @@ public class AccountAPI {
 
             verificationDAO.save(verifications);
 
-            return ResponseEntity.ok(new MessageResponse("Người dùng đã đăng ký thành công!"));
+            return ResponseEntity.ok(new MessageResponse("Nhân viên đã được thêm thành công!"));
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResponse("Lỗi hệ thống: " + e.getMessage()));
+                    .body(new MessageResponse("Lỗi hệ thống khi thêm nhân viên: " + e.getMessage()));
         }
     }
 
@@ -218,7 +213,7 @@ public class AccountAPI {
             Optional<Account> existingAccount = accountDao.findById(id);
             if (existingAccount.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new MessageResponse("Người dùng không tồn tại"));
+                        .body(new MessageResponse("Không tìm thấy thông tin nhân viên"));
             }
 
             // Cập nhật thông tin tài khoản
@@ -263,10 +258,10 @@ public class AccountAPI {
                 }
             }
 
-            return ResponseEntity.ok(new MessageResponse("Cập nhật tài khoản thành công!"));
+            return ResponseEntity.ok(new MessageResponse("Cập nhật thông tin nhân viên thành công!"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResponse("Lỗi hệ thống: " + e.getMessage()));
+                    .body(new MessageResponse("Lỗi hệ thống khi cập nhật thông tin nhân viên: " + e.getMessage()));
         }
     }
 
@@ -277,7 +272,7 @@ public class AccountAPI {
             Optional<Account> account = accountDao.findById(id);
             if (account.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Tài khoản không tồn tại.");
+                        .body("Không tìm thấy thông tin nhân viên.");
             }
 
             // Xoá tài khoản và LockReasons liên quan
@@ -286,10 +281,10 @@ public class AccountAPI {
             existingAccount.getLockReasons().clear(); // Clear the associated lock reasons if needed (optional)
 
             accountService.deleteAccount(id); // Call deleteAccount method from AccountService
-            return ResponseEntity.ok("Tài khoản và vai trò đã được xóa thành công.");
+            return ResponseEntity.ok("Đã xóa thông tin nhân viên thành công.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi hệ thống, vui lòng thử lại sau.");
+                    .body("Lỗi hệ thống khi xóa thông tin nhân viên, vui lòng thử lại sau.");
         }
     }
 }

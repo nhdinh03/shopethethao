@@ -184,19 +184,20 @@ function Sidebar({ onClose }) {
           <FontAwesomeIcon icon={solidIcons.faUserShield} className="submenu-icon" />
         ),
         getItem(
-          <Link to="/admin/account" onClick={onClose}>
-            <span className="menu-item-label">Khách hàng</span>
-          </Link>,
-          "/admin/account",
-          <FontAwesomeIcon icon={solidIcons.faUserFriends} className="submenu-icon" />
-        ),
-        getItem(
           <Link to="/admin/accountStaff" onClick={onClose}>
             <span className="menu-item-label">Nhân viên</span>
           </Link>,
           "/admin/accountStaff",
           <FontAwesomeIcon icon={solidIcons.faUserTie} className="submenu-icon" />
         ),
+        getItem(
+          <Link to="/admin/account" onClick={onClose}>
+            <span className="menu-item-label">Khách hàng</span>
+          </Link>,
+          "/admin/account",
+          <FontAwesomeIcon icon={solidIcons.faUserFriends} className="submenu-icon" />
+        ),
+ 
       ]
     ),
 

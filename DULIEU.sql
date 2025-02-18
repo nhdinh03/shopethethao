@@ -115,18 +115,20 @@ INSERT INTO Stock_Receipts (supplier_id, brand_id) VALUES
 (9, 9),
 (10, 10);
 
+
+
 -- Thêm dữ liệu mẫu cho Receipt_Products
 INSERT INTO Receipt_Products (receipt_id, product_id, quantity, price) VALUES
-(1, 1, 10, 2500000),
-(2, 2, 20, 850000),
-(3, 3, 30, 750000),
-(4, 4, 40, 3200000),
-(5, 5, 50, 650000),
-(6, 6, 60, 1200000),
-(7, 7, 70, 5000000),
-(8, 8, 80, 3000000),
-(9, 9, 90, 450000),
-(10, 10, 100, 150000);
+(1, 1, 10, 2500000.00),
+(2, 2, 20, 850000.00),
+(3, 3, 30, 750000.00),
+(4, 4, 40, 3200000.00),
+(5, 5, 50, 650000.00),
+(6, 6, 60, 1200000.00),
+(7, 7, 70, 5000000.00),
+(8, 8, 80, 3000000.00),
+(9, 9, 90, 450000.00),
+(10, 10, 100, 150000.00);
 
 -- Thêm dữ liệu mẫu cho Product_Images
 INSERT INTO Product_Images (product_id, image_url) VALUES
@@ -142,8 +144,18 @@ INSERT INTO Product_Images (product_id, image_url) VALUES
 (10, N'https://example.com/img10.jpg');
 
 -- Thêm dữ liệu mẫu cho Sizes
-INSERT INTO Sizes (name) VALUES
-(N'S', N'M', N'L', N'XL', N'XXL', N'38', N'39', N'40', N'41', N'42');
+INSERT INTO Sizes (name) VALUES 
+('S'),
+('M'),
+('L'),
+('XL'),
+('XXL'),
+('38'),
+('39'),
+('40'),
+('41'),
+('42');
+GO
 
 -- Thêm dữ liệu mẫu cho Product_Sizes
 INSERT INTO Product_Sizes (product_id, size_id, quantity, price) VALUES
@@ -172,7 +184,7 @@ INSERT INTO Comments (content, user_id, product_id) VALUES
 (N'Sẽ mua lại', N'U10', 10);
 
 -- Thêm dữ liệu mẫu cho CancelReasons
-INSERT INTO CancelReasons (reason) VALUES
+INSERT INTO cancel_reasons (reason) VALUES
 (N'Đổi ý không muốn mua'),
 (N'Đặt nhầm sản phẩm'),
 (N'Không hài lòng về chất lượng'),
@@ -197,18 +209,22 @@ INSERT INTO Invoices (address, user_id) VALUES
 (N'718 Đường YZ, Quận 9, TP.HCM', N'U9'),
 (N'192 Đường ABC, Quận 10, TP.HCM', N'U10');
 
+
 -- Thêm dữ liệu mẫu cho Detailed_Invoices
-INSERT INTO Detailed_Invoices (invoice_id, product_id, size_id, quantity, payment_method) VALUES
-(1, 1, 1, 2, N'Tiền mặt'),
-(2, 2, 2, 2, N'Thẻ tín dụng'),
-(3, 3, 3, 3, N'Tiền mặt'),
-(4, 4, 4, 4, N'Thẻ tín dụng'),
-(5, 5, 5, 5, N'Tiền mặt'),
-(6, 6, 6, 6, N'Thẻ tín dụng'),
-(7, 7, 7, 7, N'Tiền mặt'),
-(8, 8, 8, 8, N'Thẻ tín dụng'),
-(9, 9, 9, 9, N'Tiền mặt'),
-(10, 10, 10, 10, N'Thẻ tín dụng');
+INSERT INTO Detailed_Invoices (invoice_id, product_id, size_id, quantity, unit_price, payment_method) VALUES
+(11, 1, 1, 2, 2500000.00 ,N'Tiền mặt'),
+(2, 2, 2, 2, 850000.00 ,N'Thẻ tín dụng'),
+(3, 3, 3, 3, 750000.00 ,N'Tiền mặt'),
+(4, 4, 4, 4, 3200000.00 ,N'Thẻ tín dụng'),
+(5, 5, 5, 5, 650000.00 ,N'Tiền mặt'),
+(6, 6, 6, 6, 1200000.00 ,N'Thẻ tín dụng'),
+(7, 7, 7, 7, 5000000.00 ,N'Tiền mặt'),
+(8, 8, 8, 8, 3000000.00 ,N'Thẻ tín dụng'),
+(9, 9, 9, 9, 450000.00 ,N'Tiền mặt'),
+(10, 10, 10, 10, 150000.00 ,N'Thẻ tín dụng');
+GO
+
+
 
 -- Thêm dữ liệu mẫu cho Product_Attributes
 INSERT INTO Product_Attributes (name) VALUES

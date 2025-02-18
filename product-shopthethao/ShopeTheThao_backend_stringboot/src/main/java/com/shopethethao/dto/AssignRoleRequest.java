@@ -1,4 +1,4 @@
-package com.shopethethao.modules.role;
+package com.shopethethao.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
