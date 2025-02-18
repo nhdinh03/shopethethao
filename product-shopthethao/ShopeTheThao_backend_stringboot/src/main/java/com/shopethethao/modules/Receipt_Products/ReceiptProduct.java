@@ -1,4 +1,4 @@
-package com.shopethethao.modules.Receipt_Products;
+package com.shopethethao.modules.receipt_Products;
 
 import java.math.BigDecimal;
 
@@ -19,12 +19,12 @@ import jakarta.persistence.ForeignKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+@Entity
+@Table(name = "Receipt_Products")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "Receipt_Products")
+
 public class ReceiptProduct {
 
     @EmbeddedId

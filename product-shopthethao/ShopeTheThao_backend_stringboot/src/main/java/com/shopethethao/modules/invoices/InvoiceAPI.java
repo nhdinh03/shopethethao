@@ -23,7 +23,7 @@ import com.shopethethao.dto.UpdateStatusRequest;
 import com.shopethethao.modules.cancelReason.CancelReason;
 import com.shopethethao.modules.cancelReason.CancelReasonDAO;
 import com.shopethethao.modules.detailed_invoices.DetailedInvoicesDAO;
-import com.shopethethao.modules.Product_Images.ProductImages;
+import com.shopethethao.modules.product_Images.ProductImages;
 
 @RestController
 @RequestMapping("/api/invoice")

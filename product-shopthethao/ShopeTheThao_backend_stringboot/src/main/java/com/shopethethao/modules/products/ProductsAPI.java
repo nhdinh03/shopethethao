@@ -24,12 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ProductDetailDTO;
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.Product_Images.ProductImages;
-import com.shopethethao.modules.Product_Images.ProductImagesDAO;
-import com.shopethethao.modules.Size.Size;
-import com.shopethethao.modules.Size.SizeDAO;
 import com.shopethethao.modules.productSizes.ProductSize;
 import com.shopethethao.modules.productSizes.ProductSizeDAO;
+import com.shopethethao.modules.product_Images.ProductImages;
+import com.shopethethao.modules.product_Images.ProductImagesDAO;
+import com.shopethethao.modules.size.Size;
+import com.shopethethao.modules.size.SizeDAO;
 import com.shopethethao.service.ProductService;
 
 @RestController

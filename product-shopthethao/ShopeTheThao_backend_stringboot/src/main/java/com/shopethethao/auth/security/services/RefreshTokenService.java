@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.shopethethao.auth.models.RefreshToken;
-import com.shopethethao.auth.repository.RefreshTokenRepository;
 import com.shopethethao.auth.security.jwt.exception.TokenRefreshException;
 import com.shopethethao.modules.account.AccountDAO;
+import com.shopethethao.modules.refreshToken.RefreshToken;
+import com.shopethethao.modules.refreshToken.RefreshTokenRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -33,7 +33,7 @@ public class RefreshTokenService {
     public RefreshToken createRefreshToken(String userId) {
         RefreshToken refreshToken = new RefreshToken();
 
-        refreshToken.setUser(dao.findById(userId).get());
+        refreshToken.setAccount(dao.findById(userId).get());
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
         refreshToken.setToken(UUID.randomUUID().toString());
 

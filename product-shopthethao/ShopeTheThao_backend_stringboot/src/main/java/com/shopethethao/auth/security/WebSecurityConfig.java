@@ -22,6 +22,7 @@ import com.shopethethao.auth.security.jwt.AuthEntryPointJwt;
 import com.shopethethao.auth.security.jwt.AuthTokenFilter;
 import com.shopethethao.auth.security.services.UserDetailsServiceImpl;
 
+
 @Configuration
 @EnableMethodSecurity
 public class WebSecurityConfig {
@@ -70,7 +71,7 @@ public class WebSecurityConfig {
                             "/api/categories/**", "/api/comment/**", "/api/detailedInvoices/**", "/api/invoice/**",
                             "/api/productattributemappings/**", "/api/productattributes/**", "/api/products/**",
                             "/api/productsizes/**", "/api/receiptproduct/**", "/api/role/**", "/api/size/**",
-                            "/api/stockReceipts/**", "/api/suppliers/**", "/api/userHistories/**",
+                            "/api/stockReceipts/**", "/api/suppliers/**", "/api/userhistory/**",
                             "/api/verifications/**").permitAll();
 
                     auth.requestMatchers("/test/test/**").permitAll();

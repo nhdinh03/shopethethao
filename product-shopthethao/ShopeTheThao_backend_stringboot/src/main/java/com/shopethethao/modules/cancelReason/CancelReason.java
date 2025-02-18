@@ -10,11 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "CancelReasons")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "CancelReasons")  
+
 public class CancelReason {
 
     @Id
@@ -23,7 +24,5 @@ public class CancelReason {
 
     @Column(name = "reason", nullable = false, unique = true, length = 255)
     private String reason;
-
-
 
 }

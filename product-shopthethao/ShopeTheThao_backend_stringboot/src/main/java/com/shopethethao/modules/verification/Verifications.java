@@ -17,11 +17,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "Verification")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "Verification")
+
 public class Verifications {
 
     @Id
@@ -47,6 +48,5 @@ public class Verifications {
     @ManyToOne
     @JoinColumn(name = "account_id", foreignKey = @ForeignKey(name = "FK_Verification_User"))
     private Account account;
-    
 
 }

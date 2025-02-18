@@ -1,8 +1,8 @@
 package com.shopethethao.modules.productSizes;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.shopethethao.modules.Size.Size;
 import com.shopethethao.modules.products.Product;
+import com.shopethethao.modules.size.Size;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,12 +17,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+@Entity
+@Table(name = "ProductSizes")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "ProductSizes")
+
 public class ProductSize {
 
     @Id

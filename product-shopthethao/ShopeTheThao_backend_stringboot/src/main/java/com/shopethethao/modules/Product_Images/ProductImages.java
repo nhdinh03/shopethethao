@@ -1,4 +1,4 @@
-package com.shopethethao.modules.Product_Images;
+package com.shopethethao.modules.product_Images;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.shopethethao.modules.products.Product;
@@ -12,11 +12,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.ForeignKey;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "Product_Images")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductImages {
 
     @Id

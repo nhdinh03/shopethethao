@@ -1,4 +1,4 @@
-package com.shopethethao.modules.Size;
+package com.shopethethao.modules.size;
 
 import java.util.List;
 import java.util.Optional;

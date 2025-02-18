@@ -14,11 +14,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "Accounts_Roles")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccountRole {
 
     @EmbeddedId
@@ -26,14 +26,12 @@ public class AccountRole {
 
     @ManyToOne
     @MapsId("accountId") // Ánh xạ với account_id trong AccountRolePK
-    @JoinColumn(name = "account_id", 
-                foreignKey = @ForeignKey(name = "FK_AccountsRoles_Account"))
+    @JoinColumn(name = "account_id", foreignKey = @ForeignKey(name = "FK_AccountsRoles_Account"))
     private Account account;
 
     @ManyToOne
     @MapsId("roleId") // Ánh xạ với role_id trong AccountRolePK
-    @JoinColumn(name = "role_id",
-                foreignKey = @ForeignKey(name = "FK_AccountsRoles_Role"))
+    @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "FK_AccountsRoles_Role"))
     private Role role;
 
 }

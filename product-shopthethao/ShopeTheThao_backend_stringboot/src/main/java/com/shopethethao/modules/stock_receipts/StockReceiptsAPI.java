@@ -38,13 +38,13 @@ import com.shopethethao.dto.ReceiptProductRequestDTO;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.dto.StockReceiptDTO;
 import com.shopethethao.dto.StockReceiptRequestDTO;
-import com.shopethethao.modules.Receipt_Products.ReceiptProduct;
-import com.shopethethao.modules.Receipt_Products.ReceiptProductDAO;
-import com.shopethethao.modules.Receipt_Products.ReceiptProductPK;
 import com.shopethethao.modules.brands.Brand;
 import com.shopethethao.modules.brands.BrandDAO;
 import com.shopethethao.modules.products.Product;
 import com.shopethethao.modules.products.ProductsDAO;
+import com.shopethethao.modules.receipt_Products.ReceiptProduct;
+import com.shopethethao.modules.receipt_Products.ReceiptProductDAO;
+import com.shopethethao.modules.receipt_Products.ReceiptProductPK;
 import com.shopethethao.modules.suppliers.Supplier;
 import com.shopethethao.modules.suppliers.SupplierDAO;
 

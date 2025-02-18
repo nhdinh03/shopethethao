@@ -1,4 +1,4 @@
-package com.shopethethao.modules.Product_Attribute_Mappings;
+package com.shopethethao.modules.product_Attribute_Mappings;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

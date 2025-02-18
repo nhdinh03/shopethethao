@@ -20,12 +20,12 @@ import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+@Entity
+@Table(name = "Detailed_Invoices")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "Detailed_Invoices")
+
 public class DetailedInvoices {
 
     @Id

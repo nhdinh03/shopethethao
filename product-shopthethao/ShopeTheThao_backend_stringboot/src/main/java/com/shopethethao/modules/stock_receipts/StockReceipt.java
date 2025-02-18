@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.shopethethao.modules.Receipt_Products.ReceiptProduct;
 import com.shopethethao.modules.brands.Brand;
+import com.shopethethao.modules.receipt_Products.ReceiptProduct;
 import com.shopethethao.modules.suppliers.Supplier;
 
 import jakarta.persistence.CascadeType;
@@ -21,11 +21,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Data
 @Table(name = "stock_receipts")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class StockReceipt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
