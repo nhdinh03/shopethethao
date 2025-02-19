@@ -274,7 +274,7 @@ const Invoices = () => {
     {
       title: "Giá đơn hàng",
       dataIndex: "totalAmount",
-      key: "totalAmount",
+      key: "totalAmount", 
       render: (value) => {
         return new Intl.NumberFormat("vi-VN", {
           style: "currency",
