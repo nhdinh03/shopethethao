@@ -1,5 +1,0 @@
-ALTER TABLE Receipt_Products
-ALTER COLUMN price DECIMAL(15, 2) NOT NULL;
-
-ALTER TABLE Receipt_Products
-ALTER COLUMN total_amount DECIMAL(15, 2) NOT NULL;
