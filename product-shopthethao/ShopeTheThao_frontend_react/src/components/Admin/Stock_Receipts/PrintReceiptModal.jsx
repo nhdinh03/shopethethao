@@ -96,10 +96,10 @@ const PrintReceiptModal = ({ visible, onClose, receipt, onPrint, printRef }) => 
                 <Text strong>Thương Hiệu: </Text>
                 <Text>{receipt.brandName}</Text>
               </Col>
-              <Col span={24}>
+              {/* <Col span={24}>
                 <Text strong>Ghi Chú: </Text>
                 <Text>{receipt.notes || 'Không có'}</Text>
-              </Col>
+              </Col> */}
             </Row>
           </StyledCard>
 

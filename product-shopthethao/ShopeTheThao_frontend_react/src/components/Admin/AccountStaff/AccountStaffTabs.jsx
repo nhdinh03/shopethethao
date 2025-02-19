@@ -1,8 +1,6 @@
 import React from 'react';
 import { Table, Tabs } from 'antd';
 
-const { TabPane } = Tabs;
-
 const AccountStaffTabs = ({
   loading,
   staffList,
@@ -10,9 +8,11 @@ const AccountStaffTabs = ({
   columns,
   lockedColumns
 }) => {
-  return (
-    <Tabs defaultActiveKey="1">
-      <TabPane tab="Nhân viên đang hoạt động" key="1">
+  const items = [
+    {
+      key: '1',
+      label: `Nhân viên đang hoạt động (${staffList?.length || 0})`,
+      children: (
         <Table
           pagination={false}
           columns={columns}
@@ -23,8 +23,12 @@ const AccountStaffTabs = ({
           }))}
           scroll={{ x: "max-content" }}
         />
-      </TabPane>
-      <TabPane tab="Nhân viên bị khóa" key="2">
+      )
+    },
+    {
+      key: '2',
+      label: `Nhân viên bị khóa (${lockedStaff?.length || 0})`,
+      children: (
         <Table
           pagination={false}
           columns={lockedColumns}
@@ -35,8 +39,16 @@ const AccountStaffTabs = ({
           }))}
           scroll={{ x: "max-content" }}
         />
-      </TabPane>
-    </Tabs>
+      )
+    }
+  ];
+
+  return (
+    <Tabs 
+      defaultActiveKey="1" 
+      items={items}
+      className="staff-tabs"
+    />
   );
 };
 

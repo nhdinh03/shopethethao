@@ -81,6 +81,11 @@ public class RoleAPI {
                 String.join(", ", SecurityERole.getAllowedValues()));
         }
 
+        // Check if role already exists
+        if (roleDAO.existsByName(role.getName())) {
+            throw new RoleValidationException("Vai trò " + role.getName() + " đã tồn tại trong hệ thống!");
+        }
+
         String description = role.getDescription();
         if (description == null || description.trim().isEmpty()) {
             throw new RoleValidationException("Mô tả vai trò không được để trống");

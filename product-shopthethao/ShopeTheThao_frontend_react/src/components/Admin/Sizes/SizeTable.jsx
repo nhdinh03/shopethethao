@@ -6,8 +6,12 @@ import { SearchOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
-const SizeTable = ({ sizeData, handleEditData, handleDelete, loading }) => {
-
+const SizeTable = ({
+  sizeData,
+  handleEditData,
+  handleDelete,
+  loading = false
+}) => {
 
   const columns = [
     {
@@ -72,10 +76,6 @@ SizeTable.propTypes = {
   handleEditData: PropTypes.func.isRequired,
   handleDelete: PropTypes.func.isRequired,
   loading: PropTypes.bool,
-};
-
-SizeTable.defaultProps = {
-  loading: false,
 };
 
 export default SizeTable;
