@@ -27,4 +27,7 @@ public interface ProductsDAO extends JpaRepository<Product, Integer> {
             "JOIN ps.size s " +
             "WHERE p.id = :productId")
     List<ProductDetailDTO> findProductDetailsById(@Param("productId") Integer productId);
+
+    @Query("SELECT p FROM Product p WHERE LOWER(p.name) = LOWER(?1)")
+    Optional<Product> findByNameIgnoreCase(String name);
 }

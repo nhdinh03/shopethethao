@@ -18,11 +18,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "ProductSizes")
+@Table(name = "Product_Sizes")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class ProductSize {
 
     @Id

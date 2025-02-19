@@ -105,67 +105,91 @@ const Stock_Receipts = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      const { receiptProducts, supplierId, brandId, orderDate, ...restValues } =
-        values;
-
-            const parsedSupplierId = parseInt(supplierId, 10);
+      const { receiptProducts, supplierId, brandId, orderDate, ...restValues } = values;
+  
+      const parsedSupplierId = parseInt(supplierId, 10);
       const parsedBrandId = parseInt(brandId, 10);
-
-            if (isNaN(parsedSupplierId) || isNaN(parsedBrandId)) {
+  
+      if (isNaN(parsedSupplierId) || isNaN(parsedBrandId)) {
         message.error("Supplier ID và Brand ID phải là số nguyên!");
         return;
       }
-
-            if (moment(orderDate).isBefore(moment(), "day")) {
+  
+      if (moment(orderDate).isBefore(moment(), "day")) {
         message.error("Ngày nhập kho không được ở trong quá khứ!");
         return;
       }
-
-            const invalidProducts = receiptProducts.filter((product) => {
+  
+      const invalidProducts = receiptProducts.filter((product) => {
         return product.quantity <= 0 || product.price <= 0;
       });
-
+  
       if (invalidProducts.length > 0) {
         message.error("Số lượng và giá sản phẩm phải lớn hơn 0!");
         return;
       }
-
+  
       const processedProducts = receiptProducts.map((product) => ({
         productId: product.productId,
+        sizeId: product.sizeId,
         quantity: product.quantity,
         price: product.price,
         totalAmount: product.quantity * product.price,
       }));
-
+  
       const res = {
         ...restValues,
         supplierId: parsedSupplierId,
         brandId: parsedBrandId,
-        orderDate: values.orderDate
-          ? values.orderDate.format("YYYY-MM-DD")
-          : null,
+        orderDate: values.orderDate ? values.orderDate.format("YYYY-MM-DD") : null,
         receiptProducts: processedProducts,
       };
-
+  
       console.log("Sending request payload:", res);
-
-            if (editMode) {
-        await stock_ReceiptsAPi.update(editMode.id, res);
-        message.success("Cập nhật phiếu nhập kho thành công!");
+  
+      let response;
+      if (editMode) {
+        response = await stock_ReceiptsAPi.update(editMode.id, res);
       } else {
-        await stock_ReceiptsAPi.create(res);
-        message.success("Thêm phiếu nhập kho thành công!");
+        response = await stock_ReceiptsAPi.create(res);
       }
-
-      setWorkSomeThing([!workSomeThing]);
+  
+      if (response.data?.validationErrors) {
+        // Handle validation errors from backend
+        const errors = response.data.validationErrors;
+        errors.forEach(error => {
+          const productName = error.productName;
+          Object.entries(error.errors).forEach(([field, message]) => {
+            message.error(`${productName}: ${message}`);
+          });
+        });
+        return;
+      }
+  
+      message.success(editMode ? 
+        "Cập nhật phiếu nhập kho thành công!" : 
+        "Thêm phiếu nhập kho thành công!"
+      );
+      
+      setWorkSomeThing(!workSomeThing);
       setEditMode(null);
       setModalVisible(false);
       form.resetFields();
+  
     } catch (error) {
-      message.error("Lỗi khi lưu phiếu nhập kho!");
+      if (error.response?.data?.validationErrors) {
+        const errors = error.response.data.validationErrors;
+        errors.forEach(errorItem => {
+          const errorMessage = Object.entries(errorItem.errors)
+            .map(([field, msg]) => `${field}: ${msg}`)
+            .join(', ');
+          message.error(`${errorItem.productName}: ${errorMessage}`);
+        });
+      } else {
+        message.error("Lỗi khi lưu phiếu nhập kho: " + (error.response?.data || error.message));
+      }
     }
   };
-
   const handleViewReceipt = (record) => {
     console.log(record);
     setSelectedReceipt(record);

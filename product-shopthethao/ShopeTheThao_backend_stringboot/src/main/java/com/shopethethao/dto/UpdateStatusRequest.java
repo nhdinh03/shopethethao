@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class UpdateStatusRequest {
     private InvoiceStatus status;
-    private Integer cancelReasonId;
     private String note;
+    private Integer cancelReasonId;
 }

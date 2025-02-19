@@ -46,7 +46,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/accountStaff")
-public class AccountStaff {
+public class AccountStaffAPI {
 
     @Autowired
     private AccountDAO accountDao;

@@ -66,10 +66,24 @@ public class CategorieAPI {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Categorie category) {
         try {
+            // Validate required fields
+            if (category.getName() == null || category.getName().trim().isEmpty()) {
+                return new ResponseEntity<>("Tên danh mục không được để trống!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Normalize the category name (trim whitespace)
+            category.setName(category.getName().trim());
+
+            // Check for duplicate category name (case insensitive)
+            Optional<Categorie> existingCategory = dao.findByNameIgnoreCase(category.getName());
+            if (existingCategory.isPresent()) {
+                return new ResponseEntity<>("Tên danh mục đã tồn tại!", HttpStatus.CONFLICT);
+            }
+
             Categorie savedCategory = dao.save(category);
             return ResponseEntity.ok(savedCategory);
         } catch (Exception e) {
-            return new ResponseEntity<>("Không thể thêm danh mục!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Không thể thêm danh mục: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 

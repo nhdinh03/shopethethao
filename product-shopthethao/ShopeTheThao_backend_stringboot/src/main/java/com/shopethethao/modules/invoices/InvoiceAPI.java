@@ -48,7 +48,7 @@ public class InvoiceAPI {
                         dto.setId(invoice.getId());
                         dto.setOrderDate(invoice.getOrderDate());
                         dto.setAddress(invoice.getAddress());
-                        dto.setStatus(invoice.getStatus().getDisplayName());
+                        dto.setStatus(invoice.getStatus().toString());
                         dto.setNote(invoice.getNote());
                         dto.setTotalAmount(invoice.getTotalAmount());
                         dto.setUserId(invoice.getUser().getId());
@@ -98,7 +98,7 @@ public class InvoiceAPI {
             dto.setId(invoice.getId());
             dto.setOrderDate(invoice.getOrderDate());
             dto.setAddress(invoice.getAddress());
-            dto.setStatus(invoice.getStatus().getDisplayName());
+            dto.setStatus(invoice.getStatus().toString());
             dto.setNote(invoice.getNote());
             dto.setTotalAmount(invoice.getTotalAmount());
             dto.setUserId(invoice.getUser().getId());
@@ -221,7 +221,7 @@ public class InvoiceAPI {
         dto.setOrderDate(invoice.getOrderDate());
         dto.setAddress(invoice.getAddress());
         dto.setTotalAmount(invoice.getTotalAmount());
-        dto.setStatus(invoice.getStatus().getDisplayName());
+        dto.setStatus(invoice.getStatus().toString());
         dto.setCustomerName(invoice.getUser().getFullname());
 
         // 🚀 Debug để kiểm tra dữ liệu có đúng không
@@ -249,6 +249,13 @@ public class InvoiceAPI {
             // 🚀 Tìm hóa đơn cần cập nhật
             Invoice invoice = invoiceDAO.findById(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + id));
+
+            // Validate status transition
+            if (!isValidStatusTransition(invoice.getStatus(), request.getStatus())) {
+                return ResponseEntity.badRequest()
+                        .body("Không thể chuyển từ trạng thái " + invoice.getStatus() + 
+                              " sang " + request.getStatus());
+            }
 
             // 🚀 Cập nhật trạng thái
             invoice.setStatus(request.getStatus());
@@ -278,6 +285,25 @@ public class InvoiceAPI {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi khi cập nhật trạng thái hóa đơn: " + e.getMessage());
+        }
+    }
+
+    private boolean isValidStatusTransition(InvoiceStatus currentStatus, InvoiceStatus newStatus) {
+        if (currentStatus == newStatus) {
+            return false;
+        }
+
+        switch (currentStatus) {
+            case PENDING:
+                return newStatus == InvoiceStatus.SHIPPING || newStatus == InvoiceStatus.CANCELLED;
+            case SHIPPING:
+                return newStatus == InvoiceStatus.DELIVERED || newStatus == InvoiceStatus.CANCELLED;
+            case DELIVERED:
+                return false; // Không thể thay đổi sau khi đã giao hàng
+            case CANCELLED:
+                return false; // Không thể thay đổi sau khi đã hủy
+            default:
+                return false;
         }
     }
 }

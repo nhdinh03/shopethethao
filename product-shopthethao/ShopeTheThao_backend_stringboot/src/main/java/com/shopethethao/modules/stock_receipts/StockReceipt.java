@@ -10,6 +10,7 @@ import com.shopethethao.modules.receipt_Products.ReceiptProduct;
 import com.shopethethao.modules.suppliers.Supplier;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
@@ -26,32 +27,33 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "stock_receipts")
+@Table(name = "Stock_Receipts")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class StockReceipt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition = "INT IDENTITY(1,1)")
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(
-        name = "supplier_id",
-        foreignKey = @ForeignKey(name = "FK_StockReceipts_Supplier_Custom")
-    )
+    @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
     @ManyToOne
-    @JoinColumn(name = "brand_id", foreignKey = @ForeignKey(name = "FK_StockReceipts_Brand"))
+    @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Temporal(TemporalType.DATE)
-    private LocalDate orderDate;
+    @Column(name = "order_date", nullable = false, columnDefinition = "DATE DEFAULT GETDATE()")
+    private LocalDate order_date;
 
-    @OneToMany(mappedBy = "stockReceipt", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "stockReceipt", orphanRemoval = true)
     @JsonManagedReference
     private List<ReceiptProduct> receiptProducts;
+
+    
 
 }

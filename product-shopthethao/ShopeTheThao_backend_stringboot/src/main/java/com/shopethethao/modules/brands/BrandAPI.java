@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @RestController
 @RequestMapping("/api/brands")
@@ -88,8 +89,18 @@ public class BrandAPI {
     public ResponseEntity<?> deleteBrand(@PathVariable("id") Integer id) {
         Optional<Brand> existingBrand = brandsDAO.findById(id);
         if (existingBrand.isPresent()) {
-            brandsDAO.deleteById(id);
-            return ResponseEntity.ok("Xóa thương hiệu thành công!");
+            try {
+                Brand brand = existingBrand.get();
+                if (!brand.getStockReceipts().isEmpty()) {
+                    return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang có phiếu nhập kho liên quan!", HttpStatus.CONFLICT);
+                }
+                brandsDAO.deleteById(id);
+                return ResponseEntity.ok("Xóa thương hiệu thành công!");
+            } catch (DataIntegrityViolationException e) {
+                return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang được sử dụng!", HttpStatus.CONFLICT);
+            } catch (Exception e) {
+                return new ResponseEntity<>("Lỗi khi xóa thương hiệu: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         } else {
             return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
         }

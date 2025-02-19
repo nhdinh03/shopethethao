@@ -48,7 +48,10 @@ import com.shopethethao.modules.receipt_Products.ReceiptProductPK;
 import com.shopethethao.modules.suppliers.Supplier;
 import com.shopethethao.modules.suppliers.SupplierDAO;
 
+import jakarta.persistence.EntityManager;
 import jakarta.validation.Valid;
+
+
 
 @RestController
 @RequestMapping("/api/stockReceipts")
@@ -70,6 +73,8 @@ public class StockReceiptsAPI {
 
     @Autowired
     private ProductsDAO productsDAO;
+
+
 
     // Helper method to handle errors uniformly
     private ResponseEntity<String> handleError(String message, HttpStatus status) {
@@ -119,7 +124,7 @@ public class StockReceiptsAPI {
         dto.setSupplierId(stockReceipt.getSupplier().getId());
         dto.setBrandId(stockReceipt.getBrand().getId());
         dto.setBrandName(stockReceipt.getBrand().getName());
-        dto.setOrderDate(stockReceipt.getOrderDate());
+        dto.setOrderDate(stockReceipt.getOrder_date());
 
         // Chuyển đổi ReceiptProduct thành ReceiptProductDTO
         List<ReceiptProductDTO> receiptProductDTOs = stockReceipt.getReceiptProducts().stream()
@@ -137,7 +142,7 @@ public class StockReceiptsAPI {
         dto.setProductName(receiptProduct.getProduct().getName());
         dto.setQuantity(receiptProduct.getQuantity());
         dto.setPrice(receiptProduct.getPrice());
-        dto.setTotalAmount(receiptProduct.getTotalAmount());
+        dto.setTotalAmount(receiptProduct.getTotal_amount());
         return dto;
     }
 
@@ -146,68 +151,74 @@ public class StockReceiptsAPI {
     @PostMapping
     public ResponseEntity<?> createStockReceipt(@RequestBody StockReceiptRequestDTO request) {
         try {
-            if (request.getSupplierId() == null || request.getBrandId() == null || request.getOrderDate() == null) {
-                return handleError("Thông tin 'supplier_id', 'brand_id', và 'order_date' là bắt buộc.",
+            // Validate required fields
+            if (request.getSupplierId() == null || request.getBrandId() == null || 
+                request.getOrderDate() == null || request.getReceiptProducts() == null || 
+                request.getReceiptProducts().isEmpty()) {
+                return handleError("Thông tin supplier, brand, ngày đặt và danh sách sản phẩm là bắt buộc.", 
                         HttpStatus.BAD_REQUEST);
             }
 
-            Optional<Supplier> supplier = supplierDAO.findById(request.getSupplierId());
-            Optional<Brand> brand = brandDAO.findById(request.getBrandId());
+            // Validate supplier and brand
+            Supplier supplier = supplierDAO.getReferenceById(request.getSupplierId());
+            Brand brand = brandDAO.getReferenceById(request.getBrandId());
 
-            if (supplier.isEmpty()) {
-                return handleError("Supplier không tồn tại với ID: " + request.getSupplierId(), HttpStatus.BAD_REQUEST);
-            }
-
-            if (brand.isEmpty()) {
-                return handleError("Brand không tồn tại với ID: " + request.getBrandId(), HttpStatus.BAD_REQUEST);
-            }
-
+            // Create and save StockReceipt
             StockReceipt stockReceipt = new StockReceipt();
-            stockReceipt.setSupplier(supplier.get());
-            stockReceipt.setBrand(brand.get());
-            LocalDate orderDate = request.getOrderDate();
-            stockReceipt.setOrderDate(orderDate);
-
-            stockReceipt.setReceiptProducts(new ArrayList<>());
-
+            stockReceipt.setSupplier(supplier);
+            stockReceipt.setBrand(brand);
+            stockReceipt.setOrder_date(request.getOrderDate());
             StockReceipt savedStockReceipt = stockReceiptsDAO.save(stockReceipt);
 
-            // Xử lý ReceiptProducts
+            // Process ReceiptProducts
+            Set<Integer> processedProductIds = new HashSet<>();
+            List<ReceiptProduct> receiptProducts = new ArrayList<>();
+
             for (ReceiptProductRequestDTO productRequest : request.getReceiptProducts()) {
-                if (productRequest.getProductId() == null || productRequest.getQuantity() == null
-                        || productRequest.getPrice() == null) {
-                    return handleError("Thông tin 'product_id', 'quantity', và 'price' là bắt buộc.",
-                            HttpStatus.BAD_REQUEST);
+                // Validate product request
+                if (productRequest.getProductId() == null || productRequest.getQuantity() == null || 
+                    productRequest.getPrice() == null || productRequest.getQuantity() <= 0 || 
+                    productRequest.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new IllegalArgumentException("Thông tin sản phẩm không hợp lệ");
                 }
 
-                Optional<Product> product = productsDAO.findById(productRequest.getProductId());
-                if (product.isEmpty()) {
-                    return handleError("Sản phẩm không tồn tại với ID: " + productRequest.getProductId(),
-                            HttpStatus.BAD_REQUEST);
+                // Check for duplicate products
+                if (!processedProductIds.add(productRequest.getProductId())) {
+                    throw new IllegalArgumentException("Sản phẩm trùng lặp trong danh sách");
                 }
 
+                // Get and validate product
+                Product product = productsDAO.findById(productRequest.getProductId())
+                        .orElseThrow(() -> new IllegalArgumentException("Sản phẩm không tồn tại với ID: " + productRequest.getProductId()));
+
+                // Create ReceiptProduct
                 ReceiptProduct receiptProduct = new ReceiptProduct();
-                receiptProduct.setProduct(product.get());
+                ReceiptProductPK pk = new ReceiptProductPK();
+                pk.setReceiptId(savedStockReceipt.getId());
+                pk.setProductId(productRequest.getProductId());
+                
+                receiptProduct.setId(pk);
+                receiptProduct.setStockReceipt(savedStockReceipt);
+                receiptProduct.setProduct(product);
                 receiptProduct.setQuantity(productRequest.getQuantity());
                 receiptProduct.setPrice(productRequest.getPrice());
-                receiptProduct.setTotalAmount(
-                        receiptProduct.getPrice().multiply(BigDecimal.valueOf(receiptProduct.getQuantity())));
-                receiptProduct.setStockReceipt(savedStockReceipt);
-
-                ReceiptProductPK productPK = new ReceiptProductPK();
-                productPK.setReceiptId(savedStockReceipt.getId());
-                productPK.setProductId(productRequest.getProductId());
-                receiptProduct.setId(productPK);
-
-                receiptProductDAO.save(receiptProduct);
-                savedStockReceipt.getReceiptProducts().add(receiptProduct);
+                receiptProduct.setTotal_amount(productRequest.getPrice().multiply(BigDecimal.valueOf(productRequest.getQuantity())));
+                
+                receiptProducts.add(receiptProduct);
             }
 
-            stockReceiptsDAO.save(savedStockReceipt);
+            // Save all receipt products
+            receiptProductDAO.saveAll(receiptProducts);
+            savedStockReceipt.setReceiptProducts(receiptProducts);
 
-            return ResponseEntity.ok(savedStockReceipt);
+            // Return success response with created receipt
+            return ResponseEntity.ok(convertToDTO(savedStockReceipt));
+            
+        } catch (IllegalArgumentException e) {
+            return handleError(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return handleError("Lỗi khi tạo phiếu nhập kho!", HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error creating stock receipt", e);
+            return handleError("Lỗi khi tạo phiếu nhập kho: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -229,7 +240,7 @@ public class StockReceiptsAPI {
 
             existingStockReceipt.setSupplier(supplier);
             existingStockReceipt.setBrand(brand);
-            existingStockReceipt.setOrderDate(request.getOrderDate());
+            existingStockReceipt.setOrder_date(request.getOrderDate());
 
             // Clear existing receipt products
             receiptProductDAO.deleteByStockReceiptId(existingStockReceipt.getId());
@@ -254,7 +265,7 @@ public class StockReceiptsAPI {
                 receiptProduct.setProduct(product);
                 receiptProduct.setQuantity(productRequest.getQuantity());
                 receiptProduct.setPrice(productRequest.getPrice());
-                receiptProduct.setTotalAmount(
+                receiptProduct.setTotal_amount(
                         receiptProduct.getPrice().multiply(BigDecimal.valueOf(receiptProduct.getQuantity())));
 
                 // Save the new receipt product

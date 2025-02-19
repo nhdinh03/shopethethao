@@ -89,40 +89,53 @@ public class ProductsAPI {
     @PostMapping
     public ResponseEntity<?> createProductWithSizes(@RequestBody Product product) {
         try {
-
-            // Lưu sản phẩm và các kích cỡ
-            Product savedProduct = productsDAO.save(product);
-
-            // Lưu danh sách kích cỡ nếu có
-            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
-                for (ProductSize size : product.getSizes()) {
-                    Optional<Size> existingSize = sizeDAO.findById(size.getSize().getId());
-                    if (existingSize.isPresent()) {
-                        size.setSize(existingSize.get()); // Nếu size đã có trong DB, dùng lại
-                    } else {
-                        sizeDAO.save(size.getSize()); // Nếu size chưa có, lưu mới vào DB
-                    }
-                    size.setProduct(savedProduct); // Gán Product cho ProductSize trước khi lưu
-                    productSizeDAO.save(size);
-                }
+            // Validate basic product info
+            if (product.getName() == null || product.getName().trim().isEmpty()) {
+                return new ResponseEntity<>("Tên sản phẩm không được để trống!", HttpStatus.BAD_REQUEST);
             }
 
-            // Kiểm tra trùng kích cỡ trong danh sách sizes
+            // Validate sizes
+            if (product.getSizes() == null || product.getSizes().isEmpty()) {
+                return new ResponseEntity<>("Phải có ít nhất một kích cỡ cho sản phẩm!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Check for duplicate sizes before saving
             for (int i = 0; i < product.getSizes().size(); i++) {
+                if (product.getSizes().get(i).getSize() == null || product.getSizes().get(i).getSize().getId() == null) {
+                    return new ResponseEntity<>("Thông tin kích cỡ không hợp lệ!", HttpStatus.BAD_REQUEST);
+                }
+                
                 for (int j = i + 1; j < product.getSizes().size(); j++) {
                     if (product.getSizes().get(i).getSize().getId()
                             .equals(product.getSizes().get(j).getSize().getId())) {
                         return new ResponseEntity<>(
-                                "Kích cỡ " + product.getSizes().get(i).getSize().getName() + " đã tồn tại!",
+                                "Kích cỡ " + product.getSizes().get(i).getSize().getName() + " bị trùng lặp!",
                                 HttpStatus.BAD_REQUEST);
                     }
                 }
             }
 
-            // Lưu hình ảnh
+            // Save product first
+            Product savedProduct = productsDAO.save(product);
+
+            // Save sizes
+            for (ProductSize size : product.getSizes()) {
+                Optional<Size> existingSize = sizeDAO.findById(size.getSize().getId());
+                if (!existingSize.isPresent()) {
+                    return new ResponseEntity<>("Kích cỡ không tồn tại trong hệ thống!", HttpStatus.BAD_REQUEST);
+                }
+                size.setSize(existingSize.get());
+                size.setProduct(savedProduct);
+                productSizeDAO.save(size);
+            }
+
+            // Save images if present
             if (product.getImages() != null && !product.getImages().isEmpty()) {
                 for (ProductImages img : product.getImages()) {
-                    img.setProduct(savedProduct); // ✅ Đảm bảo product_id không bị null trước khi lưu
+                    if (img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
+                        return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
+                    }
+                    img.setProduct(savedProduct);
                     productImagesDAO.save(img);
                 }
             }
@@ -130,7 +143,8 @@ public class ProductsAPI {
             return ResponseEntity.ok(savedProduct);
 
         } catch (Exception e) {
-            return new ResponseEntity<>("Không thể thêm sản phẩm!", HttpStatus.BAD_REQUEST);
+            e.printStackTrace(); // For debugging
+            return new ResponseEntity<>("Lỗi khi thêm sản phẩm: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

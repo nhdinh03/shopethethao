@@ -212,7 +212,7 @@ INSERT INTO Invoices (address, user_id) VALUES
 
 -- Thêm dữ liệu mẫu cho Detailed_Invoices
 INSERT INTO Detailed_Invoices (invoice_id, product_id, size_id, quantity, unit_price, payment_method) VALUES
-(11, 1, 1, 2, 2500000.00 ,N'Tiền mặt'),
+(1, 1, 1, 2, 2500000.00 ,N'Tiền mặt'),
 (2, 2, 2, 2, 850000.00 ,N'Thẻ tín dụng'),
 (3, 3, 3, 3, 750000.00 ,N'Tiền mặt'),
 (4, 4, 4, 4, 3200000.00 ,N'Thẻ tín dụng'),
@@ -253,7 +253,7 @@ INSERT INTO Product_Attribute_Mappings (product_id, attribute_id) VALUES
 (10, 10);
 
 -- Thêm dữ liệu mẫu cho User_Histories
-INSERT INTO User_Histories (note, user_id) VALUES
+INSERT INTO UserHistory (note, user_id) VALUES
 (N'Mua hàng lần đầu', N'U1'),
 (N'Thêm sản phẩm vào giỏ hàng', N'U2'),
 (N'Đặt hàng thành công', N'U3'),
@@ -264,3 +264,12 @@ INSERT INTO User_Histories (note, user_id) VALUES
 (N'Liên hệ hỗ trợ', N'U8'),
 (N'Thêm địa chỉ mới', N'U9'),
 (N'Cập nhật thông tin cá nhân', N'U10');
+
+
+-- Thêm dữ liệu mẫu cho RefreshToken
+INSERT INTO RefreshToken (user_id, token, expiry_date)
+VALUES 
+    ('U1', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.token1', DATEADD(day, 7, GETDATE())),
+    ('U2', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.token2', DATEADD(day, 7, GETDATE())),
+    ('U3', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.token3', DATEADD(day, 7, GETDATE()));
+GO
