@@ -3,7 +3,7 @@ package com.shopethethao.auth.payload.response;
 import java.util.Date;
 import java.util.List;
 
-import com.shopethethao.auth.models.Gender;
+import com.shopethethao.modules.account.Gender;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

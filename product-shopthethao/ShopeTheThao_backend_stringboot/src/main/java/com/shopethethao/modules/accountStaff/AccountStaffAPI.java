@@ -27,10 +27,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.shopethethao.auth.models.SecurityERole;
-import com.shopethethao.auth.payload.request.AccountsUser;
 import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.dto.AccountServiceDTO;
+import com.shopethethao.dto.AccountsUserDto;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.account.AccountDAO;
@@ -38,6 +37,7 @@ import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
 import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.role.RoleDAO;
+import com.shopethethao.modules.role.ERole;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
 
@@ -77,9 +77,9 @@ public class AccountStaffAPI {
             int pageSize = limit.orElse(10);
 
             // Convert role name to SecurityERole
-            SecurityERole roleEnum;
+            ERole roleEnum;
             try {
-                roleEnum = SecurityERole.fromString(roleName);
+                roleEnum = ERole.fromString(roleName);
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest()
                         .body(new MessageResponse("Invalid role name: " + roleName));
@@ -116,7 +116,7 @@ public class AccountStaffAPI {
     // ✅ Lấy tài khoản theo ID
     @Transactional
     @PostMapping
-    public ResponseEntity<?> registerUser(@Valid @RequestBody AccountsUser accountsUser) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody AccountsUserDto accountsUser) {
         try {
             // ✅ Kiểm tra xem ID, Email, hoặc Phone có bị trùng không
             boolean exists = accountDao.existsById(accountsUser.getId())
@@ -158,7 +158,7 @@ public class AccountStaffAPI {
 
             // Nếu không có vai trò nào, gán vai trò mặc định là "STAFF"
             if (strRoles == null || strRoles.isEmpty()) {
-                Role staffRole = roleDAO.findByName(SecurityERole.STAFF)
+                Role staffRole = roleDAO.findByName(ERole.STAFF)
                         .orElseThrow(() -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò STAFF"));
                 roles.add(staffRole);
             } else {
@@ -166,7 +166,7 @@ public class AccountStaffAPI {
                 for (String role : strRoles) {
                     try {
                         // Chuyển đổi từ String role sang SecurityERole enum
-                        SecurityERole roleEnum = SecurityERole.fromString(role); // Chuyển đổi role string sang enum
+                        ERole roleEnum = ERole.fromString(role); // Chuyển đổi role string sang enum
                         Role roleFromDB = roleDAO.findByName(roleEnum)
                                 .orElseThrow(
                                         () -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò - " + role));

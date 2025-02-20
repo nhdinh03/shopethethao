@@ -1,4 +1,4 @@
-package com.shopethethao.auth.OTP.config;
+package com.shopethethao.auth.otp.config;
 
 import java.util.Properties;
 import org.springframework.beans.factory.annotation.Value;

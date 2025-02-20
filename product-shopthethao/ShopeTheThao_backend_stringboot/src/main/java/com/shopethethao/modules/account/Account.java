@@ -7,7 +7,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.shopethethao.auth.models.Gender;
 import com.shopethethao.modules.accountRole.AccountRole;
 import com.shopethethao.modules.comments.Comment;
 import com.shopethethao.modules.lock_reasons.LockReasons;

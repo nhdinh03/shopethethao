@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FiMail, FiLock, FiEye, FiEyeOff, FiUser } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { FiLock, FiEye, FiEyeOff, FiUser } from "react-icons/fi";
 import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import "./login.scss";
 import img from "assets/Img";
-import { loginApi } from "api/Admin";
+import { useAuth } from 'hooks/useAuth';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login, loading, error, isAuthenticated } = useAuth();
+  
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
   const [formData, setFormData] = useState({
-    id: "", // Changed from email to id
+    id: "",
     password: "",
     remember: false,
   });
 
-  // Optimized state management
-  const [{ showPassword, loading }, setUIState] = useState({
-    showPassword: false,
-    loading: false,
-  });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -31,36 +36,21 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setUIState((prev) => ({ ...prev, loading: true }));
-
+    
     try {
-      const response = await loginApi.getLogin({
-        id: formData.id,
+      const response = await login({
+        id: formData.id.trim(),
         password: formData.password
       });
       
-      if (response && response.data) {
-        // Lưu token và thông tin user vào localStorage
-        localStorage.setItem('token', response.data.accessToken);
-        localStorage.setItem('user', JSON.stringify(response.data));
-        
-        // Chuyển hướng sau khi đăng nhập thành công
-        navigate("/");
+      if (response.roles.includes('ADMIN')) {
+        navigate("/admin/index");
       } else {
-        throw new Error('Invalid response from server');
+        navigate("/");
       }
-      
-    } catch (error) {
-      console.error("Login error:", error);
-      let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
-      if (error.response?.data) {
-        errorMessage = typeof error.response.data === 'string' 
-          ? error.response.data 
-          : error.response.data.message || errorMessage;
-      }
-      alert(errorMessage);
-    } finally {
-      setUIState((prev) => ({ ...prev, loading: false }));
+    } catch (err) {
+      // Error is handled by useAuth hook
+      console.error("Login failed:", err.message);
     }
   };
 
@@ -139,10 +129,7 @@ const Login = () => {
                   type="button"
                   className="visibility-toggle"
                   onClick={() =>
-                    setUIState((prev) => ({
-                      ...prev,
-                      showPassword: !prev.showPassword,
-                    }))
+                    setShowPassword(!showPassword)
                   }
                   whileTap={{ scale: 0.9 }}
                 >

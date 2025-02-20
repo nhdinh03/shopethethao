@@ -1,7 +1,7 @@
 import { Card } from 'antd';
 import style from './LayoutPageDefault.module.scss';
 import classNames from 'classnames/bind';
-import Bread from 'layouts/Breadcrumb/Breadcrumb';
+import Bread from 'layouts/Admin/Breadcrumb/Breadcrumb';
 import { useLocation } from 'react-router-dom';
 
 const cx = classNames.bind(style);
@@ -11,9 +11,9 @@ function LayoutPageDefault({ children, path = '' }) {
       const isHomePage = location.pathname === '/admin/index'; 
     return (
         <>
-            <Card bordered={false} className={cx('card-Breadcrumb')}>
+            {/* <Card bordered={false} className={cx('card-Breadcrumb')}>
                 <Bread path={path} />
-            </Card>
+            </Card> */}
 
             {isHomePage ? (
                 // Ẩn Card nếu là trang chủ

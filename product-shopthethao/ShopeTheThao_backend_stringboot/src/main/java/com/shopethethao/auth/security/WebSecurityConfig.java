@@ -18,9 +18,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.shopethethao.auth.security.jwt.AuthEntryPointJwt;
-import com.shopethethao.auth.security.jwt.AuthTokenFilter;
-import com.shopethethao.auth.security.services.UserDetailsServiceImpl;
+import com.shopethethao.auth.security.jwt.filter.AuthTokenFilter;
+import com.shopethethao.auth.security.jwt.handler.AuthEntryPointJwt;
+import com.shopethethao.auth.security.user.service.UserDetailsServiceImpl;
 
 
 @Configuration

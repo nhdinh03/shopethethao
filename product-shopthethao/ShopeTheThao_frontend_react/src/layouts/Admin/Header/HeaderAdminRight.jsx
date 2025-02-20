@@ -18,10 +18,12 @@ import {
   Badge,
   Switch,
 } from "antd";
+import authApi from "api/Admin/Auth/Login";
 import img from "assets/Img";
 import { useDarkMode } from "config/DarkModeProvider";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 
 function HeaderAdminRight() {
@@ -47,12 +49,17 @@ function HeaderAdminRight() {
 
   const handleLogout = async () => {
     try {
-      localStorage.clear();
-      navigate("/login");
+        await authApi.logout();
+        // Navigate to login page
+        navigate('/login');
+        // Optional: Show success message
+        toast.success('Đăng xuất thành công!');
     } catch (error) {
-      console.error("Logout failed", error);
+        console.error('Logout failed:', error);
+        // Optional: Show error message
+        toast.error('Đăng xuất thất bại, vui lòng thử lại!');
     }
-  };
+};
 
   const changeLanguage = (lang) => {
     console.log(`Chuyển đổi ngôn ngữ sang: ${lang}`);

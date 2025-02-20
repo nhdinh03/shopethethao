@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.shopethethao.auth.payload.response.TokenStore;
-import com.shopethethao.auth.security.jwt.JwtUtils;
-import com.shopethethao.auth.security.services.UserDetailsImpl;
+import com.shopethethao.auth.security.jwt.util.JwtUtils;
+import com.shopethethao.auth.security.token.TokenStore;
+import com.shopethethao.auth.security.user.entity.UserDetailsImpl;
 
 import jakarta.servlet.http.HttpServletRequest;
 

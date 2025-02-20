@@ -1,4 +1,4 @@
-package com.shopethethao.auth.OTP.util;
+package com.shopethethao.auth.otp.util;
 import java.util.Random;
 import org.springframework.stereotype.Component;
 

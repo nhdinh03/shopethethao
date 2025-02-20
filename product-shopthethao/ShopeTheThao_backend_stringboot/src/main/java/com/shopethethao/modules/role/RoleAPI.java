@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.shopethethao.auth.models.SecurityERole;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.dto.RoleValidationException;
 
@@ -76,9 +75,9 @@ public class RoleAPI {
         }
 
         // Validate against allowed values
-        if (!SecurityERole.getAllowedValues().contains(role.getName().name())) {
+        if (!ERole.getAllowedValues().contains(role.getName().name())) {
             throw new RoleValidationException("Vai trò phải là một trong: " + 
-                String.join(", ", SecurityERole.getAllowedValues()));
+                String.join(", ", ERole.getAllowedValues()));
         }
 
         // Check if role already exists

@@ -31,24 +31,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.shopethethao.auth.OTP.util.AccountValidationUtil;
-import com.shopethethao.auth.OTP.util.EmailUtil;
-import com.shopethethao.auth.OTP.util.OtpUtil;
-import com.shopethethao.auth.models.SecurityERole;
-import com.shopethethao.auth.payload.request.ChangePasswordRequest;
-import com.shopethethao.auth.payload.request.ForgotPassword;
-import com.shopethethao.auth.payload.request.LoginRequest;
-import com.shopethethao.auth.payload.request.NewOtp;
-import com.shopethethao.auth.payload.request.SignupRequest;
+import com.shopethethao.auth.otp.util.AccountValidationUtil;
+import com.shopethethao.auth.otp.util.EmailUtil;
+import com.shopethethao.auth.otp.util.OtpUtil;
+import com.shopethethao.auth.payload.auth.request.LoginRequest;
+import com.shopethethao.auth.payload.auth.request.SignupRequest;
+import com.shopethethao.auth.payload.otp.request.NewOtp;
+import com.shopethethao.auth.payload.password.request.ChangePasswordRequest;
+import com.shopethethao.auth.payload.password.request.ForgotPassword;
 import com.shopethethao.auth.payload.response.JwtResponseDTO;
 import com.shopethethao.auth.payload.response.MessageResponse;
-import com.shopethethao.auth.payload.response.TokenStore;
-import com.shopethethao.auth.security.jwt.JwtUtils;
-import com.shopethethao.auth.security.services.UserDetailsImpl;
+import com.shopethethao.auth.security.jwt.util.JwtUtils;
+import com.shopethethao.auth.security.token.TokenStore;
+import com.shopethethao.auth.security.user.entity.UserDetailsImpl;
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.account.AccountDAO;
 import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.role.RoleDAO;
+import com.shopethethao.modules.role.ERole;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
 
@@ -181,12 +181,12 @@ public class AuthController {
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
         if (strRoles == null) {
-            Role userRole = roleRepository.findByName(SecurityERole.USER)
+            Role userRole = roleRepository.findByName(ERole.USER)
                     .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò"));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
-                SecurityERole roleEnum = SecurityERole.fromString(role);
+                ERole roleEnum = ERole.fromString(role);
                 Role securityRole = roleRepository.findByName(roleEnum)
                         .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò - " + role));
                 roles.add(securityRole);
@@ -412,8 +412,24 @@ public class AuthController {
 
     @GetMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request) {
-        SecurityContextHolder.clearContext();
-        return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công!"));
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String jwt = authHeader.substring(7);
+                String userId = jwtUtils.getUserNameFromJwtToken(jwt);
+                // Invalidate token in TokenStore
+                tokenStore.invalidateToken(userId);
+            }
+            
+            // Clear security context
+            SecurityContextHolder.clearContext();
+            
+            return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công!"));
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new MessageResponse("Lỗi khi đăng xuất: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/getAll")

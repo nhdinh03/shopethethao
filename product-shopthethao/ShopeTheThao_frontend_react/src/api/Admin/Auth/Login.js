@@ -1,143 +1,182 @@
-import axiosClient from 'api/global/axiosClient';
+import axiosClient from "api/global/axiosClient";
 
 const endpoints = {
-    auth: 'auth/signin',
-    signup: 'auth/signup',
-    logout: 'auth/logout',
-    regenerateOtp: 'auth/regenerate-otp',
-    verifyAccount: 'auth/verify-account',
-    changePassword: 'auth/change-password',
-    SendOtpEmail: 'auth/forgot-password',
-    ResetPassword: 'auth/reset-password'
+  auth: "auth/signin",
+  signup: "auth/signup",
+  logout: "auth/logout",
+  regenerateOtp: "auth/regenerate-otp",
+  verifyAccount: "auth/verify-account",
+  changePassword: "auth/change-password",
+  SendOtpEmail: "auth/forgot-password",
+  ResetPassword: "auth/reset-password",
 };
 
 const authApi = {
-    getLogin: async (values) => {
-        try {
-            const response = await axiosClient.post(endpoints.auth, values);
+  getLogin: async (values) => {
+    try {
+      const response = await axiosClient.post(endpoints.auth, values);
+      const data = response?.data;
 
-            if (response.data.accessToken) {
-                localStorage.setItem('token', response.data.accessToken);
-            }
-            if (response.data) {
-                localStorage.setItem('user', JSON.stringify(response.data));
-            }
-            if (response.data.roles) {
-                localStorage.setItem('roles', JSON.stringify(response.data.roles));
-            }
+      if (!data || !data.token || !data.type || !data.roles) {
+        throw new Error("Invalid response format");
+      }
 
-            return response;
-        } catch (error) {
-            console.error('Lỗi đăng nhập:', error);
-            throw error;
-        }
-    },
+      localStorage.clear();
 
-    getVerifyAccount: async (values) => {
-        try {
-            const response = await axiosClient.post(endpoints.verifyAccount, values);
+      const token = `${data.type} ${data.token}`;
+      localStorage.setItem("token", token);
 
-            return response;
-        } catch (error) {
-            console.error('Lỗi đăng nhập:', error);
-            throw error;
-        }
-    },
+      const userData = {
+        id: data.id,
+        fullname: data.fullname,
+        email: data.email,
+        phone: data.phone,
+        image: data.image,
+        gender: data.gender,
+        birthday: data.birthday,
+        address: data.address,
+        roles: data.roles,
+      };
 
-    signup: async (values) => {
-        try {
-            const response = await axiosClient.post(endpoints.signup, values);
-            const { data } = response;
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("roles", JSON.stringify(data.roles));
 
-            if (data.user) {
-                localStorage.setItem('user', JSON.stringify(data.user));
-            }
+      return {
+        success: true,
+        data: userData,
+        roles: data.roles,
+      };
+    } catch (error) {
+      // Ensure cleanup on error
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("roles");
+      throw error;
+    }
+  },
 
-            return data;
-        } catch (error) {
-            console.error('lỗi', error);
-            throw error;
-        }
-    },
+  getVerifyAccount: async (values) => {
+    try {
+      const response = await axiosClient.post(endpoints.verifyAccount, values);
 
-    regenerateOtp: async (email) => {
-        try {
-            const response = await axiosClient.put(`${endpoints.regenerateOtp}?email=${(email)}`);
-            return response.data;
-        } catch (error) {
-            console.error('Lỗi trong quá trình tái tạo OTP:', error);
-            throw error;
-        }
-    },
+      return response;
+    } catch (error) {
+      console.error("Lỗi đăng nhập:", error);
+      throw error;
+    }
+  },
 
-    changePasswordNew: async (values) => {
-        try {
-            const response = await axiosClient.put(endpoints.changePassword, values);
-            return response.data;
-        } catch (error) {
-            console.error('Lỗi Đổi mật khẩu:', error);
-            throw error;
-        }
-    },
+  signup: async (values) => {
+    try {
+      const response = await axiosClient.post(endpoints.signup, values);
+      const { data } = response;
 
-    ResetPasswordNew: async (values) => {
-        try {
-            const response = await axiosClient.put(endpoints.ResetPassword, values);
-            return response.data;
-        } catch (error) {
-            console.error('Lỗi Đổi mật khẩu:', error);
-            throw error;
-        }
-    },
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
 
-    sendOtpEmailNew: async (values) => {
-        try {
-            const response = await axiosClient.put(endpoints.SendOtpEmail, values);
-            return response.data;
-        } catch (error) {
-            console.error('Lỗi gửi email:', error);
-            throw error;
-        }
-    },
+      return data;
+    } catch (error) {
+      console.error("lỗi", error);
+      throw error;
+    }
+  },
 
-    getToken() {
-        const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                return JSON.parse(token);
-            } catch (e) {
-                console.error('Lỗi khi phân tích token:', e);
-                return null;
-            }
-        }
+  regenerateOtp: async (email) => {
+    try {
+      const response = await axiosClient.put(
+        `${endpoints.regenerateOtp}?email=${email}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi trong quá trình tái tạo OTP:", error);
+      throw error;
+    }
+  },
+
+  changePasswordNew: async (values) => {
+    try {
+      const response = await axiosClient.put(endpoints.changePassword, values);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi Đổi mật khẩu:", error);
+      throw error;
+    }
+  },
+
+  ResetPasswordNew: async (values) => {
+    try {
+      const response = await axiosClient.put(endpoints.ResetPassword, values);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi Đổi mật khẩu:", error);
+      throw error;
+    }
+  },
+
+  sendOtpEmailNew: async (values) => {
+    try {
+      const response = await axiosClient.put(endpoints.SendOtpEmail, values);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi gửi email:", error);
+      throw error;
+    }
+  },
+
+  getToken() {
+    try {
+      const token = localStorage.getItem("token");
+      return token && token !== "undefined" ? token : null;
+    } catch (error) {
+      console.error("Token retrieval error:", error);
+      return null;
+    }
+  },
+
+  getUser() {
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        return JSON.parse(user);
+      } catch (e) {
+        console.error("Lỗi khi phân tích user:", e);
         return null;
-    },
+      }
+    }
+    return null;
+  },
 
-    getUser() {
-        const user = localStorage.getItem('user');
-        if (user) {
-            try {
-                return JSON.parse(user);
-            } catch (e) {
-                console.error('Lỗi khi phân tích user:', e);
-                return null;
-            }
-        }
-        return null;
-    },
+  
 
-    logout() {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        localStorage.removeItem('roles');
-        return axiosClient.get(endpoints.logout)
-            .then(response => {
-                console.log(response.data);
-            })
-            .catch(error => {
-                console.error('Error during logout:', error);
-            });
-    },
-}
+  logout() {
+    const token = this.getToken();
+    // Xóa tất cảlocalStorage trước
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("roles");
+
+    // Chỉ thực hiện lệnh gọi API nếu chúng tôi có mã thông báo
+    if (token) {
+      return axiosClient
+        .get(endpoints.logout, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        .then((response) => {
+          console.log("Đăng xuất thành công:", response.data);
+          return response.data;
+        })
+        .catch((error) => {
+          console.error("Lỗi đăng xuất:", error);
+          throw error;
+        });
+    }
+
+    // Return resolved promise if no token
+    return Promise.resolve({ message: "Đã đăng localStorage" });
+  },
+};
 
 export default authApi;
