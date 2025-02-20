@@ -25,13 +25,21 @@ import {
   faTruck,
   faBan,
 } from "@fortawesome/free-solid-svg-icons";
-import { PlusOutlined } from "@ant-design/icons";
+
 import {
   UserOutlined,
   CalendarOutlined,
   HomeOutlined,
   TagOutlined,
   ShoppingOutlined,
+  EyeOutlined,
+  CheckOutlined,
+  StopOutlined,
+  UndoOutlined,
+  ClockCircleOutlined,
+  SyncOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import { Col, Row as AntRow, Divider, Statistic } from "antd";
 
@@ -390,175 +398,201 @@ const Invoices = () => {
     </Modal>
   );
 
-  // Các cột cho bảng trạng thái PENDING
-  const columnsPending = [
-    { title: "Mã hóa đơn", dataIndex: "invoiceId", key: "invoiceId" },
-    { title: "Ngày đặt hàng", dataIndex: "orderDate", key: "orderDate" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
-    { title: "Tên khách hàng", dataIndex: "customerName", key: "customerName" },
-    {
-      title: "Giá đơn hàng",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (value) => {
-        return new Intl.NumberFormat("vi-VN", {
+  // Common column configurations
+const commonColumns = {
+  invoiceId: {
+    title: "Mã hóa đơn",
+    dataIndex: "invoiceId",
+    key: "invoiceId",
+    width: 150,
+    render: (id) => (
+      <Tag color="blue" style={{ fontSize: '14px', padding: '4px 8px' }}>
+        {id}
+      </Tag>
+    ),
+  },
+  orderDate: {
+    title: "Ngày đặt hàng",
+    dataIndex: "orderDate",
+    key: "orderDate",
+    width: 180,
+    render: (date) => (
+      <span>
+        <CalendarOutlined style={{ marginRight: 8 }} />
+        {moment(date).format("DD/MM/YYYY HH:mm")}
+      </span>
+    ),
+  },
+  status: {
+    title: "Trạng thái",
+    dataIndex: "status",
+    key: "status",
+    width: 150,
+    render: (status) => {
+      const statusConfig = {
+        "Chờ xử lý": { color: "gold", icon: <ClockCircleOutlined /> },
+        "Đang giao hàng": { color: "processing", icon: <SyncOutlined spin /> },
+        "Đã giao hàng": { color: "success", icon: <CheckCircleOutlined /> },
+        "Đã hủy": { color: "error", icon: <CloseCircleOutlined /> },
+      };
+      const config = statusConfig[status] || { color: "default", icon: null };
+      return (
+        <Tag color={config.color} icon={config.icon}>
+          {status}
+        </Tag>
+      );
+    },
+  },
+  customerName: {
+    title: "Tên khách hàng",
+    dataIndex: "customerName",
+    key: "customerName",
+    width: 200,
+    render: (name) => (
+      <span>
+        <UserOutlined style={{ marginRight: 8 }} />
+        {name}
+      </span>
+    ),
+  },
+  totalAmount: {
+    title: "Giá đơn hàng",
+    dataIndex: "totalAmount",
+    key: "totalAmount",
+    width: 180,
+    align: 'right',
+    render: (value) => (
+      <Text strong style={{ color: '#f50' }}>
+        {new Intl.NumberFormat("vi-VN", {
           style: "currency",
           currency: "VND",
-        }).format(value);
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => DetailedInvoices(record.invoiceId)}
-            className="add-btn"
-          >
-            Xem chi tiết
-          </Button>
-          <Tooltip title="Xác nhận đơn">
-            <Button
-              type="primary"
-              icon={<FontAwesomeIcon icon={faCheckCircle} />}
-              onClick={() => handleStatusUpdate(record.invoiceId, "SHIPPING")}
-            >
-              Xác nhận đơn
-            </Button>
-          </Tooltip>
-          <Tooltip title="Hủy đơn">
-            <Button
-              type="danger"
-              icon={<FontAwesomeIcon icon={faBan} />}
-              onClick={() => handleStatusUpdate(record.invoiceId, "CANCELLED")}
-              disabled={record.status === "CANCELLED"} // Disable nếu đơn đã bị hủy
-            >
-              Hủy đơn
-            </Button>
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
+        }).format(value)}
+      </Text>
+    ),
+  },
+};
 
-  // Các cột cho bảng trạng thái SHIPPING
-  const columnsShipping = [
-    { title: "Mã hóa đơn", dataIndex: "invoiceId", key: "invoiceId" },
-    { title: "Ngày đặt hàng", dataIndex: "orderDate", key: "orderDate" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
-    { title: "Tên khách hàng", dataIndex: "customerName", key: "customerName" },
-    {
-      title: "Giá đơn hàng",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (value) => {
-        return new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(value);
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => DetailedInvoices(record.invoiceId)}
-            className="add-btn"
-          >
-            Xem chi tiết
-          </Button>
-          <Tooltip title="Xác nhận giao hàng">
-            <Button
-              type="default"
-              icon={<FontAwesomeIcon icon={faTruck} />}
-              onClick={() => handleStatusUpdate(record.invoiceId, "DELIVERED")}
-            >
-              Xác nhận giao
-            </Button>
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
+// Enhanced action buttons with consistent styling
+const getActionButtons = (record, type) => {
+  const viewDetailsButton = (
+    <Button
+      type="primary"
+      icon={<EyeOutlined />}
+      onClick={() => DetailedInvoices(record.invoiceId)}
+      style={{ background: '#1890ff' }}
+    >
+      Chi tiết
+    </Button>
+  );
 
-  // Các cột cho bảng trạng thái DELIVERED
-  const columnsDelivered = [
-    { title: "Mã hóa đơn", dataIndex: "invoiceId", key: "invoiceId" },
-    { title: "Ngày đặt hàng", dataIndex: "orderDate", key: "orderDate" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
-    { title: "Tên khách hàng", dataIndex: "customerName", key: "customerName" },
-    // { title: "Chi tiết đơn hàng", dataIndex: "customerName", key: "customerName" },
-    {
-      title: "Giá đơn hàng",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (value) => {
-        return new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(value);
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => DetailedInvoices(record.invoiceId)}
-            className="add-btn"
-          >
-            Xem chi tiết
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+  const actionButtons = {
+    pending: [
+      viewDetailsButton,
+      <Button
+        type="primary"
+        icon={<CheckOutlined />}
+        onClick={() => handleStatusUpdate(record.invoiceId, "SHIPPING")}
+        style={{ background: '#52c41a' }}
+      >
+        Xác nhận
+      </Button>,
+      <Button
+        danger
+        icon={<StopOutlined />}
+        onClick={() => handleStatusUpdate(record.invoiceId, "CANCELLED")}
+        disabled={record.status === "CANCELLED"}
+      >
+        Hủy đơn
+      </Button>
+    ],
+    shipping: [
+      viewDetailsButton,
+      <Button
+        type="primary"
+        icon={<FontAwesomeIcon icon={faTruck} />}
+        onClick={() => handleStatusUpdate(record.invoiceId, "DELIVERED")}
+        style={{ background: '#13c2c2' }}
+      >
+        Xác nhận giao
+      </Button>
+    ],
+    delivered: [viewDetailsButton],
+    cancelled: [
+      viewDetailsButton,
+      <Button
+        type="primary"
+        icon={<UndoOutlined />}
+        onClick={() => updateInvoiceStatus(record.invoiceId, "PENDING")}
+        style={{ background: '#722ed1' }}
+      >
+        Khôi phục
+      </Button>
+    ]
+  };
 
-  // Các cột cho bảng trạng thái CANCELLED
-  const columnsCancelled = [
-    { title: "Mã hóa đơn", dataIndex: "invoiceId", key: "invoiceId" },
-    { title: "Ngày đặt hàng", dataIndex: "orderDate", key: "orderDate" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
-    { title: "Tên khách hàng", dataIndex: "customerName", key: "customerName" },
-    {
-      title: "Giá đơn hàng",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (value) => {
-        return new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(value);
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Khôi phục đơn">
-            <Button
-              type="primary"
-              icon={<FontAwesomeIcon icon={faCheckCircle} />}
-              onClick={() => updateInvoiceStatus(record.invoiceId, "PENDING")}
-            >
-              Khôi phục
-            </Button>
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
+  return (
+    <Space size="middle">
+      {actionButtons[type]}
+    </Space>
+  );
+};
+
+// Updated column definitions
+const columnsPending = [
+  commonColumns.invoiceId,
+  commonColumns.orderDate,
+  commonColumns.status,
+  commonColumns.customerName,
+  commonColumns.totalAmount,
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 300,
+    render: (_, record) => getActionButtons(record, 'pending'),
+  },
+];
+
+const columnsShipping = [
+  commonColumns.invoiceId,
+  commonColumns.orderDate,
+  commonColumns.status,
+  commonColumns.customerName,
+  commonColumns.totalAmount,
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 250,
+    render: (_, record) => getActionButtons(record, 'shipping'),
+  },
+];
+
+const columnsDelivered = [
+  commonColumns.invoiceId,
+  commonColumns.orderDate,
+  commonColumns.status,
+  commonColumns.customerName,
+  commonColumns.totalAmount,
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 120,
+    render: (_, record) => getActionButtons(record, 'delivered'),
+  },
+];
+
+const columnsCancelled = [
+  commonColumns.invoiceId,
+  commonColumns.orderDate,
+  commonColumns.status,
+  commonColumns.customerName,
+  commonColumns.totalAmount,
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 250,
+    render: (_, record) => getActionButtons(record, 'cancelled'),
+  },
+];
 
   // Define tab items with the recommended format
   const items = [

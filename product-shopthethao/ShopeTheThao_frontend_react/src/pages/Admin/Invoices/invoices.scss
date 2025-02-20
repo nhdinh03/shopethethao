@@ -1,101 +1,185 @@
 .invoice-detail-modal {
-    .ant-modal-content {
+  .ant-modal-content {
+    border-radius: 8px;
+
+    .ant-modal-header {
+      border-radius: 8px 8px 0 0;
+      background: #f8f9fa;
+      padding: 16px 24px;
+
+      .modal-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .anticon {
+          font-size: 20px;
+          color: #1890ff;
+        }
+
+        .title-text {
+          font-size: 18px;
+          font-weight: 600;
+          color: #262626;
+        }
+      }
+    }
+  }
+
+  .invoice-card {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+
+    .ant-card-head {
+      min-height: 48px;
+      padding: 0 16px;
+      background: #fafafa;
+      border-bottom: 1px solid #f0f0f0;
+      border-radius: 8px 8px 0 0;
+
+      .ant-card-head-title {
+        padding: 12px 0;
+
+        .anticon {
+          margin-right: 8px;
+          color: #1890ff;
+        }
+      }
+    }
+
+    .ant-card-body {
+      padding: 16px;
+    }
+
+    .ant-descriptions-item-label {
+      color: #595959;
+      font-weight: 500;
+    }
+
+    .ant-descriptions-item-content {
+      color: #262626;
+    }
+  }
+
+  .product-table {
+    .ant-table {
       border-radius: 8px;
-      
-      .ant-modal-header {
-        border-radius: 8px 8px 0 0;
-        background: #f8f9fa;
-        padding: 16px 24px;
-        
-        .modal-title {
+    }
+
+    .ant-table-thead > tr > th {
+      background: #fafafa;
+      font-weight: 600;
+    }
+
+    .ant-table-cell {
+      padding: 12px 16px;
+    }
+
+    .product-image {
+      border-radius: 4px;
+      border: 1px solid #f0f0f0;
+    }
+
+    .ant-tag {
+      margin: 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .ant-table-summary {
+      background: #fafafa;
+
+      .total-amount {
+        font-size: 16px;
+
+        &.danger {
+          color: #f5222d;
+        }
+      }
+    }
+  }
+}
+
+// Add new styles for enhanced table appearance
+.ant-table {
+  .ant-table-thead > tr > th {
+    background: #fafafa;
+    padding: 16px;
+    font-weight: 600;
+    color: #262626;
+    border-bottom: 2px solid #f0f0f0;
+
+    &:hover {
+      background: #f5f5f5 !important;
+    }
+  }
+
+  .ant-table-tbody > tr {
+    &:hover {
+      td {
+        background: #f5f5f5;
+      }
+    }
+
+    td {
+      padding: 16px;
+      transition: background 0.3s;
+
+      .ant-tag {
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 13px;
+
+        .anticon {
+          margin-right: 4px;
+        }
+      }
+
+      .ant-space {
+        .ant-btn {
+          border-radius: 6px;
+          height: 32px;
+          padding: 4px 15px;
           display: flex;
           align-items: center;
-          gap: 12px;
-          
+          gap: 6px;
+
           .anticon {
-            font-size: 20px;
-            color: #1890ff;
-          }
-          
-          .title-text {
-            font-size: 18px;
-            font-weight: 600;
-            color: #262626;
-          }
-        }
-      }
-    }
-  
-    .invoice-card {
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-      border-radius: 8px;
-      
-      .ant-card-head {
-        min-height: 48px;
-        padding: 0 16px;
-        background: #fafafa;
-        border-bottom: 1px solid #f0f0f0;
-        border-radius: 8px 8px 0 0;
-  
-        .ant-card-head-title {
-          padding: 12px 0;
-          
-          .anticon {
-            margin-right: 8px;
-            color: #1890ff;
-          }
-        }
-      }
-  
-      .ant-card-body {
-        padding: 16px;
-      }
-  
-      .ant-descriptions-item-label {
-        color: #595959;
-        font-weight: 500;
-      }
-  
-      .ant-descriptions-item-content {
-        color: #262626;
-      }
-    }
-  
-    .product-table {
-      .ant-table {
-        border-radius: 8px;
-      }
-  
-      .ant-table-thead > tr > th {
-        background: #fafafa;
-        font-weight: 600;
-      }
-  
-      .ant-table-cell {
-        padding: 12px 16px;
-      }
-  
-      .product-image {
-        border-radius: 4px;
-        border: 1px solid #f0f0f0;
-      }
-  
-      .ant-tag {
-        margin: 0;
-        padding: 4px 8px;
-        border-radius: 4px;
-      }
-  
-      .ant-table-summary {
-        background: #fafafa;
-        
-        .total-amount {
-          font-size: 16px;
-          
-          &.danger {
-            color: #f5222d;
+            font-size: 14px;
           }
         }
       }
     }
   }
+}
+
+// Enhanced invoice status tags
+.status-tag {
+  text-transform: uppercase;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+
+  &.pending {
+    background: #fffbe6;
+    border-color: #ffe58f;
+    color: #faad14;
+  }
+
+  &.shipping {
+    background: #e6f7ff;
+    border-color: #91d5ff;
+    color: #1890ff;
+  }
+
+  &.delivered {
+    background: #f6ffed;
+    border-color: #b7eb8f;
+    color: #52c41a;
+  }
+
+  &.cancelled {
+    background: #fff1f0;
+    border-color: #ffa39e;
+    color: #f5222d;
+  }
+}
