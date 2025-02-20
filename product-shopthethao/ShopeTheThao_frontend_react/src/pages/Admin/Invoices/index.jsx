@@ -56,15 +56,47 @@ const Invoices = () => {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [cancelReasons, setCancelReasons] = useState([]); // Add this state
 
-  // Add pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const [totalItems, setTotalItems] = useState(0);
-  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
+  // Separate pagination states for each tab
+  const [pendingPagination, setPendingPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    totalItems: 0
+  });
 
-  const handlePageSizeChange = (value) => {
-    setPageSize(value);
-    setCurrentPage(1); // Reset to first page when changing page size
+  const [shippingPagination, setShippingPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    totalItems: 0
+  });
+
+  const [deliveredPagination, setDeliveredPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    totalItems: 0
+  });
+
+  const [cancelledPagination, setCancelledPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    totalItems: 0
+  });
+
+  // Handle page size change for each tab
+  const handlePageSizeChange = (value, type) => {
+    switch (type) {
+      case 'pending':
+        setPendingPagination(prev => ({ ...prev, pageSize: value, currentPage: 1 }));
+        break;
+      case 'shipping':
+        setShippingPagination(prev => ({ ...prev, pageSize: value, currentPage: 1 }));
+        break;
+      case 'delivered':
+        setDeliveredPagination(prev => ({ ...prev, pageSize: value, currentPage: 1 }));
+        break;
+      case 'cancelled':
+        setCancelledPagination(prev => ({ ...prev, pageSize: value, currentPage: 1 }));
+        break;
+    }
   };
 
   // Form instances
@@ -76,31 +108,85 @@ const Invoices = () => {
   }, []);
 
   useEffect(() => {
-    const fetchAllInvoices = async () => {
+    const fetchPendingInvoices = async () => {
       setLoading(true);
       try {
-        const [pendingRes, shippingRes, deliveredRes, cancelledRes] =
-          await Promise.all([
-            invoicesApi.getPending(currentPage, pageSize),
-            invoicesApi.getShipping(currentPage, pageSize),
-            invoicesApi.getDelivered(currentPage, pageSize),
-            invoicesApi.getCancelled(currentPage, pageSize),
-          ]);
-
-        setPendingInvoices(pendingRes.data);
-        setShippingInvoices(shippingRes.data);
-        setDeliveredInvoices(deliveredRes.data);
-        setCancelledInvoices(cancelledRes.data);
-        setTotalItems(pendingRes.totalItems); // Set total items for pagination
+        const response = await invoicesApi.getPending(
+          pendingPagination.currentPage,
+          pendingPagination.pageSize
+        );
+        setPendingInvoices(response.data);
+        setPendingPagination(prev => ({ ...prev, totalItems: response.totalItems }));
       } catch (error) {
-        message.error("Không thể tải dữ liệu hóa đơn!");
+        message.error("Không thể tải dữ liệu hóa đơn chờ xử lý!");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAllInvoices();
-  }, [currentPage, pageSize]);
+    fetchPendingInvoices();
+  }, [pendingPagination.currentPage, pendingPagination.pageSize]);
+
+  // Similar useEffects for other statuses
+  useEffect(() => {
+    const fetchShippingInvoices = async () => {
+      setLoading(true);
+      try {
+        const response = await invoicesApi.getShipping(
+          shippingPagination.currentPage,
+          shippingPagination.pageSize
+        );
+        setShippingInvoices(response.data);
+        setShippingPagination(prev => ({ ...prev, totalItems: response.totalItems }));
+      } catch (error) {
+        message.error("Không thể tải dữ liệu hóa đơn đang giao!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShippingInvoices();
+  }, [shippingPagination.currentPage, shippingPagination.pageSize]);
+
+  useEffect(() => {
+    const fetchDeliveredInvoices = async () => {
+      setLoading(true);
+      try {
+        const response = await invoicesApi.getDelivered(
+          deliveredPagination.currentPage,
+          deliveredPagination.pageSize
+        );
+        setDeliveredInvoices(response.data);
+        setDeliveredPagination(prev => ({ ...prev, totalItems: response.totalItems }));
+      } catch (error) {
+        message.error("Không thể tải dữ liệu hóa đơn đã giao!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeliveredInvoices();
+  }, [deliveredPagination.currentPage, deliveredPagination.pageSize]);
+
+  useEffect(() => {
+    const fetchCancelledInvoices = async () => {
+      setLoading(true);
+      try {
+        const response = await invoicesApi.getCancelled(
+          cancelledPagination.currentPage,
+          cancelledPagination.pageSize
+        );
+        setCancelledInvoices(response.data);
+        setCancelledPagination(prev => ({ ...prev, totalItems: response.totalItems }));
+      } catch (error) {
+        message.error("Không thể tải dữ liệu hóa đơn đã hủy!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCancelledInvoices();
+  }, [cancelledPagination.currentPage, cancelledPagination.pageSize]);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -499,14 +585,14 @@ const Invoices = () => {
             }}
           >
             <PaginationComponent
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
+              totalPages={Math.ceil(pendingPagination.totalItems / pendingPagination.pageSize)}
+              currentPage={pendingPagination.currentPage}
+              setCurrentPage={(page) => setPendingPagination(prev => ({ ...prev, currentPage: page }))}
             />
             <Select
-              value={pageSize}
+              value={pendingPagination.pageSize}
               style={{ width: 120, marginTop: 20 }}
-              onChange={handlePageSizeChange}
+              onChange={(value) => handlePageSizeChange(value, 'pending')}
             >
               <Select.Option value={5}>5 hàng</Select.Option>
               <Select.Option value={10}>10 hàng</Select.Option>
@@ -540,14 +626,14 @@ const Invoices = () => {
             }}
           >
             <PaginationComponent
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
+              totalPages={Math.ceil(shippingPagination.totalItems / shippingPagination.pageSize)}
+              currentPage={shippingPagination.currentPage}
+              setCurrentPage={(page) => setShippingPagination(prev => ({ ...prev, currentPage: page }))}
             />
             <Select
-              value={pageSize}
+              value={shippingPagination.pageSize}
               style={{ width: 120, marginTop: 20 }}
-              onChange={handlePageSizeChange}
+              onChange={(value) => handlePageSizeChange(value, 'shipping')}
             >
               <Select.Option value={5}>5 hàng</Select.Option>
               <Select.Option value={10}>10 hàng</Select.Option>
@@ -581,14 +667,14 @@ const Invoices = () => {
             }}
           >
             <PaginationComponent
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
+              totalPages={Math.ceil(deliveredPagination.totalItems / deliveredPagination.pageSize)}
+              currentPage={deliveredPagination.currentPage}
+              setCurrentPage={(page) => setDeliveredPagination(prev => ({ ...prev, currentPage: page }))}
             />
             <Select
-              value={pageSize}
+              value={deliveredPagination.pageSize}
               style={{ width: 120, marginTop: 20 }}
-              onChange={handlePageSizeChange}
+              onChange={(value) => handlePageSizeChange(value, 'delivered')}
             >
               <Select.Option value={5}>5 hàng</Select.Option>
               <Select.Option value={10}>10 hàng</Select.Option>
@@ -622,14 +708,14 @@ const Invoices = () => {
             }}
           >
             <PaginationComponent
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
+              totalPages={Math.ceil(cancelledPagination.totalItems / cancelledPagination.pageSize)}
+              currentPage={cancelledPagination.currentPage}
+              setCurrentPage={(page) => setCancelledPagination(prev => ({ ...prev, currentPage: page }))}
             />
             <Select
-              value={pageSize}
+              value={cancelledPagination.pageSize}
               style={{ width: 120, marginTop: 20 }}
-              onChange={handlePageSizeChange}
+              onChange={(value) => handlePageSizeChange(value, 'cancelled')}
             >
               <Select.Option value={5}>5 hàng</Select.Option>
               <Select.Option value={10}>10 hàng</Select.Option>

@@ -10,13 +10,9 @@ class InvoicesApi extends BaseApi {
   }
 
   async getPending(page = 1, limit = 5) {
-    const params = {
-      page,
-      limit,
-    };
+    const params = { page, limit };
     try {
       const response = await axiosClient.get(`${this.uri}/pending`, { params });
-      console.log(response);
       return {
         data: response.data?.data || [],
         totalItems: response.data?.totalItems || 0,
@@ -27,8 +23,6 @@ class InvoicesApi extends BaseApi {
       return { data: [], totalItems: 0, totalPages: 0 };
     }
   }
-
-  
 
   async getShipping(page = 1, limit = 5) {
     const params = {
@@ -90,7 +84,6 @@ class InvoicesApi extends BaseApi {
       return { data: [], totalItems: 0, totalPages: 0 };
     }
   }
-  
 
   async updateStatus(id, { status, cancelReasonId, note }) {
     if (!status) {
