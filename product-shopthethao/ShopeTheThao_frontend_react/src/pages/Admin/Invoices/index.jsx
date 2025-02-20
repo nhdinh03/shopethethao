@@ -38,6 +38,7 @@ import { Col, Row as AntRow, Divider, Statistic } from "antd";
 import moment from "moment";
 import { invoicesApi } from "api/Admin";
 import cancelReasonApi from "api/Admin/cancelReason/CancelReasonApi";
+import PaginationComponent from "components/PaginationComponent";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -55,6 +56,17 @@ const Invoices = () => {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [cancelReasons, setCancelReasons] = useState([]); // Add this state
 
+  // Add pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [totalItems, setTotalItems] = useState(0);
+  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
+
+  const handlePageSizeChange = (value) => {
+    setPageSize(value);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
   // Form instances
   const [updateForm] = Form.useForm();
 
@@ -62,6 +74,33 @@ const Invoices = () => {
     fetchInvoices();
     fetchCancelReasons(); // Add this call
   }, []);
+
+  useEffect(() => {
+    const fetchAllInvoices = async () => {
+      setLoading(true);
+      try {
+        const [pendingRes, shippingRes, deliveredRes, cancelledRes] =
+          await Promise.all([
+            invoicesApi.getPending(currentPage, pageSize),
+            invoicesApi.getShipping(currentPage, pageSize),
+            invoicesApi.getDelivered(currentPage, pageSize),
+            invoicesApi.getCancelled(currentPage, pageSize),
+          ]);
+
+        setPendingInvoices(pendingRes.data);
+        setShippingInvoices(shippingRes.data);
+        setDeliveredInvoices(deliveredRes.data);
+        setCancelledInvoices(cancelledRes.data);
+        setTotalItems(pendingRes.totalItems); // Set total items for pagination
+      } catch (error) {
+        message.error("Không thể tải dữ liệu hóa đơn!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllInvoices();
+  }, [currentPage, pageSize]);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -274,7 +313,7 @@ const Invoices = () => {
     {
       title: "Giá đơn hàng",
       dataIndex: "totalAmount",
-      key: "totalAmount", 
+      key: "totalAmount",
       render: (value) => {
         return new Intl.NumberFormat("vi-VN", {
           style: "currency",
@@ -441,56 +480,164 @@ const Invoices = () => {
       key: "1",
       label: "Chờ xử lý",
       children: (
-        <Table
-          loading={loading}
-          columns={columnsPending}
-          dataSource={pendingInvoices.map((item, index) => ({
-            ...item,
-            key: item.id || index,
-          }))}
-        />
+        <>
+          <Table
+            loading={loading}
+            columns={columnsPending}
+            dataSource={pendingInvoices.map((item, index) => ({
+              ...item,
+              key: item.id || index,
+            }))}
+            pagination={false}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 10,
+              gap: 10,
+            }}
+          >
+            <PaginationComponent
+              totalPages={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+            <Select
+              value={pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={handlePageSizeChange}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+              <Select.Option value={50}>50 hàng</Select.Option>
+            </Select>
+          </div>
+        </>
       ),
     },
     {
       key: "2",
       label: "Đang giao hàng",
       children: (
-        <Table
-          loading={loading}
-          columns={columnsShipping}
-          dataSource={shippingInvoices.map((item, index) => ({
-            ...item,
-            key: item.id || index,
-          }))}
-        />
+        <>
+          <Table
+            loading={loading}
+            columns={columnsShipping}
+            dataSource={shippingInvoices.map((item, index) => ({
+              ...item,
+              key: item.id || index,
+            }))}
+            pagination={false}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 10,
+              gap: 10,
+            }}
+          >
+            <PaginationComponent
+              totalPages={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+            <Select
+              value={pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={handlePageSizeChange}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+              <Select.Option value={50}>50 hàng</Select.Option>
+            </Select>
+          </div>
+        </>
       ),
     },
     {
       key: "3",
       label: "Đã giao hàng",
       children: (
-        <Table
-          loading={loading}
-          columns={columnsDelivered}
-          dataSource={deliveredInvoices.map((item, index) => ({
-            ...item,
-            key: item.id || index,
-          }))}
-        />
+        <>
+          <Table
+            loading={loading}
+            columns={columnsDelivered}
+            dataSource={deliveredInvoices.map((item, index) => ({
+              ...item,
+              key: item.id || index,
+            }))}
+            pagination={false}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 10,
+              gap: 10,
+            }}
+          >
+            <PaginationComponent
+              totalPages={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+            <Select
+              value={pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={handlePageSizeChange}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+              <Select.Option value={50}>50 hàng</Select.Option>
+            </Select>
+          </div>
+        </>
       ),
     },
     {
       key: "4",
       label: "Đã hủy",
       children: (
-        <Table
-          loading={loading}
-          columns={columnsCancelled}
-          dataSource={cancelledInvoices.map((item, index) => ({
-            ...item,
-            key: item.id || index,
-          }))}
-        />
+        <>
+          <Table
+            loading={loading}
+            columns={columnsCancelled}
+            dataSource={cancelledInvoices.map((item, index) => ({
+              ...item,
+              key: item.id || index,
+            }))}
+            pagination={false}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 10,
+              gap: 10,
+            }}
+          >
+            <PaginationComponent
+              totalPages={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+            <Select
+              value={pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={handlePageSizeChange}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+              <Select.Option value={50}>50 hàng</Select.Option>
+            </Select>
+          </div>
+        </>
       ),
     },
   ];

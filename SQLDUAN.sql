@@ -157,7 +157,8 @@ GO
 CREATE TABLE Sizes
 (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL UNIQUE
+    name NVARCHAR(255) NOT NULL UNIQUE,
+    description NVARCHAR(100) NULL
 );
 GO
 
@@ -269,7 +270,8 @@ CREATE TABLE UserHistory
 GO
 
 -- Tạo bảng RefreshToken (Token làm mới)
-CREATE TABLE RefreshToken (
+CREATE TABLE RefreshToken
+(
     id BIGINT IDENTITY(1,1) PRIMARY KEY,
     user_id NVARCHAR(100) NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,

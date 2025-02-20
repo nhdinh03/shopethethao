@@ -2,9 +2,14 @@ package com.shopethethao.modules.invoices;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shopethethao.dto.DetailedInvoicesDTO;
 import com.shopethethao.dto.InvoiceAllDTO;
 import com.shopethethao.dto.InvoiceListDTO;
+import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.dto.SizeDTO;
 import com.shopethethao.dto.UpdateStatusRequest;
 import com.shopethethao.modules.cancelReason.CancelReason;
 import com.shopethethao.modules.cancelReason.CancelReasonDAO;
+import com.shopethethao.modules.detailed_invoices.DetailedInvoices;
 import com.shopethethao.modules.detailed_invoices.DetailedInvoicesDAO;
 import com.shopethethao.modules.product_Images.ProductImages;
 
@@ -39,52 +46,85 @@ public class InvoiceAPI {
     private DetailedInvoicesDAO detailedInvoicesDAO;
 
     @GetMapping("/get/all")
-    public ResponseEntity<?> findAll() {
+    public ResponseEntity<List<Invoice>> findAll() {
+        List<Invoice> detailedInvoices = invoiceDAO.findAll();
+        return ResponseEntity.ok(detailedInvoices);
+    }
+
+    @GetMapping
+    public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit) {
         try {
-            // Lấy tất cả hóa đơn từ database
-            List<InvoiceAllDTO> invoices = invoiceDAO.findAll().stream()
-                    .map(invoice -> {
-                        InvoiceAllDTO dto = new InvoiceAllDTO();
-                        dto.setId(invoice.getId());
-                        dto.setOrderDate(invoice.getOrderDate());
-                        dto.setAddress(invoice.getAddress());
-                        dto.setStatus(invoice.getStatus().toString());
-                        dto.setNote(invoice.getNote());
-                        dto.setTotalAmount(invoice.getTotalAmount());
-                        dto.setUserId(invoice.getUser().getId());
+            if (pageNo.isPresent() && pageNo.get() == 0) {
+                return new ResponseEntity<>("Không tìm thấy trang", HttpStatus.NOT_FOUND);
+            }
 
-                        // Lấy lý do hủy nếu có
-                        dto.setCancelReason(
-                                invoice.getCancelReason() != null ? invoice.getCancelReason().getReason() : null);
+            Sort sort = Sort.by(Sort.Order.desc("id"));
+            Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
+            Page<Invoice> page = invoiceDAO.findAll(pageable);
 
-                        // Lấy chi tiết hóa đơn cho mỗi hóa đơn
-                        List<DetailedInvoicesDTO> detailedInvoicesDTOs = detailedInvoicesDAO.findAll().stream()
-                                .filter(detailedInvoice -> detailedInvoice.getInvoice().getId().equals(invoice.getId()))
-                                .map(detailedInvoice -> {
-                                    DetailedInvoicesDTO detailedDTO = new DetailedInvoicesDTO();
-                                    detailedDTO.setId(detailedInvoice.getId());
-                                    detailedDTO.setInvoiceId(detailedInvoice.getInvoice().getId());
-                                    detailedDTO.setProductId(detailedInvoice.getProduct().getId());
-                                    detailedDTO.setProductName(detailedInvoice.getProduct().getName());
-                                    detailedDTO.setQuantity(detailedInvoice.getQuantity());
-                                    detailedDTO.setUnitPrice(detailedInvoice.getUnitPrice());
-                                    detailedDTO.setPaymentMethod(detailedInvoice.getPaymentMethod());
-                                    return detailedDTO;
-                                })
-                                .collect(Collectors.toList());
+            ResponseDTO<Invoice> responseDTO = new ResponseDTO<>();
+            responseDTO.setData(page.getContent());
+            responseDTO.setTotalItems(page.getTotalElements());
+            responseDTO.setTotalPages(page.getTotalPages());
 
-                        dto.setDetailedInvoices(detailedInvoicesDTOs); // Set chi tiết hóa đơn vào DTO
-
-                        return dto;
-                    })
-                    .collect(Collectors.toList()); // Thu thập kết quả thành danh sách
-
-            return ResponseEntity.ok(invoices);
+            return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi lấy danh sách hóa đơn: " + e.getMessage());
+            return new ResponseEntity<>("Lỗi máy chủ, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    // @GetMapping("/get/all")
+    // public ResponseEntity<?> findAll() {
+    // try {
+    // // Lấy tất cả hóa đơn từ database
+    // List<InvoiceAllDTO> invoices = invoiceDAO.findAll().stream()
+    // .map(invoice -> {
+    // InvoiceAllDTO dto = new InvoiceAllDTO();
+    // dto.setId(invoice.getId());
+    // dto.setOrderDate(invoice.getOrderDate());
+    // dto.setAddress(invoice.getAddress());
+    // dto.setStatus(invoice.getStatus().toString());
+    // dto.setNote(invoice.getNote());
+    // dto.setTotalAmount(invoice.getTotalAmount());
+    // dto.setUserId(invoice.getUser().getId());
+
+    // // Lấy lý do hủy nếu có
+    // dto.setCancelReason(
+    // invoice.getCancelReason() != null ? invoice.getCancelReason().getReason() :
+    // null);
+
+    // // Lấy chi tiết hóa đơn cho mỗi hóa đơn
+    // List<DetailedInvoicesDTO> detailedInvoicesDTOs =
+    // detailedInvoicesDAO.findAll().stream()
+    // .filter(detailedInvoice ->
+    // detailedInvoice.getInvoice().getId().equals(invoice.getId()))
+    // .map(detailedInvoice -> {
+    // DetailedInvoicesDTO detailedDTO = new DetailedInvoicesDTO();
+    // detailedDTO.setId(detailedInvoice.getId());
+    // detailedDTO.setInvoiceId(detailedInvoice.getInvoice().getId());
+    // detailedDTO.setProductId(detailedInvoice.getProduct().getId());
+    // detailedDTO.setProductName(detailedInvoice.getProduct().getName());
+    // detailedDTO.setQuantity(detailedInvoice.getQuantity());
+    // detailedDTO.setUnitPrice(detailedInvoice.getUnitPrice());
+    // detailedDTO.setPaymentMethod(detailedInvoice.getPaymentMethod());
+    // return detailedDTO;
+    // })
+    // .collect(Collectors.toList());
+
+    // dto.setDetailedInvoices(detailedInvoicesDTOs); // Set chi tiết hóa đơn vào
+    // DTO
+
+    // return dto;
+    // })
+    // .collect(Collectors.toList()); // Thu thập kết quả thành danh sách
+
+    // return ResponseEntity.ok(invoices);
+    // } catch (Exception e) {
+    // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    // .body("Lỗi khi lấy danh sách hóa đơn: " + e.getMessage());
+    // }
+    // }
 
     @GetMapping("/get/{id}")
     public ResponseEntity<?> findById(@PathVariable Integer id) {
@@ -138,14 +178,13 @@ public class InvoiceAPI {
                                 })
                                 .collect(Collectors.toList());
                         detailedDTO.setProductSizes(sizeDTOs);
-                
+
                         detailedInvoice.getProduct().getSizes()
                                 .stream()
-                                .filter(productSize -> 
-                                    productSize.getPrice().equals(detailedInvoice.getUnitPrice().intValue()))
+                                .filter(productSize -> productSize.getPrice()
+                                        .equals(detailedInvoice.getUnitPrice().intValue()))
                                 .findFirst()
-                                .ifPresent(productSize -> 
-                                    detailedDTO.setSelectedSize(productSize.getSize().getName()));
+                                .ifPresent(productSize -> detailedDTO.setSelectedSize(productSize.getSize().getName()));
                         return detailedDTO;
                     })
                     .collect(Collectors.toList());
@@ -160,13 +199,29 @@ public class InvoiceAPI {
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<?> getPendingInvoices() {
+    public ResponseEntity<?> getPendingInvoices(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit) {
         try {
-            List<InvoiceListDTO> invoices = invoiceDAO.findByStatus(InvoiceStatus.PENDING)
-                    .stream()
+            if (pageNo.isPresent() && pageNo.get() == 0) {
+                return new ResponseEntity<>("Không tìm thấy trang", HttpStatus.NOT_FOUND);
+            }
+
+            Sort sort = Sort.by(Sort.Order.desc("id"));
+            Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
+
+            Page<Invoice> page = invoiceDAO.findByStatus(InvoiceStatus.PENDING, pageable);
+
+            List<InvoiceListDTO> dtoList = page.getContent().stream()
                     .map(invoice -> convertToListDTO(invoice, true))
                     .collect(Collectors.toList());
-            return ResponseEntity.ok(invoices);
+
+            ResponseDTO<InvoiceListDTO> responseDTO = new ResponseDTO<>();
+            responseDTO.setData(dtoList);
+            responseDTO.setTotalItems(page.getTotalElements());
+            responseDTO.setTotalPages(page.getTotalPages());
+
+            return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi khi lấy danh sách hóa đơn chờ xử lý: " + e.getMessage());
@@ -174,13 +229,29 @@ public class InvoiceAPI {
     }
 
     @GetMapping("/shipping")
-    public ResponseEntity<?> getShippingInvoices() {
+    public ResponseEntity<?> getShippingInvoices(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit) {
         try {
-            List<InvoiceListDTO> invoices = invoiceDAO.findByStatus(InvoiceStatus.SHIPPING)
-                    .stream()
+            if (pageNo.isPresent() && pageNo.get() == 0) {
+                return new ResponseEntity<>("Không tìm thấy trang", HttpStatus.NOT_FOUND);
+            }
+
+            Sort sort = Sort.by(Sort.Order.desc("id"));
+            Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
+
+            Page<Invoice> page = invoiceDAO.findByStatus(InvoiceStatus.SHIPPING, pageable);
+
+            List<InvoiceListDTO> dtoList = page.getContent().stream()
                     .map(invoice -> convertToListDTO(invoice, false))
                     .collect(Collectors.toList());
-            return ResponseEntity.ok(invoices);
+
+            ResponseDTO<InvoiceListDTO> responseDTO = new ResponseDTO<>();
+            responseDTO.setData(dtoList);
+            responseDTO.setTotalItems(page.getTotalElements());
+            responseDTO.setTotalPages(page.getTotalPages());
+
+            return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi khi lấy danh sách hóa đơn đang giao: " + e.getMessage());
@@ -188,13 +259,29 @@ public class InvoiceAPI {
     }
 
     @GetMapping("/delivered")
-    public ResponseEntity<?> getDeliveredInvoices() {
+    public ResponseEntity<?> getDeliveredInvoices(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit) {
         try {
-            List<InvoiceListDTO> invoices = invoiceDAO.findByStatus(InvoiceStatus.DELIVERED)
-                    .stream()
+            if (pageNo.isPresent() && pageNo.get() == 0) {
+                return new ResponseEntity<>("Không tìm thấy trang", HttpStatus.NOT_FOUND);
+            }
+
+            Sort sort = Sort.by(Sort.Order.desc("id"));
+            Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
+
+            Page<Invoice> page = invoiceDAO.findByStatus(InvoiceStatus.DELIVERED, pageable);
+
+            List<InvoiceListDTO> dtoList = page.getContent().stream()
                     .map(invoice -> convertToListDTO(invoice, false))
                     .collect(Collectors.toList());
-            return ResponseEntity.ok(invoices);
+
+            ResponseDTO<InvoiceListDTO> responseDTO = new ResponseDTO<>();
+            responseDTO.setData(dtoList);
+            responseDTO.setTotalItems(page.getTotalElements());
+            responseDTO.setTotalPages(page.getTotalPages());
+
+            return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi khi lấy danh sách hóa đơn đã giao: " + e.getMessage());
@@ -202,13 +289,29 @@ public class InvoiceAPI {
     }
 
     @GetMapping("/cancelled")
-    public ResponseEntity<?> getCancelledInvoices() {
+    public ResponseEntity<?> getCancelledInvoices(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit) {
         try {
-            List<InvoiceListDTO> invoices = invoiceDAO.findByStatus(InvoiceStatus.CANCELLED)
-                    .stream()
+            if (pageNo.isPresent() && pageNo.get() == 0) {
+                return new ResponseEntity<>("Không tìm thấy trang", HttpStatus.NOT_FOUND);
+            }
+
+            Sort sort = Sort.by(Sort.Order.desc("id"));
+            Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
+
+            Page<Invoice> page = invoiceDAO.findByStatus(InvoiceStatus.CANCELLED, pageable);
+
+            List<InvoiceListDTO> dtoList = page.getContent().stream()
                     .map(invoice -> convertToListDTO(invoice, false))
                     .collect(Collectors.toList());
-            return ResponseEntity.ok(invoices);
+
+            ResponseDTO<InvoiceListDTO> responseDTO = new ResponseDTO<>();
+            responseDTO.setData(dtoList);
+            responseDTO.setTotalItems(page.getTotalElements());
+            responseDTO.setTotalPages(page.getTotalPages());
+
+            return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi khi lấy danh sách hóa đơn đã hủy: " + e.getMessage());
@@ -253,8 +356,8 @@ public class InvoiceAPI {
             // Validate status transition
             if (!isValidStatusTransition(invoice.getStatus(), request.getStatus())) {
                 return ResponseEntity.badRequest()
-                        .body("Không thể chuyển từ trạng thái " + invoice.getStatus() + 
-                              " sang " + request.getStatus());
+                        .body("Không thể chuyển từ trạng thái " + invoice.getStatus() +
+                                " sang " + request.getStatus());
             }
 
             // 🚀 Cập nhật trạng thái
@@ -271,7 +374,8 @@ public class InvoiceAPI {
                     return ResponseEntity.badRequest().body("Vui lòng cung cấp lý do hủy.");
                 }
                 CancelReason cancelReason = cancelReasonDAO.findById(request.getCancelReasonId())
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lý do hủy với ID: " + request.getCancelReasonId()));
+                        .orElseThrow(() -> new RuntimeException(
+                                "Không tìm thấy lý do hủy với ID: " + request.getCancelReasonId()));
                 invoice.setCancelReason(cancelReason);
             } else {
                 // Nếu không phải "CANCELLED", xóa lý do hủy nếu có
