@@ -1,19 +1,19 @@
-import { AdminLayout, UserLayout } from "layouts";
-import * as PageAdmin from "..//pages/Admin";
-import * as PageUser from "..//pages/User";
+import { AdminLayout, LayoutPageDefault, UserLayout } from "layouts";
+import { HomePage, Login } from "../pages/User";
+import * as PageAdmin from "../pages/Admin";
 
-const publicRoutes = [
-  { path: "/", component: PageUser.HomePage, layout: UserLayout },
 
+
+export const publicRoutes = [
+  { path: "/", component: HomePage, layout: UserLayout },
   {
     path: "/login",
-    component: PageUser.Login,
-    layout: UserLayout,
+    component: Login,
+    layout: LayoutPageDefault,
   },
-  //   { path: "/contact", component: UserContact, layout: DefaultLayout },
 ];
 
-const privateRoutes = [
+export const privateRoutes = [
   {
     path: "/admin/index",
     component: PageAdmin.AdminIndex,
@@ -24,12 +24,6 @@ const privateRoutes = [
     component: PageAdmin.Products,
     layout: AdminLayout,
   },
-  // {
-  //   path: "/admin/productsizes",
-  //   component: PageAdmin.ProductSizes,
-  //   layout: AdminLayout,
-  // },
-
   {
     path: "/admin/categories",
     component: PageAdmin.Categories,
@@ -40,7 +34,6 @@ const privateRoutes = [
     component: PageAdmin.Sizes,
     layout: AdminLayout,
   },
-
   {
     path: "/admin/brands",
     component: PageAdmin.Brands,
@@ -56,26 +49,21 @@ const privateRoutes = [
     component: PageAdmin.Comments,
     layout: AdminLayout,
   },
-
-  //
   {
     path: "/admin/detailed-invoices",
     component: PageAdmin.Detailed_Invoices,
     layout: AdminLayout,
   },
-
   {
     path: "/admin/product-attributes",
     component: PageAdmin.ProductAttributes,
     layout: AdminLayout,
   },
-
   {
     path: "/admin/invoices",
     component: PageAdmin.Invoices,
     layout: AdminLayout,
   },
-
   {
     path: "/admin/roles",
     component: PageAdmin.Roles,
@@ -91,31 +79,24 @@ const privateRoutes = [
     component: PageAdmin.Stock_Receipts,
     layout: AdminLayout,
   },
-
   {
     path: "/admin/suppliers",
     component: PageAdmin.Suppliers,
     layout: AdminLayout,
   },
-
   {
     path: "/admin/user-histories",
     component: PageAdmin.User_Histories,
     layout: AdminLayout,
   },
-
   {
     path: "/admin/verification",
     component: PageAdmin.Verification,
     layout: AdminLayout,
   },
-
-
   {
     path: "/admin/charts",
     component: PageAdmin.Charts,
     layout: AdminLayout,
   },
 ];
-
-export { publicRoutes, privateRoutes };

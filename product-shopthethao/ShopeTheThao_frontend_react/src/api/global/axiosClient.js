@@ -1,6 +1,7 @@
 import axios from 'axios';
 import httpStatus from './httpStatus';
 import funcUtils from 'utils/funcUtils';
+import authApi from 'api/Admin/Auth/Login';
 
 // import authApi from '../user/Security/authApi';
 
@@ -14,47 +15,47 @@ const axiosClient = axios.create({
     },
     // withCredentials: true,
 });
-axiosClient.interceptors.response.use(
-    (response) => {
-        if (response && response.data) {
-            return response;
-        }
-        return response;
-    },
-    (error) => {
-        if (error.response) {
-            switch (error.response.status) {
-                case httpStatus.INTERNAL_SERVER_ERROR:
-                    funcUtils.notify('Lỗi kết nối server', 'error');
-                    break;
-                case 401:
-                    funcUtils.notify(error.response.data.message, 'error');
-                    break;
-                case httpStatus.CONFLICT:
-                    funcUtils.notify(error.response.data, 'error');
-                    break;
-                default:
-                    console.log(error);
-                    break;
-            }
-        }
-        return Promise.reject(error);
-    },
-);
-
-// axiosClient.interceptors.request.use(
-//     (config) => {
-//         // console.log('Interceptor is running');
-//         const token = authApi.getToken();
-//         if (token) {
-//             config.headers['Authorization'] = `Bearer ${token}`;
-//             // console.log('yes');
+// axiosClient.interceptors.response.use(
+//     (response) => {
+//         if (response && response.data) {
+//             return response;
 //         }
-//         return config;
+//         return response;
 //     },
 //     (error) => {
+//         if (error.response) {
+//             switch (error.response.status) {
+//                 case httpStatus.INTERNAL_SERVER_ERROR:
+//                     funcUtils.notify('Lỗi kết nối server', 'error');
+//                     break;
+//                 case 401:
+//                     funcUtils.notify(error.response.data.message, 'error');
+//                     break;
+//                 case httpStatus.CONFLICT:
+//                     funcUtils.notify(error.response.data, 'error');
+//                     break;
+//                 default:
+//                     console.log(error);
+//                     break;
+//             }
+//         }
 //         return Promise.reject(error);
 //     },
 // );
+
+axiosClient.interceptors.request.use(
+    (config) => {
+        // console.log('Interceptor is running');
+        const token = authApi.getToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+            console.log('yes');
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    },
+);
 
 export default axiosClient;

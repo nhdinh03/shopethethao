@@ -5,10 +5,12 @@ import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import "./login.scss";
 import img from "assets/Img";
+import { loginApi } from "api/Admin";
+
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: "",
+    id: "", // Changed from email to id
     password: "",
     remember: false,
   });
@@ -32,11 +34,31 @@ const Login = () => {
     setUIState((prev) => ({ ...prev, loading: true }));
 
     try {
-      // API call simulation
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      navigate("/");
+      const response = await loginApi.getLogin({
+        id: formData.id,
+        password: formData.password
+      });
+      
+      if (response && response.data) {
+        // Lưu token và thông tin user vào localStorage
+        localStorage.setItem('token', response.data.accessToken);
+        localStorage.setItem('user', JSON.stringify(response.data));
+        
+        // Chuyển hướng sau khi đăng nhập thành công
+        navigate("/");
+      } else {
+        throw new Error('Invalid response from server');
+      }
+      
     } catch (error) {
-      // Error handling here
+      console.error("Login error:", error);
+      let errorMessage = "Đăng nhập thất bại. Vui lòng thử lại.";
+      if (error.response?.data) {
+        errorMessage = typeof error.response.data === 'string' 
+          ? error.response.data 
+          : error.response.data.message || errorMessage;
+      }
+      alert(errorMessage);
     } finally {
       setUIState((prev) => ({ ...prev, loading: false }));
     }
@@ -97,11 +119,11 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="login-form">
             {/* Enhanced Input Fields */}
             <InputField
-              icon={<FiMail />}
-              type="email"
-              name="email"
-              placeholder="Nhập email của bạn"
-              value={formData.email}
+              icon={<FiUser />} // Changed from FiMail to FiUser
+              type="text" // Changed from email to text
+              name="id" // Changed from email to id
+              placeholder="Nhập ID hoặc số điện thoại" // Updated placeholder
+              value={formData.id}
               onChange={handleChange}
             />
 

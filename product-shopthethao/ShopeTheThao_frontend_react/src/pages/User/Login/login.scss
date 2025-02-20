@@ -410,6 +410,31 @@
   }
 }
 
+.error-message {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.input-field.error {
+  input {
+    border-color: #dc2626;
+    
+    &:focus {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+  }
+}
+
 @media (max-width: 1024px) {
   .login-wrapper {
     grid-template-columns: 1fr;

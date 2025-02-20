@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Outlet } from "react-router-dom";
 import Header from "./Header";
 import Snowfall from "./Snowfall/Snowfall";
 import Nav from "./Nav";
@@ -16,7 +16,9 @@ const UserLayout = () => {
       <div className="layout-wrapper">
         {!isLoginPage && <Nav className="layout-nav" />}
         <main className="layout-main">
-          <div className="content-wrapper"></div>
+          <div className="content-wrapper">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
