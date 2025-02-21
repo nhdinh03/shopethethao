@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,9 +40,12 @@ import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
 import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.role.RoleDAO;
 import com.shopethethao.modules.role.ERole;
+import com.shopethethao.modules.userHistory.UserHistoryService;
+import com.shopethethao.modules.userHistory.UserActionType;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
@@ -65,6 +70,9 @@ public class AccountStaffAPI {
 
     @Autowired
     private PasswordEncoder encoder;
+
+    @Autowired
+    private UserHistoryService userHistoryService;
 
     // ✅ Lấy danh sách tài khoản có phân trang
     @GetMapping
@@ -116,7 +124,7 @@ public class AccountStaffAPI {
     // ✅ Lấy tài khoản theo ID
     @Transactional
     @PostMapping
-    public ResponseEntity<?> registerUser(@Valid @RequestBody AccountsUserDto accountsUser) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody AccountsUserDto accountsUser, HttpServletRequest request) {
         try {
             // ✅ Kiểm tra xem ID, Email, hoặc Phone có bị trùng không
             boolean exists = accountDao.existsById(accountsUser.getId())
@@ -195,6 +203,17 @@ public class AccountStaffAPI {
 
             verificationDAO.save(verifications);
 
+            // Log the staff account creation
+            String userId = getCurrentUserId();
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.CREATE_ACCOUNTSTAFF,
+                    "Tạo mới tài khoản nhân viên: " + account.getId(),
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"));
+            }
+
             return ResponseEntity.ok(new MessageResponse("Nhân viên đã được thêm thành công!"));
 
         } catch (IllegalArgumentException e) {
@@ -206,7 +225,7 @@ public class AccountStaffAPI {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAccount(@PathVariable("id") String id, @RequestBody Account updatedAccount) {
+    public ResponseEntity<?> updateAccount(@PathVariable("id") String id, @RequestBody Account updatedAccount, HttpServletRequest request) {
         try {
             // Kiểm tra tài khoản tồn tại
             Optional<Account> existingAccount = accountDao.findById(id);
@@ -257,6 +276,17 @@ public class AccountStaffAPI {
                 }
             }
 
+            // Log the staff account update
+            String userId = getCurrentUserId();
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.UPDATE_ACCOUNTSTAFF,
+                    "Cập nhật tài khoản nhân viên: " + id,
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"));
+            }
+
             return ResponseEntity.ok(new MessageResponse("Cập nhật thông tin nhân viên thành công!"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -266,7 +296,7 @@ public class AccountStaffAPI {
 
     // ✅ Xóa tài khoản và LockReasons liên quan
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAccountById(@PathVariable String id) {
+    public ResponseEntity<String> deleteAccountById(@PathVariable String id, HttpServletRequest request) {
         try {
             Optional<Account> account = accountDao.findById(id);
             if (account.isEmpty()) {
@@ -280,10 +310,30 @@ public class AccountStaffAPI {
             existingAccount.getLockReasons().clear(); // Clear the associated lock reasons if needed (optional)
 
             accountService.deleteAccount(id); // Call deleteAccount method from AccountService
+
+            // Log the staff account deletion
+            String userId = getCurrentUserId();
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.DELETE_ACCOUNTSTAFF,
+                    "Xóa tài khoản nhân viên: " + id,
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"));
+            }
+
             return ResponseEntity.ok("Đã xóa thông tin nhân viên thành công.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi hệ thống khi xóa thông tin nhân viên, vui lòng thử lại sau.");
         }
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+        return null;
     }
 }
