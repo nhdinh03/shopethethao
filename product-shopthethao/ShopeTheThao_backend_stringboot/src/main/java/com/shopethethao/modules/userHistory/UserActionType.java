@@ -21,13 +21,9 @@ public enum UserActionType {
     CREATE_ACCOUNT,     // Tạo tài khoản mới
     UPDATE_ACCOUNT,     // Cập nhật tài khoản
     DELETE_ACCOUNT,     // Xóa tài khoản
-    LOCK_ACCOUNT,       // Khóa tài khoản
-    UNLOCK_ACCOUNT,     // Mở khóa tài khoản
+    // LOCK_ACCOUNT,       // Khóa tài khoản
+    // UNLOCK_ACCOUNT,     // Mở khóa tài khoản
     
-    UPDATE_PROFILE,     // Cập nhật thông tin cá nhân
-    CHANGE_PASSWORD,    // Đổi mật khẩu
-    VERIFY_ACCOUNT   // Xác thực tài khoản
-
 
     
 }
