@@ -25,19 +25,17 @@ public class UserDetailsImpl implements UserDetails {
     private String image;
     private String email;
     private String address;
-
     @JsonIgnore
     private String password;
-
     private Date birthday;
-    private Gender gender; // ✅ Dùng Gender ENUM thay vì Boolean
+    private Gender gender; 
     private Date createdDate;
 
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(String id, String phone, String fullname, String image, String email, String address,
             String password, Date birthday, Gender gender, Date createdDate,
-            Collection<? extends GrantedAuthority> authorities) { // ✅ Sửa Boolean gender thành Gender
+            Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.phone = phone;
         this.fullname = fullname;
@@ -46,7 +44,7 @@ public class UserDetailsImpl implements UserDetails {
         this.address = address;
         this.password = password;
         this.birthday = birthday;
-        this.gender = gender; // ✅ Đúng kiểu dữ liệu
+        this.gender = gender;
         this.createdDate = createdDate;
         this.authorities = authorities;
     }
@@ -65,7 +63,7 @@ public class UserDetailsImpl implements UserDetails {
                 account.getAddress(),
                 account.getPassword(),
                 account.getBirthday(),
-                account.getGender(), // ✅ Không còn lỗi kiểu dữ liệu
+                account.getGender(),
                 account.getCreatedDate(),
                 authorities);
     }

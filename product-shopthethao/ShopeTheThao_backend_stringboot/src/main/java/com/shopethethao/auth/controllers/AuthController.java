@@ -189,6 +189,7 @@ public class AuthController {
                 .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
                         "Refresh token không có trong database!"));
     }
+    
 
     @Transactional // Transactional OTP chỉ được lưu khi tất cả các thao tác thành công:
     @PostMapping("/signup")

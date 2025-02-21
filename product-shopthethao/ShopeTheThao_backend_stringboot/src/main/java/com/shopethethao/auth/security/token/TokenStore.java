@@ -3,7 +3,6 @@ package com.shopethethao.auth.security.token;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.stereotype.Component;
 
 @Component
@@ -43,7 +42,7 @@ public class TokenStore {
                 .findFirst()
                 .orElse(null);
     }
-    // Xác định đăng xuất người dùng
+    // Xác định xóa token của userId
 
     public void invalidateToken(String userId) {
         tokenMap.remove(userId);
