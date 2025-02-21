@@ -4,12 +4,13 @@ import com.shopethethao.modules.account.Account;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
 @Table(name = "UserHistory")
 public class UserHistory {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_history")
@@ -31,11 +32,10 @@ public class UserHistory {
 
     @Column(name = "deviceInfo", columnDefinition = "NVARCHAR(200)")
     private String deviceInfo;
-    
-    @Column(name = "history_datetime", nullable = false, 
-            columnDefinition = "DATETIME DEFAULT GETDATE()")
+
+    @Column(name = "history_datetime", nullable = false, columnDefinition = "DATETIME DEFAULT GETDATE()")
     private LocalDateTime historyDateTime;
-    
+
     @Column(name = "status", columnDefinition = "INT DEFAULT 1")
     private Integer status = 1;
 
@@ -51,5 +51,18 @@ public class UserHistory {
 
     public String getUserId() {
         return account != null ? account.getId() : null;
+    }
+
+    public String getUsername() {
+        return account != null ? account.getFullname() : null;
+    }
+
+    public String getUserRole() {
+        if (account != null && account.getRoles() != null && !account.getRoles().isEmpty()) {
+            return account.getRoles().stream()
+                    .map(role -> role.getName().name())
+                    .collect(Collectors.joining(", "));
+        }
+        return null;
     }
 }

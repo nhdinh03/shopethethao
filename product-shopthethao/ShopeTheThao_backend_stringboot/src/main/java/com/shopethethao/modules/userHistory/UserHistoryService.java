@@ -36,9 +36,15 @@ public class UserHistoryService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
             UserHistory history = new UserHistory();
-            history.setAccount(account);  // Set Account instead of userId
+            history.setAccount(account);
             history.setActionType(actionType);
             history.setNote(note);
+            
+            // Format IP address if it's localhost
+            if ("0:0:0:0:0:0:0:1".equals(ipAddress)) {
+                ipAddress = "127.0.0.1";
+            }
+            
             history.setIpAddress(ipAddress != null ? ipAddress : "unknown");
             history.setDeviceInfo(deviceInfo != null ? deviceInfo : "unknown");
             history.setHistoryDateTime(LocalDateTime.now());
@@ -93,7 +99,9 @@ public class UserHistoryService {
 
         UserHistoryDTO dto = new UserHistoryDTO();
         dto.setIdHistory(history.getIdHistory());
-        dto.setUserId(history.getUserId());  // Use userId directly
+        dto.setUserId(history.getUserId());
+        dto.setUsername(history.getUsername());    // Add this line
+        dto.setUserRole(history.getUserRole());    // Add this line
         dto.setActionType(history.getActionType());
         dto.setNote(history.getNote());
         dto.setIpAddress(history.getIpAddress());

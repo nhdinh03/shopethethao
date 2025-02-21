@@ -51,7 +51,9 @@ public class UserHistoryAPI {
     private UserHistoryDTO convertToDTO(UserHistory history) {
         UserHistoryDTO dto = new UserHistoryDTO();
         dto.setIdHistory(history.getIdHistory());
-        dto.setUserId(history.getUserId());  // Use userId directly
+        dto.setUserId(history.getUserId());
+        dto.setUsername(history.getUsername());    // Add this line
+        dto.setUserRole(history.getUserRole());    // Add this line
         dto.setNote(history.getNote());
         dto.setHistoryDateTime(history.getHistoryDateTime());
         dto.setActionType(history.getActionType());

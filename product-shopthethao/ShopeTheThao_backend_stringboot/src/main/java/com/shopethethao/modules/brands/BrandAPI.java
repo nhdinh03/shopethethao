@@ -40,14 +40,6 @@ public class BrandAPI {
     @Autowired
     private UserHistoryService userHistoryService;
 
-    private String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            return authentication.getName();
-        }
-        return null;
-    }
-
     // Fetch all brands without pagination
     @GetMapping("/get/all")
     public ResponseEntity<List<Brand>> findAll() {
@@ -153,4 +145,13 @@ public class BrandAPI {
             return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
         }
     }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+        return null;
+    }
+
 }

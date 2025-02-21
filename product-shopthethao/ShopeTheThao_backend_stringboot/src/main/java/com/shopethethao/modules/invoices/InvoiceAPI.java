@@ -28,7 +28,6 @@ import com.shopethethao.dto.SizeDTO;
 import com.shopethethao.dto.UpdateStatusRequest;
 import com.shopethethao.modules.cancelReason.CancelReason;
 import com.shopethethao.modules.cancelReason.CancelReasonDAO;
-import com.shopethethao.modules.detailed_invoices.DetailedInvoices;
 import com.shopethethao.modules.detailed_invoices.DetailedInvoicesDAO;
 import com.shopethethao.modules.product_Images.ProductImages;
 
