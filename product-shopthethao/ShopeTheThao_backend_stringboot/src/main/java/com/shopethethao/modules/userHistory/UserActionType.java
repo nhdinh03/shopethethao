@@ -10,6 +10,10 @@ public enum UserActionType {
     UPDATE_PRODUCT, // Cập nhật sản phẩm
     DELETE_PRODUCT, // Xóa sản phẩm
 
+    CREATE_BRAND, // Thêm thương hiệu mới
+    UPDATE_BRAND, // Cập thương hiệu phẩm
+    DELETE_BRAND, // Xóa thương hiệu
+
     CREATE_SIZE, // Thêm size mới
     UPDATE_SIZE, // Cập nhật size
     DELETE_SIZE, // Xóa size

@@ -21,15 +21,32 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.modules.userHistory.UserHistoryService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/brands")
 public class BrandAPI {
 
-
     @Autowired
     private BrandDAO brandsDAO;
+
+    @Autowired
+    private UserHistoryService userHistoryService;
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+        return null;
+    }
 
     // Fetch all brands without pagination
     @GetMapping("/get/all")
@@ -61,9 +78,18 @@ public class BrandAPI {
 
     // Create a new brand
     @PostMapping
-    public ResponseEntity<?> createBrand(@RequestBody Brand brand) {
+    public ResponseEntity<?> createBrand(@RequestBody Brand brand, HttpServletRequest request) {
         try {
             Brand savedBrand = brandsDAO.save(brand);
+            String userId = getCurrentUserId();
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                        userId,
+                        UserActionType.CREATE_BRAND,
+                        "Tạo mới thương hiệu: " + brand.getName(),
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"));
+            }
             return ResponseEntity.ok(savedBrand);
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi khi tạo thương hiệu!", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -73,11 +99,21 @@ public class BrandAPI {
     // Update an existing brand
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBrand(@PathVariable("id") Integer id,
-            @RequestBody Brand brand) {
+            @RequestBody Brand brand, HttpServletRequest request) {
         Optional<Brand> existingBrand = brandsDAO.findById(id);
         if (existingBrand.isPresent()) {
             brand.setId(id);
+            String userId = getCurrentUserId();
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                        userId,
+                        UserActionType.UPDATE_BRAND,
+                        "Cập nhật thương hiệu: " + brand.getName(),
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"));
+            }
             Brand updatedBrand = brandsDAO.save(brand);
+
             return ResponseEntity.ok(updatedBrand);
         } else {
             return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
@@ -86,20 +122,32 @@ public class BrandAPI {
 
     // Delete a brand
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBrand(@PathVariable("id") Integer id) {
+    public ResponseEntity<?> deleteBrand(@PathVariable("id") Integer id, HttpServletRequest request) {
         Optional<Brand> existingBrand = brandsDAO.findById(id);
         if (existingBrand.isPresent()) {
             try {
                 Brand brand = existingBrand.get();
                 if (!brand.getStockReceipts().isEmpty()) {
-                    return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang có phiếu nhập kho liên quan!", HttpStatus.CONFLICT);
+                    return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang có phiếu nhập kho liên quan!",
+                            HttpStatus.CONFLICT);
+                }
+                String userId = getCurrentUserId();
+                if (userId != null) {
+                    userHistoryService.logUserAction(
+                            userId,
+                            UserActionType.DELETE_BRAND,
+                            "Xóa thương hiệu: " + brand.getName(),
+                            request.getRemoteAddr(),
+                            request.getHeader("User-Agent"));
                 }
                 brandsDAO.deleteById(id);
+
                 return ResponseEntity.ok("Xóa thương hiệu thành công!");
             } catch (DataIntegrityViolationException e) {
                 return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang được sử dụng!", HttpStatus.CONFLICT);
             } catch (Exception e) {
-                return new ResponseEntity<>("Lỗi khi xóa thương hiệu: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>("Lỗi khi xóa thương hiệu: " + e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
             return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
