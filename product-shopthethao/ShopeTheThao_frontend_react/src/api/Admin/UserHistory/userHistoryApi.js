@@ -7,11 +7,11 @@ class UserHistoryAPI extends BaseApi {
   }
 
   async getAllauthactivities() {
-    return axiosClient.get(`${this.uri}/auth-activities`);
+    return axiosClient.get(this.uri + "/auth-activities");
   }
   
   async getAlladminactivities() {
-    return axiosClient.get(`${this.uri}/admin-activities`);
+    return axiosClient.get(this.uri + "/admin-activities");
   }
 }
 
