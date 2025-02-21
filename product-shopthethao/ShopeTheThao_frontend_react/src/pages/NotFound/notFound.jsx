@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const NotFound = () => (
     <Result
         status="404"
-        title={<h2>Opps...</h2>}
+        title={<h2>Rất tiếc...</h2>}
         subTitle={
             <>
             <h3>Xin lỗi trang bạn tìm không tồn tại hoặc đang bảo trì.</h3>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { publicRoutes, privateRoutes } from "./router";
 import LayoutPageDefault from "./layouts/LayoutPageDefault";
 import PrivateRoute from "./components/Auth/PrivateRoute";
+import NotFound from "./pages/NotFound/notFound";
 
 const App = () => {
   const renderPublicRoutes = (routes) => {
@@ -46,6 +47,7 @@ const App = () => {
       <Routes>
         {renderPublicRoutes(publicRoutes)}
         {renderPrivateRoutes(privateRoutes)}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
