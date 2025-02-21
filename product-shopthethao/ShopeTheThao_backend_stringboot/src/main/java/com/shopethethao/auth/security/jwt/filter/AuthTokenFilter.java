@@ -28,6 +28,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
   @Autowired
   private UserDetailsServiceImpl userDetailsService;
 
+  @Autowired
+  private com.shopethethao.auth.security.token.TokenManager tokenManager;
+
   private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
   @Override
@@ -35,20 +38,34 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     try {
       String jwt = parseJwt(request);
-      if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+      if (jwt != null) {
+        logger.debug("Processing token in filter");
+        
+        boolean isValid = jwtUtils.validateJwtToken(jwt);
+        logger.debug("Token validation result: {}", isValid);
+        
+        if (!isValid) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          response.getWriter().write("{\"error\":\"Token không hợp lệ hoặc đã hết hạn\",\"code\":\"TOKEN_EXPIRED\"}");
+          return;
+        }
+        
+        // Continue with authentication only if token is valid
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
-
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            userDetails,
-            null,
-            userDetails.getAuthorities());
+            userDetails, null, userDetails.getAuthorities());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
     } catch (Exception e) {
-      logger.error("Khong the dat xac thuc nguoi dung: ", e);
+      logger.error("Cannot set user authentication: {}", e.getMessage());
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setContentType("application/json");
+      response.getWriter().write("{\"error\":\"" + e.getMessage() + "\",\"code\":\"AUTH_ERROR\"}");
+      return;
     }
 
     filterChain.doFilter(request, response);

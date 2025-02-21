@@ -1,5 +1,6 @@
 package com.shopethethao.auth.controllers;
 
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,11 +44,17 @@ import com.shopethethao.auth.payload.password.request.ChangePasswordRequest;
 import com.shopethethao.auth.payload.password.request.ForgotPassword;
 import com.shopethethao.auth.payload.response.JwtResponseDTO;
 import com.shopethethao.auth.payload.response.MessageResponse;
+import com.shopethethao.auth.payload.response.TokenRefreshResponse;
 import com.shopethethao.auth.security.jwt.util.JwtUtils;
+import com.shopethethao.auth.security.token.RefreshTokenService;
+import com.shopethethao.auth.security.token.TokenManager;
+import com.shopethethao.auth.security.token.TokenRefreshException;
+import com.shopethethao.auth.security.token.TokenRefreshRequest;
 import com.shopethethao.auth.security.token.TokenStore;
 import com.shopethethao.auth.security.user.entity.UserDetailsImpl;
 import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.account.AccountDAO;
+import com.shopethethao.modules.refreshToken.RefreshToken;
 import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.role.RoleDAO;
 import com.shopethethao.modules.role.ERole;
@@ -89,6 +98,12 @@ public class AuthController {
     @Autowired
     TokenStore tokenStore;
 
+    @Autowired
+    TokenManager tokenManager;
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         // ✅ Kiểm tra nếu ID/Phone bị null hoặc trống
@@ -124,7 +139,16 @@ public class AuthController {
 
         // ✅ Lấy thông tin từ `UserDetailsImpl`
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        // Trước khi tạo token mới, xóa hết token cũ
+        String userId = userDetails.getId();
+        tokenManager.removeAllTokensForUser(userId);
+        tokenStore.invalidateToken(userId);
+        refreshTokenService.deleteByAccountId(userId);
+
+        // Tạo token mới
         String jwt = jwtUtils.generateJwtToken(authentication);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userId);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -146,8 +170,24 @@ public class AuthController {
                 gender,
                 userDetails.getImage(),
                 jwt,
+                refreshToken.getToken(), // Thêm refresh token vào response
                 "Bearer",
                 roles));
+    }
+
+    // Thêm endpoint để refresh token
+    @PostMapping("/refreshtoken")
+    public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(token -> {
+                    refreshTokenService.verifyExpiration(token);
+                    String newToken = jwtUtils.generateTokenFromUsername(token.getAccount().getId());
+                    return ResponseEntity.ok(new TokenRefreshResponse(newToken, requestRefreshToken));
+                })
+                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
+                        "Refresh token không có trong database!"));
     }
 
     @Transactional // Transactional OTP chỉ được lưu khi tất cả các thao tác thành công:
@@ -204,7 +244,7 @@ public class AuthController {
 
         // ✅ Tạo Verifications
         Verifications verifications = new Verifications();
-        verifications.setAccount(account); 
+        verifications.setAccount(account);
         verifications.setCode(otp);
         verifications.setActive(false);
         verifications.setCreatedAt(LocalDateTime.now());
@@ -410,28 +450,6 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("Mật khẩu đã được cập nhật thành công."));
     }
 
-    @GetMapping("/logout")
-    public ResponseEntity<?> logoutUser(HttpServletRequest request) {
-        try {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String jwt = authHeader.substring(7);
-                String userId = jwtUtils.getUserNameFromJwtToken(jwt);
-                // Invalidate token in TokenStore
-                tokenStore.invalidateToken(userId);
-            }
-            
-            // Clear security context
-            SecurityContextHolder.clearContext();
-            
-            return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công!"));
-        } catch (Exception e) {
-            return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new MessageResponse("Lỗi khi đăng xuất: " + e.getMessage()));
-        }
-    }
-
     @GetMapping("/getAll")
     public ResponseEntity<List<Account>> findAll() {
         List<Account> accounts = accountDAO.findAll();
@@ -444,5 +462,42 @@ public class AuthController {
         return optionalAccount.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+        try {
+            String token = request.getHeader("Authorization");
+            if (token == null || !token.startsWith("Bearer ")) {
+                // Cleanup anyway
+                SecurityContextHolder.clearContext();
+                return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công (no token)"));
+            }
+
+            String jwt = token.substring(7);
+            String userId = jwtUtils.getUserNameFromJwtToken(jwt);
+
+            // Xóa tất cả tokens liên quan
+            try {
+                refreshTokenService.deleteByAccountId(userId);
+                tokenStore.invalidateToken(userId);
+                tokenManager.removeToken(userId);
+            } catch (Exception e) {
+                logger.error("Error during token cleanup: {}", e.getMessage());
+                // Continue with logout even if token cleanup fails
+            }
+
+            SecurityContextHolder.clearContext();
+            return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công"));
+        } catch (Exception e) {
+            // Always clear security context
+            SecurityContextHolder.clearContext();
+            return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công (with error: " + e.getMessage() + ")"));
+        }
+    }
+
+
 
 }

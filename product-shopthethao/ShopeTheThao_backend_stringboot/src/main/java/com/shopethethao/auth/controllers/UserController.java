@@ -12,12 +12,16 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shopethethao.auth.security.jwt.util.JwtUtils;
 import com.shopethethao.auth.security.token.TokenStore;
 import com.shopethethao.auth.security.user.entity.UserDetailsImpl;
+import com.shopethethao.auth.payload.response.MessageResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RequestMapping("/users")
 @RestController
 public class UserController {
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     JwtUtils jwtUtils;
@@ -27,32 +31,33 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> authenticatedUser(HttpServletRequest request) {
-        String token = jwtUtils.getJwtFromRequest(request);
+        try {
+            String token = jwtUtils.getJwtFromRequest(request);
 
-        // Kiểm tra token có tồn tại trong request
-        if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không được cung cấp");
+            if (token == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Token không được cung cấp"));
+            }
+
+            if (!jwtUtils.validateJwtToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Token không hợp lệ"));
+            }
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Người dùng không được xác thực"));
+            }
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            return ResponseEntity.ok(userDetails);
+            
+        } catch (Exception e) {
+            logger.error("Error in /me endpoint: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new MessageResponse("Lỗi server: " + e.getMessage()));
         }
-
-        // Kiểm tra token có hợp lệ về mặt cấu trúc và chữ ký
-        if (!jwtUtils.validateJwtToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token không hợp lệ");
-        }
-
-        // Kiểm tra token có tồn tại và chưa hết hạn trong TokenStore
-        if (!tokenStore.isTokenValid(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token đã hết hạn hoặc không được phép sử dụng");
-        }
-
-        // Lấy thông tin xác thực từ SecurityContextHolder
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Người dùng không được xác thực");
-        }
-
-        // Lấy thông tin người dùng từ đối tượng xác thực
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        return ResponseEntity.ok(userDetails);
     }
 
 }

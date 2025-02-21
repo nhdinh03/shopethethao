@@ -127,9 +127,15 @@ const authApi = {
   getToken() {
     try {
       const token = localStorage.getItem("token");
-      return token && token !== "undefined" ? token : null;
+      // Clean up invalid tokens
+      if (!token || token === "undefined") {
+        localStorage.removeItem("token");
+        return null;
+      }
+      return token;
     } catch (error) {
       console.error("Token retrieval error:", error);
+      localStorage.removeItem("token");
       return null;
     }
   },
@@ -147,36 +153,30 @@ const authApi = {
     return null;
   },
 
-  
-
   logout() {
     const token = this.getToken();
-    // Xóa tất cảlocalStorage trước
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    localStorage.removeItem("roles");
-
-    // Chỉ thực hiện lệnh gọi API nếu chúng tôi có mã thông báo
-    if (token) {
-      return axiosClient
-        .get(endpoints.logout, {
-          headers: {
-            Authorization: token,
-          },
-        })
-        .then((response) => {
-          console.log("Đăng xuất thành công:", response.data);
-          return response.data;
-        })
-        .catch((error) => {
-          console.error("Lỗi đăng xuất:", error);
-          throw error;
-        });
+    
+    // Always clear localStorage first
+    localStorage.clear();
+    
+    if (!token) {
+        return Promise.resolve({ message: "Đăng xuất thành công" });
     }
 
-    // Return resolved promise if no token
-    return Promise.resolve({ message: "Đã đăng localStorage" });
-  },
+    return axiosClient.post(endpoints.logout, {}, {
+        headers: { 
+            Authorization: token
+        }
+    })
+    .then(response => {
+        return response.data;
+    })
+    .catch(error => {
+        console.error("Lỗi đăng xuất:", error);
+        // Return success anyway since we've cleared localStorage
+        return { message: "Đăng xuất thành công" };
+    });
+  }
 };
 
 export default authApi;
