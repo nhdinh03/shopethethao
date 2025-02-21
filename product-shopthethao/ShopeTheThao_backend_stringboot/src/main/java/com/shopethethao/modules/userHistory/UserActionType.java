@@ -1,27 +1,33 @@
 package com.shopethethao.modules.userHistory;
 
 public enum UserActionType {
-    LOGIN("Đăng nhập hệ thống"),
-    LOGOUT("Đăng xuất hệ thống"),
-    CREATE_ORDER("Tạo đơn hàng"),
-    UPDATE_ORDER("Cập nhật đơn hàng"),
-    CANCEL_ORDER("Hủy đơn hàng"),
-    PROCESS_ORDER("Xử lý đơn hàng"),
-    UPDATE_PROFILE("Cập nhật thông tin cá nhân"),
-    CHANGE_PASSWORD("Thay đổi mật khẩu"),
-    ADD_PRODUCT("Thêm sản phẩm"),
-    UPDATE_PRODUCT("Cập nhật sản phẩm"),
-    DELETE_PRODUCT("Xóa sản phẩm"),
-    ADD_COMMENT("Thêm bình luận"),
-    DELETE_COMMENT("Xóa bình luận");
+    LOGIN,           // Đăng nhập
+    LOGOUT,          // Đăng xuất
+    LOGIN_FAILED,    // Đăng nhập thất bại
+    RELOGIN,         // Đăng nhập lại sau khi đăng xuất
 
-    private final String description;
+    CREATE_PRODUCT,    // Thêm sản phẩm mới
+    UPDATE_PRODUCT,    // Cập nhật sản phẩm
+    DELETE_PRODUCT,    // Xóa sản phẩm
+    
+    CREATE_SIZE,    // Thêm size mới
+    UPDATE_SIZE,    // Cập nhật size
+    DELETE_SIZE,    // Xóa size
 
-    UserActionType(String description) {
-        this.description = description;
-    }
+    CREATE_ROLE,    // Thêm role mới
+    UPDATE_ROLE,    // Cập nhật role
+    DELETE_ROLE,    // Xóa role
 
-    public String getDescription() {
-        return description;
-    }
+    CREATE_ACCOUNT,     // Tạo tài khoản mới
+    UPDATE_ACCOUNT,     // Cập nhật tài khoản
+    DELETE_ACCOUNT,     // Xóa tài khoản
+    LOCK_ACCOUNT,       // Khóa tài khoản
+    UNLOCK_ACCOUNT,     // Mở khóa tài khoản
+    
+    UPDATE_PROFILE,     // Cập nhật thông tin cá nhân
+    CHANGE_PASSWORD,    // Đổi mật khẩu
+    VERIFY_ACCOUNT   // Xác thực tài khoản
+
+
+    
 }

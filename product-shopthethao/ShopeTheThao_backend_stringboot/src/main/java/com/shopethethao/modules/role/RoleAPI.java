@@ -23,6 +23,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.dto.RoleValidationException;
+import com.shopethethao.modules.userHistory.UserHistoryService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import com.shopethethao.modules.userHistory.UserActionType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/role")
@@ -30,6 +37,9 @@ public class RoleAPI {
 
     @Autowired
     RoleDAO roleDAO;
+
+    @Autowired
+    UserHistoryService userHistoryService;
 
     @ExceptionHandler(RoleValidationException.class)
     public ResponseEntity<String> handleRoleValidationException(RoleValidationException e) {
@@ -66,91 +76,118 @@ public class RoleAPI {
     }
 
     private void validateRole(Role role) {
-        if (role == null) {
-            throw new RoleValidationException("Role không được để trống");
+        if (role == null || role.getName() == null || role.getDescription() == null) {
+            throw new RoleValidationException("Vai trò và thông tin không được để trống");
         }
 
-        if (role.getName() == null) {
-            throw new RoleValidationException("Tên role không được để trống");
-        }
-
-        // Validate against allowed values
         if (!ERole.getAllowedValues().contains(role.getName().name())) {
-            throw new RoleValidationException("Vai trò phải là một trong: " + 
-                String.join(", ", ERole.getAllowedValues()));
+            throw new RoleValidationException("Vai trò không hợp lệ");
         }
 
-        // Check if role already exists
-        if (roleDAO.existsByName(role.getName())) {
-            throw new RoleValidationException("Vai trò " + role.getName() + " đã tồn tại trong hệ thống!");
-        }
-
-        String description = role.getDescription();
-        if (description == null || description.trim().isEmpty()) {
-            throw new RoleValidationException("Mô tả vai trò không được để trống");
-        }
-
-        if (description.length() > 255) {
-            throw new RoleValidationException("Mô tả vai trò không được vượt quá 255 ký tự");
+        if (role.getDescription().trim().isEmpty() || role.getDescription().length() > 255) {
+            throw new RoleValidationException("Mô tả vai trò không hợp lệ (0-255 ký tự)");
         }
     }
 
     @PostMapping
-    public ResponseEntity<?> post(@RequestBody Role role) {
+    public ResponseEntity<?> post(@RequestBody Role role, HttpServletRequest request) {
         try {
             validateRole(role);
+            
             if (roleDAO.existsByName(role.getName())) {
                 throw new RoleValidationException("Vai trò đã tồn tại!");
             }
+            
             Role savedRole = roleDAO.save(role);
+
+            String userId = getCurrentUserId();
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                        userId,
+                        UserActionType.CREATE_ROLE,
+                        "Tạo mới vai trò: " + role.getName(),
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"));
+            }
+
             return ResponseEntity.ok(savedRole);
         } catch (RoleValidationException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Lỗi hệ thống, vui lòng thử lại sau!");
+                    .body("Lỗi hệ thống, vui lòng thử lại sau!");
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Role role) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Role role, HttpServletRequest request) {
         try {
             validateRole(role);
+            
             Role existingRole = roleDAO.findById(id)
-                .orElseThrow(() -> new RoleValidationException("Vai trò không tồn tại!"));
+                    .orElseThrow(() -> new RoleValidationException("Vai trò không tồn tại!"));
 
             Optional<Role> duplicateRoleOpt = roleDAO.findByName(role.getName());
-            if (duplicateRoleOpt.isPresent()) {
-                Role duplicateRole = duplicateRoleOpt.get();
-                if (!duplicateRole.getId().equals(id)) {
-                    throw new RoleValidationException("Vai trò đã tồn tại!");
-                }
+            if (duplicateRoleOpt.isPresent() && !duplicateRoleOpt.get().getId().equals(id)) {
+                throw new RoleValidationException("Vai trò này đã tồn tại!");
             }
 
+            String oldName = existingRole.getName().toString();
             existingRole.setName(role.getName());
             existingRole.setDescription(role.getDescription());
             Role updatedRole = roleDAO.save(existingRole);
+
+            String userId = getCurrentUserId();
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                        userId,
+                        UserActionType.UPDATE_ROLE,
+                        "Cập nhật vai trò từ '" + oldName + "' thành '" + role.getName() + "'",
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"));
+            }
+
             return ResponseEntity.ok(updatedRole);
         } catch (RoleValidationException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Lỗi hệ thống, vui lòng thử lại sau!");
+                    .body("Lỗi hệ thống, vui lòng thử lại sau!");
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteSize(@PathVariable("id") Long id) {
+    public ResponseEntity<?> deleteSize(@PathVariable("id") Long id, HttpServletRequest request) {
         try {
-            Optional<Role> existingSize = roleDAO.findById(id);
-            if (existingSize.isPresent()) {
+            Optional<Role> existingRole = roleDAO.findById(id);
+            if (existingRole.isPresent()) {
+                String roleName = existingRole.get().getName().toString();
                 roleDAO.deleteById(id);
-                return ResponseEntity.ok("kích thước đã được xóa thành công!");
+
+                String userId = getCurrentUserId();
+                if (userId != null) {
+                    userHistoryService.logUserAction(
+                            userId,
+                            UserActionType.DELETE_ROLE,
+                            "Xóa vai trò: " + roleName,
+                            request.getRemoteAddr(),
+                            request.getHeader("User-Agent"));
+                }
+
+                return ResponseEntity.ok("Vai trò đã được xóa thành công!");
             } else {
-                return new ResponseEntity<>("Không tìm thấy kích thước!", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Không tìm thấy vai trò!", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>("Không thể xóa kích thước!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Không thể xóa vai trò!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+        return null;
     }
 }

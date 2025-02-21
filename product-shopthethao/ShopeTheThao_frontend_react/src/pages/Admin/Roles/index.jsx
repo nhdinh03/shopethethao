@@ -69,11 +69,11 @@ const Roles = () => {
       if (success) {
         setOpen(false);
         handleResetForm();
-        message.success(editRole ? 'Cập nhật vai trò thành công!' : 'Thêm vai trò mới thành công!');
+        // message.success(editRole ? 'Cập nhật vai trò thành công!' : 'Thêm vai trò mới thành công!');
       }
     } catch (error) {
       if (error.response?.data) {
-        message.error(error.response.data);
+        // message.error(error.response.data);
       } else {
         message.error('Có lỗi xảy ra, vui lòng thử lại!');
       }

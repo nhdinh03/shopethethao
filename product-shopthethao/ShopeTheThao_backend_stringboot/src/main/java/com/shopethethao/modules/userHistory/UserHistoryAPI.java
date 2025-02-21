@@ -3,6 +3,7 @@ package com.shopethethao.modules.userHistory;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,20 +51,13 @@ public class UserHistoryAPI {
     private UserHistoryDTO convertToDTO(UserHistory history) {
         UserHistoryDTO dto = new UserHistoryDTO();
         dto.setIdHistory(history.getIdHistory());
+        dto.setUserId(history.getUserId());  // Use userId directly
         dto.setNote(history.getNote());
         dto.setHistoryDateTime(history.getHistoryDateTime());
-        dto.setUserId(history.getUser().getId());
-        dto.setUsername(history.getUser().getFullname());
         dto.setActionType(history.getActionType());
         dto.setIpAddress(history.getIpAddress());
         dto.setDeviceInfo(history.getDeviceInfo());
         dto.setStatus(history.getStatus());
-
-        // Get user role if exists
-        if (history.getUser().getRoles() != null && !history.getUser().getRoles().isEmpty()) {
-            dto.setUserRole(history.getUser().getRoles().iterator().next().getName().toString());
-        }
-
         return dto;
     }
 
@@ -76,12 +71,15 @@ public class UserHistoryAPI {
 
         try {
             if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.badRequest().body(null);
             }
 
             Page<UserHistoryDTO> histories = userHistoryService.getHistoryWithFilters(
                     actionType, startDate, endDate, userId, pageable);
-            return ResponseEntity.ok(histories);
+                    
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES))
+                    .body(histories);
         } catch (Exception e) {
             logger.error("Error filtering user histories: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

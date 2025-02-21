@@ -21,6 +21,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.modules.userHistory.UserHistoryService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/size")
@@ -28,6 +35,9 @@ public class SizeAPI {
 
     @Autowired
     private SizeDAO sizeDAO;
+
+    @Autowired
+    private UserHistoryService userHistoryService;
 
     // Fetch all sizes
     @GetMapping("/get/all")
@@ -62,9 +72,22 @@ public class SizeAPI {
 
     // Add a new size
     @PostMapping
-    public ResponseEntity<Size> addSize(@RequestBody Size size) {
+    public ResponseEntity<Size> addSize(@RequestBody Size size, HttpServletRequest request) {
         try {
             Size savedSize = sizeDAO.save(size);
+            
+            // Log the create action
+            String userId = getCurrentUserId();
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.CREATE_SIZE,
+                    "Tạo size mới: " + savedSize.getName(),
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent")
+                );
+            }
+            
             return ResponseEntity.status(HttpStatus.CREATED).body(savedSize);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -73,12 +96,28 @@ public class SizeAPI {
 
     // Edit an existing size
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateSize(@PathVariable("id") Integer id, @RequestBody Size size) {
+    public ResponseEntity<?> updateSize(
+            @PathVariable("id") Integer id, 
+            @RequestBody Size size,
+            HttpServletRequest request) {
         try {
             Optional<Size> existingSize = sizeDAO.findById(id);
             if (existingSize.isPresent()) {
-                size.setId(id); // Ensure the correct ID is set
+                size.setId(id);
                 Size updatedSize = sizeDAO.save(size);
+
+                // Log the update action
+                String userId = getCurrentUserId();
+                if (userId != null) {
+                    userHistoryService.logUserAction(
+                        userId,
+                        UserActionType.UPDATE_SIZE,
+                        "Cập nhật size: " + updatedSize.getName(),
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent")
+                    );
+                }
+
                 return ResponseEntity.ok(updatedSize);
             } else {
                 return new ResponseEntity<>("Size not found!", HttpStatus.NOT_FOUND);
@@ -90,11 +129,27 @@ public class SizeAPI {
 
     // Delete a size
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteSize(@PathVariable("id") Integer id) {
+    public ResponseEntity<?> deleteSize(
+            @PathVariable("id") Integer id,
+            HttpServletRequest request) {
         try {
             Optional<Size> existingSize = sizeDAO.findById(id);
             if (existingSize.isPresent()) {
+                String sizeName = existingSize.get().getName();
                 sizeDAO.deleteById(id);
+
+                // Log the delete action
+                String userId = getCurrentUserId();
+                if (userId != null) {
+                    userHistoryService.logUserAction(
+                        userId,
+                        UserActionType.DELETE_SIZE,
+                        "Xóa size: " + sizeName,
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent")
+                    );
+                }
+
                 return ResponseEntity.ok("Size deleted successfully!");
             } else {
                 return new ResponseEntity<>("Size not found!", HttpStatus.NOT_FOUND);
@@ -102,5 +157,14 @@ public class SizeAPI {
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to delete size!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // Helper method to get current user ID
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+        return null;
     }
 }

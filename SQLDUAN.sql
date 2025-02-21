@@ -265,6 +265,10 @@ CREATE TABLE UserHistory
     note NVARCHAR(200),
     history_datetime DATETIME NOT NULL DEFAULT GETDATE(),
     user_id NVARCHAR(100) NOT NULL,
+    actionType NVARCHAR(50),
+    ipAddress NVARCHAR(45),
+    deviceInfo NVARCHAR(200),
+    status INT DEFAULT 1,
     FOREIGN KEY (user_id) REFERENCES Accounts(id) ON DELETE CASCADE
 );
 GO

@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.shopethethao.dto.ProductDetailDTO;
 import com.shopethethao.dto.ResponseDTO;
@@ -32,9 +36,20 @@ import com.shopethethao.modules.size.Size;
 import com.shopethethao.modules.size.SizeDAO;
 import com.shopethethao.service.ProductService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.modules.userHistory.UserHistoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/products")
 public class ProductsAPI {
+    private static final Logger logger = LoggerFactory.getLogger(ProductsAPI.class);
+
+    @Autowired
+    private UserHistoryService userHistoryService;
 
     @Autowired
     private ProductsDAO productsDAO;
@@ -50,6 +65,9 @@ public class ProductsAPI {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private HttpServletRequest request;
 
     // Lấy toàn bộ danh sách sản phẩm (không phân trang)
     @GetMapping("/get/all")
@@ -101,10 +119,11 @@ public class ProductsAPI {
 
             // Check for duplicate sizes before saving
             for (int i = 0; i < product.getSizes().size(); i++) {
-                if (product.getSizes().get(i).getSize() == null || product.getSizes().get(i).getSize().getId() == null) {
+                if (product.getSizes().get(i).getSize() == null
+                        || product.getSizes().get(i).getSize().getId() == null) {
                     return new ResponseEntity<>("Thông tin kích cỡ không hợp lệ!", HttpStatus.BAD_REQUEST);
                 }
-                
+
                 for (int j = i + 1; j < product.getSizes().size(); j++) {
                     if (product.getSizes().get(i).getSize().getId()
                             .equals(product.getSizes().get(j).getSize().getId())) {
@@ -117,6 +136,15 @@ public class ProductsAPI {
 
             // Save product first
             Product savedProduct = productsDAO.save(product);
+
+            // Log successful product creation
+            String userId = getCurrentUserId();
+            userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.CREATE_PRODUCT,
+                    "Thêm sản phẩm: " + savedProduct.getName(),
+                    getClientIp(),
+                    getDeviceInfo());
 
             // Save sizes
             for (ProductSize size : product.getSizes()) {
@@ -143,7 +171,7 @@ public class ProductsAPI {
             return ResponseEntity.ok(savedProduct);
 
         } catch (Exception e) {
-            e.printStackTrace(); // For debugging
+            logger.error("Error creating product: {}", e.getMessage(), e);
             return new ResponseEntity<>("Lỗi khi thêm sản phẩm: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -211,8 +239,19 @@ public class ProductsAPI {
             }
 
             productsDAO.save(updatedProduct);
+
+            // Log successful update
+            String userId = getCurrentUserId();
+            userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.UPDATE_PRODUCT,
+                    "Cập nhật sản phẩm: " + updatedProduct.getName(),
+                    getClientIp(),
+                    getDeviceInfo());
+
             return ResponseEntity.ok(updatedProduct);
         } catch (Exception e) {
+            logger.error("Error updating product {}: {}", id, e.getMessage(), e);
             return new ResponseEntity<>("Lỗi hệ thống, vui lòng thử lại sau!",
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -223,19 +262,27 @@ public class ProductsAPI {
     @Transactional
     public ResponseEntity<?> deleteProduct(@PathVariable("id") Integer id) {
         try {
-            if (!productsDAO.existsById(id)) {
+            Optional<Product> product = productsDAO.findById(id);
+            if (product.isEmpty()) {
                 return new ResponseEntity<>("Sản phẩm không tồn tại!", HttpStatus.NOT_FOUND);
             }
 
-            // xóa
             productSizeDAO.deleteByProductId(id);
             productsDAO.deleteById(id);
             productImagesDAO.deleteByProductId(id);
 
+            // Log successful deletion
+            String userId = getCurrentUserId();
+            userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.DELETE_PRODUCT,
+                    "Xóa sản phẩm: " + product.get().getName(), getClientIp(), getDeviceInfo());
             return ResponseEntity.ok("Xóa sản phẩm và size thành công!");
         } catch (DataIntegrityViolationException e) {
+            logger.error("Data integrity violation while deleting product {}: {}", id, e.getMessage());
             return new ResponseEntity<>("Không thể xóa sản phẩm do dữ liệu tham chiếu!", HttpStatus.CONFLICT);
         } catch (Exception e) {
+            logger.error("Error deleting product {}: {}", id, e.getMessage(), e);
             return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -243,5 +290,34 @@ public class ProductsAPI {
     @GetMapping("/details/{productId}")
     public List<ProductDetailDTO> getProductDetails(@PathVariable Integer productId) {
         return productService.getProductDetailsById(productId);
+    }
+
+    // Helper method to get current user ID
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+        return null;
+    }
+
+    // Helper method to get client IP
+    private String getClientIp() {
+        String ipAddress = request.getHeader("X-Forwarded-For");
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getRemoteAddr();
+        }
+        return ipAddress;
+    }
+
+    // Helper method to get device info
+    private String getDeviceInfo() {
+        return request.getHeader("User-Agent");
     }
 }

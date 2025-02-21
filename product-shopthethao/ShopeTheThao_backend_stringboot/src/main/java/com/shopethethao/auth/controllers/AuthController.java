@@ -1,6 +1,5 @@
 package com.shopethethao.auth.controllers;
 
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -57,6 +56,8 @@ import com.shopethethao.modules.account.AccountDAO;
 import com.shopethethao.modules.refreshToken.RefreshToken;
 import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.role.RoleDAO;
+import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.modules.userHistory.UserHistoryService;
 import com.shopethethao.modules.role.ERole;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
@@ -104,75 +105,111 @@ public class AuthController {
     @Autowired
     private RefreshTokenService refreshTokenService;
 
+    @Autowired
+    private UserHistoryService userHistoryService;
+
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        // ✅ Kiểm tra nếu ID/Phone bị null hoặc trống
-        if (loginRequest.getId() == null || loginRequest.getId().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("ID hoặc số điện thoại không hợp lệ");
-        }
-
-        String loginValue = loginRequest.getId().trim();
-
-        // ✅ Tìm tài khoản bằng ID trước, nếu không có thì tìm bằng phone
-        Account account = accountDAO.findById(loginValue)
-                .orElseGet(() -> accountDAO.findByPhone(loginValue)
-                        .orElseThrow(() -> new UsernameNotFoundException(
-                                "Không tìm thấy người dùng với ID hoặc phone: " + loginValue)));
-
-        // ✅ Kiểm tra tài khoản có bị khóa hay chưa xác minh không
-        AccountValidationUtil.validateAccount(account, loginRequest.getPassword(), encoder);
-
-        Authentication authentication;
+    public ResponseEntity<?> authenticateUser(
+            @Valid @RequestBody LoginRequest loginRequest,
+            HttpServletRequest request) {
         try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(account.getId(), loginRequest.getPassword()));
+            // ✅ Kiểm tra nếu ID/Phone bị null hoặc trống
+            if (loginRequest.getId() == null || loginRequest.getId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("ID hoặc số điện thoại không hợp lệ");
+            }
+
+            String loginValue = loginRequest.getId().trim();
+
+            // ✅ Tìm tài khoản bằng ID trước, nếu không có thì tìm bằng phone
+            Account account = accountDAO.findById(loginValue)
+                    .orElseGet(() -> accountDAO.findByPhone(loginValue)
+                            .orElseThrow(() -> new UsernameNotFoundException(
+                                    "Không tìm thấy người dùng với ID hoặc phone: " + loginValue)));
+
+            // ✅ Kiểm tra tài khoản có bị khóa hay chưa xác minh không
+            AccountValidationUtil.validateAccount(account, loginRequest.getPassword(), encoder);
+
+            Authentication authentication;
+            try {
+                authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(account.getId(), loginRequest.getPassword()));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Sai thông tin đăng nhập hoặc token không hợp lệ");
+            }
+
+            // ✅ Kiểm tra `authentication.getPrincipal()`
+            if (!(authentication.getPrincipal() instanceof UserDetailsImpl)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Lỗi xác thực, không thể lấy thông tin người dùng");
+            }
+
+            // ✅ Lấy thông tin từ `UserDetailsImpl`
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+            // Trước khi tạo token mới, xóa hết token cũ
+            String userId = userDetails.getId();
+            tokenManager.removeAllTokensForUser(userId);
+            tokenStore.invalidateToken(userId);
+            refreshTokenService.deleteByAccountId(userId);
+
+            // Tạo token mới
+            String jwt = jwtUtils.generateJwtToken(authentication);
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(userId);
+
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            tokenStore.saveNewToken(userDetails.getId(), jwt);
+
+            // ✅ Xử lý `gender` để tránh lỗi `NullPointerException`
+            String gender = (userDetails.getGender() != null) ? userDetails.getGender().toString() : "Không xác định";
+
+            // Thêm try-catch cho việc ghi log
+            try {
+                userHistoryService.logUserAction(
+                        userDetails.getId(),
+                        UserActionType.LOGIN,
+                        "Đăng nhập thành công",
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"));
+            } catch (Exception e) {
+                // Log lỗi nhưng vẫn cho phép đăng nhập thành công
+                logger.error("Failed to log login action", e);
+            }
+
+            // ✅ Trả về JWT và thông tin người dùng
+            return ResponseEntity.ok(new JwtResponseDTO(
+                    userDetails.getId(),
+                    userDetails.getPhone(),
+                    userDetails.getFullname(),
+                    userDetails.getEmail(),
+                    userDetails.getAddress(),
+                    userDetails.getBirthday(),
+                    gender,
+                    userDetails.getImage(),
+                    jwt,
+                    refreshToken.getToken(), // Thêm refresh token vào response
+                    "Bearer",
+                    roles));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Sai thông tin đăng nhập hoặc token không hợp lệ");
+            // Log thất bại đăng nhập
+            try {
+                userHistoryService.logUserAction(
+                        loginRequest.getId(),
+                        UserActionType.LOGIN_FAILED,
+                        "Đăng nhập thất bại: " + e.getMessage(),
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"));
+            } catch (Exception logError) {
+                logger.error("Failed to log failed login attempt", logError);
+            }
+
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Đăng nhập thất bại: " + e.getMessage()));
         }
-
-        // ✅ Kiểm tra `authentication.getPrincipal()`
-        if (!(authentication.getPrincipal() instanceof UserDetailsImpl)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Lỗi xác thực, không thể lấy thông tin người dùng");
-        }
-
-        // ✅ Lấy thông tin từ `UserDetailsImpl`
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-        // Trước khi tạo token mới, xóa hết token cũ
-        String userId = userDetails.getId();
-        tokenManager.removeAllTokensForUser(userId);
-        tokenStore.invalidateToken(userId);
-        refreshTokenService.deleteByAccountId(userId);
-
-        // Tạo token mới
-        String jwt = jwtUtils.generateJwtToken(authentication);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userId);
-
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
-        tokenStore.saveNewToken(userDetails.getId(), jwt);
-
-        // ✅ Xử lý `gender` để tránh lỗi `NullPointerException`
-        String gender = (userDetails.getGender() != null) ? userDetails.getGender().toString() : "Không xác định";
-
-        // ✅ Trả về JWT và thông tin người dùng
-        return ResponseEntity.ok(new JwtResponseDTO(
-                userDetails.getId(),
-                userDetails.getPhone(),
-                userDetails.getFullname(),
-                userDetails.getEmail(),
-                userDetails.getAddress(),
-                userDetails.getBirthday(),
-                gender,
-                userDetails.getImage(),
-                jwt,
-                refreshToken.getToken(), // Thêm refresh token vào response
-                "Bearer",
-                roles));
     }
 
     // Thêm endpoint để refresh token
@@ -189,7 +226,6 @@ public class AuthController {
                 .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
                         "Refresh token không có trong database!"));
     }
-    
 
     @Transactional // Transactional OTP chỉ được lưu khi tất cả các thao tác thành công:
     @PostMapping("/signup")
@@ -464,41 +500,59 @@ public class AuthController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request) {
         try {
             String token = request.getHeader("Authorization");
-            if (token == null || !token.startsWith("Bearer ")) {
-                // Cleanup anyway
-                SecurityContextHolder.clearContext();
-                return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công (no token)"));
-            }
-
-            String jwt = token.substring(7);
-            String userId = jwtUtils.getUserNameFromJwtToken(jwt);
-
-            // Xóa tất cả tokens liên quan
-            try {
-                refreshTokenService.deleteByAccountId(userId);
-                tokenStore.invalidateToken(userId);
-                tokenManager.removeToken(userId);
-            } catch (Exception e) {
-                logger.error("Error during token cleanup: {}", e.getMessage());
-                // Continue with logout even if token cleanup fails
+            String userId = null;
+            
+            if (token != null && token.startsWith("Bearer ")) {
+                String jwt = token.substring(7);
+                try {
+                    userId = jwtUtils.getUserNameFromJwtToken(jwt);
+                    // Xóa tokens
+                    cleanupUserTokens(userId);
+                    // Log action
+                    logUserLogout(userId, request);
+                } catch (Exception e) {
+                    logger.warn("Token parsing failed during logout: {}", e.getMessage());
+                }
             }
 
             SecurityContextHolder.clearContext();
             return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công"));
+            
         } catch (Exception e) {
-            // Always clear security context
+            logger.error("Logout error: {}", e.getMessage());
             SecurityContextHolder.clearContext();
-            return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công (with error: " + e.getMessage() + ")"));
+            return ResponseEntity.ok(new MessageResponse("Đăng xuất hoàn tất"));
         }
     }
 
+    private void cleanupUserTokens(String userId) {
+        try {
+            refreshTokenService.deleteByAccountId(userId);
+            tokenStore.invalidateToken(userId);
+            tokenManager.removeToken(userId);
+        } catch (Exception e) {
+            logger.error("Token cleanup failed for user {}: {}", userId, e.getMessage());
+        }
+    }
 
+    private void logUserLogout(String userId, HttpServletRequest request) {
+        try {
+            userHistoryService.logUserAction(
+                userId,
+                UserActionType.LOGOUT,
+                "Đăng xuất thành công",
+                request.getRemoteAddr(), 
+                request.getHeader("User-Agent")
+            );
+        } catch (Exception e) {
+            logger.error("Failed to log logout action for user {}: {}", userId, e.getMessage());
+        }
+    }
 
 }
