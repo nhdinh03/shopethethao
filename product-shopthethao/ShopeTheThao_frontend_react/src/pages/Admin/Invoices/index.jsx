@@ -476,6 +476,7 @@ const commonColumns = {
 const getActionButtons = (record, type) => {
   const viewDetailsButton = (
     <Button
+      key="view"
       type="primary"
       icon={<EyeOutlined />}
       onClick={() => DetailedInvoices(record.invoiceId)}
@@ -489,6 +490,7 @@ const getActionButtons = (record, type) => {
     pending: [
       viewDetailsButton,
       <Button
+        key="confirm"
         type="primary"
         icon={<CheckOutlined />}
         onClick={() => handleStatusUpdate(record.invoiceId, "SHIPPING")}
@@ -497,6 +499,7 @@ const getActionButtons = (record, type) => {
         Xác nhận
       </Button>,
       <Button
+        key="cancel"
         danger
         icon={<StopOutlined />}
         onClick={() => handleStatusUpdate(record.invoiceId, "CANCELLED")}
@@ -508,6 +511,7 @@ const getActionButtons = (record, type) => {
     shipping: [
       viewDetailsButton,
       <Button
+        key="deliver"
         type="primary"
         icon={<FontAwesomeIcon icon={faTruck} />}
         onClick={() => handleStatusUpdate(record.invoiceId, "DELIVERED")}
@@ -520,6 +524,7 @@ const getActionButtons = (record, type) => {
     cancelled: [
       viewDetailsButton,
       <Button
+        key="restore"
         type="primary"
         icon={<UndoOutlined />}
         onClick={() => updateInvoiceStatus(record.invoiceId, "PENDING")}

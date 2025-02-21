@@ -14,6 +14,6 @@ export { default as productattributesApi } from './Product_Attributes/productatt
 export { default as detailedInvoicesAPI } from './DetailedInvoices/detailedInvoicesAPI';
 export { default as invoicesApi } from './invoices/InvoicesApi';
 
-
+export { default as userHistoryApi } from './UserHistory/userHistoryApi';
 
 export { default as loginApi } from './Auth/Login';

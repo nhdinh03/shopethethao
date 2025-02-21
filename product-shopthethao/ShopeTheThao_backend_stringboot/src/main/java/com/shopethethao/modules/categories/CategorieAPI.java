@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.products.ProductsDAO;
+import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.modules.userHistory.UserHistoryService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -33,6 +38,9 @@ public class CategorieAPI {
 
     @Autowired
     private ProductsDAO productsDAO;
+
+    @Autowired
+    private UserHistoryService userHistoryService;
 
     // Lấy toàn bộ danh mục (không phân trang)
     @GetMapping("/get/all")
@@ -64,7 +72,9 @@ public class CategorieAPI {
 
     // **Thêm mới danh mục**
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Categorie category) {
+    public ResponseEntity<?> create(@RequestBody Categorie category,
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
             // Validate required fields
             if (category.getName() == null || category.getName().trim().isEmpty()) {
@@ -81,6 +91,15 @@ public class CategorieAPI {
             }
 
             Categorie savedCategory = dao.save(category);
+
+            // Log user action
+            userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.CREATE_CATEGORIE,
+                    "Tạo danh mục mới: " + savedCategory.getName(),
+                    getClientIp(request),
+                    getClientInfo(request));
+
             return ResponseEntity.ok(savedCategory);
         } catch (Exception e) {
             return new ResponseEntity<>("Không thể thêm danh mục: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -89,7 +108,9 @@ public class CategorieAPI {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateCategory(@PathVariable("id") Integer id,
-            @RequestBody Categorie categorie) {
+            @RequestBody Categorie categorie,
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
             // 🔹 Kiểm tra danh mục có tồn tại không
             Optional<Categorie> existingCategory = dao.findById(id);
@@ -109,6 +130,15 @@ public class CategorieAPI {
             updatedCategorie.setDescription(categorie.getDescription());
 
             dao.save(updatedCategorie);
+
+            // Log user action
+            userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.UPDATE_CATEGORIE,
+                    "Cập nhật danh mục: " + updatedCategorie.getName(),
+                    getClientIp(request),
+                    getClientInfo(request));
+
             return ResponseEntity.ok(updatedCategorie);
         } catch (Exception e) {
             return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -116,7 +146,9 @@ public class CategorieAPI {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteCategory(@PathVariable("id") Integer id) {
+    public ResponseEntity<?> deleteCategory(@PathVariable("id") Integer id,
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
             // 🔥 Kiểm tra xem danh mục có tồn tại không
             if (!dao.existsById(id)) {
@@ -132,6 +164,15 @@ public class CategorieAPI {
 
             // ✅ Xóa danh mục nếu không có sản phẩm liên quan
             dao.deleteById(id);
+
+            // Log user action
+            userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.DELETE_CATEGORIE,
+                    "Xóa danh mục #" + id,
+                    getClientIp(request),
+                    getClientInfo(request));
+
             return ResponseEntity.ok("Xóa danh mục thành công!");
 
         } catch (DataIntegrityViolationException e) {
@@ -141,6 +182,18 @@ public class CategorieAPI {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi không xác định khi xóa danh mục!");
         }
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
+    }
+
+    private String getClientInfo(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
     }
 
 }

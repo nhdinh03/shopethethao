@@ -21,6 +21,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,11 +49,12 @@ import com.shopethethao.modules.receipt_Products.ReceiptProductDAO;
 import com.shopethethao.modules.receipt_Products.ReceiptProductPK;
 import com.shopethethao.modules.suppliers.Supplier;
 import com.shopethethao.modules.suppliers.SupplierDAO;
+import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.modules.userHistory.UserHistoryService;
 
 import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-
-
 
 @RestController
 @RequestMapping("/api/stockReceipts")
@@ -74,7 +77,8 @@ public class StockReceiptsAPI {
     @Autowired
     private ProductsDAO productsDAO;
 
-
+    @Autowired
+    private UserHistoryService userHistoryService;
 
     // Helper method to handle errors uniformly
     private ResponseEntity<String> handleError(String message, HttpStatus status) {
@@ -149,13 +153,15 @@ public class StockReceiptsAPI {
     // ✅ Tạo phiếu nhập kho
     @Transactional
     @PostMapping
-    public ResponseEntity<?> createStockReceipt(@RequestBody StockReceiptRequestDTO request) {
+    public ResponseEntity<?> createStockReceipt(@RequestBody StockReceiptRequestDTO request,
+            Authentication authentication,
+            HttpServletRequest httpRequest) {
         try {
             // Validate required fields
-            if (request.getSupplierId() == null || request.getBrandId() == null || 
-                request.getOrderDate() == null || request.getReceiptProducts() == null || 
-                request.getReceiptProducts().isEmpty()) {
-                return handleError("Thông tin supplier, brand, ngày đặt và danh sách sản phẩm là bắt buộc.", 
+            if (request.getSupplierId() == null || request.getBrandId() == null ||
+                    request.getOrderDate() == null || request.getReceiptProducts() == null ||
+                    request.getReceiptProducts().isEmpty()) {
+                return handleError("Thông tin supplier, brand, ngày đặt và danh sách sản phẩm là bắt buộc.",
                         HttpStatus.BAD_REQUEST);
             }
 
@@ -176,9 +182,9 @@ public class StockReceiptsAPI {
 
             for (ReceiptProductRequestDTO productRequest : request.getReceiptProducts()) {
                 // Validate product request
-                if (productRequest.getProductId() == null || productRequest.getQuantity() == null || 
-                    productRequest.getPrice() == null || productRequest.getQuantity() <= 0 || 
-                    productRequest.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                if (productRequest.getProductId() == null || productRequest.getQuantity() == null ||
+                        productRequest.getPrice() == null || productRequest.getQuantity() <= 0 ||
+                        productRequest.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
                     throw new IllegalArgumentException("Thông tin sản phẩm không hợp lệ");
                 }
 
@@ -189,21 +195,23 @@ public class StockReceiptsAPI {
 
                 // Get and validate product
                 Product product = productsDAO.findById(productRequest.getProductId())
-                        .orElseThrow(() -> new IllegalArgumentException("Sản phẩm không tồn tại với ID: " + productRequest.getProductId()));
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Sản phẩm không tồn tại với ID: " + productRequest.getProductId()));
 
                 // Create ReceiptProduct
                 ReceiptProduct receiptProduct = new ReceiptProduct();
                 ReceiptProductPK pk = new ReceiptProductPK();
                 pk.setReceiptId(savedStockReceipt.getId());
                 pk.setProductId(productRequest.getProductId());
-                
+
                 receiptProduct.setId(pk);
                 receiptProduct.setStockReceipt(savedStockReceipt);
                 receiptProduct.setProduct(product);
                 receiptProduct.setQuantity(productRequest.getQuantity());
                 receiptProduct.setPrice(productRequest.getPrice());
-                receiptProduct.setTotal_amount(productRequest.getPrice().multiply(BigDecimal.valueOf(productRequest.getQuantity())));
-                
+                receiptProduct.setTotal_amount(
+                        productRequest.getPrice().multiply(BigDecimal.valueOf(productRequest.getQuantity())));
+
                 receiptProducts.add(receiptProduct);
             }
 
@@ -211,9 +219,18 @@ public class StockReceiptsAPI {
             receiptProductDAO.saveAll(receiptProducts);
             savedStockReceipt.setReceiptProducts(receiptProducts);
 
+            // Log user action
+            userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.CREATE_STOCK_RECEIPT,
+                    "Tạo phiếu nhập kho mới #" + savedStockReceipt.getId(),
+                    getClientIp(httpRequest),
+                    getClientInfo(httpRequest)
+            );
+
             // Return success response with created receipt
             return ResponseEntity.ok(convertToDTO(savedStockReceipt));
-            
+
         } catch (IllegalArgumentException e) {
             return handleError(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
@@ -225,7 +242,9 @@ public class StockReceiptsAPI {
     @Transactional
     @PutMapping("/{id}")
     public ResponseEntity<?> updateStockReceipt(@PathVariable("id") Integer id,
-            @Valid @RequestBody StockReceiptRequestDTO request) {
+            @Valid @RequestBody StockReceiptRequestDTO request,
+            Authentication authentication,
+            HttpServletRequest httpRequest) {
         try {
             StockReceipt existingStockReceipt = stockReceiptsDAO.findById(id)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
@@ -253,7 +272,7 @@ public class StockReceiptsAPI {
                                 "Sản phẩm không tồn tại với ID: " + productRequest.getProductId()));
 
                 ReceiptProduct receiptProduct = new ReceiptProduct();
-                
+
                 // Set the composite key
                 ReceiptProductPK productPK = new ReceiptProductPK();
                 productPK.setReceiptId(existingStockReceipt.getId());
@@ -276,6 +295,15 @@ public class StockReceiptsAPI {
             // Save the updated stock receipt
             stockReceiptsDAO.save(existingStockReceipt);
 
+            // Log user action
+            userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.UPDATE_STOCK_RECEIPT,
+                    "Cập nhật phiếu nhập kho #" + id,
+                    getClientIp(httpRequest),
+                    getClientInfo(httpRequest)
+            );
+
             return ResponseEntity.ok(existingStockReceipt);
         } catch (ResponseStatusException e) {
             return new ResponseEntity<>(e.getReason(), e.getStatusCode());
@@ -287,13 +315,42 @@ public class StockReceiptsAPI {
 
     // ✅ Xóa phiếu nhập kho
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteStockReceipt(@PathVariable("id") Integer id) {
-        Optional<StockReceipt> existingReceipt = stockReceiptsDAO.findById(id);
-        if (existingReceipt.isPresent()) {
-            stockReceiptsDAO.deleteById(id);
-            return ResponseEntity.ok("Xóa phiếu nhập thành công!");
-        } else {
-            return handleError("Phiếu nhập không tồn tại!", HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> deleteStockReceipt(@PathVariable("id") Integer id,
+            Authentication authentication,
+            HttpServletRequest httpRequest) {
+        try {
+            Optional<StockReceipt> existingReceipt = stockReceiptsDAO.findById(id);
+            if (existingReceipt.isPresent()) {
+                stockReceiptsDAO.deleteById(id);
+
+                // Log user action
+                userHistoryService.logUserAction(
+                        authentication.getName(),
+                        UserActionType.DELETE_STOCK_RECEIPT,
+                        "Xóa phiếu nhập kho #" + id,
+                        getClientIp(httpRequest),
+                        getClientInfo(httpRequest)
+                );
+
+                return ResponseEntity.ok("Xóa phiếu nhập thành công!");
+            } else {
+                return handleError("Phiếu nhập không tồn tại!", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            logger.error("Error deleting stock receipt", e);
+            return handleError("Lỗi khi xóa phiếu nhập kho: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
+    }
+
+    private String getClientInfo(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
     }
 }

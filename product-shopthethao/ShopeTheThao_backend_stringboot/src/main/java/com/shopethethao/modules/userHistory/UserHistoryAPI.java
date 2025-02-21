@@ -5,12 +5,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import jakarta.persistence.criteria.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.CacheControl;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.jpa.domain.Specification;
 
 import com.shopethethao.dto.UserHistoryDTO;
 
@@ -37,7 +42,8 @@ public class UserHistoryAPI {
     @GetMapping("/get/all")
     public ResponseEntity<List<UserHistoryDTO>> findAll() {
         try {
-            List<UserHistory> histories = userHistoriesDAO.findAll();
+            Sort sort = Sort.by(Sort.Direction.DESC, "historyDateTime");
+            List<UserHistory> histories = userHistoriesDAO.findAll(sort);
             List<UserHistoryDTO> dtos = histories.stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
@@ -69,7 +75,7 @@ public class UserHistoryAPI {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(required = false) String userId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "historyDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
 
         try {
             if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
@@ -120,6 +126,87 @@ public class UserHistoryAPI {
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
             logger.error("Error getting action statistics: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/auth-activities")
+    public ResponseEntity<Page<UserHistoryDTO>> getAuthActivities(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) String userId,
+            @PageableDefault(size = 10, sort = "historyDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+        try {
+            Specification<UserHistory> spec = (root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                
+                predicates.add(root.get("actionType").in(
+                    Arrays.asList(UserActionType.LOGIN, UserActionType.LOGOUT,
+                                UserActionType.LOGIN_FAILED, UserActionType.RELOGIN)
+                ));
+
+                if (startDate != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("historyDateTime"), startDate));
+                }
+                if (endDate != null) {
+                    predicates.add(cb.lessThanOrEqualTo(root.get("historyDateTime"), endDate));
+                }
+                if (userId != null && !userId.isEmpty()) {
+                    predicates.add(cb.equal(root.get("account").get("id"), userId));
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+
+            Page<UserHistory> histories = userHistoriesDAO.findAll(spec, pageable);
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES))
+                    .body(histories.map(this::convertToDTO));
+        } catch (Exception e) {
+            logger.error("Error fetching auth activities: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/admin-activities")
+    public ResponseEntity<Page<UserHistoryDTO>> getAdminActivities(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) String adminId,
+            @RequestParam(required = false) String actionType,
+            @PageableDefault(size = 10, sort = "historyDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
+        try {
+            Specification<UserHistory> spec = (root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                
+                if (actionType != null && !actionType.isEmpty()) {
+                    predicates.add(cb.equal(root.get("actionType"), UserActionType.valueOf(actionType)));
+                } else {
+                    List<UserActionType> adminActions = Arrays.stream(UserActionType.values())
+                        .filter(UserActionType::isAdminAction)
+                        .collect(Collectors.toList());
+                    predicates.add(root.get("actionType").in(adminActions));
+                }
+
+                if (startDate != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("historyDateTime"), startDate));
+                }
+                if (endDate != null) {
+                    predicates.add(cb.lessThanOrEqualTo(root.get("historyDateTime"), endDate));
+                }
+                if (adminId != null && !adminId.isEmpty()) {
+                    predicates.add(cb.equal(root.get("account").get("id"), adminId));
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+
+            Page<UserHistory> histories = userHistoriesDAO.findAll(spec, pageable);
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES))
+                    .body(histories.map(this::convertToDTO));
+        } catch (Exception e) {
+            logger.error("Error fetching admin activities: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
