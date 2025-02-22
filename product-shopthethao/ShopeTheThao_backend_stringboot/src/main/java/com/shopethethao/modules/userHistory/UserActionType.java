@@ -43,7 +43,12 @@ public enum UserActionType {
 
     CREATE_CATEGORIE, // Tạo danh mục
     UPDATE_CATEGORIE, // Cập nhật danh mục
-    DELETE_CATEGORIE; // Xóa danh mục
+    DELETE_CATEGORIE, // Xóa danh mục
+
+    CREATE_PRODUCTATTRIBUTES, // Tạo đặc trưng sản phẩm
+    UPDATE_PRODUCTATTRIBUTES, // Cập nhật đặc trưng sản phẩm
+    DELETE_PRODUCTATTRIBUTES; // Xóa đặc trưng sản phẩm
+
 
     public boolean isAuthAction() {
         return this == LOGIN || this == LOGOUT || 

@@ -76,13 +76,18 @@ public class SizeAPI {
         try {
             Size savedSize = sizeDAO.save(size);
             
-            // Log the create action
+            // Log the create action with detailed information
             String userId = getCurrentUserId();
             if (userId != null) {
+                String logMessage = String.format(
+                    "Tạo size mới - Tên: %s, Mô tả: %s",
+                    savedSize.getName(),
+                    savedSize.getDescription() != null ? savedSize.getDescription() : "không có"
+                );
                 userHistoryService.logUserAction(
                     userId,
                     UserActionType.CREATE_SIZE,
-                    "Tạo size mới: " + savedSize.getName(),
+                    logMessage,
                     request.getRemoteAddr(),
                     request.getHeader("User-Agent")
                 );
@@ -103,16 +108,34 @@ public class SizeAPI {
         try {
             Optional<Size> existingSize = sizeDAO.findById(id);
             if (existingSize.isPresent()) {
+                Size oldSize = existingSize.get();
                 size.setId(id);
                 Size updatedSize = sizeDAO.save(size);
 
-                // Log the update action
+                // Log the update action with change details
                 String userId = getCurrentUserId();
                 if (userId != null) {
+                    StringBuilder changes = new StringBuilder();
+                    if (!oldSize.getName().equals(updatedSize.getName())) {
+                        changes.append(String.format("Tên: %s -> %s; ", oldSize.getName(), updatedSize.getName()));
+                    }
+                    if ((oldSize.getDescription() == null && updatedSize.getDescription() != null) ||
+                        (oldSize.getDescription() != null && !oldSize.getDescription().equals(updatedSize.getDescription()))) {
+                        changes.append(String.format("Mô tả: %s -> %s; ",
+                            oldSize.getDescription() != null ? oldSize.getDescription() : "không có",
+                            updatedSize.getDescription() != null ? updatedSize.getDescription() : "không có"));
+                    }
+
+                    String logMessage = String.format(
+                        "Cập nhật size ID %d - Các thay đổi: %s",
+                        id,
+                        changes.length() > 0 ? changes.toString() : "không có thay đổi"
+                    );
+
                     userHistoryService.logUserAction(
                         userId,
                         UserActionType.UPDATE_SIZE,
-                        "Cập nhật size: " + updatedSize.getName(),
+                        logMessage,
                         request.getRemoteAddr(),
                         request.getHeader("User-Agent")
                     );
@@ -135,16 +158,23 @@ public class SizeAPI {
         try {
             Optional<Size> existingSize = sizeDAO.findById(id);
             if (existingSize.isPresent()) {
-                String sizeName = existingSize.get().getName();
+                Size sizeToDelete = existingSize.get();
+                String logMessage = String.format(
+                    "Xóa size - ID: %d, Tên: %s, Mô tả: %s",
+                    id,
+                    sizeToDelete.getName(),
+                    sizeToDelete.getDescription() != null ? sizeToDelete.getDescription() : "không có"
+                );
+                
                 sizeDAO.deleteById(id);
 
-                // Log the delete action
+                // Log the delete action with full size details
                 String userId = getCurrentUserId();
                 if (userId != null) {
                     userHistoryService.logUserAction(
                         userId,
                         UserActionType.DELETE_SIZE,
-                        "Xóa size: " + sizeName,
+                        logMessage,
                         request.getRemoteAddr(),
                         request.getHeader("User-Agent")
                     );

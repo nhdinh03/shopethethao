@@ -92,21 +92,61 @@ public class BrandAPI {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBrand(@PathVariable("id") Integer id,
             @RequestBody Brand brand, HttpServletRequest request) {
-        Optional<Brand> existingBrand = brandsDAO.findById(id);
-        if (existingBrand.isPresent()) {
-            brand.setId(id);
-            String userId = getCurrentUserId();
-            if (userId != null) {
-                userHistoryService.logUserAction(
+        Optional<Brand> optionalBrand = brandsDAO.findById(id);
+        if (optionalBrand.isPresent()) {
+            Brand existingBrand = optionalBrand.get();
+            StringBuilder changes = new StringBuilder();
+
+            // Track name changes
+            if (!existingBrand.getName().equals(brand.getName())) {
+                changes.append(String.format("Tên: '%s' thành '%s', ", 
+                    existingBrand.getName(), brand.getName()));
+                existingBrand.setName(brand.getName());
+            }
+
+            // Track phone number changes
+            if (!existingBrand.getPhoneNumber().equals(brand.getPhoneNumber())) {
+                changes.append(String.format("Số điện thoại: '%s' thành '%s', ", 
+                    existingBrand.getPhoneNumber(), brand.getPhoneNumber()));
+                existingBrand.setPhoneNumber(brand.getPhoneNumber());
+            }
+
+            // Track email changes
+            if ((existingBrand.getEmail() == null && brand.getEmail() != null) ||
+                (existingBrand.getEmail() != null && !existingBrand.getEmail().equals(brand.getEmail()))) {
+                changes.append(String.format("Email: '%s' thành '%s', ", 
+                    existingBrand.getEmail(), brand.getEmail()));
+                existingBrand.setEmail(brand.getEmail());
+            }
+
+            // Track address changes
+            if ((existingBrand.getAddress() == null && brand.getAddress() != null) ||
+                (existingBrand.getAddress() != null && !existingBrand.getAddress().equals(brand.getAddress()))) {
+                changes.append(String.format("Địa chỉ: '%s' thành '%s', ", 
+                    existingBrand.getAddress(), brand.getAddress()));
+                existingBrand.setAddress(brand.getAddress());
+            }
+
+            // If there are any changes, save and log them
+            if (changes.length() > 0) {
+                // Remove trailing comma and space
+                String changeLog = changes.substring(0, changes.length() - 2);
+                
+                Brand updatedBrand = brandsDAO.save(existingBrand);
+                String userId = getCurrentUserId();
+                if (userId != null) {
+                    userHistoryService.logUserAction(
                         userId,
                         UserActionType.UPDATE_BRAND,
-                        "Cập nhật thương hiệu: " + brand.getName(),
+                        "Cập nhật thương hiệu - " + changeLog,
                         request.getRemoteAddr(),
-                        request.getHeader("User-Agent"));
+                        request.getHeader("User-Agent")
+                    );
+                }
+                return ResponseEntity.ok(updatedBrand);
+            } else {
+                return new ResponseEntity<>("Không có thay đổi nào được thực hiện!", HttpStatus.OK);
             }
-            Brand updatedBrand = brandsDAO.save(brand);
-
-            return ResponseEntity.ok(updatedBrand);
         } else {
             return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
         }

@@ -1,8 +1,11 @@
 package com.shopethethao.modules.userHistory;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
@@ -22,9 +25,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.shopethethao.dto.UserHistoryDTO;
@@ -209,5 +214,84 @@ public class UserHistoryAPI {
             logger.error("Error fetching admin activities: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+     
+    private final Map<String, SseEmitter> authEmitters = new ConcurrentHashMap<>();
+    private final Map<String, SseEmitter> adminEmitters = new ConcurrentHashMap<>();
+    
+    // Existing endpoints...
+    
+    @GetMapping("/auth-activities/stream")
+    public SseEmitter streamAuthActivities() {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        String emitterId = UUID.randomUUID().toString();
+        authEmitters.put(emitterId, emitter);
+        
+        emitter.onCompletion(() -> authEmitters.remove(emitterId));
+        emitter.onTimeout(() -> authEmitters.remove(emitterId));
+        
+        return emitter;
+    }
+    
+    @GetMapping("/admin-activities/stream")
+    public SseEmitter streamAdminActivities() {
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        String emitterId = UUID.randomUUID().toString();
+        adminEmitters.put(emitterId, emitter);
+        
+        emitter.onCompletion(() -> adminEmitters.remove(emitterId));
+        emitter.onTimeout(() -> adminEmitters.remove(emitterId));
+        
+        return emitter;
+    }
+    
+    @PostMapping("/auth-activities")
+    public ResponseEntity<?> resetAuthActivities() {
+        try {
+            // Add your reset logic here
+            // For example: clear auth activities or reset to default state
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error resetting auth activities: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/admin-activities")
+    public ResponseEntity<?> resetAdminActivities() {
+        try {
+            // Add your reset logic here
+            // For example: clear admin activities or reset to default state
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            logger.error("Error resetting admin activities: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Method to notify all clients when data changes
+    private void notifyAuthClients(List<UserHistory> activities) {
+        authEmitters.forEach((id, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event()
+                    .data(activities)
+                    .name("auth-activities"));
+            } catch (IOException e) {
+                authEmitters.remove(id);
+            }
+        });
+    }
+    
+    private void notifyAdminClients(List<UserHistory> activities) {
+        adminEmitters.forEach((id, emitter) -> {
+            try {
+                emitter.send(SseEmitter.event()
+                    .data(activities)
+                    .name("admin-activities"));
+            } catch (IOException e) {
+                adminEmitters.remove(id);
+            }
+        });
     }
 }

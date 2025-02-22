@@ -89,11 +89,6 @@ export const privateRoutes = [
     layout: AdminLayout,
   },
   {
-    path: "/admin/user-histories",
-    component: PageAdmin.User_Histories,
-    layout: AdminLayout,
-  },
-  {
     path: "/admin/verification",
     component: PageAdmin.Verification,
     layout: AdminLayout,
@@ -101,6 +96,12 @@ export const privateRoutes = [
   {
     path: "/admin/charts",
     component: PageAdmin.Charts,
+    layout: AdminLayout,
+  },
+
+  {
+    path: "/admin/userhistory",
+    component: PageAdmin.UserHistory,
     layout: AdminLayout,
   },
 ];

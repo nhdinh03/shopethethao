@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +23,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.brands.Brand;
+import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.modules.userHistory.UserHistoryService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/productattributes")
@@ -62,30 +69,106 @@ public class ProductAttributesAPI {
         return attribute.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @Autowired
+    private UserHistoryService userHistoryService;
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.isAuthenticated() ? authentication.getName() : null;
+    }
+
     // ✅ Thêm một thuộc tính mới
     @PostMapping
-    public ResponseEntity<ProductAttributes> addAttribute(@RequestBody ProductAttributes attribute) {
-        return ResponseEntity.ok(productAttributesDAO.save(attribute));
+    public ResponseEntity<?> addAttribute(
+        @RequestBody ProductAttributes attribute,
+        HttpServletRequest request
+    ) {
+        try {
+            // Validate
+            if (attribute.getName() == null || attribute.getName().trim().isEmpty()) {
+                return new ResponseEntity<>("Tên thuộc tính không được để trống!", HttpStatus.BAD_REQUEST);
+            }
+
+            ProductAttributes savedAttribute = productAttributesDAO.save(attribute);
+            String userId = getCurrentUserId();
+            
+            if (userId != null) {
+                userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.CREATE_PRODUCTATTRIBUTES,
+                    "Tạo thuộc tính mới: " + savedAttribute.getName(),
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent")
+                );
+            }
+
+            return ResponseEntity.ok(savedAttribute);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Không thể tạo thuộc tính: " + e.getMessage());
+        }
     }
 
     // ✅ Cập nhật thuộc tính
     @PutMapping("/{id}")
-    public ResponseEntity<ProductAttributes> updateAttribute(@PathVariable Integer id,
-            @RequestBody ProductAttributes newAttribute) {
-        return productAttributesDAO.findById(id)
-                .map(attribute -> {
-                    attribute.setName(newAttribute.getName());
-                    return ResponseEntity.ok(productAttributesDAO.save(attribute));
-                }).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> updateAttribute(
+        @PathVariable Integer id,
+        @RequestBody ProductAttributes newAttribute,
+        HttpServletRequest request
+    ) {
+        try {
+            return productAttributesDAO.findById(id)
+                .map(existingAttribute -> {
+                    String oldName = existingAttribute.getName();
+                    existingAttribute.setName(newAttribute.getName());
+                    ProductAttributes updatedAttribute = productAttributesDAO.save(existingAttribute);
+
+                    String userId = getCurrentUserId();
+                    if (userId != null) {
+                        userHistoryService.logUserAction(
+                            userId,
+                            UserActionType.UPDATE_PRODUCTATTRIBUTES,
+                            String.format("Cập nhật thuộc tính từ '%s' thành '%s'", oldName, updatedAttribute.getName()),
+                            request.getRemoteAddr(),
+                            request.getHeader("User-Agent")
+                        );
+                    }
+
+                    return ResponseEntity.ok(updatedAttribute);
+                })
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Không thể cập nhật thuộc tính: " + e.getMessage());
+        }
     }
 
     // ✅ Xóa một thuộc tính
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAttribute(@PathVariable Integer id) {
-        if (productAttributesDAO.existsById(id)) {
-            productAttributesDAO.deleteById(id);
-            return ResponseEntity.ok().build();
+    public ResponseEntity<?> deleteAttribute(
+        @PathVariable Integer id,
+        HttpServletRequest request
+    ) {
+        try {
+            return productAttributesDAO.findById(id)
+                .map(attribute -> {
+                    String attributeName = attribute.getName();
+                    productAttributesDAO.deleteById(id);
+
+                    String userId = getCurrentUserId();
+                    if (userId != null) {
+                        userHistoryService.logUserAction(
+                            userId,
+                            UserActionType.DELETE_PRODUCTATTRIBUTES,
+                            "Xóa thuộc tính: " + attributeName,
+                            request.getRemoteAddr(),
+                            request.getHeader("User-Agent")
+                        );
+                    }
+
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Không thể xóa thuộc tính: " + e.getMessage());
         }
-        return ResponseEntity.notFound().build();
     }
 }

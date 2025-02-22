@@ -112,34 +112,55 @@ public class CategorieAPI {
             Authentication authentication,
             HttpServletRequest request) {
         try {
-            // 🔹 Kiểm tra danh mục có tồn tại không
-            Optional<Categorie> existingCategory = dao.findById(id);
-            if (existingCategory.isEmpty()) {
+            Optional<Categorie> optionalCategory = dao.findById(id);
+            if (optionalCategory.isEmpty()) {
                 return new ResponseEntity<>("Danh mục không tồn tại!", HttpStatus.NOT_FOUND);
             }
 
-            // 🔹 Kiểm tra xem tên danh mục đã tồn tại chưa (không tính chính nó)
+            // Kiểm tra trùng tên
             Optional<Categorie> duplicateCategory = dao.findByName(categorie.getName());
             if (duplicateCategory.isPresent() && !duplicateCategory.get().getId().equals(id)) {
                 return new ResponseEntity<>("Tên danh mục đã tồn tại!", HttpStatus.CONFLICT);
             }
 
-            // ✅ Cập nhật thông tin danh mục
-            Categorie updatedCategorie = existingCategory.get();
-            updatedCategorie.setName(categorie.getName());
-            updatedCategorie.setDescription(categorie.getDescription());
+            Categorie existingCategory = optionalCategory.get();
+            StringBuilder changes = new StringBuilder();
 
-            dao.save(updatedCategorie);
+            // Track name changes
+            if (!existingCategory.getName().equals(categorie.getName())) {
+                changes.append(String.format("Tên: '%s' thành '%s', ", 
+                    existingCategory.getName(), categorie.getName()));
+                existingCategory.setName(categorie.getName());
+            }
 
-            // Log user action
-            userHistoryService.logUserAction(
+            // Track description changes
+            if ((existingCategory.getDescription() == null && categorie.getDescription() != null) ||
+                (existingCategory.getDescription() != null && !existingCategory.getDescription().equals(categorie.getDescription()))) {
+                changes.append(String.format("Mô tả: '%s' thành '%s', ", 
+                    existingCategory.getDescription(), categorie.getDescription()));
+                existingCategory.setDescription(categorie.getDescription());
+            }
+
+            // If there are any changes, save and log them
+            if (changes.length() > 0) {
+                // Remove trailing comma and space
+                String changeLog = changes.substring(0, changes.length() - 2);
+                
+                Categorie updatedCategory = dao.save(existingCategory);
+                
+                userHistoryService.logUserAction(
                     authentication.getName(),
                     UserActionType.UPDATE_CATEGORIE,
-                    "Cập nhật danh mục: " + updatedCategorie.getName(),
+                    "Cập nhật danh mục - " + changeLog,
                     getClientIp(request),
-                    getClientInfo(request));
+                    getClientInfo(request)
+                );
+                
+                return ResponseEntity.ok(updatedCategory);
+            } else {
+                return new ResponseEntity<>("Không có thay đổi nào được thực hiện!", HttpStatus.OK);
+            }
 
-            return ResponseEntity.ok(updatedCategorie);
         } catch (Exception e) {
             return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }

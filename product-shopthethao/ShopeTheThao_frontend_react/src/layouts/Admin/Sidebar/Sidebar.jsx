@@ -41,6 +41,8 @@ function Sidebar({ onClose }) {
       "/admin/statistics-documents": "grStatistics", // Tài liệu thống kê
       "/admin/charts": "grStatistics", // Biểu đồ thống kê
       "/admin/verification": "grStatistics", // Biểu đồ thống kê
+
+      "/admin/userhistory": "grStatistics", // hoạt động
     };
     return parentMap[key];
   };
@@ -226,6 +228,13 @@ function Sidebar({ onClose }) {
             <span className="menu-item-label">Biểu đồ phân tích</span>
           </Link>,
           "/admin/charts",
+          <FontAwesomeIcon icon={solidIcons.faChartPie} className="submenu-icon" />
+        ),
+        getItem(
+          <Link to="/admin/userhistory" onClick={onClose}>
+            <span className="menu-item-label">Phân thích hoạt động</span>
+          </Link>,
+          "/admin/userhistory",
           <FontAwesomeIcon icon={solidIcons.faChartPie} className="submenu-icon" />
         ),
       ]

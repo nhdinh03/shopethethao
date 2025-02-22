@@ -1,60 +1,119 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FiPackage, FiUsers, FiDollarSign, FiShoppingCart, FiActivity, FiTrendingUp, FiCalendar, FiPieChart } from "react-icons/fi";
+import { FiPackage, FiUsers, FiDollarSign, FiShoppingCart, FiActivity, FiTrendingUp, FiCalendar, FiPieChart, FiRotateCw, FiLoader } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { message, Spin } from "antd";
 import moment from "moment";
 import { userHistoryApi } from "api/Admin";
+import { userHistorySSE } from "api/Admin/UserHistory/userHistorySSE";
+import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'; // Add this import
 
 const AdminIndex = () => {
   const [adminHistories, setAdminHistories] = useState([]);
   const [recentHistories, setRecentHistories] = useState([]);
-  const [loading, setLoading] = useState(false);
-  
-  const REFRESH_INTERVAL = 1000;
+  const [loadingStates, setLoadingStates] = useState({
+    auth: false,
+    admin: false,
+    initialLoad: true
+  });
 
+  // Update fetch functions to use specific loading states
   const fetchAuthActivities = useCallback(async () => {
     try {
+      setLoadingStates(prev => ({ ...prev, auth: true }));
       const response = await userHistoryApi.getAllauthactivities();
       if (response?.data?.content) {
         setRecentHistories(response.data.content);
       }
     } catch (error) {
       console.error("Error fetching auth activities:", error);
+      message.error("Không thể tải dữ liệu hoạt động người dùng");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, auth: false }));
     }
   }, []);
 
   const fetchAdminActivities = useCallback(async () => {
     try {
+      setLoadingStates(prev => ({ ...prev, admin: true }));
       const response = await userHistoryApi.getAlladminactivities();
       if (response?.data?.content) {
         setAdminHistories(response.data.content);
       }
     } catch (error) {
       console.error("Error fetching admin activities:", error);
+      message.error("Không thể tải dữ liệu hoạt động quản trị");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, admin: false }));
     }
   }, []);
 
-  useEffect(() => {
-    let isSubscribed = true;
+  // Updated handleReset with optimistic updates
+  const handleReset = async (type) => {
+    try {
+      setLoadingStates(prev => ({ ...prev, [type]: true }));
 
-    const fetchData = async () => {
-      if (!isSubscribed) return;
-      try {
-        await Promise.all([
-          fetchAuthActivities(),
-          fetchAdminActivities()
-        ]);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      const url = `http://localhost:8081/api/userhistory/${type}-activities`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // message.success(`Đã reset ${type === 'auth' ? 'hoạt động tài khoản' : 'nhật ký quản trị'}`);
+        // Reset data immediately
+        if (type === 'auth') {
+          setRecentHistories([]);
+        } else {
+          setAdminHistories([]);
+        }
+        // Then fetch new data
+        if (type === 'auth') {
+          fetchAuthActivities();
+        } else {
+          fetchAdminActivities();
+        }
+      } else {
+        throw new Error('Reset failed');
       }
-    };
+    } catch (error) {
+      console.error('Reset error:', error);
+      message.error('Không thể reset dữ liệu');
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [type]: false }));
+    }
+  };
 
-    fetchData();
-    const intervalId = setInterval(fetchData, REFRESH_INTERVAL);
+  // Update initial load effect
+  useEffect(() => {
+    Promise.all([
+      fetchAuthActivities(),
+      fetchAdminActivities()
+    ])
+    .catch(error => {
+      console.error("Error fetching initial data:", error);
+    })
+    .finally(() => {
+      setLoadingStates(prev => ({ ...prev, initialLoad: false }));
+    });
 
+    const authUnsubscribe = userHistorySSE.subscribeToAuthActivities((data) => {
+      if (data?.content) {
+        setRecentHistories(data.content);
+      }
+    });
+
+    const adminUnsubscribe = userHistorySSE.subscribeToAdminActivities((data) => {
+      if (data?.content) {
+        setAdminHistories(data.content);
+      }
+    });
+
+    // Cleanup function
     return () => {
-      isSubscribed = false;
-      clearInterval(intervalId);
+      authUnsubscribe();
+      adminUnsubscribe();
     };
   }, [fetchAuthActivities, fetchAdminActivities]);
 
@@ -93,28 +152,28 @@ const AdminIndex = () => {
     { 
       title: "Thêm sản phẩm mới",
       description: "Thêm sản phẩm mới vào kho",
-      link: "/admin/products/add",
+      link: "/admin/product",
       color: "bg-blue-100 text-blue-600",
       icon: <FiPackage className="w-8 h-8 text-blue-500" />
     },
     {
       title: "Xử lý đơn hàng",
       description: "Quản lý đơn hàng mới",
-      link: "/admin/orders",
+      link: "/admin/invoices",
       color: "bg-green-100 text-green-600",
       icon: <FiShoppingCart className="w-8 h-8 text-green-500" />
     },
     {
       title: "Quản lý kho",
-      description: "Kiểm tra tồn kho",
-      link: "/admin/inventory",
+      description: "Kiểm tra nhập kho",
+      link: "/admin/stock-receipts",
       color: "bg-orange-100 text-orange-600",
       icon: <FiPieChart className="w-8 h-8 text-orange-500" />
     },
     {
       title: "Báo cáo doanh thu",
       description: "Xem báo cáo chi tiết",
-      link: "/admin/reports",
+      link: "/admin/charts",
       color: "bg-purple-100 text-purple-600",
       icon: <FiTrendingUp className="w-8 h-8 text-purple-500" />
     }
@@ -154,17 +213,57 @@ const AdminIndex = () => {
 
   const getActionTypeIcon = (actionType) => {
     const icons = {
-      CREATE: '➕',
-      UPDATE: '✏️',
-      UPDATE_CATEGORIE: '📑',
-      DELETE_CATEGORIE: '🗑️',
-      UPDATE_STOCK_RECEIPT: '📦',
-      UPDATE_SIZE: '📏',
-      UPDATE_PRODUCT: '🛍️',
-      UPDATE_USER: '👤',
-      DELETE: '🗑️',
+      // Auth actions
       LOGIN: '🔐',
       LOGOUT: '🔒',
+      LOGIN_FAILED: '⛔',
+      RELOGIN: '🔄',
+
+      // Account actions
+      CREATE_ACCOUNT: '👥',
+      UPDATE_ACCOUNT: '✏️',
+      DELETE_ACCOUNT: '❌',
+
+      // Staff account actions
+      CREATE_ACCOUNTSTAFF: '👔',
+      UPDATE_ACCOUNTSTAFF: '✏️',
+      DELETE_ACCOUNTSTAFF: '❌',
+
+      // Product actions
+      CREATE_PRODUCT: '🛍️',
+      UPDATE_PRODUCT: '✏️',
+      DELETE_PRODUCT: '🗑️',
+
+      // Brand actions
+      CREATE_BRAND: '🏢',
+      UPDATE_BRAND: '✏️',
+      DELETE_BRAND: '🗑️',
+
+      // Supplier actions
+      CREATE_SUPPLIER: '🏭',
+      UPDATE_SUPPLIER: '✏️',
+      DELETE_SUPPLIER: '🗑️',
+
+      // Size actions
+      CREATE_SIZE: '📏',
+      UPDATE_SIZE: '✏️',
+      DELETE_SIZE: '🗑️',
+
+      // Role actions
+      CREATE_ROLE: '🔑',
+      UPDATE_ROLE: '✏️',
+      DELETE_ROLE: '🗑️',
+
+      // Stock receipt actions
+      CREATE_STOCK_RECEIPT: '📦',
+      UPDATE_STOCK_RECEIPT: '✏️',
+      DELETE_STOCK_RECEIPT: '🗑️',
+
+      // Category actions
+      CREATE_CATEGORIE: '📁',
+      UPDATE_CATEGORIE: '✏️',
+      DELETE_CATEGORIE: '🗑️',
+
       default: '📝'
     };
     return icons[actionType] || icons.default;
@@ -172,37 +271,81 @@ const AdminIndex = () => {
 
   const formatActionMessage = (history) => {
     const messages = {
-      CREATE: `Thêm mới ${history.note}`,
-      UPDATE: `Cập nhật ${history.note}`,
-      UPDATE_CATEGORIE: `Cập nhật danh mục: ${history.note}`,
-      DELETE_CATEGORIE: `Xóa danh mục ${history.note}`,
-      UPDATE_STOCK_RECEIPT: `Cập nhật phiếu nhập kho ${history.note}`,
-      UPDATE_SIZE: `Cập nhật size: ${history.note}`,
-      UPDATE_PRODUCT: `Cập nhật sản phẩm: ${history.note}`,
-      UPDATE_USER: `Cập nhật người dùng: ${history.note}`,
+      // Auth messages
       LOGIN: `${history.note}`,
-      LOGOUT: `Đăng xuất`,
+      LOGOUT: 'Đăng xuất',
+      LOGIN_FAILED: 'Đăng nhập thất bại',
+      RELOGIN: 'Đăng nhập lại',
+
+      // Account messages
+      CREATE_ACCOUNT: `Tạo tài khoản mới: ${history.note}`,
+      UPDATE_ACCOUNT: `Cập nhật tài khoản: ${history.note}`,
+      DELETE_ACCOUNT: `Xóa tài khoản: ${history.note}`,
+
+      // Staff account messages
+      CREATE_ACCOUNTSTAFF: `Tạo tài khoản nhân viên: ${history.note}`,
+      UPDATE_ACCOUNTSTAFF: `Cập nhật tài khoản nhân viên: ${history.note}`,
+      DELETE_ACCOUNTSTAFF: `Xóa tài khoản nhân viên: ${history.note}`,
+
+      // Product messages
+      CREATE_PRODUCT: `Thêm sản phẩm mới: ${history.note}`,
+      UPDATE_PRODUCT: `Cập nhật sản phẩm: ${history.note}`,
+      DELETE_PRODUCT: `Xóa sản phẩm: ${history.note}`,
+
+      // Brand messages
+      CREATE_BRAND: `Thêm thương hiệu mới: ${history.note}`,
+      UPDATE_BRAND: `Cập nhật thương hiệu: ${history.note}`,
+      DELETE_BRAND: `Xóa thương hiệu: ${history.note}`,
+
+      // Supplier messages
+      CREATE_SUPPLIER: `Thêm nhà cung cấp mới: ${history.note}`,
+      UPDATE_SUPPLIER: `Cập nhật nhà cung cấp: ${history.note}`,
+      DELETE_SUPPLIER: `Xóa nhà cung cấp: ${history.note}`,
+
+      // Size messages
+      CREATE_SIZE: `Thêm size mới: ${history.note}`,
+      UPDATE_SIZE: `Cập nhật size: ${history.note}`,
+      DELETE_SIZE: `Xóa size: ${history.note}`,
+
+      // Role messages
+      CREATE_ROLE: `Thêm vai trò mới: ${history.note}`,
+      UPDATE_ROLE: `Cập nhật vai trò: ${history.note}`,
+      DELETE_ROLE: `Xóa vai trò: ${history.note}`,
+
+      // Stock receipt messages
+      CREATE_STOCK_RECEIPT: `Tạo phiếu nhập kho: ${history.note}`,
+      UPDATE_STOCK_RECEIPT: `Cập nhật phiếu nhập kho: ${history.note}`,
+      DELETE_STOCK_RECEIPT: `Xóa phiếu nhập kho: ${history.note}`,
+
+      // Category messages
+      CREATE_CATEGORIE: `Tạo danh mục: ${history.note}`,
+      UPDATE_CATEGORIE: `Cập nhật danh mục: ${history.note}`,
+      DELETE_CATEGORIE: `Xóa danh mục: ${history.note}`,
+
       default: history.note
     };
     return messages[history.actionType] || messages.default;
   };
 
   const getActionTypeBgColor = (actionType) => {
+    if (!actionType) return 'bg-gray-100 text-gray-700 border-gray-200';
+    
+    const actionTypeBase = actionType.split('_')[0];
     const colors = {
+      // Base actions
       CREATE: 'bg-green-100 text-green-700 border-green-200',
       UPDATE: 'bg-blue-100 text-blue-700 border-blue-200',
-      UPDATE_CATEGORIE: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-      DELETE_CATEGORIE: 'bg-red-100 text-red-700 border-red-200',
-      UPDATE_STOCK_RECEIPT: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-      UPDATE_SIZE: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-      UPDATE_PRODUCT: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      UPDATE_USER: 'bg-orange-100 text-orange-700 border-orange-200',
       DELETE: 'bg-red-100 text-red-700 border-red-200',
-      LOGIN: 'bg-purple-100 text-purple-700 border-purple-200',
+
+      // Auth actions
+      LOGIN: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       LOGOUT: 'bg-slate-100 text-slate-700 border-slate-200',
+      LOGIN_FAILED: 'bg-red-100 text-red-700 border-red-200',
+      RELOGIN: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+
       default: 'bg-gray-100 text-gray-700 border-gray-200'
     };
-    return colors[actionType] || colors.default;
+    return colors[actionTypeBase] || colors.default;
   };
 
   const renderHistoryItem = (history, isAdminLog = false) => (
@@ -282,25 +425,56 @@ const AdminIndex = () => {
 
   const renderActivitySection = (title, data, isAdmin = false) => (
     <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg">
-      <div className={`
-        p-8 border-b ${isAdmin ? 'bg-purple-50' : 'bg-blue-50'}
-        flex items-center justify-between
-      `}>
-        <div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight mb-2">
-            {title}
-          </h2>
+      <div className={`p-8 border-b ${isAdmin ? 'bg-purple-50' : 'bg-blue-50'} flex items-center justify-between`}>
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight">
+              {title}
+            </h2>
+            <button
+              onClick={() => handleReset(isAdmin ? 'admin' : 'auth')}
+              className={`
+                flex items-center justify-center
+                w-8 h-8
+                ${isAdmin 
+                  ? 'text-purple-600 hover:text-purple-800' 
+                  : 'text-blue-600 hover:text-blue-800'
+                }
+                ${loadingStates[isAdmin ? 'admin' : 'auth'] && 'opacity-50 cursor-not-allowed'}
+              `}
+              disabled={loadingStates[isAdmin ? 'admin' : 'auth']}
+              title="Làm mới dữ liệu"
+            >
+              {loadingStates[isAdmin ? 'admin' : 'auth'] ? (
+                <LoadingOutlined className="text-xl" />
+              ) : (
+                <ReloadOutlined className="text-xl" />
+              )}
+            </button>
+          </div>
           <p className="text-lg text-gray-600 mt-3">
             Hoạt động gần đây nhất
           </p>
         </div>
-        <FiActivity className={`w-12 h-12 ${isAdmin ? 'text-purple-500' : 'text-blue-500'}`} />
       </div>
 
       <div className="p-4">
-        <div className="space-y-6">
-          {getLatestFive(data).map(history => renderHistoryItem(history, isAdmin))}
-        </div>
+        {loadingStates[isAdmin ? 'admin' : 'auth'] ? (
+          <div className="flex items-center justify-center p-8">
+            <Spin size="large" />
+            <span className="ml-3 text-gray-600">Đang tải dữ liệu...</span>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {data.length > 0 ? (
+              getLatestFive(data).map(history => renderHistoryItem(history, isAdmin))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Không có dữ liệu
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -364,17 +538,7 @@ const AdminIndex = () => {
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Tổng quan</h1>
-          <p className="text-gray-600">Xin chào, chúc bạn một ngày làm việc hiệu quả</p>
-        </div>
-        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-lg shadow-sm">
-          <FiCalendar className="text-gray-500" />
-          <span className="text-gray-600">{moment().format('DD/MM/YYYY')}</span>
-        </div>
-      </div>
-
+     
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statsData.map(renderStatsCard)}
