@@ -73,20 +73,34 @@ public class SupplierAPI {
     @PostMapping
     public ResponseEntity<?> createSupplier(@RequestBody Supplier supplier, HttpServletRequest request) {
         try {
+            Supplier savedSupplier = supplierDao.save(supplier);
             String userId = getCurrentUserId();
             if (userId != null) {
+                StringBuilder details = new StringBuilder();
+                details.append(String.format("Tên: '%s', ", supplier.getName()));
+                details.append(String.format("Số điện thoại: '%s', ", supplier.getPhoneNumber()));
+                
+                if (supplier.getEmail() != null) {
+                    details.append(String.format("Email: '%s', ", supplier.getEmail()));
+                }
+                if (supplier.getAddress() != null) {
+                    details.append(String.format("Địa chỉ: '%s', ", supplier.getAddress()));
+                }
+                
+                // Remove trailing comma and space
+                String detailLog = details.substring(0, details.length() - 2);
+                
                 userHistoryService.logUserAction(
-                        userId,
-                        UserActionType.CREATE_SUPPLIER,
-                        "Tạo mới nhà cung cấp: " + supplier.getName(),
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent"));
+                    userId,
+                    UserActionType.CREATE_SUPPLIER,
+                    "Tạo mới nhà cung cấp - " + detailLog,
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent")
+                );
             }
-            Supplier savedSupplier = supplierDao.save(supplier);
-
             return ResponseEntity.ok(savedSupplier);
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to create supplier!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi khi tạo nhà cung cấp!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -95,28 +109,66 @@ public class SupplierAPI {
     public ResponseEntity<?> updateSupplier(@PathVariable("id") Integer id,
             @RequestBody Supplier supplier, HttpServletRequest request) {
         try {
-            Optional<Supplier> existingSupplier = supplierDao.findById(id);
-            if (existingSupplier.isPresent()) {
-                supplier.setId(id); // Ensure that the correct ID is set
+            Optional<Supplier> optionalSupplier = supplierDao.findById(id);
+            if (optionalSupplier.isPresent()) {
+                Supplier existingSupplier = optionalSupplier.get();
+                StringBuilder changes = new StringBuilder();
 
-                String userId = getCurrentUserId();
-                if (userId != null) {
-                    userHistoryService.logUserAction(
+                // Track name changes
+                if (!existingSupplier.getName().equals(supplier.getName())) {
+                    changes.append(String.format("Tên: '%s' thành '%s', ", 
+                        existingSupplier.getName(), supplier.getName()));
+                    existingSupplier.setName(supplier.getName());
+                }
+
+                // Track phone number changes
+                if (!existingSupplier.getPhoneNumber().equals(supplier.getPhoneNumber())) {
+                    changes.append(String.format("Số điện thoại: '%s' thành '%s', ", 
+                        existingSupplier.getPhoneNumber(), supplier.getPhoneNumber()));
+                    existingSupplier.setPhoneNumber(supplier.getPhoneNumber());
+                }
+
+                // Track email changes
+                if ((existingSupplier.getEmail() == null && supplier.getEmail() != null) ||
+                    (existingSupplier.getEmail() != null && !existingSupplier.getEmail().equals(supplier.getEmail()))) {
+                    changes.append(String.format("Email: '%s' thành '%s', ", 
+                        existingSupplier.getEmail(), supplier.getEmail()));
+                    existingSupplier.setEmail(supplier.getEmail());
+                }
+
+                // Track address changes
+                if ((existingSupplier.getAddress() == null && supplier.getAddress() != null) ||
+                    (existingSupplier.getAddress() != null && !existingSupplier.getAddress().equals(supplier.getAddress()))) {
+                    changes.append(String.format("Địa chỉ: '%s' thành '%s', ", 
+                        existingSupplier.getAddress(), supplier.getAddress()));
+                    existingSupplier.setAddress(supplier.getAddress());
+                }
+
+                // If there are any changes, save and log them
+                if (changes.length() > 0) {
+                    // Remove trailing comma and space
+                    String changeLog = changes.substring(0, changes.length() - 2);
+                    
+                    Supplier updatedSupplier = supplierDao.save(existingSupplier);
+                    String userId = getCurrentUserId();
+                    if (userId != null) {
+                        userHistoryService.logUserAction(
                             userId,
                             UserActionType.UPDATE_SUPPLIER,
-                            "Cập nhật nhà cung cấp: " + supplier.getName(),
+                            "Cập nhật nhà cung cấp - " + changeLog,
                             request.getRemoteAddr(),
-                            request.getHeader("User-Agent"));
+                            request.getHeader("User-Agent")
+                        );
+                    }
+                    return ResponseEntity.ok(updatedSupplier);
+                } else {
+                    return new ResponseEntity<>("Không có thay đổi nào được thực hiện!", HttpStatus.OK);
                 }
-                Supplier updatedSupplier = supplierDao.save(supplier);
-
-                return ResponseEntity.ok(updatedSupplier);
             } else {
-                return new ResponseEntity<>("Supplier not found!", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Nhà cung cấp không tồn tại!", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-
-            return new ResponseEntity<>("Failed to update supplier!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi khi cập nhật nhà cung cấp!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -127,23 +179,41 @@ public class SupplierAPI {
             Optional<Supplier> existingSupplier = supplierDao.findById(id);
             if (existingSupplier.isPresent()) {
                 Supplier supplier = existingSupplier.get();
+                
+                // Build detailed log before deletion
+                StringBuilder details = new StringBuilder();
+                details.append(String.format("Tên: '%s', ", supplier.getName()));
+                details.append(String.format("Số điện thoại: '%s', ", supplier.getPhoneNumber()));
+                
+                if (supplier.getEmail() != null) {
+                    details.append(String.format("Email: '%s', ", supplier.getEmail()));
+                }
+                if (supplier.getAddress() != null) {
+                    details.append(String.format("Địa chỉ: '%s', ", supplier.getAddress()));
+                }
+                
+                // Remove trailing comma and space
+                String detailLog = details.substring(0, details.length() - 2);
+
+                // Perform deletion
                 supplierDao.deleteById(id);
+                
                 String userId = getCurrentUserId();
                 if (userId != null) {
                     userHistoryService.logUserAction(
-                            userId,
-                            UserActionType.DELETE_SUPPLIER,
-                            "Xóa nhà cung cấp: " + supplier.getName(),
-                            request.getRemoteAddr(),
-                            request.getHeader("User-Agent"));
+                        userId,
+                        UserActionType.DELETE_SUPPLIER,
+                        "Xóa nhà cung cấp - " + detailLog,
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent")
+                    );
                 }
-                return ResponseEntity.ok("Supplier deleted successfully!");
+                return ResponseEntity.ok("Xóa nhà cung cấp thành công!");
             } else {
-                return new ResponseEntity<>("Supplier not found!", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Nhà cung cấp không tồn tại!", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-
-            return new ResponseEntity<>("Failed to delete supplier!", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi khi xóa nhà cung cấp!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

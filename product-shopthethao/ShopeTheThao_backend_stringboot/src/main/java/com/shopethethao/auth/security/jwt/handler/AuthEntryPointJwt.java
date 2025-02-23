@@ -45,25 +45,23 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 // @Component
 // public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
-// private static final Logger logger =
-// LoggerFactory.getLogger(AuthEntryPointJwt.class);
+//     private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
-// @Override
-// public void commence(HttpServletRequest request, HttpServletResponse
-// response,
-// AuthenticationException authException) throws IOException {
+//     @Override
+//     public void commence(HttpServletRequest request, HttpServletResponse response,
+//             AuthenticationException authException) throws IOException {
 
-// logger.error("Unauthorized error: {}", authException.getMessage());
+//         logger.error("Unauthorized error: {}", authException.getMessage());
 
-// response.setContentType("application/json");
-// response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//         response.setContentType("application/json");
+//         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-// Map<String, String> error = new HashMap<>();
-// error.put("status", "UNAUTHORIZED");
-// error.put("message", "Vui lòng đăng nhập để tiếp tục");
-// error.put("path", request.getServletPath());
+//         Map<String, String> error = new HashMap<>();
+//         error.put("status", "UNAUTHORIZED");
+//         error.put("message", "Vui lòng đăng nhập để tiếp tục");
+//         error.put("path", request.getServletPath());
 
-// ObjectMapper mapper = new ObjectMapper();
-// mapper.writeValue(response.getOutputStream(), error);
-// }
+//         ObjectMapper mapper = new ObjectMapper();
+//         mapper.writeValue(response.getOutputStream(), error);
+//     }
 // }

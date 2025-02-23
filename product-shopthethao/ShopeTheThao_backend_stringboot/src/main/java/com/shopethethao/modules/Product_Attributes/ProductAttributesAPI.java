@@ -96,7 +96,7 @@ public class ProductAttributesAPI {
                 userHistoryService.logUserAction(
                     userId,
                     UserActionType.CREATE_PRODUCTATTRIBUTES,
-                    "Tạo thuộc tính mới: " + savedAttribute.getName(),
+                    "Tạo thuộc tính mới tên: " + savedAttribute.getName(),
                     request.getRemoteAddr(),
                     request.getHeader("User-Agent")
                 );

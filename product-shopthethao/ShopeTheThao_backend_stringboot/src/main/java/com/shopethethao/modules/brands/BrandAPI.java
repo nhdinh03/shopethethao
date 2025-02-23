@@ -75,12 +75,27 @@ public class BrandAPI {
             Brand savedBrand = brandsDAO.save(brand);
             String userId = getCurrentUserId();
             if (userId != null) {
+                StringBuilder details = new StringBuilder();
+                details.append(String.format("Tên: '%s', ", brand.getName()));
+                details.append(String.format("Số điện thoại: '%s', ", brand.getPhoneNumber()));
+                
+                if (brand.getEmail() != null) {
+                    details.append(String.format("Email: '%s', ", brand.getEmail()));
+                }
+                if (brand.getAddress() != null) {
+                    details.append(String.format("Địa chỉ: '%s', ", brand.getAddress()));
+                }
+                
+                // Remove trailing comma and space
+                String detailLog = details.substring(0, details.length() - 2);
+                
                 userHistoryService.logUserAction(
-                        userId,
-                        UserActionType.CREATE_BRAND,
-                        "Tạo mới thương hiệu: " + brand.getName(),
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent"));
+                    userId,
+                    UserActionType.CREATE_BRAND,
+                    "Tạo mới thương hiệu - " + detailLog,
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent")
+                );
             }
             return ResponseEntity.ok(savedBrand);
         } catch (Exception e) {
@@ -163,16 +178,35 @@ public class BrandAPI {
                     return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang có phiếu nhập kho liên quan!",
                             HttpStatus.CONFLICT);
                 }
+
+                // Build detailed log before deletion
+                StringBuilder details = new StringBuilder();
+                details.append(String.format("Tên: '%s', ", brand.getName()));
+                details.append(String.format("Số điện thoại: '%s', ", brand.getPhoneNumber()));
+                
+                if (brand.getEmail() != null) {
+                    details.append(String.format("Email: '%s', ", brand.getEmail()));
+                }
+                if (brand.getAddress() != null) {
+                    details.append(String.format("Địa chỉ: '%s', ", brand.getAddress()));
+                }
+                
+                // Remove trailing comma and space
+                String detailLog = details.substring(0, details.length() - 2);
+
+                // Perform deletion
+                brandsDAO.deleteById(id);
+                
                 String userId = getCurrentUserId();
                 if (userId != null) {
                     userHistoryService.logUserAction(
-                            userId,
-                            UserActionType.DELETE_BRAND,
-                            "Xóa thương hiệu: " + brand.getName(),
-                            request.getRemoteAddr(),
-                            request.getHeader("User-Agent"));
+                        userId,
+                        UserActionType.DELETE_BRAND,
+                        "Xóa thương hiệu - " + detailLog,
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent")
+                    );
                 }
-                brandsDAO.deleteById(id);
 
                 return ResponseEntity.ok("Xóa thương hiệu thành công!");
             } catch (DataIntegrityViolationException e) {

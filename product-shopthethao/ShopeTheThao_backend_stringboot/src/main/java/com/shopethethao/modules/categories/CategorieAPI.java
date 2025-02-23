@@ -51,7 +51,6 @@ public class CategorieAPI {
 
     private static final Logger logger = LoggerFactory.getLogger(CategorieAPI.class);
 
-    
     // Lấy toàn bộ danh mục (không phân trang)
     @GetMapping("/get/all")
     public ResponseEntity<List<Categorie>> findAll() {
@@ -104,14 +103,13 @@ public class CategorieAPI {
 
             // Create detailed log message with admin info
             String logMessage = String.format("""
-                ADMIN: %s đã thêm danh mục mới
-                Chi tiết:
-                - Tên danh mục: %s
-                - Mô tả: %s""",
-                authentication.getName(),
-                savedCategory.getName(),
-                savedCategory.getDescription() != null ? savedCategory.getDescription() : "Không có"
-            );
+                    ADMIN: %s đã thêm danh mục mới
+                    Chi tiết:
+                    - Tên danh mục: %s
+                    - Mô tả: %s""",
+                    authentication.getName(),
+                    savedCategory.getName(),
+                    savedCategory.getDescription() != null ? savedCategory.getDescription() : "Không có");
 
             // Log user action
             userHistoryService.logUserAction(
@@ -231,20 +229,19 @@ public class CategorieAPI {
             }
 
             String categoryName = categoryToDelete.get().getName();
-            
+
             // ✅ Xóa danh mục nếu không có sản phẩm liên quan
             dao.deleteById(id);
 
             // Create detailed log message
             String logMessage = String.format("""
-                ADMIN: %s đã xóa danh mục
-                Chi tiết:
-                - ID: %d
-                - Tên danh mục: %s""",
-                authentication.getName(),
-                id,
-                categoryName
-            );
+                    ADMIN: %s đã xóa danh mục
+                    Chi tiết:
+                    - ID: %d
+                    - Tên danh mục: %s""",
+                    authentication.getName(),
+                    id,
+                    categoryName);
 
             // Log user action
             userHistoryService.logUserAction(
@@ -254,8 +251,8 @@ public class CategorieAPI {
                     getClientIp(request),
                     getClientInfo(request));
 
-            return ResponseEntity.ok(String.format("ADMIN: %s đã xóa danh mục '%s' thành công!", 
-                authentication.getName(), categoryName));
+            return ResponseEntity.ok(String.format("ADMIN: %s đã xóa danh mục '%s' thành công!",
+                    authentication.getName(), categoryName));
 
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -270,7 +267,7 @@ public class CategorieAPI {
         try {
             // Determine the action type using a more readable approach
             UserActionType actionType = determineActionType(action);
-    
+
             userHistoryService.logUserAction(
                     adminUsername,
                     actionType,
@@ -281,7 +278,7 @@ public class CategorieAPI {
             logger.error("Failed to log admin action: {}", e.getMessage());
         }
     }
-    
+
     private UserActionType determineActionType(String action) {
         if (action.startsWith("CẬP NHẬT")) {
             return UserActionType.UPDATE_CATEGORIE;
