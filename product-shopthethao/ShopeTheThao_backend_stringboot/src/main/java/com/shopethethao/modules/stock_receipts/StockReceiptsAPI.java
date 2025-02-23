@@ -1,15 +1,11 @@
 package com.shopethethao.modules.stock_receipts;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -22,7 +18,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -79,12 +74,6 @@ public class StockReceiptsAPI {
 
     @Autowired
     private UserHistoryService userHistoryService;
-
-    // Helper method to handle errors uniformly
-    private ResponseEntity<String> handleError(String message, HttpStatus status) {
-        logger.error(message);
-        return new ResponseEntity<>(message, status);
-    }
 
     @GetMapping("/get/all")
     public ResponseEntity<List<StockReceipt>> findAll() {
@@ -176,6 +165,42 @@ public class StockReceiptsAPI {
             stockReceipt.setOrder_date(request.getOrderDate());
             StockReceipt savedStockReceipt = stockReceiptsDAO.save(stockReceipt);
 
+            // Build detailed log message
+            StringBuilder logMessage = new StringBuilder();
+            logMessage.append(String.format("""
+                    ADMIN: %s đã tạo phiếu nhập kho mới
+                    Chi tiết:
+                    - Mã phiếu: #%d
+                    - Nhà cung cấp: %s
+                    - Thương hiệu: %s
+                    - Ngày đặt: %s
+
+                    Danh sách sản phẩm:
+                    """,
+                    authentication.getName(),
+                    savedStockReceipt.getId(),
+                    supplier.getName(),
+                    brand.getName(),
+                    request.getOrderDate()));
+
+            // Log each product detail using the helper method
+            request.getReceiptProducts().forEach(product -> {
+                Product productInfo = productsDAO.getReferenceById(product.getProductId());
+                BigDecimal totalAmount = product.getPrice().multiply(BigDecimal.valueOf(product.getQuantity()));
+                logMessage.append(formatProductDetail(
+                        productInfo.getName(),
+                        product.getQuantity(),
+                        product.getPrice(),
+                        totalAmount));
+            });
+
+            userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.CREATE_STOCK_RECEIPT,
+                    logMessage.toString(),
+                    getClientIp(httpRequest),
+                    getClientInfo(httpRequest));
+
             // Process ReceiptProducts
             Set<Integer> processedProductIds = new HashSet<>();
             List<ReceiptProduct> receiptProducts = new ArrayList<>();
@@ -219,15 +244,6 @@ public class StockReceiptsAPI {
             receiptProductDAO.saveAll(receiptProducts);
             savedStockReceipt.setReceiptProducts(receiptProducts);
 
-            // Log user action
-            userHistoryService.logUserAction(
-                    authentication.getName(),
-                    UserActionType.CREATE_STOCK_RECEIPT,
-                    "Tạo phiếu nhập kho mới #" + savedStockReceipt.getId(),
-                    getClientIp(httpRequest),
-                    getClientInfo(httpRequest)
-            );
-
             // Return success response with created receipt
             return ResponseEntity.ok(convertToDTO(savedStockReceipt));
 
@@ -260,6 +276,30 @@ public class StockReceiptsAPI {
             existingStockReceipt.setSupplier(supplier);
             existingStockReceipt.setBrand(brand);
             existingStockReceipt.setOrder_date(request.getOrderDate());
+
+            // Track changes
+            List<String> changes = new ArrayList<>();
+
+            // Check supplier changes
+            if (!existingStockReceipt.getSupplier().getId().equals(request.getSupplierId())) {
+                changes.add(String.format("- Nhà cung cấp:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingStockReceipt.getSupplier().getName(),
+                        supplierDAO.findById(request.getSupplierId()).get().getName()));
+            }
+
+            // Check brand changes
+            if (!existingStockReceipt.getBrand().getId().equals(request.getBrandId())) {
+                changes.add(String.format("- Thương hiệu:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingStockReceipt.getBrand().getName(),
+                        brandDAO.findById(request.getBrandId()).get().getName()));
+            }
+
+            // Check date changes
+            if (!existingStockReceipt.getOrder_date().equals(request.getOrderDate())) {
+                changes.add(String.format("- Ngày đặt:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingStockReceipt.getOrder_date(),
+                        request.getOrderDate()));
+            }
 
             // Clear existing receipt products
             receiptProductDAO.deleteByStockReceiptId(existingStockReceipt.getId());
@@ -295,14 +335,37 @@ public class StockReceiptsAPI {
             // Save the updated stock receipt
             stockReceiptsDAO.save(existingStockReceipt);
 
-            // Log user action
+            // Create detailed change log
+            StringBuilder logMessage = new StringBuilder();
+            logMessage.append(String.format("""
+                    ADMIN: %s đã cập nhật phiếu nhập kho #%d
+
+                    Thay đổi thông tin cơ bản:
+                    %s
+
+                    Chi tiết sản phẩm mới:
+                    """,
+                    authentication.getName(),
+                    id,
+                    String.join("\n", changes)));
+
+            // Log new product details using the helper method
+            request.getReceiptProducts().forEach(product -> {
+                Product productInfo = productsDAO.getReferenceById(product.getProductId());
+                BigDecimal totalAmount = product.getPrice().multiply(BigDecimal.valueOf(product.getQuantity()));
+                logMessage.append(formatProductDetail(
+                        productInfo.getName(),
+                        product.getQuantity(),
+                        product.getPrice(),
+                        totalAmount));
+            });
+
             userHistoryService.logUserAction(
                     authentication.getName(),
                     UserActionType.UPDATE_STOCK_RECEIPT,
-                    "Cập nhật phiếu nhập kho #" + id,
+                    logMessage.toString(),
                     getClientIp(httpRequest),
-                    getClientInfo(httpRequest)
-            );
+                    getClientInfo(httpRequest));
 
             return ResponseEntity.ok(existingStockReceipt);
         } catch (ResponseStatusException e) {
@@ -321,16 +384,44 @@ public class StockReceiptsAPI {
         try {
             Optional<StockReceipt> existingReceipt = stockReceiptsDAO.findById(id);
             if (existingReceipt.isPresent()) {
+                StockReceipt receipt = existingReceipt.get();
+
+                // Create detailed log message before deletion
+                StringBuilder logMessage = new StringBuilder();
+                logMessage.append(String.format("""
+                        ADMIN: %s đã xóa phiếu nhập kho
+                        Chi tiết phiếu đã xóa:
+                        - Mã phiếu: #%d
+                        - Nhà cung cấp: %s
+                        - Thương hiệu: %s
+                        - Ngày đặt: %s
+
+                        Danh sách sản phẩm đã xóa:
+                        """,
+                        authentication.getName(),
+                        receipt.getId(),
+                        receipt.getSupplier().getName(),
+                        receipt.getBrand().getName(),
+                        receipt.getOrder_date()));
+
+                // Log deleted products using the helper method
+                receipt.getReceiptProducts().forEach(product -> {
+                    logMessage.append(formatProductDetail(
+                            product.getProduct().getName(),
+                            product.getQuantity(),
+                            product.getPrice(),
+                            product.getTotal_amount()));
+                });
+
+                // Perform deletion
                 stockReceiptsDAO.deleteById(id);
 
-                // Log user action
                 userHistoryService.logUserAction(
                         authentication.getName(),
                         UserActionType.DELETE_STOCK_RECEIPT,
-                        "Xóa phiếu nhập kho #" + id,
+                        logMessage.toString(),
                         getClientIp(httpRequest),
-                        getClientInfo(httpRequest)
-                );
+                        getClientInfo(httpRequest));
 
                 return ResponseEntity.ok("Xóa phiếu nhập thành công!");
             } else {
@@ -340,6 +431,28 @@ public class StockReceiptsAPI {
             logger.error("Error deleting stock receipt", e);
             return handleError("Lỗi khi xóa phiếu nhập kho: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private static final String PRODUCT_DETAIL_FORMAT = """
+            - Sản phẩm: %s
+              Số lượng: %d
+              Đơn giá: %,.0f
+              Thành tiền: %,.0f
+            """;
+
+    // Helper method to format product details
+    private String formatProductDetail(String productName, int quantity, BigDecimal price, BigDecimal totalAmount) {
+        return String.format(PRODUCT_DETAIL_FORMAT,
+                productName,
+                quantity,
+                price.doubleValue(),
+                totalAmount.doubleValue());
+    }
+
+    // Helper method to handle errors uniformly
+    private ResponseEntity<String> handleError(String message, HttpStatus status) {
+        logger.error(message);
+        return new ResponseEntity<>(message, status);
     }
 
     private String getClientIp(HttpServletRequest request) {

@@ -24,7 +24,7 @@ public class UserHistory {
     @Column(name = "actionType", columnDefinition = "NVARCHAR(50)")
     private UserActionType actionType;
 
-    @Column(name = "note", columnDefinition = "NVARCHAR(200)")
+    @Column(name = "note", columnDefinition = "NVARCHAR(1000)")
     private String note;
 
     @Column(name = "ipAddress", columnDefinition = "NVARCHAR(45)")

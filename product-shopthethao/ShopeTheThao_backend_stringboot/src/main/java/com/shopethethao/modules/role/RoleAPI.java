@@ -93,27 +93,29 @@ public class RoleAPI {
     public ResponseEntity<?> post(@RequestBody Role role, HttpServletRequest request) {
         try {
             validateRole(role);
-            
+
             if (roleDAO.existsByName(role.getName())) {
                 throw new RoleValidationException("Vai trò đã tồn tại!");
             }
-            
+
             Role savedRole = roleDAO.save(role);
 
             String userId = getCurrentUserId();
             if (userId != null) {
-                String logMessage = String.format(
-                    "Tạo vai trò mới - Tên: %s, Mô tả: %s",
-                    savedRole.getName(),
-                    savedRole.getDescription()
-                );
-                userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.CREATE_ROLE,
-                    logMessage,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent")
-                );
+                String logMessage = String.format("""
+                        Tạo vai trò mới - Chi tiết:
+                        - Người thực hiện Admin: %s
+                        - ID: %d
+                        - Tên vai trò: %s
+                        - Mô tả: %s
+                        - Thời gian tạo: %s""",
+                        userId,
+                        savedRole.getId(),
+                        savedRole.getName(),
+                        savedRole.getDescription(),
+                        java.time.LocalDateTime.now());
+                userHistoryService.logUserAction(userId, UserActionType.CREATE_ROLE, logMessage,
+                        request.getRemoteAddr(), request.getHeader("User-Agent"));
             }
 
             return ResponseEntity.ok(savedRole);
@@ -129,7 +131,7 @@ public class RoleAPI {
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Role role, HttpServletRequest request) {
         try {
             validateRole(role);
-            
+
             Role existingRole = roleDAO.findById(id)
                     .orElseThrow(() -> new RoleValidationException("Vai trò không tồn tại!"));
 
@@ -149,27 +151,21 @@ public class RoleAPI {
 
             String userId = getCurrentUserId();
             if (userId != null) {
-                StringBuilder changes = new StringBuilder();
-                if (!oldName.equals(updatedRole.getName().toString())) {
-                    changes.append(String.format("Tên: %s -> %s; ", oldName, updatedRole.getName()));
-                }
-                if (!oldDescription.equals(updatedRole.getDescription())) {
-                    changes.append(String.format("Mô tả: '%s' -> '%s'; ", oldDescription, updatedRole.getDescription()));
-                }
+                String logMessage = String.format("""
+                        Cập nhật vai trò - Chi tiết:
+                        - Người thực hiện Admin: %s
+                        - ID: %d
+                        - Tên vai trò: %s -> %s
+                        - Mô tả: %s -> %s
+                        - Thời gian cập nhật: %s""",
+                        userId,
+                        id,
+                        oldName, updatedRole.getName(),
+                        oldDescription, updatedRole.getDescription(),
+                        java.time.LocalDateTime.now());
 
-                String logMessage = String.format(
-                    "Cập nhật vai trò ID %d - Các thay đổi: %s",
-                    id,
-                    changes.length() > 0 ? changes.toString() : "không có thay đổi"
-                );
-
-                userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.UPDATE_ROLE,
-                    logMessage,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent")
-                );
+                userHistoryService.logUserAction(userId, UserActionType.UPDATE_ROLE, logMessage,
+                        request.getRemoteAddr(), request.getHeader("User-Agent"));
             }
 
             return ResponseEntity.ok(updatedRole);
@@ -187,24 +183,26 @@ public class RoleAPI {
             Optional<Role> existingRole = roleDAO.findById(id);
             if (existingRole.isPresent()) {
                 Role roleToDelete = existingRole.get();
-                String logMessage = String.format(
-                    "Xóa vai trò - ID: %d, Tên: %s, Mô tả: %s",
-                    id,
-                    roleToDelete.getName(),
-                    roleToDelete.getDescription()
-                );
-                
+                String userId = getCurrentUserId();
+                String logMessage = String.format("""
+                        Xóa vai trò - Chi tiết:
+                        - Người thực hiện xóa Admin: %s
+                        - ID: %d
+                        - Tên vai trò: %s
+                        - Mô tả: %s
+                        - Thời gian xóa: %s""",
+                        userId,
+                        id,
+                        roleToDelete.getName(),
+                        roleToDelete.getDescription(),
+                        java.time.LocalDateTime.now(),
+                        request.getRemoteAddr());
+
                 roleDAO.deleteById(id);
 
-                String userId = getCurrentUserId();
                 if (userId != null) {
-                    userHistoryService.logUserAction(
-                        userId,
-                        UserActionType.DELETE_ROLE,
-                        logMessage,
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent")
-                    );
+                    userHistoryService.logUserAction(userId, UserActionType.DELETE_ROLE, logMessage,
+                            request.getRemoteAddr(), request.getHeader("User-Agent"));
                 }
 
                 return ResponseEntity.ok("Vai trò đã được xóa thành công!");

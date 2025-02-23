@@ -489,6 +489,7 @@ const Accounts = () => {
         lockedUser={lockedUser}
         columns={columns}
         lockedColumns={lockedColumns}
+        
       />
 
       <div

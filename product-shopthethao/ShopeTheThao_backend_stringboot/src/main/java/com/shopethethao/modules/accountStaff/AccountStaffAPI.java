@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -124,7 +126,8 @@ public class AccountStaffAPI {
     // ✅ Lấy tài khoản theo ID
     @Transactional
     @PostMapping
-    public ResponseEntity<?> registerUser(@Valid @RequestBody AccountsUserDto accountsUser, HttpServletRequest request) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody AccountsUserDto accountsUser,
+            HttpServletRequest request) {
         try {
             // ✅ Kiểm tra xem ID, Email, hoặc Phone có bị trùng không
             boolean exists = accountDao.existsById(accountsUser.getId())
@@ -203,16 +206,36 @@ public class AccountStaffAPI {
 
             verificationDAO.save(verifications);
 
-            // Log the staff account creation
-            String userId = getCurrentUserId();
-            if (userId != null) {
-                userHistoryService.logUserAction(
-                    userId,
+            // Create detailed log message
+            StringBuilder rolesStr = new StringBuilder();
+            account.getRoles().forEach(role -> rolesStr.append("\n  - ").append(role.getName()));
+
+            String logMessage = String.format("""
+                    ADMIN: %s đã tạo Nhân viên mới
+                    Chi tiết:
+                    - ID: %s
+                    - Họ tên: %s
+                    - Email: %s
+                    - Số điện thoại: %s
+                    - Vai trò: %s
+                    - Trạng thái: %s
+                    - Địa chỉ: %s""",
+                    getCurrentUserId(),
+                    account.getId(),
+                    account.getFullname(),
+                    account.getEmail(),
+                    account.getPhone(),
+                    rolesStr.toString(),
+                    account.getStatus() == 1 ? "Hoạt động" : "Khóa",
+                    account.getAddress() != null ? account.getAddress() : "Chưa cập nhật");
+
+            // Log the action
+            userHistoryService.logUserAction(
+                    getCurrentUserId(),
                     UserActionType.CREATE_ACCOUNTSTAFF,
-                    "Tạo mới tài khoản nhân viên: " + account.getId(),
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent"));
-            }
+                    logMessage,
+                    getClientIp(request),
+                    getClientInfo(request));
 
             return ResponseEntity.ok(new MessageResponse("Nhân viên đã được thêm thành công!"));
 
@@ -225,67 +248,98 @@ public class AccountStaffAPI {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAccount(@PathVariable("id") String id, @RequestBody Account updatedAccount, HttpServletRequest request) {
+    public ResponseEntity<?> updateAccount(@PathVariable("id") String id, @RequestBody Account updatedAccount,
+            HttpServletRequest request) {
         try {
-            // Kiểm tra tài khoản tồn tại
-            Optional<Account> existingAccount = accountDao.findById(id);
-            if (existingAccount.isEmpty()) {
+            Optional<Account> existingAccountOpt = accountDao.findById(id);
+            if (existingAccountOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new MessageResponse("Không tìm thấy thông tin nhân viên"));
             }
 
-            // Cập nhật thông tin tài khoản
-            Account account = existingAccount.get();
-            account.setFullname(updatedAccount.getFullname());
-            account.setPhone(updatedAccount.getPhone());
-            account.setEmail(updatedAccount.getEmail());
-            account.setAddress(updatedAccount.getAddress());
-            account.setBirthday(updatedAccount.getBirthday());
-            account.setGender(updatedAccount.getGender());
-            account.setImage(updatedAccount.getImage());
-            account.setStatus(updatedAccount.getStatus()); // Cập nhật trạng thái
-            account.setVerified(updatedAccount.getVerified());
-            account.setPoints(updatedAccount.getPoints());
+            Account account = existingAccountOpt.get();
+            // Track all changes
+            List<String> changes = new ArrayList<>();
 
-            // Nếu có mật khẩu mới, mã hóa lại mật khẩu
-            if (updatedAccount.getPassword() != null && !updatedAccount.getPassword().isEmpty()) {
-                account.setPassword(encoder.encode(updatedAccount.getPassword()));
+            // Check and record changes
+            if (!Objects.equals(account.getFullname(), updatedAccount.getFullname())) {
+                changes.add(String.format("- Họ tên: '%s' -> '%s'", 
+                    account.getFullname(), updatedAccount.getFullname()));
+                account.setFullname(updatedAccount.getFullname());
+            }
+            if (!Objects.equals(account.getPhone(), updatedAccount.getPhone())) {
+                changes.add(String.format("- Số điện thoại: '%s' -> '%s'", 
+                    account.getPhone(), updatedAccount.getPhone()));
+                account.setPhone(updatedAccount.getPhone());
+            }
+            if (!Objects.equals(account.getEmail(), updatedAccount.getEmail())) {
+                changes.add(String.format("- Email: '%s' -> '%s'", 
+                    account.getEmail(), updatedAccount.getEmail()));
+                account.setEmail(updatedAccount.getEmail());
+            }
+            if (!Objects.equals(account.getStatus(), updatedAccount.getStatus())) {
+                changes.add(String.format("- Trạng thái: '%s' -> '%s'", 
+                    account.getStatus() == 1 ? "Hoạt động" : "Khóa",
+                    updatedAccount.getStatus() == 1 ? "Hoạt động" : "Khóa"));
+                account.setStatus(updatedAccount.getStatus());
+            }
+            if (!Objects.equals(account.getAddress(), updatedAccount.getAddress())) {
+                changes.add(String.format("- Địa chỉ: '%s' -> '%s'",
+                    account.getAddress() != null ? account.getAddress() : "Chưa cập nhật",
+                    updatedAccount.getAddress() != null ? updatedAccount.getAddress() : "Chưa cập nhật"));
+                account.setAddress(updatedAccount.getAddress());
+            }
+            if (!Objects.equals(account.getGender(), updatedAccount.getGender())) {
+                changes.add(String.format("- Giới tính: '%s' -> '%s'",
+                    account.getGender() != null ? account.getGender() : "Chưa cập nhật",
+                    updatedAccount.getGender() != null ? updatedAccount.getGender() : "Chưa cập nhật"));
+                account.setGender(updatedAccount.getGender());
             }
 
-            // Lưu lại thay đổi
+            // Update other fields that don't need change tracking
+            account.setBirthday(updatedAccount.getBirthday());
+            account.setImage(updatedAccount.getImage());
+            account.setVerified(updatedAccount.getVerified());
+
+            if (updatedAccount.getPassword() != null && !updatedAccount.getPassword().isEmpty()) {
+                account.setPassword(encoder.encode(updatedAccount.getPassword()));
+                changes.add("- Mật khẩu: Đã được cập nhật");
+            }
+
+            // Save changes
             accountDao.save(account);
 
-            // Nếu trạng thái là khóa (status = 0), lưu lý do khóa
+            // Handle lock reasons if account is locked
             if (updatedAccount.getStatus() == 0) {
-                // Lấy danh sách lý do khóa
                 List<LockReasons> lockReasons = updatedAccount.getLockReasons();
-
                 if (lockReasons != null && !lockReasons.isEmpty()) {
-                    // Lấy lý do khóa từ phần tử đầu tiên (nếu có)
-                    String lockReason = lockReasons.get(0).getReason(); // Giả sử mỗi LockReasons có trường 'reason'
-
+                    String lockReason = lockReasons.get(0).getReason();
                     LockReasons lockReasonEntry = new LockReasons();
-                    lockReasonEntry.setAccount(account); // Gán tài khoản
-                    lockReasonEntry.setReason(lockReason); // Lý do khóa
+                    lockReasonEntry.setAccount(account);
+                    lockReasonEntry.setReason(lockReason);
                     lockReasonEntry.setCreatedAt(new Date());
-
-                    lockReasonsDAO.save(lockReasonEntry); // Lưu lý do khóa
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(new MessageResponse("Lý do khóa không có trong danh sách!"));
+                    lockReasonsDAO.save(lockReasonEntry);
+                    changes.add(String.format("- Lý do khóa: %s", lockReason));
                 }
             }
 
-            // Log the staff account update
-            String userId = getCurrentUserId();
-            if (userId != null) {
-                userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.UPDATE_ACCOUNTSTAFF,
-                    "Cập nhật tài khoản nhân viên: " + id,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent"));
-            }
+            // Create single detailed log message
+            String logMessage = String.format("""
+                    ADMIN: %s đã cập nhật thông tin nhân viên #%s
+                    Chi tiết thay đổi:
+                    %s""",
+                    getCurrentUserId(),
+                    id,
+                    changes.isEmpty() ? "Không có thay đổi" : String.join("\n", changes));
+
+            // Log the action once
+            userHistoryService.logUserAction(
+                getCurrentUserId(),
+                UserActionType.UPDATE_ACCOUNTSTAFF,
+                logMessage,
+                getClientIp(request),
+                getClientInfo(request)
+            );
 
             return ResponseEntity.ok(new MessageResponse("Cập nhật thông tin nhân viên thành công!"));
         } catch (Exception e) {
@@ -312,15 +366,29 @@ public class AccountStaffAPI {
             accountService.deleteAccount(id); // Call deleteAccount method from AccountService
 
             // Log the staff account deletion
-            String userId = getCurrentUserId();
-            if (userId != null) {
-                userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.DELETE_ACCOUNTSTAFF,
-                    "Xóa tài khoản nhân viên: " + id,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent"));
-            }
+             String logMessage = String.format("""
+                ADMIN: %s đã xóa tài khoản nhân viên
+                Chi tiết tài khoản đã xóa:
+                - ID: %s
+                - Họ tên: %s
+                - Email: %s
+                - Số điện thoại: %s""",
+                getCurrentUserId(),
+                existingAccount.getId(),
+                existingAccount.getFullname(),
+                existingAccount.getEmail(),
+                existingAccount.getPhone()
+        );
+
+        // Log the action
+        userHistoryService.logUserAction(
+            getCurrentUserId(),
+            UserActionType.DELETE_ACCOUNTSTAFF,
+            logMessage,
+            getClientIp(request),
+            getClientInfo(request)
+        );
+
 
             return ResponseEntity.ok("Đã xóa thông tin nhân viên thành công.");
         } catch (Exception e) {
@@ -335,5 +403,17 @@ public class AccountStaffAPI {
             return authentication.getName();
         }
         return null;
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
+    }
+
+    private String getClientInfo(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
     }
 }

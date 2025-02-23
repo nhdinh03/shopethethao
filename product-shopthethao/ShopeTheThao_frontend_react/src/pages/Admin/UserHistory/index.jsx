@@ -155,9 +155,20 @@ const UserHistory = () => {
           rowKey="idHistory"
           scroll={{ x: 1200 }}
           pagination={{
+            position: ["bottomCenter"],
             pageSize: 5,
             showSizeChanger: true,
             showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} của ${total} mục`,
+            pageSizeOptions: ["5", "10", "20", "50"],
+            locale: {
+              items_per_page: "/ trang",
+              jump_to: "Đến trang",
+              page: "",
+              prev_page: "Trang trước",
+              next_page: "Trang sau",
+            },
           }}
         />
       </Card>

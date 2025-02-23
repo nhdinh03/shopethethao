@@ -9,10 +9,9 @@ import com.shopethethao.modules.brands.Brand;
 import com.shopethethao.modules.receipt_Products.ReceiptProduct;
 import com.shopethethao.modules.suppliers.Supplier;
 
-import jakarta.persistence.CascadeType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
