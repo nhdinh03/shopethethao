@@ -2,6 +2,11 @@ package com.shopethethao.modules.size;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -72,30 +77,65 @@ public class SizeAPI {
 
     // Add a new size
     @PostMapping
-    public ResponseEntity<Size> addSize(@RequestBody Size size, HttpServletRequest request) {
+    public ResponseEntity<?> addSize(
+            @RequestBody Size size,
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
-            Size savedSize = sizeDAO.save(size);
-            
-            // Log the create action with detailed information
-            String userId = getCurrentUserId();
-            if (userId != null) {
-                String logMessage = String.format(
-                    "Tạo size mới - Tên: %s, Mô tả: %s",
-                    savedSize.getName(),
-                    savedSize.getDescription() != null ? savedSize.getDescription() : "không có"
-                );
-                userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.CREATE_SIZE,
-                    logMessage,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent")
-                );
+            // Validate required fields
+            if (size.getName() == null || size.getName().trim().isEmpty()) {
+                String errorMessage = "Tên size không được để trống!";
+                logAdminAction(authentication.getName(), request, "TẠO MỚI THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
             }
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedSize);
+
+            // Normalize the size name
+            size.setName(size.getName().trim());
+
+            // Check for duplicate size name
+            Optional<Size> existingSize = sizeDAO.findByName(size.getName());
+            if (existingSize.isPresent()) {
+                String errorMessage = String.format("Size '%s' đã tồn tại!", size.getName());
+                logAdminAction(authentication.getName(), request, "TẠO MỚI THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
+            }
+
+            Size savedSize = sizeDAO.save(size);
+
+            // Create detailed log message
+            String logMessage = String.format("""
+                ADMIN: %s đã tạo size mới
+                Chi tiết:
+                - ID: %d
+                - Tên size: %s
+                - Mô tả: %s""",
+                authentication.getName(),
+                savedSize.getId(),
+                savedSize.getName(),
+                savedSize.getDescription() != null ? savedSize.getDescription() : "Không có"
+            );
+
+            // Log user action
+            userHistoryService.logUserAction(
+                authentication.getName(),
+                UserActionType.CREATE_SIZE,
+                logMessage,
+                getClientIp(request),
+                getClientInfo(request)
+            );
+
+            // Return success response with details
+            Map<String, Object> response = new HashMap<>();
+            response.put("size", savedSize);
+            response.put("message", String.format("ADMIN: %s đã tạo size mới thành công!", authentication.getName()));
+            response.put("createdBy", authentication.getName());
+            response.put("createdAt", LocalDateTime.now());
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            String errorMessage = "Không thể thêm size: " + e.getMessage();
+            logAdminAction(authentication.getName(), request, "LỖI: " + errorMessage);
+            return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -104,49 +144,85 @@ public class SizeAPI {
     public ResponseEntity<?> updateSize(
             @PathVariable("id") Integer id, 
             @RequestBody Size size,
+            Authentication authentication,
             HttpServletRequest request) {
         try {
-            Optional<Size> existingSize = sizeDAO.findById(id);
-            if (existingSize.isPresent()) {
-                Size oldSize = existingSize.get();
-                size.setId(id);
-                Size updatedSize = sizeDAO.save(size);
-
-                // Log the update action with change details
-                String userId = getCurrentUserId();
-                if (userId != null) {
-                    StringBuilder changes = new StringBuilder();
-                    if (!oldSize.getName().equals(updatedSize.getName())) {
-                        changes.append(String.format("Tên: %s -> %s; ", oldSize.getName(), updatedSize.getName()));
-                    }
-                    if ((oldSize.getDescription() == null && updatedSize.getDescription() != null) ||
-                        (oldSize.getDescription() != null && !oldSize.getDescription().equals(updatedSize.getDescription()))) {
-                        changes.append(String.format("Mô tả: %s -> %s; ",
-                            oldSize.getDescription() != null ? oldSize.getDescription() : "không có",
-                            updatedSize.getDescription() != null ? updatedSize.getDescription() : "không có"));
-                    }
-
-                    String logMessage = String.format(
-                        "Cập nhật size ID %d - Các thay đổi: %s",
-                        id,
-                        changes.length() > 0 ? changes.toString() : "không có thay đổi"
-                    );
-
-                    userHistoryService.logUserAction(
-                        userId,
-                        UserActionType.UPDATE_SIZE,
-                        logMessage,
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent")
-                    );
-                }
-
-                return ResponseEntity.ok(updatedSize);
-            } else {
-                return new ResponseEntity<>("Size not found!", HttpStatus.NOT_FOUND);
+            Optional<Size> optionalSize = sizeDAO.findById(id);
+            if (optionalSize.isEmpty()) {
+                String errorMessage = String.format("Size #%d không tồn tại!", id);
+                logAdminAction(authentication.getName(), request, 
+                    "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
+
+            // Check for duplicate size name
+            Optional<Size> duplicateSize = sizeDAO.findByName(size.getName());
+            if (duplicateSize.isPresent() && !duplicateSize.get().getId().equals(id)) {
+                String errorMessage = String.format("Size '%s' đã tồn tại!", size.getName());
+                logAdminAction(authentication.getName(), request, 
+                    "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
+            }
+
+            Size existingSize = optionalSize.get();
+            List<String> changes = new ArrayList<>();
+            LocalDateTime updateTime = LocalDateTime.now();
+
+            // Track name changes
+            if (!existingSize.getName().equals(size.getName())) {
+                changes.add(String.format("- Tên size:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                    existingSize.getName(),
+                    size.getName()));
+                existingSize.setName(size.getName());
+            }
+
+            // Track description changes
+            if (!Objects.equals(existingSize.getDescription(), size.getDescription())) {
+                changes.add(String.format("- Mô tả:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                    existingSize.getDescription() != null ? existingSize.getDescription() : "Không có",
+                    size.getDescription() != null ? size.getDescription() : "Không có"));
+                existingSize.setDescription(size.getDescription());
+            }
+
+            // If there are changes, save and create detailed log
+            if (!changes.isEmpty()) {
+                Size updatedSize = sizeDAO.save(existingSize);
+
+                // Create detailed change log
+                String changeLog = String.format("""
+                    ADMIN: %s đã cập nhật size #%d
+                    Chi tiết thay đổi:
+                    %s""",
+                    authentication.getName(),
+                    id,
+                    String.join(System.lineSeparator(), changes));
+
+                // Log the admin action
+                userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.UPDATE_SIZE,
+                    changeLog,
+                    getClientIp(request),
+                    getClientInfo(request));
+
+                // Return success response with details
+                Map<String, Object> response = new HashMap<>();
+                response.put("size", updatedSize);
+                response.put("changes", changes);
+                response.put("updateTime", updateTime);
+                response.put("updatedBy", authentication.getName());
+
+                return ResponseEntity.ok(response);
+            } else {
+                String message = String.format("Không có thay đổi nào được thực hiện cho size #%d", id);
+                logAdminAction(authentication.getName(), request, message);
+                return new ResponseEntity<>(message, HttpStatus.OK);
+            }
+
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to update size!", HttpStatus.INTERNAL_SERVER_ERROR);
+            String errorMessage = String.format("Lỗi khi cập nhật size #%d: %s", id, e.getMessage());
+            logAdminAction(authentication.getName(), request, "LỖI: " + errorMessage);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -154,38 +230,58 @@ public class SizeAPI {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteSize(
             @PathVariable("id") Integer id,
+            Authentication authentication,
             HttpServletRequest request) {
         try {
-            Optional<Size> existingSize = sizeDAO.findById(id);
-            if (existingSize.isPresent()) {
-                Size sizeToDelete = existingSize.get();
-                String logMessage = String.format(
-                    "Xóa size - ID: %d, Tên: %s, Mô tả: %s",
-                    id,
-                    sizeToDelete.getName(),
-                    sizeToDelete.getDescription() != null ? sizeToDelete.getDescription() : "không có"
-                );
-                
-                sizeDAO.deleteById(id);
-
-                // Log the delete action with full size details
-                String userId = getCurrentUserId();
-                if (userId != null) {
-                    userHistoryService.logUserAction(
-                        userId,
-                        UserActionType.DELETE_SIZE,
-                        logMessage,
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent")
-                    );
-                }
-
-                return ResponseEntity.ok("Size deleted successfully!");
-            } else {
-                return new ResponseEntity<>("Size not found!", HttpStatus.NOT_FOUND);
+            // Kiểm tra size tồn tại
+            Optional<Size> sizeToDelete = sizeDAO.findById(id);
+            if (sizeToDelete.isEmpty()) {
+                String errorMessage = String.format("Size #%d không tồn tại!", id);
+                logAdminAction(authentication.getName(), request, "XÓA THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
+
+            Size size = sizeToDelete.get();
+
+            // Create detailed log message before deletion
+            String logMessage = String.format("""
+                ADMIN: %s đã xóa size
+                Chi tiết size đã xóa:
+                - ID: %d
+                - Tên size: %s
+                - Mô tả: %s""",
+                authentication.getName(),
+                id,
+                size.getName(),
+                size.getDescription() != null ? size.getDescription() : "Không có"
+            );
+
+            // Thực hiện xóa
+            sizeDAO.deleteById(id);
+
+            // Log user action
+            userHistoryService.logUserAction(
+                authentication.getName(),
+                UserActionType.DELETE_SIZE,
+                logMessage,
+                getClientIp(request),
+                getClientInfo(request)
+            );
+
+            // Return success response with details
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", String.format("ADMIN: %s đã xóa size '%s' thành công!", 
+                authentication.getName(), size.getName()));
+            response.put("deletedBy", authentication.getName());
+            response.put("deletedAt", LocalDateTime.now());
+            response.put("sizeInfo", size);
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to delete size!", HttpStatus.INTERNAL_SERVER_ERROR);
+            String errorMessage = "Lỗi khi xóa size: " + e.getMessage();
+            logAdminAction(authentication.getName(), request, "LỖI: " + errorMessage);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -196,5 +292,35 @@ public class SizeAPI {
             return authentication.getName();
         }
         return null;
+    }
+
+    // Add these helper methods if they don't exist
+    private void logAdminAction(String adminUsername, HttpServletRequest request, String action) {
+        try {
+            UserActionType actionType = action.startsWith("CẬP NHẬT") ? 
+                UserActionType.UPDATE_SIZE : UserActionType.ADMIN_ACTION;
+
+            userHistoryService.logUserAction(
+                adminUsername,
+                actionType,
+                action,
+                getClientIp(request),
+                getClientInfo(request)
+            );
+        } catch (Exception e) {
+            // Log error if needed
+        }
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
+    }
+
+    private String getClientInfo(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
     }
 }
