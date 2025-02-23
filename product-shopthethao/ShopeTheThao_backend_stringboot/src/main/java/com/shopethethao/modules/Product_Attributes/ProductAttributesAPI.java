@@ -23,15 +23,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.brands.Brand;
 import com.shopethethao.modules.userHistory.UserActionType;
 import com.shopethethao.modules.userHistory.UserHistoryService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/api/productattributes")
 public class ProductAttributesAPI {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductAttributesAPI.class);
 
     @Autowired
     private ProductAttributesDAO productAttributesDAO;
@@ -80,30 +89,48 @@ public class ProductAttributesAPI {
     // ✅ Thêm một thuộc tính mới
     @PostMapping
     public ResponseEntity<?> addAttribute(
-        @RequestBody ProductAttributes attribute,
-        HttpServletRequest request
-    ) {
+            @RequestBody ProductAttributes attribute,
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
-            // Validate
+            // Validate name
             if (attribute.getName() == null || attribute.getName().trim().isEmpty()) {
-                return new ResponseEntity<>("Tên thuộc tính không được để trống!", HttpStatus.BAD_REQUEST);
+                String errorMessage = "Tên thuộc tính không được để trống!";
+                logAdminAction(authentication.getName(), request, "THÊM THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+            }
+
+            // Normalize the name
+            attribute.setName(attribute.getName().trim());
+
+            // Check for duplicate
+            Optional<ProductAttributes> existing = productAttributesDAO.findByNameIgnoreCase(attribute.getName());
+            if (existing.isPresent()) {
+                String errorMessage = String.format("Thuộc tính '%s' đã tồn tại!", attribute.getName());
+                logAdminAction(authentication.getName(), request, "THÊM THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
             }
 
             ProductAttributes savedAttribute = productAttributesDAO.save(attribute);
-            String userId = getCurrentUserId();
-            
-            if (userId != null) {
-                userHistoryService.logUserAction(
-                    userId,
+
+            // Create detailed log message
+            String logMessage = String.format("""
+                    ADMIN: %s đã thêm thuộc tính mới
+                    Chi tiết:
+                    - Tên thuộc tính: %s""",
+                    authentication.getName(),
+                    savedAttribute.getName());
+
+            userHistoryService.logUserAction(
+                    authentication.getName(),
                     UserActionType.CREATE_PRODUCTATTRIBUTES,
-                    "Tạo thuộc tính mới tên: " + savedAttribute.getName(),
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent")
-                );
-            }
+                    logMessage,
+                    getClientIp(request),
+                    request.getHeader("User-Agent"));
 
             return ResponseEntity.ok(savedAttribute);
         } catch (Exception e) {
+            logger.error("Error creating product attribute", e);
             return ResponseEntity.badRequest().body("Không thể tạo thuộc tính: " + e.getMessage());
         }
     }
@@ -111,32 +138,62 @@ public class ProductAttributesAPI {
     // ✅ Cập nhật thuộc tính
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAttribute(
-        @PathVariable Integer id,
-        @RequestBody ProductAttributes newAttribute,
-        HttpServletRequest request
-    ) {
+            @PathVariable Integer id,
+            @RequestBody ProductAttributes newAttribute,
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
-            return productAttributesDAO.findById(id)
-                .map(existingAttribute -> {
-                    String oldName = existingAttribute.getName();
-                    existingAttribute.setName(newAttribute.getName());
-                    ProductAttributes updatedAttribute = productAttributesDAO.save(existingAttribute);
+            Optional<ProductAttributes> optionalAttribute = productAttributesDAO.findById(id);
+            if (optionalAttribute.isEmpty()) {
+                String errorMessage = String.format("Thuộc tính #%d không tồn tại!", id);
+                logAdminAction(authentication.getName(), request, "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+            }
 
-                    String userId = getCurrentUserId();
-                    if (userId != null) {
-                        userHistoryService.logUserAction(
-                            userId,
-                            UserActionType.UPDATE_PRODUCTATTRIBUTES,
-                            String.format("Cập nhật thuộc tính từ '%s' thành '%s'", oldName, updatedAttribute.getName()),
-                            request.getRemoteAddr(),
-                            request.getHeader("User-Agent")
-                        );
-                    }
+            ProductAttributes existingAttribute = optionalAttribute.get();
+            List<String> changes = new ArrayList<>();
+            LocalDateTime updateTime = LocalDateTime.now();
 
-                    return ResponseEntity.ok(updatedAttribute);
-                })
-                .orElse(ResponseEntity.notFound().build());
+            // Track name changes
+            if (!existingAttribute.getName().equals(newAttribute.getName())) {
+                changes.add(String.format("- Tên thuộc tính:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingAttribute.getName(),
+                        newAttribute.getName()));
+                existingAttribute.setName(newAttribute.getName());
+            }
+
+            if (!changes.isEmpty()) {
+                ProductAttributes updatedAttribute = productAttributesDAO.save(existingAttribute);
+
+                String changeLog = String.format("""
+                        ADMIN: %s đã cập nhật thuộc tính #%d%n
+                        Chi tiết thay đổi:%n
+                        %s""",
+                        authentication.getName(),
+                        id,
+                        String.join(System.lineSeparator(), changes));
+
+                userHistoryService.logUserAction(
+                        authentication.getName(),
+                        UserActionType.UPDATE_PRODUCTATTRIBUTES,
+                        changeLog,
+                        getClientIp(request),
+                        request.getHeader("User-Agent"));
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("attribute", updatedAttribute);
+                response.put("changes", changes);
+                response.put("updateTime", updateTime);
+                response.put("updatedBy", authentication.getName());
+
+                return ResponseEntity.ok(response);
+            } else {
+                String message = String.format("Không có thay đổi nào được thực hiện cho thuộc tính #%d", id);
+                logAdminAction(authentication.getName(), request, message);
+                return new ResponseEntity<>(message, HttpStatus.OK);
+            }
         } catch (Exception e) {
+            logger.error("Error updating product attribute", e);
             return ResponseEntity.badRequest().body("Không thể cập nhật thuộc tính: " + e.getMessage());
         }
     }
@@ -144,31 +201,80 @@ public class ProductAttributesAPI {
     // ✅ Xóa một thuộc tính
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAttribute(
-        @PathVariable Integer id,
-        HttpServletRequest request
-    ) {
+            @PathVariable Integer id,
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
             return productAttributesDAO.findById(id)
-                .map(attribute -> {
-                    String attributeName = attribute.getName();
-                    productAttributesDAO.deleteById(id);
+                    .map(attribute -> {
+                        String attributeName = attribute.getName();
+                        productAttributesDAO.deleteById(id);
 
-                    String userId = getCurrentUserId();
-                    if (userId != null) {
+                        // Create detailed log message
+                        String logMessage = String.format("""
+                                ADMIN: %s đã xóa thuộc tính
+                                Chi tiết:
+                                - ID: %d
+                                - Tên thuộc tính: %s""",
+                                authentication.getName(),
+                                id,
+                                attributeName);
+
                         userHistoryService.logUserAction(
-                            userId,
-                            UserActionType.DELETE_PRODUCTATTRIBUTES,
-                            "Xóa thuộc tính: " + attributeName,
-                            request.getRemoteAddr(),
-                            request.getHeader("User-Agent")
-                        );
-                    }
+                                authentication.getName(),
+                                UserActionType.DELETE_PRODUCTATTRIBUTES,
+                                logMessage,
+                                getClientIp(request),
+                                request.getHeader("User-Agent"));
 
-                    return ResponseEntity.ok().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("message", "Xóa thuộc tính thành công");
+                        response.put("deletedBy", authentication.getName());
+                        response.put("deletedAt", LocalDateTime.now());
+                        response.put("attributeInfo", Map.of(
+                                "id", id,
+                                "name", attributeName));
+
+                        return ResponseEntity.ok(response);
+                    })
+                    .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Không thể xóa thuộc tính: " + e.getMessage());
+            logger.error("Error deleting product attribute", e);
+            return ResponseEntity.badRequest()
+                    .body("Không thể xóa thuộc tính: " + e.getMessage());
         }
+    }
+
+    // Helper methods
+    private void logAdminAction(String adminUsername, HttpServletRequest request, String action) {
+        try {
+            UserActionType actionType = determineActionType(action);
+            userHistoryService.logUserAction(
+                    adminUsername,
+                    actionType,
+                    action,
+                    getClientIp(request),
+                    request.getHeader("User-Agent"));
+        } catch (Exception e) {
+            logger.error("Failed to log admin action: {}", e.getMessage());
+        }
+    }
+
+    private UserActionType determineActionType(String action) {
+        if (action.startsWith("CẬP NHẬT")) {
+            return UserActionType.UPDATE_PRODUCTATTRIBUTES;
+        } else if (action.startsWith("XÓA")) {
+            return UserActionType.DELETE_PRODUCTATTRIBUTES;
+        } else {
+            return UserActionType.ADMIN_ACTION;
+        }
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
     }
 }

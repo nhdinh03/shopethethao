@@ -29,10 +29,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.ArrayList;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/brands")
 public class BrandAPI {
+
+    private static final Logger logger = LoggerFactory.getLogger(BrandAPI.class);
 
     @Autowired
     private BrandDAO brandsDAO;
@@ -70,33 +76,34 @@ public class BrandAPI {
 
     // Create a new brand
     @PostMapping
-    public ResponseEntity<?> createBrand(@RequestBody Brand brand, HttpServletRequest request) {
+    public ResponseEntity<?> createBrand(@RequestBody Brand brand, 
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
             Brand savedBrand = brandsDAO.save(brand);
-            String userId = getCurrentUserId();
-            if (userId != null) {
-                StringBuilder details = new StringBuilder();
-                details.append(String.format("Tên: '%s', ", brand.getName()));
-                details.append(String.format("Số điện thoại: '%s', ", brand.getPhoneNumber()));
-                
-                if (brand.getEmail() != null) {
-                    details.append(String.format("Email: '%s', ", brand.getEmail()));
-                }
-                if (brand.getAddress() != null) {
-                    details.append(String.format("Địa chỉ: '%s', ", brand.getAddress()));
-                }
-                
-                // Remove trailing comma and space
-                String detailLog = details.substring(0, details.length() - 2);
-                
-                userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.CREATE_BRAND,
-                    "Tạo mới thương hiệu - " + detailLog,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent")
-                );
-            }
+            
+            // Create detailed log message with admin info
+            String logMessage = String.format("""
+                    ADMIN: %s đã thêm thương hiệu mới
+                    Chi tiết:
+                    - Tên thương hiệu: %s
+                    - Số điện thoại: %s
+                    - Email: %s
+                    - Địa chỉ: %s""",
+                    authentication.getName(),
+                    brand.getName(),
+                    brand.getPhoneNumber(),
+                    brand.getEmail() != null ? brand.getEmail() : "Không có",
+                    brand.getAddress() != null ? brand.getAddress() : "Không có");
+
+            userHistoryService.logUserAction(
+                authentication.getName(),
+                UserActionType.CREATE_BRAND,
+                logMessage,
+                getClientIp(request),
+                getClientInfo(request)
+            );
+            
             return ResponseEntity.ok(savedBrand);
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi khi tạo thương hiệu!", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -106,126 +113,138 @@ public class BrandAPI {
     // Update an existing brand
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBrand(@PathVariable("id") Integer id,
-            @RequestBody Brand brand, HttpServletRequest request) {
-        Optional<Brand> optionalBrand = brandsDAO.findById(id);
-        if (optionalBrand.isPresent()) {
-            Brand existingBrand = optionalBrand.get();
-            StringBuilder changes = new StringBuilder();
+            @RequestBody Brand brand, 
+            Authentication authentication,
+            HttpServletRequest request) {
+        try {
+            Optional<Brand> optionalBrand = brandsDAO.findById(id);
+            if (optionalBrand.isPresent()) {
+                Brand existingBrand = optionalBrand.get();
+                List<String> changes = new ArrayList<>();
 
-            // Track name changes
-            if (!existingBrand.getName().equals(brand.getName())) {
-                changes.append(String.format("Tên: '%s' thành '%s', ", 
-                    existingBrand.getName(), brand.getName()));
-                existingBrand.setName(brand.getName());
-            }
-
-            // Track phone number changes
-            if (!existingBrand.getPhoneNumber().equals(brand.getPhoneNumber())) {
-                changes.append(String.format("Số điện thoại: '%s' thành '%s', ", 
-                    existingBrand.getPhoneNumber(), brand.getPhoneNumber()));
-                existingBrand.setPhoneNumber(brand.getPhoneNumber());
-            }
-
-            // Track email changes
-            if ((existingBrand.getEmail() == null && brand.getEmail() != null) ||
-                (existingBrand.getEmail() != null && !existingBrand.getEmail().equals(brand.getEmail()))) {
-                changes.append(String.format("Email: '%s' thành '%s', ", 
-                    existingBrand.getEmail(), brand.getEmail()));
-                existingBrand.setEmail(brand.getEmail());
-            }
-
-            // Track address changes
-            if ((existingBrand.getAddress() == null && brand.getAddress() != null) ||
-                (existingBrand.getAddress() != null && !existingBrand.getAddress().equals(brand.getAddress()))) {
-                changes.append(String.format("Địa chỉ: '%s' thành '%s', ", 
-                    existingBrand.getAddress(), brand.getAddress()));
-                existingBrand.setAddress(brand.getAddress());
-            }
-
-            // If there are any changes, save and log them
-            if (changes.length() > 0) {
-                // Remove trailing comma and space
-                String changeLog = changes.substring(0, changes.length() - 2);
-                
-                Brand updatedBrand = brandsDAO.save(existingBrand);
-                String userId = getCurrentUserId();
-                if (userId != null) {
-                    userHistoryService.logUserAction(
-                        userId,
-                        UserActionType.UPDATE_BRAND,
-                        "Cập nhật thương hiệu - " + changeLog,
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent")
-                    );
+                // Track changes with detailed formatting
+                if (!existingBrand.getName().equals(brand.getName())) {
+                    changes.add(String.format("- Tên thương hiệu:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingBrand.getName(), brand.getName()));
+                    existingBrand.setName(brand.getName());
                 }
-                return ResponseEntity.ok(updatedBrand);
+
+                if (!existingBrand.getPhoneNumber().equals(brand.getPhoneNumber())) {
+                    changes.add(String.format("- Số điện thoại:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingBrand.getPhoneNumber(), brand.getPhoneNumber()));
+                    existingBrand.setPhoneNumber(brand.getPhoneNumber());
+                }
+
+                if (!Objects.equals(existingBrand.getEmail(), brand.getEmail())) {
+                    changes.add(String.format("- Email:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingBrand.getEmail() != null ? existingBrand.getEmail() : "Không có",
+                        brand.getEmail() != null ? brand.getEmail() : "Không có"));
+                    existingBrand.setEmail(brand.getEmail());
+                }
+
+                if (!Objects.equals(existingBrand.getAddress(), brand.getAddress())) {
+                    changes.add(String.format("- Địa chỉ:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingBrand.getAddress() != null ? existingBrand.getAddress() : "Không có",
+                        brand.getAddress() != null ? brand.getAddress() : "Không có"));
+                    existingBrand.setAddress(brand.getAddress());
+                }
+
+                if (!changes.isEmpty()) {
+                    Brand updatedBrand = brandsDAO.save(existingBrand);
+
+                    // Create detailed change log
+                    String changeLog = String.format("""
+                            ADMIN: %s đã cập nhật thương hiệu #%d
+                            Chi tiết thay đổi:
+                            %s""",
+                            authentication.getName(),
+                            id,
+                            String.join(System.lineSeparator(), changes));
+
+                    userHistoryService.logUserAction(
+                        authentication.getName(),
+                        UserActionType.UPDATE_BRAND,
+                        changeLog,
+                        getClientIp(request),
+                        getClientInfo(request)
+                    );
+
+                    return ResponseEntity.ok(updatedBrand);
+                } else {
+                    return new ResponseEntity<>("Không có thay đổi nào được thực hiện!", HttpStatus.OK);
+                }
             } else {
-                return new ResponseEntity<>("Không có thay đổi nào được thực hiện!", HttpStatus.OK);
+                return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
             }
-        } else {
-            return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi khi cập nhật thương hiệu!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     // Delete a brand
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBrand(@PathVariable("id") Integer id, HttpServletRequest request) {
-        Optional<Brand> existingBrand = brandsDAO.findById(id);
-        if (existingBrand.isPresent()) {
-            try {
+    public ResponseEntity<?> deleteBrand(@PathVariable("id") Integer id, 
+            Authentication authentication,
+            HttpServletRequest request) {
+        try {
+            Optional<Brand> existingBrand = brandsDAO.findById(id);
+            if (existingBrand.isPresent()) {
                 Brand brand = existingBrand.get();
+                
                 if (!brand.getStockReceipts().isEmpty()) {
                     return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang có phiếu nhập kho liên quan!",
                             HttpStatus.CONFLICT);
                 }
 
-                // Build detailed log before deletion
-                StringBuilder details = new StringBuilder();
-                details.append(String.format("Tên: '%s', ", brand.getName()));
-                details.append(String.format("Số điện thoại: '%s', ", brand.getPhoneNumber()));
-                
-                if (brand.getEmail() != null) {
-                    details.append(String.format("Email: '%s', ", brand.getEmail()));
-                }
-                if (brand.getAddress() != null) {
-                    details.append(String.format("Địa chỉ: '%s', ", brand.getAddress()));
-                }
-                
-                // Remove trailing comma and space
-                String detailLog = details.substring(0, details.length() - 2);
+                // Create detailed log message
+                String logMessage = String.format("""
+                        ADMIN: %s đã xóa thương hiệu
+                        Chi tiết:
+                        - ID: %d
+                        - Tên thương hiệu: %s
+                        - Số điện thoại: %s
+                        - Email: %s
+                        - Địa chỉ: %s""",
+                        authentication.getName(),
+                        id,
+                        brand.getName(),
+                        brand.getPhoneNumber(),
+                        brand.getEmail() != null ? brand.getEmail() : "Không có",
+                        brand.getAddress() != null ? brand.getAddress() : "Không có");
 
                 // Perform deletion
                 brandsDAO.deleteById(id);
                 
-                String userId = getCurrentUserId();
-                if (userId != null) {
-                    userHistoryService.logUserAction(
-                        userId,
-                        UserActionType.DELETE_BRAND,
-                        "Xóa thương hiệu - " + detailLog,
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent")
-                    );
-                }
-
-                return ResponseEntity.ok("Xóa thương hiệu thành công!");
-            } catch (DataIntegrityViolationException e) {
-                return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang được sử dụng!", HttpStatus.CONFLICT);
-            } catch (Exception e) {
-                return new ResponseEntity<>("Lỗi khi xóa thương hiệu: " + e.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR);
+                userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.DELETE_BRAND,
+                    logMessage,
+                    getClientIp(request),
+                    getClientInfo(request)
+                );
+                
+                return ResponseEntity.ok(String.format("ADMIN: %s đã xóa thương hiệu '%s' thành công!",
+                        authentication.getName(), brand.getName()));
+            } else {
+                return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
             }
-        } else {
-            return new ResponseEntity<>("Thương hiệu không tồn tại!", HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>("Không thể xóa thương hiệu này vì đang được sử dụng!", HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi khi xóa thương hiệu!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            return authentication.getName();
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
         }
-        return null;
+        return xfHeader.split(",")[0];
+    }
+
+    private String getClientInfo(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
     }
 
 }

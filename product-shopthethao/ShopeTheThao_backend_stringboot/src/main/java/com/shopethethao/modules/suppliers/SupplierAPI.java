@@ -1,6 +1,8 @@
 package com.shopethethao.modules.suppliers;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +28,14 @@ import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.userHistory.UserHistoryService;
 import com.shopethethao.modules.userHistory.UserActionType;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/suppliers")
 public class SupplierAPI {
+
+    private static final Logger logger = LoggerFactory.getLogger(SupplierAPI.class);
 
     @Autowired
     private SupplierDAO supplierDao;
@@ -71,33 +77,35 @@ public class SupplierAPI {
 
     // Add a new supplier
     @PostMapping
-    public ResponseEntity<?> createSupplier(@RequestBody Supplier supplier, HttpServletRequest request) {
+    public ResponseEntity<?> createSupplier(@RequestBody Supplier supplier, 
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
             Supplier savedSupplier = supplierDao.save(supplier);
-            String userId = getCurrentUserId();
-            if (userId != null) {
-                StringBuilder details = new StringBuilder();
-                details.append(String.format("Tên: '%s', ", supplier.getName()));
-                details.append(String.format("Số điện thoại: '%s', ", supplier.getPhoneNumber()));
-                
-                if (supplier.getEmail() != null) {
-                    details.append(String.format("Email: '%s', ", supplier.getEmail()));
-                }
-                if (supplier.getAddress() != null) {
-                    details.append(String.format("Địa chỉ: '%s', ", supplier.getAddress()));
-                }
-                
-                // Remove trailing comma and space
-                String detailLog = details.substring(0, details.length() - 2);
-                
-                userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.CREATE_SUPPLIER,
-                    "Tạo mới nhà cung cấp - " + detailLog,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent")
-                );
-            }
+            
+            // Create detailed log message with admin info
+            String logMessage = String.format("""
+                    ADMIN: %s đã thêm nhà cung cấp mới
+                    Chi tiết:
+                    - Tên nhà cung cấp: %s
+                    - Số điện thoại: %s
+                    - Email: %s
+                    - Địa chỉ: %s""",
+                    authentication.getName(),
+                    supplier.getName(),
+                    supplier.getPhoneNumber(),
+                    supplier.getEmail() != null ? supplier.getEmail() : "Không có",
+                    supplier.getAddress() != null ? supplier.getAddress() : "Không có");
+
+            // Log user action
+            userHistoryService.logUserAction(
+                authentication.getName(),
+                UserActionType.CREATE_SUPPLIER,
+                logMessage,
+                getClientIp(request),
+                getClientInfo(request)
+            );
+            
             return ResponseEntity.ok(savedSupplier);
         } catch (Exception e) {
             return new ResponseEntity<>("Lỗi khi tạo nhà cung cấp!", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -107,59 +115,63 @@ public class SupplierAPI {
     // Update an existing supplier
     @PutMapping("/{id}")
     public ResponseEntity<?> updateSupplier(@PathVariable("id") Integer id,
-            @RequestBody Supplier supplier, HttpServletRequest request) {
+            @RequestBody Supplier supplier, 
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
             Optional<Supplier> optionalSupplier = supplierDao.findById(id);
             if (optionalSupplier.isPresent()) {
                 Supplier existingSupplier = optionalSupplier.get();
-                StringBuilder changes = new StringBuilder();
+                List<String> changes = new ArrayList<>();
 
-                // Track name changes
+                // Track changes with detailed formatting
                 if (!existingSupplier.getName().equals(supplier.getName())) {
-                    changes.append(String.format("Tên: '%s' thành '%s', ", 
+                    changes.add(String.format("- Tên nhà cung cấp:%n  + Cũ: '%s'%n  + Mới: '%s'",
                         existingSupplier.getName(), supplier.getName()));
                     existingSupplier.setName(supplier.getName());
                 }
 
-                // Track phone number changes
                 if (!existingSupplier.getPhoneNumber().equals(supplier.getPhoneNumber())) {
-                    changes.append(String.format("Số điện thoại: '%s' thành '%s', ", 
+                    changes.add(String.format("- Số điện thoại:%n  + Cũ: '%s'%n  + Mới: '%s'",
                         existingSupplier.getPhoneNumber(), supplier.getPhoneNumber()));
                     existingSupplier.setPhoneNumber(supplier.getPhoneNumber());
                 }
 
-                // Track email changes
-                if ((existingSupplier.getEmail() == null && supplier.getEmail() != null) ||
-                    (existingSupplier.getEmail() != null && !existingSupplier.getEmail().equals(supplier.getEmail()))) {
-                    changes.append(String.format("Email: '%s' thành '%s', ", 
-                        existingSupplier.getEmail(), supplier.getEmail()));
+                if (!Objects.equals(existingSupplier.getEmail(), supplier.getEmail())) {
+                    changes.add(String.format("- Email:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingSupplier.getEmail() != null ? existingSupplier.getEmail() : "Không có",
+                        supplier.getEmail() != null ? supplier.getEmail() : "Không có"));
                     existingSupplier.setEmail(supplier.getEmail());
                 }
 
-                // Track address changes
-                if ((existingSupplier.getAddress() == null && supplier.getAddress() != null) ||
-                    (existingSupplier.getAddress() != null && !existingSupplier.getAddress().equals(supplier.getAddress()))) {
-                    changes.append(String.format("Địa chỉ: '%s' thành '%s', ", 
-                        existingSupplier.getAddress(), supplier.getAddress()));
+                if (!Objects.equals(existingSupplier.getAddress(), supplier.getAddress())) {
+                    changes.add(String.format("- Địa chỉ:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingSupplier.getAddress() != null ? existingSupplier.getAddress() : "Không có",
+                        supplier.getAddress() != null ? supplier.getAddress() : "Không có"));
                     existingSupplier.setAddress(supplier.getAddress());
                 }
 
-                // If there are any changes, save and log them
-                if (changes.length() > 0) {
-                    // Remove trailing comma and space
-                    String changeLog = changes.substring(0, changes.length() - 2);
-                    
+                if (!changes.isEmpty()) {
                     Supplier updatedSupplier = supplierDao.save(existingSupplier);
-                    String userId = getCurrentUserId();
-                    if (userId != null) {
-                        userHistoryService.logUserAction(
-                            userId,
-                            UserActionType.UPDATE_SUPPLIER,
-                            "Cập nhật nhà cung cấp - " + changeLog,
-                            request.getRemoteAddr(),
-                            request.getHeader("User-Agent")
-                        );
-                    }
+
+                    // Create detailed change log
+                    String changeLog = String.format("""
+                            ADMIN: %s đã cập nhật nhà cung cấp #%d
+                            Chi tiết thay đổi:
+                            %s""",
+                            authentication.getName(),
+                            id,
+                            String.join(System.lineSeparator(), changes));
+
+                    // Log the admin action
+                    userHistoryService.logUserAction(
+                        authentication.getName(),
+                        UserActionType.UPDATE_SUPPLIER,
+                        changeLog,
+                        getClientIp(request),
+                        getClientInfo(request)
+                    );
+
                     return ResponseEntity.ok(updatedSupplier);
                 } else {
                     return new ResponseEntity<>("Không có thay đổi nào được thực hiện!", HttpStatus.OK);
@@ -174,41 +186,44 @@ public class SupplierAPI {
 
     // Delete a supplier
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteSupplier(@PathVariable("id") Integer id, HttpServletRequest request) {
+    public ResponseEntity<?> deleteSupplier(@PathVariable("id") Integer id, 
+            Authentication authentication,
+            HttpServletRequest request) {
         try {
             Optional<Supplier> existingSupplier = supplierDao.findById(id);
             if (existingSupplier.isPresent()) {
                 Supplier supplier = existingSupplier.get();
                 
-                // Build detailed log before deletion
-                StringBuilder details = new StringBuilder();
-                details.append(String.format("Tên: '%s', ", supplier.getName()));
-                details.append(String.format("Số điện thoại: '%s', ", supplier.getPhoneNumber()));
-                
-                if (supplier.getEmail() != null) {
-                    details.append(String.format("Email: '%s', ", supplier.getEmail()));
-                }
-                if (supplier.getAddress() != null) {
-                    details.append(String.format("Địa chỉ: '%s', ", supplier.getAddress()));
-                }
-                
-                // Remove trailing comma and space
-                String detailLog = details.substring(0, details.length() - 2);
+                // Create detailed log message
+                String logMessage = String.format("""
+                        ADMIN: %s đã xóa nhà cung cấp
+                        Chi tiết:
+                        - ID: %d
+                        - Tên nhà cung cấp: %s
+                        - Số điện thoại: %s
+                        - Email: %s
+                        - Địa chỉ: %s""",
+                        authentication.getName(),
+                        id,
+                        supplier.getName(),
+                        supplier.getPhoneNumber(),
+                        supplier.getEmail() != null ? supplier.getEmail() : "Không có",
+                        supplier.getAddress() != null ? supplier.getAddress() : "Không có");
 
                 // Perform deletion
                 supplierDao.deleteById(id);
                 
-                String userId = getCurrentUserId();
-                if (userId != null) {
-                    userHistoryService.logUserAction(
-                        userId,
-                        UserActionType.DELETE_SUPPLIER,
-                        "Xóa nhà cung cấp - " + detailLog,
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent")
-                    );
-                }
-                return ResponseEntity.ok("Xóa nhà cung cấp thành công!");
+                // Log user action
+                userHistoryService.logUserAction(
+                    authentication.getName(),
+                    UserActionType.DELETE_SUPPLIER,
+                    logMessage,
+                    getClientIp(request),
+                    getClientInfo(request)
+                );
+                
+                return ResponseEntity.ok(String.format("ADMIN: %s đã xóa nhà cung cấp '%s' thành công!",
+                        authentication.getName(), supplier.getName()));
             } else {
                 return new ResponseEntity<>("Nhà cung cấp không tồn tại!", HttpStatus.NOT_FOUND);
             }
@@ -217,11 +232,16 @@ public class SupplierAPI {
         }
     }
 
-    private String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            return authentication.getName();
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
         }
-        return null;
+        return xfHeader.split(",")[0];
     }
+
+    private String getClientInfo(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
+    }
+
 }
