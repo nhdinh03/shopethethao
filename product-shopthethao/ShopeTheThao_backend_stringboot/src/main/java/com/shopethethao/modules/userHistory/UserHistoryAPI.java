@@ -10,6 +10,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.HashMap;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.time.format.DateTimeFormatter;
 import jakarta.persistence.criteria.Predicate;
 
 import org.slf4j.Logger;
@@ -293,5 +298,83 @@ public class UserHistoryAPI {
                 adminEmitters.remove(id);
             }
         });
+    }
+
+    @GetMapping("/categorie-update/{historyId}")
+    public ResponseEntity<?> getCategorieUpdateDetails(@PathVariable Long historyId) {
+        try {
+            Optional<UserHistory> historyOpt = userHistoriesDAO.findById(historyId);
+            
+            if (!historyOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            UserHistory history = historyOpt.get();
+            
+            // Verify this is a category update action
+            if (history.getActionType() != UserActionType.UPDATE_CATEGORIE) {
+                return ResponseEntity.badRequest().body("This is not a category update action");
+            }
+
+            // Create detailed response
+            Map<String, Object> details = new HashMap<>();
+            details.put("historyId", history.getIdHistory());
+            details.put("actionType", history.getActionType());
+            details.put("adminId", history.getUserId());
+            details.put("adminName", history.getUsername());
+            details.put("timestamp", history.getHistoryDateTime().format(
+                DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy")));
+            details.put("ipAddress", history.getIpAddress());
+            details.put("deviceInfo", history.getDeviceInfo());
+            details.put("changes", parseChangeLog(history.getNote()));
+            
+            return ResponseEntity.ok(details);
+        } catch (Exception e) {
+            logger.error("Error fetching category update details: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error retrieving update details");
+        }
+    }
+
+    private Map<String, Object> parseChangeLog(String note) {
+        Map<String, Object> changes = new HashMap<>();
+        
+        // Extract the timestamp
+        Pattern timePattern = Pattern.compile("Thời gian: (\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2})");
+        Matcher timeMatcher = timePattern.matcher(note);
+        if (timeMatcher.find()) {
+            changes.put("updateTime", timeMatcher.group(1));
+        }
+
+        // Extract category ID
+        Pattern idPattern = Pattern.compile("danh mục #(\\d+)");
+        Matcher idMatcher = idPattern.matcher(note);
+        if (idMatcher.find()) {
+            changes.put("categoryId", idMatcher.group(1));
+        }
+
+        // Extract name changes
+        Pattern namePattern = Pattern.compile("Tên danh mục:.*?\\+ Cũ: '(.*?)'.*?\\+ Mới: '(.*?)'", 
+            Pattern.DOTALL);
+        Matcher nameMatcher = namePattern.matcher(note);
+        if (nameMatcher.find()) {
+            Map<String, String> nameChanges = new HashMap<>();
+            nameChanges.put("oldValue", nameMatcher.group(1));
+            nameChanges.put("newValue", nameMatcher.group(2));
+            changes.put("nameChanges", nameChanges);
+        }
+
+        // Extract description changes
+        Pattern descPattern = Pattern.compile("Mô tả:.*?\\+ Cũ: '(.*?)'.*?\\+ Mới: '(.*?)'", 
+            Pattern.DOTALL);
+        Matcher descMatcher = descPattern.matcher(note);
+        if (descMatcher.find()) {
+            Map<String, String> descChanges = new HashMap<>();
+            descChanges.put("oldValue", descMatcher.group(1));
+            descChanges.put("newValue", descMatcher.group(2));
+            changes.put("descriptionChanges", descChanges);
+        }
+
+        return changes;
     }
 }

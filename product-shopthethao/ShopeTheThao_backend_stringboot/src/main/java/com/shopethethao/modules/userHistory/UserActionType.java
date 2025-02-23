@@ -47,8 +47,9 @@ public enum UserActionType {
 
     CREATE_PRODUCTATTRIBUTES, // Tạo đặc trưng sản phẩm
     UPDATE_PRODUCTATTRIBUTES, // Cập nhật đặc trưng sản phẩm
-    DELETE_PRODUCTATTRIBUTES; // Xóa đặc trưng sản phẩm
+    DELETE_PRODUCTATTRIBUTES, // Xóa đặc trưng sản phẩm
 
+    ADMIN_ACTION; // Add this new action type
 
     public boolean isAuthAction() {
         return this == LOGIN || this == LOGOUT || 

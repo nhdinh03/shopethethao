@@ -2,6 +2,13 @@ package com.shopethethao.modules.categories;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,6 +49,9 @@ public class CategorieAPI {
     @Autowired
     private UserHistoryService userHistoryService;
 
+    private static final Logger logger = LoggerFactory.getLogger(CategorieAPI.class);
+
+    
     // Lấy toàn bộ danh mục (không phân trang)
     @GetMapping("/get/all")
     public ResponseEntity<List<Categorie>> findAll() {
@@ -92,11 +102,22 @@ public class CategorieAPI {
 
             Categorie savedCategory = dao.save(category);
 
+            // Create detailed log message with admin info
+            String logMessage = String.format("""
+                ADMIN: %s đã thêm danh mục mới
+                Chi tiết:
+                - Tên danh mục: %s
+                - Mô tả: %s""",
+                authentication.getName(),
+                savedCategory.getName(),
+                savedCategory.getDescription() != null ? savedCategory.getDescription() : "Không có"
+            );
+
             // Log user action
             userHistoryService.logUserAction(
                     authentication.getName(),
                     UserActionType.CREATE_CATEGORIE,
-                    "Tạo danh mục mới: " + savedCategory.getName(),
+                    logMessage,
                     getClientIp(request),
                     getClientInfo(request));
 
@@ -114,55 +135,80 @@ public class CategorieAPI {
         try {
             Optional<Categorie> optionalCategory = dao.findById(id);
             if (optionalCategory.isEmpty()) {
-                return new ResponseEntity<>("Danh mục không tồn tại!", HttpStatus.NOT_FOUND);
+                String errorMessage = String.format("Danh mục #%d không tồn tại!", id);
+                logAdminAction(authentication.getName(), request,
+                        "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
 
-            // Kiểm tra trùng tên
+            // Kiểm tra và log trùng tên
             Optional<Categorie> duplicateCategory = dao.findByName(categorie.getName());
             if (duplicateCategory.isPresent() && !duplicateCategory.get().getId().equals(id)) {
-                return new ResponseEntity<>("Tên danh mục đã tồn tại!", HttpStatus.CONFLICT);
+                String errorMessage = String.format("Tên danh mục '%s' đã tồn tại!", categorie.getName());
+                logAdminAction(authentication.getName(), request,
+                        "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
             }
 
             Categorie existingCategory = optionalCategory.get();
-            StringBuilder changes = new StringBuilder();
+            List<String> changes = new ArrayList<>();
+            LocalDateTime updateTime = LocalDateTime.now();
 
-            // Track name changes
+            // Track name changes with detailed formatting
             if (!existingCategory.getName().equals(categorie.getName())) {
-                changes.append(String.format("Tên: '%s' thành '%s', ", 
-                    existingCategory.getName(), categorie.getName()));
+                changes.add(String.format("- Tên danh mục:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingCategory.getName(),
+                        categorie.getName()));
                 existingCategory.setName(categorie.getName());
             }
 
-            // Track description changes
-            if ((existingCategory.getDescription() == null && categorie.getDescription() != null) ||
-                (existingCategory.getDescription() != null && !existingCategory.getDescription().equals(categorie.getDescription()))) {
-                changes.append(String.format("Mô tả: '%s' thành '%s', ", 
-                    existingCategory.getDescription(), categorie.getDescription()));
+            // Track description changes with detailed formatting
+            if (!Objects.equals(existingCategory.getDescription(), categorie.getDescription())) {
+                changes.add(String.format("- Mô tả:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                        existingCategory.getDescription() != null ? existingCategory.getDescription() : "Không có",
+                        categorie.getDescription() != null ? categorie.getDescription() : "Không có"));
                 existingCategory.setDescription(categorie.getDescription());
             }
 
-            // If there are any changes, save and log them
-            if (changes.length() > 0) {
-                // Remove trailing comma and space
-                String changeLog = changes.substring(0, changes.length() - 2);
-                
+            // If there are changes, save and create detailed log
+            if (!changes.isEmpty()) {
                 Categorie updatedCategory = dao.save(existingCategory);
-                
+
+                // Create detailed change log
+                String changeLog = String.format("""
+                        ADMIN: %s đã cập nhật danh mục #%d%n
+                        Chi tiết thay đổi:%n
+                        %s""",
+                        authentication.getName(),
+                        id,
+                        String.join(System.lineSeparator(), changes));
+
+                // Log the admin action
                 userHistoryService.logUserAction(
-                    authentication.getName(),
-                    UserActionType.UPDATE_CATEGORIE,
-                    "Cập nhật danh mục - " + changeLog,
-                    getClientIp(request),
-                    getClientInfo(request)
-                );
-                
-                return ResponseEntity.ok(updatedCategory);
+                        authentication.getName(),
+                        UserActionType.UPDATE_CATEGORIE,
+                        changeLog,
+                        getClientIp(request),
+                        getClientInfo(request));
+
+                // Return success response with details
+                Map<String, Object> response = new HashMap<>();
+                response.put("category", updatedCategory);
+                response.put("changes", changes);
+                response.put("updateTime", updateTime);
+                response.put("updatedBy", authentication.getName());
+
+                return ResponseEntity.ok(response);
             } else {
-                return new ResponseEntity<>("Không có thay đổi nào được thực hiện!", HttpStatus.OK);
+                String message = String.format("Không có thay đổi nào được thực hiện cho danh mục #%d", id);
+                logAdminAction(authentication.getName(), request, message);
+                return new ResponseEntity<>(message, HttpStatus.OK);
             }
 
         } catch (Exception e) {
-            return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
+            String errorMessage = String.format("Lỗi khi cập nhật danh mục #%d: %s", id, e.getMessage());
+            logAdminAction(authentication.getName(), request, "LỖI: " + errorMessage);
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -172,7 +218,8 @@ public class CategorieAPI {
             HttpServletRequest request) {
         try {
             // 🔥 Kiểm tra xem danh mục có tồn tại không
-            if (!dao.existsById(id)) {
+            Optional<Categorie> categoryToDelete = dao.findById(id);
+            if (categoryToDelete.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Danh mục không tồn tại!");
             }
@@ -183,18 +230,32 @@ public class CategorieAPI {
                         .body("Không thể xóa danh mục vì có sản phẩm liên quan!");
             }
 
+            String categoryName = categoryToDelete.get().getName();
+            
             // ✅ Xóa danh mục nếu không có sản phẩm liên quan
             dao.deleteById(id);
+
+            // Create detailed log message
+            String logMessage = String.format("""
+                ADMIN: %s đã xóa danh mục
+                Chi tiết:
+                - ID: %d
+                - Tên danh mục: %s""",
+                authentication.getName(),
+                id,
+                categoryName
+            );
 
             // Log user action
             userHistoryService.logUserAction(
                     authentication.getName(),
                     UserActionType.DELETE_CATEGORIE,
-                    "Xóa danh mục #" + id,
+                    logMessage,
                     getClientIp(request),
                     getClientInfo(request));
 
-            return ResponseEntity.ok("Xóa danh mục thành công!");
+            return ResponseEntity.ok(String.format("ADMIN: %s đã xóa danh mục '%s' thành công!", 
+                authentication.getName(), categoryName));
 
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -202,6 +263,32 @@ public class CategorieAPI {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi không xác định khi xóa danh mục!");
+        }
+    }
+
+    private void logAdminAction(String adminUsername, HttpServletRequest request, String action) {
+        try {
+            // Determine the action type using a more readable approach
+            UserActionType actionType = determineActionType(action);
+    
+            userHistoryService.logUserAction(
+                    adminUsername,
+                    actionType,
+                    action,
+                    getClientIp(request),
+                    getClientInfo(request));
+        } catch (Exception e) {
+            logger.error("Failed to log admin action: {}", e.getMessage());
+        }
+    }
+    
+    private UserActionType determineActionType(String action) {
+        if (action.startsWith("CẬP NHẬT")) {
+            return UserActionType.UPDATE_CATEGORIE;
+        } else if (action.startsWith("XÓA")) {
+            return UserActionType.DELETE_CATEGORIE;
+        } else {
+            return UserActionType.ADMIN_ACTION;
         }
     }
 
