@@ -2,6 +2,7 @@ package com.shopethethao.auth.controllers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -108,6 +109,7 @@ public class AuthController {
     @Autowired
     private UserHistoryService userHistoryService;
 
+
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(
             @Valid @RequestBody LoginRequest loginRequest,
@@ -202,104 +204,140 @@ public class AuthController {
                     "Bearer",
                     roles));
         } catch (Exception e) {
-            // Log thất bại đăng nhập
-            try {
-                userHistoryService.logUserAction(
-                        loginRequest.getId(),
-                        UserActionType.LOGIN_FAILED,
-                        "Đăng nhập thất bại: " + e.getMessage(),
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent"));
-            } catch (Exception logError) {
-                logger.error("Failed to log failed login attempt", logError);
-            }
-
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(new MessageResponse("Đăng nhập thất bại: " + e.getMessage()));
         }
     }
 
-    // Thêm endpoint để refresh token
-    @PostMapping("/refreshtoken")
-    public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
-        String requestRefreshToken = request.getRefreshToken();
-
-        return refreshTokenService.findByToken(requestRefreshToken)
-                .map(token -> {
-                    refreshTokenService.verifyExpiration(token);
-                    String newToken = jwtUtils.generateTokenFromUsername(token.getAccount().getId());
-                    return ResponseEntity.ok(new TokenRefreshResponse(newToken, requestRefreshToken));
-                })
-                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
-                        "Refresh token không có trong database!"));
-    }
-
-    @Transactional // Transactional OTP chỉ được lưu khi tất cả các thao tác thành công:
+    @Transactional
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        // ✅ Kiểm tra xem ID, email hoặc phone có bị trùng không
-        if (accountDAO.existsById(signUpRequest.getId())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Tên người dùng đã tồn tại!"));
-        }
-        if (accountDAO.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Email đã được sử dụng!"));
-        }
-        if (accountDAO.existsByPhone(signUpRequest.getPhone())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Số điện thoại đã được sử dụng!"));
-        }
-
-        // ✅ Tạo tài khoản mới
-        Account account = new Account(
-                signUpRequest.getId(),
-                signUpRequest.getPhone(),
-                signUpRequest.getFullname(),
-                signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()));
-
-        account.setGender(signUpRequest.getGender());
-        account.setStatus(1);
-        account.setCreatedDate(new Date());
-        account.setVerified(false);
-
-        // ✅ Xử lý vai trò (ROLE)
-        Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.USER)
-                    .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò"));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                ERole roleEnum = ERole.fromString(role);
-                Role securityRole = roleRepository.findByName(roleEnum)
-                        .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò - " + role));
-                roles.add(securityRole);
-            });
-        }
-        account.setRoles(roles);
-
-        // ✅ Gửi OTP qua email
-        String otp = otpUtil.generateOtp();
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest, HttpServletRequest request) {
         try {
-            emailUtil.sendOtpEmail(signUpRequest.getEmail(), otp);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Không thể gửi OTP, vui lòng thử lại sau!");
+            // Validate required fields
+            if (signUpRequest.getId() == null || signUpRequest.getId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new MessageResponse("ID không được để trống"));
+            }
+            if (signUpRequest.getFullname() == null || signUpRequest.getFullname().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Họ tên không được để trống"));
+            }
+            if (signUpRequest.getPassword() == null || signUpRequest.getPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu không được để trống"));
+            }
+
+            // Validate email format
+            String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+            if (signUpRequest.getEmail() == null || !signUpRequest.getEmail().matches(emailRegex)) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Email không hợp lệ"));
+            }
+
+            // Validate phone number (must be 10 digits)
+            String phoneRegex = "^[0-9]{10}$";
+            if (signUpRequest.getPhone() == null || !signUpRequest.getPhone().matches(phoneRegex)) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Số điện thoại phải có 10 chữ số"));
+            }
+
+            // Password strength validation
+            if (signUpRequest.getPassword().length() < 6) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu phải có ít nhất 6 ký tự"));
+            }
+
+            // Check for existing account
+            if (accountDAO.existsById(signUpRequest.getId())) {
+                logger.warn("ID đã tồn tại trong hệ thống: {}", signUpRequest.getId());
+                return ResponseEntity.badRequest().body(new MessageResponse("ID đã tồn tại trong hệ thống!"));
+            }
+            if (accountDAO.existsByEmail(signUpRequest.getEmail())) {
+                logger.warn("Email đã được sử dụn: {}", signUpRequest.getEmail());
+                return ResponseEntity.badRequest().body(new MessageResponse("Email đã được sử dụng!"));
+            }
+            if (accountDAO.existsByPhone(signUpRequest.getPhone())) {
+                logger.warn("Số điện thoại đã được sử dụng: {}", signUpRequest.getPhone());
+                return ResponseEntity.badRequest().body(new MessageResponse("Số điện thoại đã được sử dụng!"));
+            }
+
+            // Create new account
+            Account account = new Account(
+                    signUpRequest.getId(),
+                    signUpRequest.getPhone(),
+                    signUpRequest.getFullname(),
+                    signUpRequest.getEmail(),
+                    encoder.encode(signUpRequest.getPassword()));
+
+            account.setGender(signUpRequest.getGender());
+            account.setStatus(1);
+            account.setCreatedDate(new Date());
+            account.setVerified(false);
+
+            // Handle roles
+            Set<String> strRoles = signUpRequest.getRole();
+            Set<Role> roles = new HashSet<>();
+            if (strRoles == null) {
+                Role userRole = roleRepository.findByName(ERole.USER)
+                        .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò"));
+                roles.add(userRole);
+            } else {
+                strRoles.forEach(role -> {
+                    ERole roleEnum = ERole.fromString(role);
+                    Role securityRole = roleRepository.findByName(roleEnum)
+                            .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy vai trò - " + role));
+                    roles.add(securityRole);
+                });
+            }
+            account.setRoles(roles);
+
+            // Tạo và gửi OTP
+            String otp = otpUtil.generateOtp();
+            try {
+                emailUtil.sendOtpEmail(signUpRequest.getEmail(), otp);
+            } catch (MessagingException e) {
+                logger.error("Không gửi được email OTP tới {}: {}", signUpRequest.getEmail(), e.getMessage());
+                throw new RuntimeException("Không thể gửi OTP, vui lòng thử lại sau!");
+            }
+
+            Verifications verifications = new Verifications();
+            verifications.setAccount(account);
+            verifications.setCode(otp);
+            verifications.setActive(false);
+            verifications.setCreatedAt(LocalDateTime.now());
+            verifications.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+            account.setVerifications(Collections.singletonList(verifications));
+
+            // Save account
+            account = accountDAO.save(account);
+
+            // Log successful registration
+            String rolesStr = roles.stream()
+                    .map(role -> role.getName().toString())
+                    .collect(Collectors.joining(", "));
+
+            userHistoryService.logUserAction(
+                    account.getId(),
+                    UserActionType.SIGNUP,
+                    String.format("""
+                            Đăng ký tài khoản thành công
+                            Chi tiết:
+                            - ID: %s
+                            - Họ tên: %s
+                            - Vai trò: %s""",
+                            account.getId(),
+                            account.getFullname(),
+                            rolesStr),
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"));
+
+            logger.info("Người dùng mới đã đăng ký - ID: {}, Name: {}, Roles: {}",
+                    account.getId(), account.getFullname(), rolesStr);
+
+            return ResponseEntity
+                    .ok(new MessageResponse("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."));
+
+        } catch (Exception e) {
+            logger.error("Đăng ký không thành công: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Đăng ký thất bại: " + e.getMessage()));
         }
-
-        // ✅ Tạo Verifications
-        Verifications verifications = new Verifications();
-        verifications.setAccount(account);
-        verifications.setCode(otp);
-        verifications.setActive(false);
-        verifications.setCreatedAt(LocalDateTime.now());
-        verifications.setExpiresAt(LocalDateTime.now().plusMinutes(10));
-        account.setVerifications(Collections.singletonList(verifications));
-
-        accountDAO.save(account);
-
-        return ResponseEntity
-                .ok(new MessageResponse("Người dùng đã đăng ký thành công, vui lòng kiểm tra email để xác thực!"));
     }
 
     @PutMapping("/change-password")
@@ -440,6 +478,7 @@ public class AuthController {
     // updatedAccount.getImage());
     // return ResponseEntity.ok(responseDto);
     // }
+
     // Gửi email quên mật khẩu
     @PutMapping("/forgot-password")
     public ResponseEntity<?> sendForgotPasswordEmail(@RequestBody NewOtp newOtp) {
@@ -495,19 +534,6 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("Mật khẩu đã được cập nhật thành công."));
     }
 
-    @GetMapping("/getAll")
-    public ResponseEntity<List<Account>> findAll() {
-        List<Account> accounts = accountDAO.findAll();
-        return ResponseEntity.ok(accounts);
-    }
-
-    @GetMapping("/{email}")
-    public ResponseEntity<Account> findByEmail(@PathVariable String email) {
-        Optional<Account> optionalAccount = accountDAO.findByEmail(email);
-        return optionalAccount.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/logout")
@@ -520,12 +546,23 @@ public class AuthController {
                 String jwt = token.substring(7);
                 try {
                     userId = jwtUtils.getUserNameFromJwtToken(jwt);
-                    // Xóa tokens
+                    // Get user details for logging
+                    Account account = accountDAO.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+                    // Get roles as string
+                    String roles = account.getRoles().stream()
+                            .map(role -> role.getName().name())
+                            .collect(Collectors.joining(", "));
+
+                    // Cleanup tokens
                     cleanupUserTokens(userId);
-                    // Log action
-                    logUserLogout(userId, request);
+
+                    // Enhanced logout logging
+                    logDetailedUserLogout(account, roles, request);
+
                 } catch (Exception e) {
-                    logger.warn("Token parsing failed during logout: {}", e.getMessage());
+                    logger.warn("lỗi khi đăng xuất: {}", e.getMessage());
                 }
             }
 
@@ -539,6 +576,53 @@ public class AuthController {
         }
     }
 
+    private void logDetailedUserLogout(Account account, String roles, HttpServletRequest request) {
+        try {
+            String logMessage = String.format("""
+                    Đăng xuất thành công
+                    Chi tiết người dùng:
+                    - ID: %s
+                    - Họ tên: %s
+                    - Vai trò: %s
+                    - Thời gian: %s""",
+                    account.getId(),
+                    account.getFullname(),
+                    roles,
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+
+            userHistoryService.logUserAction(
+                    account.getId(),
+                    UserActionType.LOGOUT,
+                    logMessage,
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"));
+
+            logger.info("Người dùng đã đăng xuất - ID: {}, Tên: {}, Vai trò: {}",
+                    account.getId(),
+                    account.getFullname(),
+                    roles);
+
+        } catch (Exception e) {
+            logger.error("Không thể thực hiện hành động đăng xuất cho người dùng {}: {}", account.getId(),
+                    e.getMessage());
+        }
+    }
+
+    // Thêm endpoint để refresh token
+    @PostMapping("/refreshtoken")
+    public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(token -> {
+                    refreshTokenService.verifyExpiration(token);
+                    String newToken = jwtUtils.generateTokenFromUsername(token.getAccount().getId());
+                    return ResponseEntity.ok(new TokenRefreshResponse(newToken, requestRefreshToken));
+                })
+                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
+                        "Refresh token không có trong database!"));
+    }
+
     private void cleanupUserTokens(String userId) {
         try {
             refreshTokenService.deleteByAccountId(userId);
@@ -546,19 +630,6 @@ public class AuthController {
             tokenManager.removeToken(userId);
         } catch (Exception e) {
             logger.error("Token cleanup failed for user {}: {}", userId, e.getMessage());
-        }
-    }
-
-    private void logUserLogout(String userId, HttpServletRequest request) {
-        try {
-            userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.LOGOUT,
-                    "Đăng xuất thành công",
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent"));
-        } catch (Exception e) {
-            logger.error("Failed to log logout action for user {}: {}", userId, e.getMessage());
         }
     }
 

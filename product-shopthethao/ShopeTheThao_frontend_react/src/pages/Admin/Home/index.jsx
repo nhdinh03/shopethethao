@@ -273,7 +273,7 @@ const AdminIndex = () => {
     const messages = {
       // Auth messages
       LOGIN: `${history.note}`,
-      LOGOUT: 'Đăng xuất',
+      LOGOUT: `${history.note}`,
       LOGIN_FAILED: 'Đăng nhập thất bại',
       RELOGIN: 'Đăng nhập lại',
 
