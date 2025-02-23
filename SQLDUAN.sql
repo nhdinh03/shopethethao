@@ -262,7 +262,7 @@ GO
 CREATE TABLE UserHistory
 (
     id_history INT IDENTITY(1,1) PRIMARY KEY,
-    note NVARCHAR(200),
+    note NVARCHAR(1000),
     history_datetime DATETIME NOT NULL DEFAULT GETDATE(),
     user_id NVARCHAR(100) NOT NULL,
     actionType NVARCHAR(50),

@@ -171,12 +171,20 @@ public class AuthController {
                 userHistoryService.logUserAction(
                         userDetails.getId(),
                         UserActionType.LOGIN,
-                        "Đăng nhập thành công",
+                        String.format("""
+                                Đăng nhập thành công
+                                Chi tiết:
+                                - ID: %s
+                                - Họ tên: %s
+                                - Vai trò: %s""",
+                                userDetails.getId(),
+                                userDetails.getFullname(),
+                                String.join(", ", roles)),
                         request.getRemoteAddr(),
                         request.getHeader("User-Agent"));
+
             } catch (Exception e) {
-                // Log lỗi nhưng vẫn cho phép đăng nhập thành công
-                logger.error("Failed to log login action", e);
+                logger.error("Failed to log login action for user {}: {}", userDetails.getId(), e.getMessage());
             }
 
             // ✅ Trả về JWT và thông tin người dùng
@@ -507,7 +515,7 @@ public class AuthController {
         try {
             String token = request.getHeader("Authorization");
             String userId = null;
-            
+
             if (token != null && token.startsWith("Bearer ")) {
                 String jwt = token.substring(7);
                 try {
@@ -523,7 +531,7 @@ public class AuthController {
 
             SecurityContextHolder.clearContext();
             return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công"));
-            
+
         } catch (Exception e) {
             logger.error("Logout error: {}", e.getMessage());
             SecurityContextHolder.clearContext();
@@ -544,12 +552,11 @@ public class AuthController {
     private void logUserLogout(String userId, HttpServletRequest request) {
         try {
             userHistoryService.logUserAction(
-                userId,
-                UserActionType.LOGOUT,
-                "Đăng xuất thành công",
-                request.getRemoteAddr(), 
-                request.getHeader("User-Agent")
-            );
+                    userId,
+                    UserActionType.LOGOUT,
+                    "Đăng xuất thành công",
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"));
         } catch (Exception e) {
             logger.error("Failed to log logout action for user {}: {}", userId, e.getMessage());
         }

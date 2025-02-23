@@ -150,9 +150,16 @@ public class UserHistoryAPI {
             Specification<UserHistory> spec = (root, query, cb) -> {
                 List<Predicate> predicates = new ArrayList<>();
                 
+                // Fix: Remove extra commas and properly format the List.asList() call
                 predicates.add(root.get("actionType").in(
-                    Arrays.asList(UserActionType.LOGIN, UserActionType.LOGOUT,
-                                UserActionType.LOGIN_FAILED, UserActionType.RELOGIN)
+                    Arrays.asList(
+                        UserActionType.LOGIN, 
+                        UserActionType.SIGNUP, 
+                        UserActionType.LOGOUT,
+                        UserActionType.LOGIN_FAILED, 
+                        UserActionType.RELOGIN, 
+                        UserActionType.CREATEACCOUNTFAILED
+                    )
                 ));
 
                 if (startDate != null) {
@@ -162,7 +169,7 @@ public class UserHistoryAPI {
                     predicates.add(cb.lessThanOrEqualTo(root.get("historyDateTime"), endDate));
                 }
                 if (userId != null && !userId.isEmpty()) {
-                    predicates.add(cb.equal(root.get("account").get("id"), userId));
+                    predicates.add(cb.equal(root.get("userId"), userId));  // Changed from account.id to userId
                 }
 
                 return cb.and(predicates.toArray(new Predicate[0]));

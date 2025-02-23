@@ -2,9 +2,12 @@ package com.shopethethao.modules.userHistory;
 
 public enum UserActionType {
     LOGIN, // Đăng nhập
+    SIGNUP, // Đăng ký
     LOGOUT, // Đăng xuất
     LOGIN_FAILED, // Đăng nhập thất bại
     RELOGIN, // Đăng nhập lại sau khi đăng xuất
+    CREATEACCOUNTFAILED, // Tạo tài khoản thất bại
+
 
     CREATE_ACCOUNT, // Tạo tài khoản mới
     UPDATE_ACCOUNT, // Cập nhật tài khoản
@@ -52,8 +55,8 @@ public enum UserActionType {
     ADMIN_ACTION; // Add this new action type
 
     public boolean isAuthAction() {
-        return this == LOGIN || this == LOGOUT || 
-               this == LOGIN_FAILED || this == RELOGIN;
+        return this == LOGIN || this == SIGNUP || this == LOGOUT || 
+               this == LOGIN_FAILED || this == RELOGIN || this == CREATEACCOUNTFAILED;
     }
 
     public boolean isAdminAction() {
