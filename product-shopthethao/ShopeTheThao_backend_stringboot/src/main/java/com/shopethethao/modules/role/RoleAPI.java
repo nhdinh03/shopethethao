@@ -23,11 +23,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.dto.RoleValidationException;
-import com.shopethethao.modules.userHistory.UserHistoryService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.service.UserHistoryService;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

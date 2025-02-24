@@ -1,96 +1,52 @@
-class UserHistorySSE {
+class UserHistorySSEService {
   constructor() {
-    this.authEventsSource = null;
-    this.adminEventsSource = null;
-    this.retryCount = 0;
-    this.maxRetries = 3;
-    this.retryTimeout = 1000; // 5 seconds
-  }
-
-  connectWithRetry(url, callback, type) {
-    if (this.retryCount >= this.maxRetries) {
-      console.error(`Max retries (${this.maxRetries}) reached for ${type} SSE connection`);
-      return null;
-    }
-
-    const eventSource = new EventSource(url);
-
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        callback(data);
-        this.retryCount = 0; // Reset retry count on successful connection
-      } catch (error) {
-        console.error(`Error parsing ${type} SSE data:`, error);
-      }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error(`${type} SSE Error:`, error);
-      eventSource.close();
-      
-      if (this.retryCount < this.maxRetries) {
-        this.retryCount++;
-        console.log(`Retrying ${type} SSE connection in ${this.retryTimeout / 1000}s... (Attempt ${this.retryCount}/${this.maxRetries})`);
-        setTimeout(() => {
-          this[type === 'auth' ? 'authEventsSource' : 'adminEventsSource'] = 
-            this.connectWithRetry(url, callback, type);
-        }, this.retryTimeout);
-      }
-    };
-
-    return eventSource;
+    this.authEventSource = null;
+    this.adminEventSource = null;
   }
 
   subscribeToAuthActivities(callback) {
-    if (this.authEventsSource) {
-      this.authEventsSource.close();
-    }
+    this.authEventSource = new EventSource('http://localhost:8081/api/userhistory/sse/auth-activities');
+    
+    this.authEventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      callback(data);
+    };
 
-    this.authEventsSource = this.connectWithRetry(
-      'http://localhost:8081/api/userhistory/auth-activities/stream',
-      callback,
-      'auth'
-    );
+    this.authEventSource.onerror = (error) => {
+      console.error('Auth SSE Error:', error);
+      this.authEventSource.close();
+      // Attempt to reconnect after 5 seconds
+      setTimeout(() => this.subscribeToAuthActivities(callback), 5000);
+    };
 
     return () => {
-      if (this.authEventsSource) {
-        this.authEventsSource.close();
-        this.authEventsSource = null;
+      if (this.authEventSource) {
+        this.authEventSource.close();
       }
     };
   }
 
   subscribeToAdminActivities(callback) {
-    if (this.adminEventsSource) {
-      this.adminEventsSource.close();
-    }
+    this.adminEventSource = new EventSource('http://localhost:8081/api/userhistory/sse/admin-activities');
+    
+    this.adminEventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      callback(data);
+    };
 
-    this.adminEventsSource = this.connectWithRetry(
-      'http://localhost:8081/api/userhistory/admin-activities/stream',
-      callback,
-      'admin'
-    );
+    this.adminEventSource.onerror = (error) => {
+      console.error('Admin SSE Error:', error);
+      this.adminEventSource.close();
+      // Attempt to reconnect after 5 seconds
+      setTimeout(() => this.subscribeToAdminActivities(callback), 5000);
+    };
 
     return () => {
-      if (this.adminEventsSource) {
-        this.adminEventsSource.close();
-        this.adminEventsSource = null;
+      if (this.adminEventSource) {
+        this.adminEventSource.close();
       }
     };
   }
-
-  closeAllConnections() {
-    if (this.authEventsSource) {
-      this.authEventsSource.close();
-      this.authEventsSource = null;
-    }
-    if (this.adminEventsSource) {
-      this.adminEventsSource.close();
-      this.adminEventsSource = null;
-    }
-    this.retryCount = 0;
-  }
 }
 
-export const userHistorySSE = new UserHistorySSE();
+export const userHistorySSE = new UserHistorySSEService();

@@ -35,11 +35,12 @@ import com.shopethethao.modules.product_Images.ProductImagesDAO;
 import com.shopethethao.modules.size.Size;
 import com.shopethethao.modules.size.SizeDAO;
 import com.shopethethao.service.ProductService;
+import com.shopethethao.service.UserHistoryService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import com.shopethethao.modules.userHistory.UserActionType;
-import com.shopethethao.modules.userHistory.UserHistoryService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

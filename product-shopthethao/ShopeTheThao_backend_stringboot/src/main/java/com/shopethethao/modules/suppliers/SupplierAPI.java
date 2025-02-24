@@ -25,8 +25,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.userHistory.UserHistoryService;
 import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.service.UserHistoryService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

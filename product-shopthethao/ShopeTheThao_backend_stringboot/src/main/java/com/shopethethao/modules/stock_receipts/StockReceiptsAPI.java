@@ -45,7 +45,7 @@ import com.shopethethao.modules.receipt_Products.ReceiptProductPK;
 import com.shopethethao.modules.suppliers.Supplier;
 import com.shopethethao.modules.suppliers.SupplierDAO;
 import com.shopethethao.modules.userHistory.UserActionType;
-import com.shopethethao.modules.userHistory.UserHistoryService;
+import com.shopethethao.service.UserHistoryService;
 
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;

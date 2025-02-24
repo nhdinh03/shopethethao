@@ -1,25 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FiPackage, FiUsers, FiDollarSign, FiShoppingCart, FiActivity, FiTrendingUp, FiCalendar, FiPieChart, FiRotateCw, FiLoader } from "react-icons/fi";
+import { FiPackage, FiUsers, FiDollarSign, FiShoppingCart, FiActivity, FiTrendingUp, FiCalendar, FiPieChart } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { message, Spin } from "antd";
 import moment from "moment";
 import { userHistoryApi } from "api/Admin";
 import { userHistorySSE } from "api/Admin/UserHistory/userHistorySSE";
-import { ReloadOutlined, LoadingOutlined } from '@ant-design/icons'; // Add this import
 
 const AdminIndex = () => {
   const [adminHistories, setAdminHistories] = useState([]);
   const [recentHistories, setRecentHistories] = useState([]);
-  const [loadingStates, setLoadingStates] = useState({
-    auth: false,
-    admin: false,
-    initialLoad: true
-  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Update fetch functions to use specific loading states
   const fetchAuthActivities = useCallback(async () => {
     try {
-      setLoadingStates(prev => ({ ...prev, auth: true }));
       const response = await userHistoryApi.getAllauthactivities();
       if (response?.data?.content) {
         setRecentHistories(response.data.content);
@@ -27,14 +20,11 @@ const AdminIndex = () => {
     } catch (error) {
       console.error("Error fetching auth activities:", error);
       message.error("Không thể tải dữ liệu hoạt động người dùng");
-    } finally {
-      setLoadingStates(prev => ({ ...prev, auth: false }));
     }
   }, []);
 
   const fetchAdminActivities = useCallback(async () => {
     try {
-      setLoadingStates(prev => ({ ...prev, admin: true }));
       const response = await userHistoryApi.getAlladminactivities();
       if (response?.data?.content) {
         setAdminHistories(response.data.content);
@@ -42,50 +32,9 @@ const AdminIndex = () => {
     } catch (error) {
       console.error("Error fetching admin activities:", error);
       message.error("Không thể tải dữ liệu hoạt động quản trị");
-    } finally {
-      setLoadingStates(prev => ({ ...prev, admin: false }));
     }
   }, []);
 
-  // Updated handleReset with optimistic updates
-  const handleReset = async (type) => {
-    try {
-      setLoadingStates(prev => ({ ...prev, [type]: true }));
-
-      const url = `http://localhost:8081/api/userhistory/${type}-activities`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        // message.success(`Đã reset ${type === 'auth' ? 'hoạt động tài khoản' : 'nhật ký quản trị'}`);
-        // Reset data immediately
-        if (type === 'auth') {
-          setRecentHistories([]);
-        } else {
-          setAdminHistories([]);
-        }
-        // Then fetch new data
-        if (type === 'auth') {
-          fetchAuthActivities();
-        } else {
-          fetchAdminActivities();
-        }
-      } else {
-        throw new Error('Reset failed');
-      }
-    } catch (error) {
-      console.error('Reset error:', error);
-      message.error('Không thể reset dữ liệu');
-    } finally {
-      setLoadingStates(prev => ({ ...prev, [type]: false }));
-    }
-  };
-
-  // Update initial load effect
   useEffect(() => {
     Promise.all([
       fetchAuthActivities(),
@@ -95,9 +44,10 @@ const AdminIndex = () => {
       console.error("Error fetching initial data:", error);
     })
     .finally(() => {
-      setLoadingStates(prev => ({ ...prev, initialLoad: false }));
+      setIsLoading(false);
     });
 
+    // Set up SSE subscriptions for real-time updates
     const authUnsubscribe = userHistorySSE.subscribeToAuthActivities((data) => {
       if (data?.content) {
         setRecentHistories(data.content);
@@ -110,7 +60,6 @@ const AdminIndex = () => {
       }
     });
 
-    // Cleanup function
     return () => {
       authUnsubscribe();
       adminUnsubscribe();
@@ -425,41 +374,17 @@ const AdminIndex = () => {
 
   const renderActivitySection = (title, data, isAdmin = false) => (
     <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg">
-      <div className={`p-8 border-b ${isAdmin ? 'bg-purple-50' : 'bg-blue-50'} flex items-center justify-between`}>
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight">
-              {title}
-            </h2>
-            <button
-              onClick={() => handleReset(isAdmin ? 'admin' : 'auth')}
-              className={`
-                flex items-center justify-center
-                w-8 h-8
-                ${isAdmin 
-                  ? 'text-purple-600 hover:text-purple-800' 
-                  : 'text-blue-600 hover:text-blue-800'
-                }
-                ${loadingStates[isAdmin ? 'admin' : 'auth'] && 'opacity-50 cursor-not-allowed'}
-              `}
-              disabled={loadingStates[isAdmin ? 'admin' : 'auth']}
-              title="Làm mới dữ liệu"
-            >
-              {loadingStates[isAdmin ? 'admin' : 'auth'] ? (
-                <LoadingOutlined className="text-xl" />
-              ) : (
-                <ReloadOutlined className="text-xl" />
-              )}
-            </button>
-          </div>
-          <p className="text-lg text-gray-600 mt-3">
-            Hoạt động gần đây nhất
-          </p>
-        </div>
+      <div className={`p-8 border-b ${isAdmin ? 'bg-purple-50' : 'bg-blue-50'}`}>
+        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight mb-2">
+          {title}
+        </h2>
+        <p className="text-lg text-gray-600 mt-3">
+          Hoạt động gần đây nhất
+        </p>
       </div>
 
       <div className="p-4">
-        {loadingStates[isAdmin ? 'admin' : 'auth'] ? (
+        {isLoading ? (
           <div className="flex items-center justify-center p-8">
             <Spin size="large" />
             <span className="ml-3 text-gray-600">Đang tải dữ liệu...</span>

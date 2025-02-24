@@ -58,10 +58,10 @@ import com.shopethethao.modules.refreshToken.RefreshToken;
 import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.role.RoleDAO;
 import com.shopethethao.modules.userHistory.UserActionType;
-import com.shopethethao.modules.userHistory.UserHistoryService;
 import com.shopethethao.modules.role.ERole;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
+import com.shopethethao.service.UserHistoryService;
 
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;

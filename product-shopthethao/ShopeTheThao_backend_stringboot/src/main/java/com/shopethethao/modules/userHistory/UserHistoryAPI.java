@@ -38,6 +38,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.shopethethao.dto.UserHistoryDTO;
+import com.shopethethao.service.UserHistoryService;
 
 @RestController
 @RequestMapping("/api/userhistory")

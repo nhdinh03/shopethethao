@@ -1,4 +1,4 @@
-package com.shopethethao.modules.userHistory;
+package com.shopethethao.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,7 +12,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import com.shopethethao.dto.UserHistoryDTO;
 import com.shopethethao.modules.account.AccountDAO;
+import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.modules.userHistory.UserHistory;
+import com.shopethethao.modules.userHistory.UserHistoryDAO;
 import com.shopethethao.modules.account.Account;
+import java.util.Arrays;
+import java.util.Collections;
 
 @Slf4j
 @Service
@@ -23,6 +28,9 @@ public class UserHistoryService {
     
     @Autowired
     private AccountDAO accountDAO;
+
+    @Autowired
+    private UserHistorySSEService sseService;
 
     @Transactional
     public void logUserAction(String userId, UserActionType actionType, String note, String ipAddress, String deviceInfo) {
@@ -51,6 +59,35 @@ public class UserHistoryService {
             history.setStatus(1);
 
             userHistoryDAO.save(history);
+
+            // Notify clients through SSE
+            UserHistoryDTO dto = convertToDTO(history);
+            if (actionType.isAuthAction()) {
+                sseService.notifyAuthActivity(Collections.singletonMap("content", 
+                    userHistoryDAO.findByActionTypeIn(Arrays.asList(
+                        UserActionType.LOGIN,
+                        UserActionType.LOGOUT,
+                        UserActionType.LOGIN_FAILED,
+                        UserActionType.RELOGIN,
+                        UserActionType.CREATEACCOUNTFAILED
+                    )).stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList())
+                ));
+            } else if (actionType.isAdminAction()) {
+                sseService.notifyAdminActivity(Collections.singletonMap("content",
+                    userHistoryDAO.findByActionTypeNotIn(Arrays.asList(
+                        UserActionType.LOGIN,
+                        UserActionType.LOGOUT,
+                        UserActionType.LOGIN_FAILED,
+                        UserActionType.RELOGIN,
+                        UserActionType.CREATEACCOUNTFAILED
+                    )).stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList())
+                ));
+            }
+
             log.debug("Successfully logged action {} for user {}", actionType, userId);
         } catch (Exception e) {
             log.error("Failed to log user action for user {}: {}", userId, e.getMessage());

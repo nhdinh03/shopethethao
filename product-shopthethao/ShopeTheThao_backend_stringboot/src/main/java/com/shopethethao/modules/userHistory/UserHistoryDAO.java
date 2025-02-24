@@ -34,4 +34,8 @@ public interface UserHistoryDAO extends JpaRepository<UserHistory, Long>, JpaSpe
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate
     );
+
+    List<UserHistory> findByActionTypeIn(List<UserActionType> actionTypes);
+    
+    List<UserHistory> findByActionTypeNotIn(List<UserActionType> actionTypes);
 }

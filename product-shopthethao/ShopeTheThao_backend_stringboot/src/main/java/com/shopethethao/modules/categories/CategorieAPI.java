@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.products.ProductsDAO;
 import com.shopethethao.modules.userHistory.UserActionType;
-import com.shopethethao.modules.userHistory.UserHistoryService;
+import com.shopethethao.service.UserHistoryService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
