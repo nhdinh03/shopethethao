@@ -3,7 +3,7 @@ import BaseApi from "api/global/baseApi";
 
 class UserHistoryAPI extends BaseApi {
   constructor() {
-    super("userhistory");
+    super("userhistory-sse"); // Updated to match the new server endpoint
   }
 
   async getAllauthactivities() {
@@ -12,6 +12,26 @@ class UserHistoryAPI extends BaseApi {
   
   async getAlladminactivities() {
     return axiosClient.get(this.uri + "/admin-activities");
+  }
+
+  async markAsRead(historyId) {
+    return axiosClient.post(`${this.uri}/${historyId}/mark-as-read`);
+  }
+
+  async markAllAuthAsRead() {
+    return axiosClient.post(`${this.uri}/mark-all-auth-as-read`);
+  }
+
+  async markAllAdminAsRead() {
+    return axiosClient.post(`${this.uri}/mark-all-admin-as-read`);
+  }
+
+  async getUnreadCount() {
+    return axiosClient.get(`${this.uri}/unread-count`);
+  }
+  
+  async getActivityDetails(historyId) {
+    return axiosClient.get(`${this.uri}/${historyId}`);
   }
 }
 

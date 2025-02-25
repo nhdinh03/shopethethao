@@ -8,16 +8,17 @@ import com.shopethethao.service.UserHistoryService;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @RestController
-@RequestMapping("/api/userhistory")
+@RequestMapping("/api/userhistory-sse") // Changed base path to avoid conflict
 public class UserHistoryController {
     private static final Logger logger = LoggerFactory.getLogger(UserHistoryController.class);
     private final UserHistoryService userHistoryService;
@@ -29,7 +30,7 @@ public class UserHistoryController {
         this.sseService = sseService;
     }
 
-    @GetMapping(path = "/sse/auth-activities", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(path = "/stream/auth-activities", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamAuthActivities(HttpServletRequest request) {
         logger.info("New auth activities SSE connection from: {}", request.getRemoteAddr());
         SseEmitter emitter = sseService.createAuthEmitter();
@@ -41,7 +42,7 @@ public class UserHistoryController {
         return emitter;
     }
 
-    @GetMapping(path = "/sse/admin-activities", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(path = "/stream/admin-activities", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamAdminActivities(HttpServletRequest request) {
         logger.info("New admin activities SSE connection from: {}", request.getRemoteAddr());
         SseEmitter emitter = sseService.createAdminEmitter();
@@ -53,7 +54,47 @@ public class UserHistoryController {
         return emitter;
     }
     
-    @GetMapping("/sse/status")
+    @GetMapping("/auth-activities")
+    public ResponseEntity<?> getAuthActivities() {
+        Map<String, List<?>> response = new HashMap<>();
+        response.put("content", userHistoryService.getLatestAuthActivities());
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/admin-activities")
+    public ResponseEntity<?> getAdminActivities() {
+        Map<String, List<?>> response = new HashMap<>();
+        response.put("content", userHistoryService.getLatestAdminActivities());
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/{historyId}/mark-as-read")
+    public ResponseEntity<?> markAsRead(@PathVariable Long historyId) {
+        boolean success = userHistoryService.markAsRead(historyId);
+        return success ? 
+            ResponseEntity.ok().build() : 
+            ResponseEntity.notFound().build();
+    }
+    
+    @PostMapping("/mark-all-auth-as-read")
+    public ResponseEntity<?> markAllAuthAsRead() {
+        userHistoryService.markAllAuthAsRead();
+        return ResponseEntity.ok().build();
+    }
+    
+    @PostMapping("/mark-all-admin-as-read")
+    public ResponseEntity<?> markAllAdminAsRead() {
+        userHistoryService.markAllAdminAsRead();
+        return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/unread-count")
+    public ResponseEntity<?> getUnreadCount() {
+        Map<String, Integer> counts = userHistoryService.getUnreadCounts();
+        return ResponseEntity.ok(counts);
+    }
+    
+    @GetMapping("/status")
     public ResponseEntity<?> getSseStatus() {
         return ResponseEntity.ok(
             java.util.Map.of(

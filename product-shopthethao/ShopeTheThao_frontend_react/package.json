@@ -31,6 +31,7 @@
     "ckeditor5-custom-build": "file:ckeditor5",
     "classnames": "^2.3.2",
     "crypto-js": "^4.2.0",
+    "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
     "dayjs-ext": "^2.2.0",
     "dayjs-plugin-utc": "^0.1.2",

@@ -18,7 +18,8 @@ public interface UserHistoryDAO extends JpaRepository<UserHistory, Long>, JpaSpe
            "(:actionType is null OR h.actionType = :actionType) AND " +
            "(:startDate is null OR h.historyDateTime >= :startDate) AND " +
            "(:endDate is null OR h.historyDateTime <= :endDate) AND " +
-           "(:userId is null OR h.account.id = :userId)")
+           "(:userId is null OR h.account.id = :userId) " +
+           "ORDER BY h.historyDateTime DESC")
     Page<UserHistory> findWithFilters(
         @Param("actionType") UserActionType actionType,
         @Param("startDate") LocalDateTime startDate,
@@ -42,4 +43,21 @@ public interface UserHistoryDAO extends JpaRepository<UserHistory, Long>, JpaSpe
     List<UserHistory> findByActionTypeNotIn(List<UserActionType> actionTypes);
     
     List<UserHistory> findByActionTypeNotIn(List<UserActionType> actionTypes, Pageable pageable);
+
+    @Query("SELECT h FROM UserHistory h WHERE h.account.id = :userId AND h.readStatus = :readStatus")
+    List<UserHistory> findByUserIdAndReadStatus(
+        @Param("userId") String userId, 
+        @Param("readStatus") Integer readStatus
+    );
+    
+    List<UserHistory> findByActionTypeInAndReadStatus(List<UserActionType> actionTypes, Integer readStatus);
+    
+    List<UserHistory> findByActionTypeNotInAndReadStatus(List<UserActionType> actionTypes, Integer readStatus);
+    
+    int countByActionTypeInAndReadStatus(List<UserActionType> actionTypes, Integer readStatus);
+    
+    int countByActionTypeNotInAndReadStatus(List<UserActionType> actionTypes, Integer readStatus);
+    
+    @Query("SELECT COUNT(h) FROM UserHistory h WHERE h.readStatus = 0")
+    int countAllUnread();
 }

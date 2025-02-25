@@ -1,6 +1,5 @@
 import { SearchOutlined } from "@ant-design/icons";
 import {
-  faBell,
   faGear,
   faRightFromBracket,
   faUser,
@@ -15,7 +14,6 @@ import {
   Popconfirm,
   Avatar,
   Tooltip,
-  Badge,
   Switch,
 } from "antd";
 import authApi from "api/Admin/Auth/Login";
@@ -24,7 +22,7 @@ import { useDarkMode } from "config/DarkModeProvider";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-
+import NotificationDropdown from "components/Admin/Notifications/NotificationDropdown";
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);
@@ -64,15 +62,6 @@ function HeaderAdminRight() {
   const changeLanguage = (lang) => {
     console.log(`Chuyển đổi ngôn ngữ sang: ${lang}`);
   };
-
-  const notifications = [
-    { key: "1", label: <a href="#notification-1">Bạn có 3 nhiệm vụ mới</a> },
-    { key: "2", label: <a href="#notification-2">Báo cáo doanh thu tháng</a> },
-    {
-      key: "3",
-      label: <a href="#notification-3">Cập nhật hệ thống thành công</a>,
-    },
-  ];
 
   const settings = [
     { key: "1", label: <span onClick={handleLogout}>Đăng xuất</span> },
@@ -174,18 +163,8 @@ function HeaderAdminRight() {
       </span>
     </Tooltip>
 
-    {/* Nút thông báo */}
-    <Dropdown
-      menu={{ items: notifications }}
-      placement="bottomRight"
-      trigger={["click"]}
-    >
-      <Badge count={3} size="small">
-        <span className="cursor-pointer text-gray-600 hover:text-blue-500">
-          <FontAwesomeIcon icon={faBell} className="text-xl" />
-        </span>
-      </Badge>
-    </Dropdown>
+    {/* Thông báo - Replaced with the new component */}
+    <NotificationDropdown />
 
     {/* Nút cài đặt */}
     <Dropdown

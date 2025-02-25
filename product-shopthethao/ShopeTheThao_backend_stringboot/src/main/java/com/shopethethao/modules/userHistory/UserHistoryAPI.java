@@ -40,6 +40,10 @@ import org.springframework.data.jpa.domain.Specification;
 import com.shopethethao.dto.UserHistoryDTO;
 import com.shopethethao.service.UserHistoryService;
 
+/**
+ * This class handles historical user activity data retrieval
+ * for reporting and administration purposes.
+ */
 @RestController
 @RequestMapping("/api/userhistory")
 public class UserHistoryAPI {
@@ -69,14 +73,15 @@ public class UserHistoryAPI {
         UserHistoryDTO dto = new UserHistoryDTO();
         dto.setIdHistory(history.getIdHistory());
         dto.setUserId(history.getUserId());
-        dto.setUsername(history.getUsername());    // Add this line
-        dto.setUserRole(history.getUserRole());    // Add this line
+        dto.setUsername(history.getUsername()); // Add this line
+        dto.setUserRole(history.getUserRole()); // Add this line
         dto.setNote(history.getNote());
         dto.setHistoryDateTime(history.getHistoryDateTime());
         dto.setActionType(history.getActionType());
         dto.setIpAddress(history.getIpAddress());
         dto.setDeviceInfo(history.getDeviceInfo());
         dto.setStatus(history.getStatus());
+        dto.setReadStatus(history.getReadStatus()); // Ensure readStatus is included
         return dto;
     }
 
@@ -95,7 +100,7 @@ public class UserHistoryAPI {
 
             Page<UserHistoryDTO> histories = userHistoryService.getHistoryWithFilters(
                     actionType, startDate, endDate, userId, pageable);
-                    
+
             return ResponseEntity.ok()
                     .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES))
                     .body(histories);
@@ -150,18 +155,16 @@ public class UserHistoryAPI {
         try {
             Specification<UserHistory> spec = (root, query, cb) -> {
                 List<Predicate> predicates = new ArrayList<>();
-                
+
                 // Fix: Remove extra commas and properly format the List.asList() call
                 predicates.add(root.get("actionType").in(
-                    Arrays.asList(
-                        UserActionType.LOGIN, 
-                        UserActionType.SIGNUP, 
-                        UserActionType.LOGOUT,
-                        UserActionType.LOGIN_FAILED, 
-                        UserActionType.RELOGIN, 
-                        UserActionType.CREATEACCOUNTFAILED
-                    )
-                ));
+                        Arrays.asList(
+                                UserActionType.LOGIN,
+                                UserActionType.SIGNUP,
+                                UserActionType.LOGOUT,
+                                UserActionType.LOGIN_FAILED,
+                                UserActionType.RELOGIN,
+                                UserActionType.CREATEACCOUNTFAILED)));
 
                 if (startDate != null) {
                     predicates.add(cb.greaterThanOrEqualTo(root.get("historyDateTime"), startDate));
@@ -170,7 +173,7 @@ public class UserHistoryAPI {
                     predicates.add(cb.lessThanOrEqualTo(root.get("historyDateTime"), endDate));
                 }
                 if (userId != null && !userId.isEmpty()) {
-                    predicates.add(cb.equal(root.get("userId"), userId));  // Changed from account.id to userId
+                    predicates.add(cb.equal(root.get("userId"), userId)); // Changed from account.id to userId
                 }
 
                 return cb.and(predicates.toArray(new Predicate[0]));
@@ -186,79 +189,63 @@ public class UserHistoryAPI {
         }
     }
 
+    /**
+     * Get user activities with filtering options for admin reporting.
+     * This endpoint is different from the SSE streaming endpoint as it supports
+     * filtering, pagination, and is designed for historical data access.
+     */
     @GetMapping("/admin-activities")
     public ResponseEntity<Page<UserHistoryDTO>> getAdminActivities(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(required = false) String adminId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate, 
+            @RequestParam(required = false) String userId,
             @RequestParam(required = false) String actionType,
-            @PageableDefault(size = 10, sort = "historyDateTime", direction = Sort.Direction.DESC) Pageable pageable) {
-        try {
-            Specification<UserHistory> spec = (root, query, cb) -> {
-                List<Predicate> predicates = new ArrayList<>();
-                
-                if (actionType != null && !actionType.isEmpty()) {
-                    predicates.add(cb.equal(root.get("actionType"), UserActionType.valueOf(actionType)));
-                } else {
-                    List<UserActionType> adminActions = Arrays.stream(UserActionType.values())
-                        .filter(UserActionType::isAdminAction)
-                        .collect(Collectors.toList());
-                    predicates.add(root.get("actionType").in(adminActions));
-                }
-
-                if (startDate != null) {
-                    predicates.add(cb.greaterThanOrEqualTo(root.get("historyDateTime"), startDate));
-                }
-                if (endDate != null) {
-                    predicates.add(cb.lessThanOrEqualTo(root.get("historyDateTime"), endDate));
-                }
-                if (adminId != null && !adminId.isEmpty()) {
-                    predicates.add(cb.equal(root.get("account").get("id"), adminId));
-                }
-
-                return cb.and(predicates.toArray(new Predicate[0]));
-            };
-
-            Page<UserHistory> histories = userHistoriesDAO.findAll(spec, pageable);
-            return ResponseEntity.ok()
-                    .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES))
-                    .body(histories.map(this::convertToDTO));
-        } catch (Exception e) {
-            logger.error("Error fetching admin activities: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            Pageable pageable) {
+        
+        UserActionType actionEnum = null;
+        if (actionType != null && !actionType.isEmpty()) {
+            try {
+                actionEnum = UserActionType.valueOf(actionType);
+            } catch (IllegalArgumentException e) {
+                // Invalid action type, will be treated as null
+            }
         }
+        
+        Page<UserHistoryDTO> histories = userHistoryService.getHistoryWithFilters(
+                actionEnum, startDate, endDate, userId, pageable);
+        
+        return ResponseEntity.ok(histories);
     }
 
-     
     private final Map<String, SseEmitter> authEmitters = new ConcurrentHashMap<>();
     private final Map<String, SseEmitter> adminEmitters = new ConcurrentHashMap<>();
-    
+
     // Existing endpoints...
-    
+
     @GetMapping("/auth-activities/stream")
     public SseEmitter streamAuthActivities() {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         String emitterId = UUID.randomUUID().toString();
         authEmitters.put(emitterId, emitter);
-        
+
         emitter.onCompletion(() -> authEmitters.remove(emitterId));
         emitter.onTimeout(() -> authEmitters.remove(emitterId));
-        
+
         return emitter;
     }
-    
+
     @GetMapping("/admin-activities/stream")
     public SseEmitter streamAdminActivities() {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         String emitterId = UUID.randomUUID().toString();
         adminEmitters.put(emitterId, emitter);
-        
+
         emitter.onCompletion(() -> adminEmitters.remove(emitterId));
         emitter.onTimeout(() -> adminEmitters.remove(emitterId));
-        
+
         return emitter;
     }
-    
+
     @PostMapping("/auth-activities")
     public ResponseEntity<?> resetAuthActivities() {
         try {
@@ -282,26 +269,26 @@ public class UserHistoryAPI {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
     // Method to notify all clients when data changes
     private void notifyAuthClients(List<UserHistory> activities) {
         authEmitters.forEach((id, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()
-                    .data(activities)
-                    .name("auth-activities"));
+                        .data(activities)
+                        .name("auth-activities"));
             } catch (IOException e) {
                 authEmitters.remove(id);
             }
         });
     }
-    
+
     private void notifyAdminClients(List<UserHistory> activities) {
         adminEmitters.forEach((id, emitter) -> {
             try {
                 emitter.send(SseEmitter.event()
-                    .data(activities)
-                    .name("admin-activities"));
+                        .data(activities)
+                        .name("admin-activities"));
             } catch (IOException e) {
                 adminEmitters.remove(id);
             }
@@ -312,13 +299,13 @@ public class UserHistoryAPI {
     public ResponseEntity<?> getCategorieUpdateDetails(@PathVariable Long historyId) {
         try {
             Optional<UserHistory> historyOpt = userHistoriesDAO.findById(historyId);
-            
+
             if (!historyOpt.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
 
             UserHistory history = historyOpt.get();
-            
+
             // Verify this is a category update action
             if (history.getActionType() != UserActionType.UPDATE_CATEGORIE) {
                 return ResponseEntity.badRequest().body("This is not a category update action");
@@ -331,22 +318,22 @@ public class UserHistoryAPI {
             details.put("adminId", history.getUserId());
             details.put("adminName", history.getUsername());
             details.put("timestamp", history.getHistoryDateTime().format(
-                DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy")));
+                    DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy")));
             details.put("ipAddress", history.getIpAddress());
             details.put("deviceInfo", history.getDeviceInfo());
             details.put("changes", parseChangeLog(history.getNote()));
-            
+
             return ResponseEntity.ok(details);
         } catch (Exception e) {
             logger.error("Error fetching category update details: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error retrieving update details");
+                    .body("Error retrieving update details");
         }
     }
 
     private Map<String, Object> parseChangeLog(String note) {
         Map<String, Object> changes = new HashMap<>();
-        
+
         // Extract the timestamp
         Pattern timePattern = Pattern.compile("Thời gian: (\\d{2}-\\d{2}-\\d{4} \\d{2}:\\d{2}:\\d{2})");
         Matcher timeMatcher = timePattern.matcher(note);
@@ -362,8 +349,8 @@ public class UserHistoryAPI {
         }
 
         // Extract name changes
-        Pattern namePattern = Pattern.compile("Tên danh mục:.*?\\+ Cũ: '(.*?)'.*?\\+ Mới: '(.*?)'", 
-            Pattern.DOTALL);
+        Pattern namePattern = Pattern.compile("Tên danh mục:.*?\\+ Cũ: '(.*?)'.*?\\+ Mới: '(.*?)'",
+                Pattern.DOTALL);
         Matcher nameMatcher = namePattern.matcher(note);
         if (nameMatcher.find()) {
             Map<String, String> nameChanges = new HashMap<>();
@@ -373,8 +360,8 @@ public class UserHistoryAPI {
         }
 
         // Extract description changes
-        Pattern descPattern = Pattern.compile("Mô tả:.*?\\+ Cũ: '(.*?)'.*?\\+ Mới: '(.*?)'", 
-            Pattern.DOTALL);
+        Pattern descPattern = Pattern.compile("Mô tả:.*?\\+ Cũ: '(.*?)'.*?\\+ Mới: '(.*?)'",
+                Pattern.DOTALL);
         Matcher descMatcher = descPattern.matcher(note);
         if (descMatcher.find()) {
             Map<String, String> descChanges = new HashMap<>();
@@ -384,5 +371,92 @@ public class UserHistoryAPI {
         }
 
         return changes;
+    }
+
+    @PostMapping("/{historyId}/mark-as-read")
+    public ResponseEntity<?> markAsRead(@PathVariable Long historyId) {
+        try {
+            Optional<UserHistory> historyOptional = userHistoriesDAO.findById(historyId);
+            if (!historyOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            UserHistory history = historyOptional.get();
+            history.setReadStatus(1); // Mark as read
+            userHistoriesDAO.save(history);
+
+            return ResponseEntity.ok().body(Map.of("success", true, "message", "Marked as read"));
+        } catch (Exception e) {
+            logger.error("Error marking notification as read: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/mark-all-as-read")
+    public ResponseEntity<?> markAllAsRead(
+            @RequestParam(required = false) UserActionType actionType,
+            @RequestParam(required = false) String userId) {
+        try {
+            Specification<UserHistory> spec = (root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+
+                predicates.add(cb.equal(root.get("readStatus"), 0)); // Only unread notifications
+
+                if (actionType != null) {
+                    predicates.add(cb.equal(root.get("actionType"), actionType));
+                }
+
+                if (userId != null && !userId.isEmpty()) {
+                    predicates.add(cb.equal(root.get("account").get("id"), userId));
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+
+            List<UserHistory> unreadHistories = userHistoriesDAO.findAll(spec);
+            for (UserHistory history : unreadHistories) {
+                history.setReadStatus(1);
+            }
+            userHistoriesDAO.saveAll(unreadHistories);
+
+            return ResponseEntity.ok().body(Map.of(
+                    "success", true,
+                    "message", "All notifications marked as read",
+                    "count", unreadHistories.size()));
+        } catch (Exception e) {
+            logger.error("Error marking all notifications as read: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Add endpoint to get unread notification counts
+    @GetMapping("/unread-count")
+    public ResponseEntity<?> getUnreadCount(
+            @RequestParam(required = false) List<UserActionType> actionTypes,
+            @RequestParam(required = false) String userId) {
+        try {
+            Specification<UserHistory> spec = (root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+
+                predicates.add(cb.equal(root.get("readStatus"), 0)); // Only unread notifications
+
+                if (actionTypes != null && !actionTypes.isEmpty()) {
+                    predicates.add(root.get("actionType").in(actionTypes));
+                }
+
+                if (userId != null && !userId.isEmpty()) {
+                    predicates.add(cb.equal(root.get("account").get("id"), userId));
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+
+            long count = userHistoriesDAO.count(spec);
+
+            return ResponseEntity.ok().body(Map.of("unreadCount", count));
+        } catch (Exception e) {
+            logger.error("Error getting unread notification count: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

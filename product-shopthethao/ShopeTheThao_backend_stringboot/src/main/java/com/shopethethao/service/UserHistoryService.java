@@ -13,8 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import com.shopethethao.dto.UserHistoryDTO;
 import com.shopethethao.modules.account.AccountDAO;
@@ -85,14 +88,14 @@ public class UserHistoryService {
         try {
             if (actionType.isAuthAction()) {
                 Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content",
-                    fetchLatestAuthActivities());
+                    getLatestAuthActivities());
                 sseService.notifyAuthActivity(data);
                 log.debug("Auth activities notification sent");
             } 
             
             if (actionType.isAdminAction() || true) { // Always notify admin for all actions
                 Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content",
-                    fetchLatestAdminActivities());
+                    getLatestAdminActivities());
                 sseService.notifyAdminActivity(data);
                 log.debug("Admin activities notification sent");
             }
@@ -101,13 +104,14 @@ public class UserHistoryService {
         }
     }
 
-    private List<UserHistoryDTO> fetchLatestAuthActivities() {
+    public List<UserHistoryDTO> getLatestAuthActivities() {
         Pageable pageable = PageRequest.of(0, MAX_HISTORY_ITEMS, Sort.by(Sort.Direction.DESC, "historyDateTime"));
         return userHistoryDAO.findByActionTypeIn(Arrays.asList(
                 UserActionType.LOGIN,
                 UserActionType.LOGOUT,
                 UserActionType.LOGIN_FAILED,
                 UserActionType.RELOGIN,
+                UserActionType.SIGNUP,
                 UserActionType.CREATEACCOUNTFAILED), 
                 pageable)
             .stream()
@@ -115,13 +119,14 @@ public class UserHistoryService {
             .collect(Collectors.toList());
     }
 
-    private List<UserHistoryDTO> fetchLatestAdminActivities() {
+    public List<UserHistoryDTO> getLatestAdminActivities() {
         Pageable pageable = PageRequest.of(0, MAX_HISTORY_ITEMS, Sort.by(Sort.Direction.DESC, "historyDateTime"));
         return userHistoryDAO.findByActionTypeNotIn(Arrays.asList(
                 UserActionType.LOGIN,
                 UserActionType.LOGOUT,
                 UserActionType.LOGIN_FAILED,
                 UserActionType.RELOGIN,
+                UserActionType.SIGNUP,
                 UserActionType.CREATEACCOUNTFAILED),
                 pageable)
             .stream()
@@ -129,9 +134,17 @@ public class UserHistoryService {
             .collect(Collectors.toList());
     }
 
+    private List<UserHistoryDTO> fetchLatestAuthActivities() {
+        return getLatestAuthActivities();
+    }
+
+    private List<UserHistoryDTO> fetchLatestAdminActivities() {
+        return getLatestAdminActivities();
+    }
+
     public void sendInitialAuthActivitiesToEmitter(SseEmitter emitter) {
         try {
-            Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content", fetchLatestAuthActivities());
+            Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content", getLatestAuthActivities());
             emitter.send(SseEmitter.event()
                 .name("AUTH_ACTIVITY")
                 .data(data)
@@ -143,7 +156,7 @@ public class UserHistoryService {
 
     public void sendInitialAdminActivitiesToEmitter(SseEmitter emitter) {
         try {
-            Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content", fetchLatestAdminActivities());
+            Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content", getLatestAdminActivities());
             emitter.send(SseEmitter.event()
                 .name("ADMIN_ACTIVITY")
                 .data(data)
@@ -185,6 +198,104 @@ public class UserHistoryService {
                 .collect(Collectors.groupingBy(
                         UserHistory::getActionType,
                         Collectors.counting()));
+    }
+
+    @Transactional
+    public void markNotificationsAsRead(String userId) {
+        List<UserHistory> histories = userHistoryDAO.findByUserIdAndReadStatus(userId, 0);
+        for (UserHistory history : histories) {
+            history.setReadStatus(1);
+        }
+        userHistoryDAO.saveAll(histories);
+        log.debug("Marked notifications as read for user {}", userId);
+    }
+
+    @Transactional
+    public boolean markAsRead(Long historyId) {
+        Optional<UserHistory> optionalHistory = userHistoryDAO.findById(historyId);
+        if (optionalHistory.isPresent()) {
+            UserHistory history = optionalHistory.get();
+            history.setReadStatus(1);
+            userHistoryDAO.save(history);
+            log.debug("Marked notification {} as read", historyId);
+            return true;
+        }
+        return false;
+    }
+    
+    @Transactional
+    public void markAllAuthAsRead() {
+        List<UserActionType> authActionTypes = Arrays.asList(
+            UserActionType.LOGIN,
+            UserActionType.LOGOUT,
+            UserActionType.LOGIN_FAILED,
+            UserActionType.RELOGIN,
+            UserActionType.SIGNUP,
+            UserActionType.CREATEACCOUNTFAILED
+        );
+        
+        List<UserHistory> histories = userHistoryDAO.findByActionTypeInAndReadStatus(authActionTypes, 0);
+        for (UserHistory history : histories) {
+            history.setReadStatus(1);
+        }
+        
+        if (!histories.isEmpty()) {
+            userHistoryDAO.saveAll(histories);
+            log.debug("Marked {} auth notifications as read", histories.size());
+            
+            // Notify clients of the change
+            Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content", getLatestAuthActivities());
+            sseService.notifyAuthActivity(data);
+        }
+    }
+    
+    @Transactional
+    public void markAllAdminAsRead() {
+        List<UserActionType> authActionTypes = Arrays.asList(
+            UserActionType.LOGIN,
+            UserActionType.LOGOUT,
+            UserActionType.LOGIN_FAILED,
+            UserActionType.RELOGIN,
+            UserActionType.SIGNUP,
+            UserActionType.CREATEACCOUNTFAILED
+        );
+        
+        List<UserHistory> histories = userHistoryDAO.findByActionTypeNotInAndReadStatus(authActionTypes, 0);
+        for (UserHistory history : histories) {
+            history.setReadStatus(1);
+        }
+        
+        if (!histories.isEmpty()) {
+            userHistoryDAO.saveAll(histories);
+            log.debug("Marked {} admin notifications as read", histories.size());
+            
+            // Notify clients of the change
+            Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content", getLatestAdminActivities());
+            sseService.notifyAdminActivity(data);
+        }
+    }
+    
+    public Map<String, Integer> getUnreadCounts() {
+        Map<String, Integer> counts = new HashMap<>();
+        
+        // Auth action types
+        List<UserActionType> authActionTypes = Arrays.asList(
+            UserActionType.LOGIN,
+            UserActionType.LOGOUT,
+            UserActionType.LOGIN_FAILED,
+            UserActionType.RELOGIN,
+            UserActionType.SIGNUP,
+            UserActionType.CREATEACCOUNTFAILED
+        );
+        
+        int authCount = userHistoryDAO.countByActionTypeInAndReadStatus(authActionTypes, 0);
+        int adminCount = userHistoryDAO.countByActionTypeNotInAndReadStatus(authActionTypes, 0);
+        
+        counts.put("authCount", authCount);
+        counts.put("adminCount", adminCount);
+        counts.put("totalCount", authCount + adminCount);
+        
+        return counts;
     }
 
     private UserHistoryDTO convertToDTO(UserHistory history) {
