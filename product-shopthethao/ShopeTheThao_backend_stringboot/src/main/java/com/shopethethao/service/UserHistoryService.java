@@ -2,10 +2,16 @@ package com.shopethethao.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +37,8 @@ public class UserHistoryService {
 
     @Autowired
     private UserHistorySSEService sseService;
+
+    private static final int MAX_HISTORY_ITEMS = 100;
 
     @Transactional
     public void logUserAction(String userId, UserActionType actionType, String note, String ipAddress,
@@ -61,35 +69,87 @@ public class UserHistoryService {
             history.setReadStatus(0);
 
             userHistoryDAO.save(history);
+            log.debug("Successfully saved action {} for user {}", actionType, userId);
 
-            // Notify clients through SSE
-            UserHistoryDTO dto = convertToDTO(history);
-            if (actionType.isAuthAction()) {
-                sseService.notifyAuthActivity(Collections.singletonMap("content",
-                        userHistoryDAO.findByActionTypeIn(Arrays.asList(
-                                UserActionType.LOGIN,
-                                UserActionType.LOGOUT,
-                                UserActionType.LOGIN_FAILED,
-                                UserActionType.RELOGIN,
-                                UserActionType.CREATEACCOUNTFAILED)).stream()
-                                .map(this::convertToDTO)
-                                .collect(Collectors.toList())));
-            } else if (actionType.isAdminAction()) {
-                sseService.notifyAdminActivity(Collections.singletonMap("content",
-                        userHistoryDAO.findByActionTypeNotIn(Arrays.asList(
-                                UserActionType.LOGIN,
-                                UserActionType.LOGOUT,
-                                UserActionType.LOGIN_FAILED,
-                                UserActionType.RELOGIN,
-                                UserActionType.CREATEACCOUNTFAILED)).stream()
-                                .map(this::convertToDTO)
-                                .collect(Collectors.toList())));
-            }
+            // Notify clients through SSE with immediate updates
+            notifyClientsOfActivityChange(actionType);
 
-            log.debug("Successfully logged action {} for user {}", actionType, userId);
         } catch (Exception e) {
             log.error("Failed to log user action for user {}: {}", userId, e.getMessage());
             throw new RuntimeException("Failed to log user action", e);
+        }
+    }
+
+    private void notifyClientsOfActivityChange(UserActionType actionType) {
+        // Determine whether this is an auth-related action or admin action
+        try {
+            if (actionType.isAuthAction()) {
+                Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content",
+                    fetchLatestAuthActivities());
+                sseService.notifyAuthActivity(data);
+                log.debug("Auth activities notification sent");
+            } 
+            
+            if (actionType.isAdminAction() || true) { // Always notify admin for all actions
+                Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content",
+                    fetchLatestAdminActivities());
+                sseService.notifyAdminActivity(data);
+                log.debug("Admin activities notification sent");
+            }
+        } catch (Exception e) {
+            log.error("Error notifying clients of activity change: {}", e.getMessage(), e);
+        }
+    }
+
+    private List<UserHistoryDTO> fetchLatestAuthActivities() {
+        Pageable pageable = PageRequest.of(0, MAX_HISTORY_ITEMS, Sort.by(Sort.Direction.DESC, "historyDateTime"));
+        return userHistoryDAO.findByActionTypeIn(Arrays.asList(
+                UserActionType.LOGIN,
+                UserActionType.LOGOUT,
+                UserActionType.LOGIN_FAILED,
+                UserActionType.RELOGIN,
+                UserActionType.CREATEACCOUNTFAILED), 
+                pageable)
+            .stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+
+    private List<UserHistoryDTO> fetchLatestAdminActivities() {
+        Pageable pageable = PageRequest.of(0, MAX_HISTORY_ITEMS, Sort.by(Sort.Direction.DESC, "historyDateTime"));
+        return userHistoryDAO.findByActionTypeNotIn(Arrays.asList(
+                UserActionType.LOGIN,
+                UserActionType.LOGOUT,
+                UserActionType.LOGIN_FAILED,
+                UserActionType.RELOGIN,
+                UserActionType.CREATEACCOUNTFAILED),
+                pageable)
+            .stream()
+            .map(this::convertToDTO)
+            .collect(Collectors.toList());
+    }
+
+    public void sendInitialAuthActivitiesToEmitter(SseEmitter emitter) {
+        try {
+            Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content", fetchLatestAuthActivities());
+            emitter.send(SseEmitter.event()
+                .name("AUTH_ACTIVITY")
+                .data(data)
+                .id(String.valueOf(System.currentTimeMillis())));
+        } catch (IOException e) {
+            log.error("Failed to send initial auth activities to emitter: {}", e.getMessage());
+        }
+    }
+
+    public void sendInitialAdminActivitiesToEmitter(SseEmitter emitter) {
+        try {
+            Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content", fetchLatestAdminActivities());
+            emitter.send(SseEmitter.event()
+                .name("ADMIN_ACTIVITY")
+                .data(data)
+                .id(String.valueOf(System.currentTimeMillis())));
+        } catch (IOException e) {
+            log.error("Failed to send initial admin activities to emitter: {}", e.getMessage());
         }
     }
 
@@ -135,8 +195,8 @@ public class UserHistoryService {
         UserHistoryDTO dto = new UserHistoryDTO();
         dto.setIdHistory(history.getIdHistory());
         dto.setUserId(history.getUserId());
-        dto.setUsername(history.getUsername()); // Add this line
-        dto.setUserRole(history.getUserRole()); // Add this line
+        dto.setUsername(history.getUsername()); 
+        dto.setUserRole(history.getUserRole()); 
         dto.setActionType(history.getActionType());
         dto.setNote(history.getNote());
         dto.setIpAddress(history.getIpAddress());

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { FiPackage, FiUsers, FiDollarSign, FiShoppingCart, FiActivity, FiTrendingUp, FiCalendar, FiPieChart } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { message, Spin } from "antd";
+import { message, Spin, notification } from "antd";
 import moment from "moment";
 import { userHistoryApi } from "api/Admin";
 import { userHistorySSE } from "api/Admin/UserHistory/userHistorySSE";
@@ -10,16 +10,29 @@ const AdminIndex = () => {
   const [adminHistories, setAdminHistories] = useState([]);
   const [recentHistories, setRecentHistories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState({
+    auth: "connecting",
+    admin: "connecting"
+  });
+  
+  // Use refs to track when we should display notifications
+  const notificationsEnabled = useRef(false);
+  const previousHistoriesCount = useRef({
+    auth: 0,
+    admin: 0
+  });
 
   const fetchAuthActivities = useCallback(async () => {
     try {
       const response = await userHistoryApi.getAllauthactivities();
       if (response?.data?.content) {
         setRecentHistories(response.data.content);
+        previousHistoriesCount.current.auth = response.data.content.length;
       }
     } catch (error) {
       console.error("Error fetching auth activities:", error);
       message.error("Không thể tải dữ liệu hoạt động người dùng");
+      setConnectionStatus(prev => ({...prev, auth: "error"}));
     }
   }, []);
 
@@ -28,14 +41,54 @@ const AdminIndex = () => {
       const response = await userHistoryApi.getAlladminactivities();
       if (response?.data?.content) {
         setAdminHistories(response.data.content);
+        previousHistoriesCount.current.admin = response.data.content.length;
       }
     } catch (error) {
       console.error("Error fetching admin activities:", error);
       message.error("Không thể tải dữ liệu hoạt động quản trị");
+      setConnectionStatus(prev => ({...prev, admin: "error"}));
+    }
+  }, []);
+
+  const handleAuthActivitiesUpdate = useCallback((data) => {
+    if (data?.content) {
+      setRecentHistories(data.content);
+      setConnectionStatus(prev => ({...prev, auth: "connected"}));
+      
+      // Check if we should show a notification
+      if (notificationsEnabled.current && previousHistoriesCount.current.auth < data.content.length) {
+        const newCount = data.content.length - previousHistoriesCount.current.auth;
+        notification.info({
+          message: `${newCount} hoạt động mới`,
+          description: 'Có hoạt động đăng nhập/đăng xuất mới',
+          placement: 'bottomRight',
+        });
+      }
+      previousHistoriesCount.current.auth = data.content.length;
+    }
+  }, []);
+
+  const handleAdminActivitiesUpdate = useCallback((data) => {
+    if (data?.content) {
+      setAdminHistories(data.content);
+      setConnectionStatus(prev => ({...prev, admin: "connected"}));
+      
+      // Check if we should show a notification
+      if (notificationsEnabled.current && previousHistoriesCount.current.admin < data.content.length) {
+        const newCount = data.content.length - previousHistoriesCount.current.admin;
+        notification.info({
+          message: `${newCount} hoạt động quản trị mới`,
+          description: 'Có hoạt động quản trị mới',
+          placement: 'bottomRight',
+        });
+      }
+      previousHistoriesCount.current.admin = data.content.length;
     }
   }, []);
 
   useEffect(() => {
+    // Initial data fetch
+    setIsLoading(true);
     Promise.all([
       fetchAuthActivities(),
       fetchAdminActivities()
@@ -45,26 +98,22 @@ const AdminIndex = () => {
     })
     .finally(() => {
       setIsLoading(false);
+      // Enable notifications after initial load (prevent notifications on first load)
+      setTimeout(() => {
+        notificationsEnabled.current = true;
+      }, 2000);
     });
 
     // Set up SSE subscriptions for real-time updates
-    const authUnsubscribe = userHistorySSE.subscribeToAuthActivities((data) => {
-      if (data?.content) {
-        setRecentHistories(data.content);
-      }
-    });
-
-    const adminUnsubscribe = userHistorySSE.subscribeToAdminActivities((data) => {
-      if (data?.content) {
-        setAdminHistories(data.content);
-      }
-    });
+    const authUnsubscribe = userHistorySSE.subscribeToAuthActivities(handleAuthActivitiesUpdate);
+    const adminUnsubscribe = userHistorySSE.subscribeToAdminActivities(handleAdminActivitiesUpdate);
 
     return () => {
       authUnsubscribe();
       adminUnsubscribe();
+      notificationsEnabled.current = false;
     };
-  }, [fetchAuthActivities, fetchAdminActivities]);
+  }, [fetchAuthActivities, fetchAdminActivities, handleAuthActivitiesUpdate, handleAdminActivitiesUpdate]);
 
   const statsData = [
     {

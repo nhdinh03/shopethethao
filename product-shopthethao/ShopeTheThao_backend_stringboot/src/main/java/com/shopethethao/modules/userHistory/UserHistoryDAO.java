@@ -37,5 +37,9 @@ public interface UserHistoryDAO extends JpaRepository<UserHistory, Long>, JpaSpe
 
     List<UserHistory> findByActionTypeIn(List<UserActionType> actionTypes);
     
+    List<UserHistory> findByActionTypeIn(List<UserActionType> actionTypes, Pageable pageable);
+    
     List<UserHistory> findByActionTypeNotIn(List<UserActionType> actionTypes);
+    
+    List<UserHistory> findByActionTypeNotIn(List<UserActionType> actionTypes, Pageable pageable);
 }
