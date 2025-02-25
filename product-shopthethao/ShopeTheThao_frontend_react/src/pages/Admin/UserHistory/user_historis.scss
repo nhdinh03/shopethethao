@@ -14,8 +14,24 @@
         font-weight: 600;
       }
       
-      .ant-table-tbody > tr:hover {
-        background: #f5f5f5;
+      .ant-table-tbody {
+        > tr:hover {
+          background: #f5f5f5;
+          cursor: pointer;
+          
+          .anticon-eye {
+            color: #1890ff;
+          }
+        }
+        
+        .anticon-eye {
+          font-size: 16px;
+          cursor: pointer;
+          
+          &:hover {
+            color: #40a9ff;
+          }
+        }
       }
     }
   }
@@ -43,5 +59,16 @@
 
   .ant-space-vertical {
     width: 100%;
+  }
+}
+
+.history-detail {
+  .ant-descriptions {
+    background: #fff;
+    
+    .ant-descriptions-item-label {
+      width: 120px;
+      font-weight: 500;
+    }
   }
 }

@@ -9,13 +9,23 @@ import {
   Card,
   Input,
   DatePicker,
+  Typography,
+  Modal,
+  Descriptions,
 } from "antd";
-import { SearchOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  ClockCircleOutlined,
+  EyeOutlined,
+  MobileOutlined,
+  DesktopOutlined,
+} from "@ant-design/icons";
 import moment from "moment";
 import { userHistoryApi } from "api/Admin";
 import "./user_historis.scss";
 
 const { RangePicker } = DatePicker;
+const { Text, Paragraph } = Typography;
 
 // Định nghĩa các hằng số tĩnh bên ngoài component
 const ACTION_TYPE_COLORS = {
@@ -33,106 +43,13 @@ const ACTION_TYPE_COLORS = {
   DELETE_CATEGORIE: "volcano",
 };
 
-// Tách logic định dạng
-const formatDateTime = (dateTime) =>
-  moment(dateTime).format("HH:mm:ss DD/MM/YYYY");
-const getActionTypeColor = (type) => ACTION_TYPE_COLORS[type] || "default";
-
-// Tách cột bảng ra ngoài để tránh re-render không cần thiết
-const columns = [
-  {
-    title: "ID",
-    dataIndex: "idHistory",
-    key: "idHistory",
-    width: 80,
-    sorter: (a, b) => a.idHistory - b.idHistory,
-  },
-  {
-    title: "Người dùng",
-    dataIndex: "username",
-    key: "username",
-    render: (_, record) => (
-      <Space direction="vertical" size="small">
-        <span>{record.username}</span>
-        <Tag color="purple">{record.userId}</Tag>
-        <Tag color="cyan">{record.userRole}</Tag>
-      </Space>
-    ),
-    filters: [
-      { text: "ADMIN", value: "ADMIN" },
-      { text: "USER", value: "USER" },
-    ],
-    onFilter: (value, record) => record.userRole.includes(value),
-  },
-  {
-    title: "Hành động",
-    dataIndex: "actionType",
-    key: "actionType",
-    render: (text) => (
-      <Tag color={getActionTypeColor(text)}>{text.replace(/_/g, " ")}</Tag>
-    ),
-  },
-  {
-    title: "Ghi chú",
-    dataIndex: "note",
-    key: "note",
-    width: 200,
-    // Có thể tạo component NoteRenderer để hiển thị ghi chú đẹp hơn
-  },
-  {
-    title: "Thời gian",
-    dataIndex: "historyDateTime",
-    key: "historyDateTime",
-    render: (text) => (
-      <Space>
-        <ClockCircleOutlined />
-        {formatDateTime(text)}
-      </Space>
-    ),
-  },
-  {
-    title: "Thiết bị",
-    dataIndex: "deviceInfo",
-    key: "deviceInfo",
-    render: (text, record) => {
-      const browserMatch = text.match(/Chrome|Firefox|Safari|Edge/i);
-      const browser = browserMatch ? browserMatch[0] : "Unknown";
-      const ipAddress = record.ipAddress || "Không có IP";
-      return (
-        <Space direction="vertical" size="small">
-          <span>{browser}</span>
-          <span>{`IP: ${ipAddress}`}</span>
-        </Space>
-      );
-    },
-  },
-  {
-    title: "Trạng thái",
-    dataIndex: "status",
-    key: "status",
-    render: (status) => (
-      <Tag color={status === 1 ? "success" : "error"}>
-        {status === 1 ? "Thành công" : "Thất bại"}
-      </Tag>
-    ),
-  },
-  {
-    title: "Trạng thái đọc",
-    dataIndex: "readStatus",
-    key: "readStatus",
-    render: (readStatus) => (
-      <Tag color={readStatus === 1 ? "success" : "error"}>
-        {readStatus === 1 ? "Đã xem" : "Chưa xem"}
-      </Tag>
-    ),
-  },
-];
-
 const UserHistory = () => {
   const [loading, setLoading] = useState(false);
   const [histories, setHistories] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [dateRange, setDateRange] = useState([]);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   useEffect(() => {
     fetchHistories();
@@ -149,6 +66,163 @@ const UserHistory = () => {
       setLoading(false);
     }
   };
+
+  // Tách logic định dạng
+  const formatDateTime = (dateTime) =>
+    moment(dateTime).format("HH:mm:ss DD/MM/YYYY");
+  const getActionTypeColor = (type) => ACTION_TYPE_COLORS[type] || "default";
+
+  const NoteDisplay = ({ note, expanded = false }) => {
+    if (!note) return null;
+
+    const lines = note.split("\n");
+    const firstLine = lines[0];
+    const detailLines = lines.slice(1);
+
+    if (!expanded) {
+      return (
+        <div>
+          <Text strong>{firstLine}</Text>
+          {detailLines.length > 0 && (
+            <Text type="secondary" italic>
+              {" "}
+              ({detailLines.length} dòng chi tiết)
+            </Text>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Space direction="vertical">
+        <Text strong>{firstLine}</Text>
+        {detailLines.map((line, index) => (
+          <Text key={index}>{line}</Text>
+        ))}
+      </Space>
+    );
+  };
+
+  const DeviceInfoDisplay = ({ deviceInfo, ipAddress }) => {
+    const isMobile = deviceInfo.toLowerCase().includes("mobile");
+    const browser = deviceInfo.includes("Chrome")
+      ? "Chrome"
+      : deviceInfo.includes("Firefox")
+      ? "Firefox"
+      : deviceInfo.includes("Safari")
+      ? "Safari"
+      : deviceInfo.includes("Edge")
+      ? "Edge"
+      : "Unknown";
+
+    return (
+      <Space direction="vertical" size="small">
+        <Space>
+          {isMobile ? <MobileOutlined /> : <DesktopOutlined />}
+          <Text>{isMobile ? "Mobile" : "Desktop"}</Text>
+        </Space>
+        <Tag color="blue">{browser}</Tag>
+        <Text type="secondary" className="ip-address">
+          IP: {ipAddress}
+        </Text>
+      </Space>
+    );
+  };
+
+  // Tách cột bảng ra ngoài để tránh re-render không cần thiết
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "idHistory",
+      key: "idHistory",
+      width: 80,
+      sorter: (a, b) => a.idHistory - b.idHistory,
+    },
+    {
+      title: "Người dùng",
+      dataIndex: "username",
+      key: "username",
+      render: (_, record) => (
+        <Space direction="vertical" size="small">
+          <span>{record.username}</span>
+          <Tag color="purple">{record.userId}</Tag>
+          <Tag color="cyan">{record.userRole}</Tag>
+        </Space>
+      ),
+      filters: [
+        { text: "ADMIN", value: "ADMIN" },
+        { text: "USER", value: "USER" },
+      ],
+      onFilter: (value, record) => record.userRole.includes(value),
+    },
+    {
+      title: "Hành động",
+      dataIndex: "actionType",
+      key: "actionType",
+      render: (text) => (
+        <Tag color={getActionTypeColor(text)}>{text.replace(/_/g, " ")}</Tag>
+      ),
+    },
+    {
+      title: "Ghi chú",
+      dataIndex: "note",
+      key: "note",
+      width: 200,
+      render: (note) => <NoteDisplay note={note} />,
+    },
+    {
+      title: "Thời gian",
+      dataIndex: "historyDateTime",
+      key: "historyDateTime",
+      render: (text) => (
+        <Space>
+          <ClockCircleOutlined />
+          {formatDateTime(text)}
+        </Space>
+      ),
+    },
+    {
+      title: "Thiết bị",
+      dataIndex: "deviceInfo",
+      key: "deviceInfo",
+      render: (text, record) => (
+        <DeviceInfoDisplay deviceInfo={text} ipAddress={record.ipAddress} />
+      ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Tag color={status === 1 ? "success" : "error"}>
+          {status === 1 ? "Thành công" : "Thất bại"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Trạng thái đọc",
+      dataIndex: "readStatus",
+      key: "readStatus",
+      render: (readStatus) => (
+        <Tag color={readStatus === 1 ? "success" : "error"}>
+          {readStatus === 1 ? "Đã xem" : "Chưa xem"}
+        </Tag>
+      ),
+    },
+    {
+      title: "",
+      key: "actions",
+      width: 60,
+      render: (_, record) => (
+        <EyeOutlined
+          onClick={() => {
+            setSelectedRecord(record);
+            setDetailModalVisible(true);
+          }}
+        />
+      ),
+    },
+  ];
 
   const filteredData = useMemo(() => {
     const searchLower = searchText.toLowerCase();
@@ -223,6 +297,62 @@ const UserHistory = () => {
           }}
         />
       </Card>
+
+      <Modal
+        title={`Chi tiết hoạt động #${selectedRecord?.idHistory}`}
+        open={detailModalVisible}
+        onCancel={() => setDetailModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        {selectedRecord && (
+          <Descriptions column={1} bordered>
+            <Descriptions.Item label="Người dùng">
+              <Space direction="vertical">
+                <Text strong>{selectedRecord.username}</Text>
+                <Tag color="purple">{selectedRecord.userId}</Tag>
+                <Tag color="cyan">{selectedRecord.userRole}</Tag>
+              </Space>
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Hành động">
+              <Tag color={getActionTypeColor(selectedRecord.actionType)}>
+                {selectedRecord.actionType.replace(/_/g, " ")}
+              </Tag>
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Thời gian">
+              {formatDateTime(selectedRecord.historyDateTime)}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Ghi chú">
+              <NoteDisplay note={selectedRecord.note} expanded={true} />
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Thiết bị">
+              <DeviceInfoDisplay
+                deviceInfo={selectedRecord.deviceInfo}
+                ipAddress={selectedRecord.ipAddress}
+              />
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Trạng thái">
+              <Space direction="vertical">
+                <Tag color={selectedRecord.status === 1 ? "success" : "error"}>
+                  {selectedRecord.status === 1 ? "Thành công" : "Thất bại"}
+                </Tag>
+                <Tag
+                  color={
+                    selectedRecord.readStatus === 1 ? "success" : "warning"
+                  }
+                >
+                  {selectedRecord.readStatus === 1 ? "Đã xem" : "Chưa xem"}
+                </Tag>
+              </Space>
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
     </div>
   );
 };
