@@ -40,21 +40,21 @@
 .notification-item {
   padding: 12px 16px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
   border-radius: 4px;
   margin-bottom: 4px;
 }
 
 .notification-item:hover {
-  background-color: #f0f5ff;
+  background-color: #f0f7ff;
 }
 
 .notification-item.unread {
-  background-color: #e6f7ff;
+  background-color: rgba(24, 144, 255, 0.05);
 }
 
 .notification-item.unread:hover {
-  background-color: #bae7ff;
+  background-color: rgba(24, 144, 255, 0.1);
 }
 
 .notification-footer {
@@ -93,7 +93,121 @@
 }
 
 .notification-badge-animated {
-  animation: pulse 1.5s infinite;
+  animation: pulse 2s infinite;
+}
+
+.notification-badge-animated .ant-badge-count {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(24, 144, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
+  }
+}
+
+/* Style for the notification detail modal */
+.ant-descriptions-item-label {
+  font-weight: 600;
+  background-color: #f5f5f5;
+}
+
+.ant-modal-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+/* New styles for the detail modal */
+.notification-detail-modal .ant-modal-content {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.notification-detail-modal .ant-modal-header {
+  padding: 16px 24px;
+  background-color: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notification-detail-modal .ant-modal-body {
+  padding: 16px 24px;
+}
+
+.notification-summary-card {
+  background-color: #f9f9f9;
+  margin-bottom: 16px;
+}
+
+.notification-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.notification-meta-item .anticon {
+  color: #1890ff;
+  font-size: 16px;
+}
+
+.notification-detail-content {
+  margin-bottom: 16px;
+}
+
+.notification-note-container {
+  background-color: #fafafa;
+  border-radius: 4px;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+}
+
+.notification-detail-section-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1890ff;
+}
+
+.notification-detail-list-item {
+  padding-left: 16px;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.notification-detail-bullet {
+  position: absolute;
+  left: 0;
+  color: #1890ff;
+}
+
+.truncate-text {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+/* Enhanced animations for modal */
+.notification-detail-modal .ant-modal-content {
+  animation: slideInDown 0.2s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Dark mode support */
@@ -125,4 +239,26 @@ body.dark-mode .ant-list-item-meta-title,
 body.dark-mode .ant-list-item-meta-description,
 body.dark-mode .ant-tabs-tab {
   color: #ffffffd9 !important;
+}
+
+body.dark-mode .notification-summary-card,
+body.dark-mode .notification-note-container {
+  background-color: #1f1f1f;
+  border-color: #303030;
+}
+
+body.dark-mode .notification-detail-modal .ant-modal-header {
+  background-color: #141414;
+  border-bottom-color: #303030;
+}
+
+body.dark-mode .notification-detail-modal .ant-modal-content {
+  background-color: #1f1f1f;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .notification-detail-modal {
+    max-width: 95vw !important;
+  }
 }

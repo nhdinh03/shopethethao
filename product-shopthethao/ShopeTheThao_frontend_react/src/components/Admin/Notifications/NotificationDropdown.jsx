@@ -10,6 +10,7 @@ import { userHistorySSE } from 'api/Admin/UserHistory/userHistorySSE';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import './NotificationDropdown.css';
+import NotificationDetailModal from './NotificationDetailModal';
 
 const { Text, Title } = Typography;
 const { TabPane } = Tabs;
@@ -28,10 +29,13 @@ const NotificationDropdown = () => {
   const [unreadAuthCount, setUnreadAuthCount] = useState(0);
   const [unreadAdminCount, setUnreadAdminCount] = useState(0);
   const [activeTabKey, setActiveTabKey] = useState("1");
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
   const hasInitializedRef = useRef(false);
   const authActivitiesRef = useRef([]);
   const adminActivitiesRef = useRef([]);
   const loadingTimeoutRef = useRef(null); 
+  const modalRef = useRef(null);
   const navigate = useNavigate();
 
   // Load cached data on initial render to prevent spinner on page refresh
@@ -324,6 +328,9 @@ const NotificationDropdown = () => {
         await userHistoryApi.markAllAuthAsRead();
         setAuthActivities(prev => prev.map(item => ({...item, readStatus: 1})));
         setUnreadAuthCount(0);
+      console.log(type);
+      
+        
       } else if (type === 'admin') {
         await userHistoryApi.markAllAdminAsRead();
         setAdminActivities(prev => prev.map(item => ({...item, readStatus: 1})));
@@ -348,23 +355,50 @@ const NotificationDropdown = () => {
       await markAsRead(item.idHistory);
     }
     
+    // Show notification details modal first
+    setSelectedNotification(item);
+    setDetailModalVisible(true);
+    
+    // Keep the dropdown open while viewing details
+    // Don't close the dropdown here: setDropdownOpen(false);
+  };
+
+  const handleDetailModalClose = () => {
+    setDetailModalVisible(false);
+    // Don't immediately navigate or close dropdown when modal closes
+    // This gives a better UX, letting the user see the transition
+    
+    // Small delay before potentially navigating to ensure modal transition completes
+    setTimeout(() => {
+      if (selectedNotification) {
+        handleActionAfterViewingDetails(selectedNotification);
+      }
+    }, 100);
+  };
+
+  const handleActionAfterViewingDetails = (item) => {
     // Close dropdown
     setDropdownOpen(false);
     
-    // Handle navigation or additional actions based on action type
+    // Navigate based on action type
     switch (item.actionType) {
       case 'UPDATE_CATEGORIE':
+      case 'CREATE_CATEGORIE':
+      case 'DELETE_CATEGORIE':
         navigate(`/admin/categories/history/${item.idHistory}`);
         break;
       case 'UPDATE_PRODUCT':
+      case 'CREATE_PRODUCT':
+      case 'DELETE_PRODUCT':
         navigate(`/admin/products/history/${item.idHistory}`);
         break;
       case 'LOGIN_FAILED':
         navigate('/admin/security-alerts');
         break;
       default:
-        // Just show notification details in a toast for types without specific pages
-        toast.info(`${item.actionType}: ${item.note.substring(0, 100)}${item.note.length > 100 ? '...' : ''}`);
+        // For most notifications, just show the detail modal
+        // We've already done this, so just close the dropdown
+        setDropdownOpen(false);
     }
   };
 
@@ -559,32 +593,46 @@ const NotificationDropdown = () => {
   );
 
   return (
-    <Dropdown
-      overlay={notificationDropdownContent}
-      trigger={['click']}
-      open={dropdownOpen}
-      onOpenChange={(visible) => {
-        setDropdownOpen(visible);
-        if (visible) {
-          fetchNotifications();
-        }
-      }}
-      placement="bottomRight"
-      arrow={{ pointAtCenter: true }}
-      destroyPopupOnHide={false} // Important: keeps the dropdown content mounted
-    >
-      <div className="notification-trigger">
-        <Badge 
-          count={unreadAuthCount + unreadAdminCount}
-          size="small"
-          className={(unreadAuthCount + unreadAdminCount) > 0 ? 'notification-badge-animated' : ''}
-        >
-          <span className="cursor-pointer text-gray-600 hover:text-blue-500">
-            <FontAwesomeIcon icon={faBell} className="text-xl" />
-          </span>
-        </Badge>
-      </div>
-    </Dropdown>
+    <>
+      <Dropdown
+        overlay={notificationDropdownContent}
+        trigger={['click']}
+        open={dropdownOpen}
+        onOpenChange={(visible) => {
+          setDropdownOpen(visible);
+          if (visible) {
+            fetchNotifications();
+          }
+          // If dropdown is closed, also ensure modal is closed
+          if (!visible && detailModalVisible) {
+            setDetailModalVisible(false);
+          }
+        }}
+        placement="bottomRight"
+        arrow={{ pointAtCenter: true }}
+        destroyPopupOnHide={false} // Important: keeps the dropdown content mounted
+      >
+        <div className="notification-trigger">
+          <Badge 
+            count={unreadAuthCount + unreadAdminCount}
+            size="small"
+            className={(unreadAuthCount + unreadAdminCount) > 0 ? 'notification-badge-animated' : ''}
+          >
+            <span className="cursor-pointer text-gray-600 hover:text-blue-500">
+              <FontAwesomeIcon icon={faBell} className="text-xl" />
+            </span>
+          </Badge>
+        </div>
+      </Dropdown>
+      
+      {/* Notification Detail Modal */}
+      <NotificationDetailModal 
+        visible={detailModalVisible}
+        notification={selectedNotification}
+        onClose={handleDetailModalClose}
+        ref={modalRef}
+      />
+    </>
   );
 };
 
