@@ -50,6 +50,7 @@ const UserHistory = () => {
   const [dateRange, setDateRange] = useState([]);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     fetchHistories();
@@ -127,6 +128,40 @@ const UserHistory = () => {
         </Text>
       </Space>
     );
+  };
+
+  const handleViewDetail = async (record) => {
+    setSelectedRecord(record);
+    setDetailModalVisible(true);
+
+    if (record.readStatus === 0) {
+      try {
+        setModalLoading(true);
+        await userHistoryApi.markAsRead(record.idHistory);
+        
+        // Update local state to reflect the change
+        setHistories(prevHistories =>
+          prevHistories.map(item =>
+            item.idHistory === record.idHistory
+              ? { ...item, readStatus: 1 }
+              : item
+          )
+        );
+
+        // Update the selected record
+        setSelectedRecord(prev => ({ ...prev, readStatus: 1 }));
+
+        // Dispatch custom event to notify NotificationDropdown
+        const event = new CustomEvent('notificationRead', {
+          detail: { idHistory: record.idHistory }
+        });
+        window.dispatchEvent(event);
+      } catch (error) {
+        message.error('Không thể cập nhật trạng thái đọc');
+      } finally {
+        setModalLoading(false);
+      }
+    }
   };
 
   // Tách cột bảng ra ngoài để tránh re-render không cần thiết
@@ -215,9 +250,10 @@ const UserHistory = () => {
       width: 60,
       render: (_, record) => (
         <EyeOutlined
-          onClick={() => {
-            setSelectedRecord(record);
-            setDetailModalVisible(true);
+          onClick={() => handleViewDetail(record)}
+          style={{ 
+            color: record.readStatus === 0 ? '#1890ff' : '#999',
+            fontSize: '16px'
           }}
         />
       ),
@@ -304,9 +340,14 @@ const UserHistory = () => {
         onCancel={() => setDetailModalVisible(false)}
         footer={null}
         width={700}
+        confirmLoading={modalLoading}
       >
         {selectedRecord && (
-          <Descriptions column={1} bordered>
+          <Descriptions 
+            column={1} 
+            bordered
+            loading={modalLoading}
+          >
             <Descriptions.Item label="Người dùng">
               <Space direction="vertical">
                 <Text strong>{selectedRecord.username}</Text>
@@ -341,11 +382,7 @@ const UserHistory = () => {
                 <Tag color={selectedRecord.status === 1 ? "success" : "error"}>
                   {selectedRecord.status === 1 ? "Thành công" : "Thất bại"}
                 </Tag>
-                <Tag
-                  color={
-                    selectedRecord.readStatus === 1 ? "success" : "warning"
-                  }
-                >
+                <Tag color={selectedRecord.readStatus === 1 ? "success" : "warning"}>
                   {selectedRecord.readStatus === 1 ? "Đã xem" : "Chưa xem"}
                 </Tag>
               </Space>

@@ -300,6 +300,46 @@ const NotificationDropdown = () => {
     };
   }, [dropdownOpen]);
 
+  // Add event listener for notification reads from UserHistory
+  useEffect(() => {
+    const handleNotificationRead = (event) => {
+      const { idHistory } = event.detail;
+      
+      // Update auth activities
+      setAuthActivities(prev =>
+        prev.map(item =>
+          item.idHistory === idHistory
+            ? { ...item, readStatus: 1 }
+            : item
+        )
+      );
+      
+      // Update admin activities
+      setAdminActivities(prev =>
+        prev.map(item =>
+          item.idHistory === idHistory
+            ? { ...item, readStatus: 1 }
+            : item
+        )
+      );
+      
+      // Update unread counts
+      const updatedAuthUnread = authActivitiesRef.current
+        .filter(item => item.idHistory !== idHistory && item.readStatus === 0).length;
+      const updatedAdminUnread = adminActivitiesRef.current
+        .filter(item => item.idHistory !== idHistory && item.readStatus === 0).length;
+      
+      setUnreadAuthCount(updatedAuthUnread);
+      setUnreadAdminCount(updatedAdminUnread);
+    };
+
+    window.addEventListener('notificationRead', handleNotificationRead);
+
+    return () => {
+      window.removeEventListener('notificationRead', handleNotificationRead);
+    };
+  }, []);
+
   const markAsRead = async (historyId) => {
     try {
       await userHistoryApi.markAsRead(historyId);

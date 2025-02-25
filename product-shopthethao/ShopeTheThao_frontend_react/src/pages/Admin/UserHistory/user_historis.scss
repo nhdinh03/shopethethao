@@ -27,9 +27,11 @@
         .anticon-eye {
           font-size: 16px;
           cursor: pointer;
+          transition: all 0.3s;
           
           &:hover {
             color: #40a9ff;
+            transform: scale(1.2);
           }
         }
       }
@@ -59,6 +61,11 @@
 
   .ant-space-vertical {
     width: 100%;
+  }
+
+  .ant-descriptions.loading {
+    opacity: 0.7;
+    pointer-events: none;
   }
 }
 
