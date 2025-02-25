@@ -385,12 +385,12 @@ const NotificationDropdown = () => {
       case 'UPDATE_CATEGORIE':
       case 'CREATE_CATEGORIE':
       case 'DELETE_CATEGORIE':
-        navigate(`/admin/categories/history/${item.idHistory}`);
+        // navigate(`/admin/categories/history/${item.idHistory}`);
         break;
       case 'UPDATE_PRODUCT':
       case 'CREATE_PRODUCT':
       case 'DELETE_PRODUCT':
-        navigate(`/admin/products/history/${item.idHistory}`);
+        // navigate(`/admin/products/history/${item.idHistory}`);
         break;
       case 'LOGIN_FAILED':
         navigate('/admin/security-alerts');
@@ -584,7 +584,7 @@ const NotificationDropdown = () => {
       <div className="notification-footer">
         <Button type="link" onClick={() => {
           setDropdownOpen(false);
-          navigate('/admin/activity-log');
+          navigate('/admin/userhistory');
         }}>
           Xem tất cả
         </Button>

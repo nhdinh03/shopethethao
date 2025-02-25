@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+
 @Service
 public class UserHistorySSEService {
     private static final Logger logger = LoggerFactory.getLogger(UserHistorySSEService.class);
