@@ -25,7 +25,7 @@ public class UserHistoryService {
 
     @Autowired
     private UserHistoryDAO userHistoryDAO;
-    
+
     @Autowired
     private AccountDAO accountDAO;
 
@@ -33,7 +33,8 @@ public class UserHistoryService {
     private UserHistorySSEService sseService;
 
     @Transactional
-    public void logUserAction(String userId, UserActionType actionType, String note, String ipAddress, String deviceInfo) {
+    public void logUserAction(String userId, UserActionType actionType, String note, String ipAddress,
+            String deviceInfo) {
         if (userId == null || userId.trim().isEmpty()) {
             log.error("Cannot log user action: userId is null or empty");
             throw new IllegalArgumentException("userId cannot be null or empty");
@@ -41,51 +42,48 @@ public class UserHistoryService {
 
         try {
             Account account = accountDAO.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
             UserHistory history = new UserHistory();
             history.setAccount(account);
             history.setActionType(actionType);
             history.setNote(note);
-            
+
             // Format IP address if it's localhost
             if ("0:0:0:0:0:0:0:1".equals(ipAddress)) {
                 ipAddress = "127.0.0.1";
             }
-            
+
             history.setIpAddress(ipAddress != null ? ipAddress : "unknown");
             history.setDeviceInfo(deviceInfo != null ? deviceInfo : "unknown");
             history.setHistoryDateTime(LocalDateTime.now());
             history.setStatus(1);
+            history.setReadStatus(0);
 
             userHistoryDAO.save(history);
 
             // Notify clients through SSE
             UserHistoryDTO dto = convertToDTO(history);
             if (actionType.isAuthAction()) {
-                sseService.notifyAuthActivity(Collections.singletonMap("content", 
-                    userHistoryDAO.findByActionTypeIn(Arrays.asList(
-                        UserActionType.LOGIN,
-                        UserActionType.LOGOUT,
-                        UserActionType.LOGIN_FAILED,
-                        UserActionType.RELOGIN,
-                        UserActionType.CREATEACCOUNTFAILED
-                    )).stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList())
-                ));
+                sseService.notifyAuthActivity(Collections.singletonMap("content",
+                        userHistoryDAO.findByActionTypeIn(Arrays.asList(
+                                UserActionType.LOGIN,
+                                UserActionType.LOGOUT,
+                                UserActionType.LOGIN_FAILED,
+                                UserActionType.RELOGIN,
+                                UserActionType.CREATEACCOUNTFAILED)).stream()
+                                .map(this::convertToDTO)
+                                .collect(Collectors.toList())));
             } else if (actionType.isAdminAction()) {
                 sseService.notifyAdminActivity(Collections.singletonMap("content",
-                    userHistoryDAO.findByActionTypeNotIn(Arrays.asList(
-                        UserActionType.LOGIN,
-                        UserActionType.LOGOUT,
-                        UserActionType.LOGIN_FAILED,
-                        UserActionType.RELOGIN,
-                        UserActionType.CREATEACCOUNTFAILED
-                    )).stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList())
-                ));
+                        userHistoryDAO.findByActionTypeNotIn(Arrays.asList(
+                                UserActionType.LOGIN,
+                                UserActionType.LOGOUT,
+                                UserActionType.LOGIN_FAILED,
+                                UserActionType.RELOGIN,
+                                UserActionType.CREATEACCOUNTFAILED)).stream()
+                                .map(this::convertToDTO)
+                                .collect(Collectors.toList())));
             }
 
             log.debug("Successfully logged action {} for user {}", actionType, userId);
@@ -97,9 +95,9 @@ public class UserHistoryService {
 
     public List<UserHistoryDTO> getHistoryByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return userHistoryDAO.findByDateRange(startDate, endDate)
-                           .stream()
-                           .map(this::convertToDTO)
-                           .collect(Collectors.toList());
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     public Page<UserHistoryDTO> getHistoryWithFilters(
@@ -108,14 +106,15 @@ public class UserHistoryService {
             LocalDateTime endDate,
             String userId,
             Pageable pageable) {
-        
+
         return userHistoryDAO.findWithFilters(actionType, startDate, endDate, userId, pageable)
-                           .map(this::convertToDTO);
+                .map(this::convertToDTO);
     }
 
-    public List<UserHistoryDTO> getUserHistoryByDateRange(String userId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<UserHistoryDTO> getUserHistoryByDateRange(String userId, LocalDateTime startDate,
+            LocalDateTime endDate) {
         return userHistoryDAO.findByDateRange(startDate, endDate).stream()
-                .filter(history -> history.getUserId().equals(userId))  // Changed from history.getUser().getId()
+                .filter(history -> history.getUserId().equals(userId)) // Changed from history.getUser().getId()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
@@ -124,9 +123,8 @@ public class UserHistoryService {
         List<UserHistory> histories = userHistoryDAO.findByDateRange(startDate, endDate);
         return histories.stream()
                 .collect(Collectors.groupingBy(
-                    UserHistory::getActionType,
-                    Collectors.counting()
-                ));
+                        UserHistory::getActionType,
+                        Collectors.counting()));
     }
 
     private UserHistoryDTO convertToDTO(UserHistory history) {
@@ -137,15 +135,16 @@ public class UserHistoryService {
         UserHistoryDTO dto = new UserHistoryDTO();
         dto.setIdHistory(history.getIdHistory());
         dto.setUserId(history.getUserId());
-        dto.setUsername(history.getUsername());    // Add this line
-        dto.setUserRole(history.getUserRole());    // Add this line
+        dto.setUsername(history.getUsername()); // Add this line
+        dto.setUserRole(history.getUserRole()); // Add this line
         dto.setActionType(history.getActionType());
         dto.setNote(history.getNote());
         dto.setIpAddress(history.getIpAddress());
         dto.setDeviceInfo(history.getDeviceInfo());
         dto.setHistoryDateTime(history.getHistoryDateTime());
         dto.setStatus(history.getStatus());
-        
+        dto.setReadStatus(history.getReadStatus());
+
         return dto;
     }
 }

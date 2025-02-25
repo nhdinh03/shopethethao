@@ -39,6 +39,9 @@ public class UserHistory {
     @Column(name = "status", columnDefinition = "INT DEFAULT 1")
     private Integer status = 1;
 
+    @Column(name = "read_status", nullable = false)
+    private Integer readStatus = 0;
+
     @PrePersist
     protected void onCreate() {
         if (historyDateTime == null) {

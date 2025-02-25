@@ -16,4 +16,10 @@ public class UserHistoryDTO {
     private String deviceInfo;
     private LocalDateTime historyDateTime;
     private Integer status;
+    private Integer readStatus;
+    
+    // Helper method to check if notification is read
+    public boolean isRead() {
+        return readStatus != null && readStatus == 1;
+    }
 }
