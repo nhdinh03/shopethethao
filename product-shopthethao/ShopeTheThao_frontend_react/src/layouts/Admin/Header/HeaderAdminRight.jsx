@@ -1,4 +1,4 @@
-import { SearchOutlined } from "@ant-design/icons";
+import { LogoutOutlined, SearchOutlined, SettingOutlined } from "@ant-design/icons";
 import {
   faGear,
   faRightFromBracket,
@@ -16,103 +16,141 @@ import {
   Tooltip,
   Switch,
 } from "antd";
-import authApi from "api/Admin/Auth/Login";
 import img from "assets/Img";
 import { useDarkMode } from "config/DarkModeProvider";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import NotificationDropdown from "components/Admin/Notifications/NotificationDropdown";
+import AuthService from 'services/authService';
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const navigate = useNavigate();
+  const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const user = {
-          fullname: "Nhdinh",
-          avatar: "https://i.pravatar.cc/150",
-          position: "Admin",
-        };
-        setUserData(user);
-      } catch (error) {
-        console.error(error);
+    // Use AuthService to get user data from localStorage
+    const userLocalData = AuthService.getUserData().user;
+    // console.log("User data from localStorage:", userLocalData);
+    
+    if (userLocalData) {
+      setUserData(userLocalData);
+      
+      // Generate and store image URL for debugging
+      if (userLocalData.image) {
+        const imgUrl = `http://localhost:8081/api/upload/${userLocalData.image}`;
+        // console.log("Generated image URL:", imgUrl);
+        setImageUrl(imgUrl);
       }
-    };
-    fetchData();
+    }
   }, []);
+
+  // Function to get the image URL, matching the pattern used in Accounts component
+  const getImageUrl = (imageName) => {
+    if (!imageName) return '';
+    const url = `http://localhost:8081/api/upload/${imageName}`;
+    // console.log("Image URL being used:", url);
+    return url;
+  };
 
   const handleLogout = async () => {
     try {
-        await authApi.logout();
-        // Navigate to login page
-        navigate('/login');
-        // Optional: Show success message
-        toast.success('Đăng xuất thành công!');
+      // Use AuthService for logout
+      AuthService.logout();
+      // Navigate to login page
+      navigate('/login');
+      // Optional: Show success message
+      toast.success('Đăng xuất thành công!');
     } catch (error) {
-        console.error('Logout failed:', error);
-        // Optional: Show error message
-        toast.error('Đăng xuất thất bại, vui lòng thử lại!');
+      console.error('Logout failed:', error);
+      // Optional: Show error message
+      toast.error('Đăng xuất thất bại, vui lòng thử lại!');
     }
-};
+  };
 
   const changeLanguage = (lang) => {
     console.log(`Chuyển đổi ngôn ngữ sang: ${lang}`);
   };
 
   const settings = [
-    { key: "1", label: <span onClick={handleLogout}>Đăng xuất</span> },
-    { key: "2", label: <a href="/admin/settings">Cài đặt tài khoản</a> },
+    {
+      key: "1",
+      label: (
+        <span onClick={handleLogout} className="flex items-center gap-2">
+          <LogoutOutlined /> Đăng xuất
+        </span>
+      )
+    },
+    {
+      key: "2",
+      label: (
+        <a href="/admin/settings" className="flex items-center gap-2">
+          <SettingOutlined /> Cài đặt tài khoản
+        </a>
+      )
+    }
   ];
-
+  
+  // Common styling for language flag images
+  const flagImageStyle = {
+    width: "2.25rem",
+    height: "1.25rem",
+    borderRadius: "0.1px"
+  };
+  
   const languages = [
     {
       key: "vi",
       label: (
-        <div onClick={() => changeLanguage("vi")}>
+        <div onClick={() => changeLanguage("vi")} className="flex items-center gap-2">
           <img
             src={img.Co_VN}
-            alt="Language"
-            className="w-9 h-5 rounded-full"
-            style={{ borderRadius: "0.1px" }}
+            alt="Tiếng Việt"
+            className="border"
+            style={flagImageStyle}
           />
-          Tiếng Việt
+          <span>Tiếng Việt</span>
         </div>
-      ),
+      )
     },
     {
       key: "en",
       label: (
-        <div onClick={() => changeLanguage("en")}>
+        <div onClick={() => changeLanguage("en")} className="flex items-center gap-2">
           <img
             src={img.Co_My}
             alt="English"
-            className="w-9 h-5 rounded-full"
-            style={{ borderRadius: "0.1px" }}
+            className="border"
+            style={flagImageStyle}
           />
-          English
+          <span>English</span>
         </div>
-      ),
-    },
+      )
+    }
   ];
 
   return (
  <div className="flex items-center justify-between w-full bg-white shadow-md px-6">
   {/* Thông tin người dùng */}
   <div className="flex items-center gap-4">
+    {userData?.image && (
+      <div className="debug-info" style={{ display: 'none' }}>
+        <p>Image name: {userData.image}</p>
+        <p>Full URL: {imageUrl}</p>
+      </div>
+    )}
     <Avatar
-      src={userData?.avatar}
+      src={userData?.image ? getImageUrl(userData.image) : ''}
       size="large"
-      icon={<FontAwesomeIcon icon={faUser} />}
+      icon={!userData?.image && <FontAwesomeIcon icon={faUser} />}
     />
     <div className="flex flex-col text-center md:text-left">
       <span className="font-semibold text-gray-800 text-lg">
-        {userData?.fullname}
+        {userData?.fullname || 'User'}
       </span>
-      <span className="text-gray-500 text-sm">{userData?.position}</span>
+      <span className="text-gray-500 text-sm">{userData?.id || 'Unknown ID'}</span>
     </div>
   </div>
 

@@ -9,7 +9,7 @@ import { useAuth } from 'hooks/useAuth';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, loading, error, isAuthenticated } = useAuth();
+  const { login, loading, isAuthenticated } = useAuth();
   
   // Redirect if already authenticated
   useEffect(() => {
