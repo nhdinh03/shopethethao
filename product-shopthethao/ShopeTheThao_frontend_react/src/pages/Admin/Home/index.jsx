@@ -6,6 +6,7 @@ import moment from "moment";
 import { userHistoryApi } from "api/Admin";
 import { userHistorySSE } from "api/Admin/UserHistory/userHistorySSE";
 
+
 const AdminIndex = () => {
   const [adminHistories, setAdminHistories] = useState([]);
   const [recentHistories, setRecentHistories] = useState([]);
@@ -203,10 +204,11 @@ const AdminIndex = () => {
     </div>
   );
 
+  //danh sách
   const getLatestFive = (items) => {
     return items
       .sort((a, b) => moment(b.historyDateTime) - moment(a.historyDateTime))
-      .slice(0, 5);
+      .slice(0, 3);
   };
 
   const getActionTypeIcon = (actionType) => {
