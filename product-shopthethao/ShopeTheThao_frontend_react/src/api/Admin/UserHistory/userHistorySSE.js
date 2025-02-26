@@ -107,7 +107,7 @@ class UserHistorySSEService {
       });
       
       this.authEventSource.onerror = (error) => {
-        console.error('Auth SSE Error:', error);
+        // console.error('Auth SSE Error:', error);
         this.isAuthConnecting = false;
         
         if (this.authEventSource) {
@@ -175,7 +175,7 @@ class UserHistorySSEService {
       });
       
       this.adminEventSource.onerror = (error) => {
-        console.error('Admin SSE Error:', error);
+        // console.error('Admin SSE Error:', error);
         this.isAdminConnecting = false;
         
         if (this.adminEventSource) {

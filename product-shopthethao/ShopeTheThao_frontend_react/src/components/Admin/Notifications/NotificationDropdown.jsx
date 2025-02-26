@@ -13,7 +13,6 @@ import './NotificationDropdown.css';
 import NotificationDetailModal from './NotificationDetailModal';
 
 const { Text, Title } = Typography;
-const { TabPane } = Tabs;
 
 // Create a cache key for localStorage
 const CACHE_KEY_AUTH = 'shopethethao_auth_notifications';
@@ -476,13 +475,9 @@ const NotificationDropdown = () => {
           </div>
         }
         description={
-          <Text 
-            type="secondary"
-            ellipsis={{ rows: 2 }}
-            style={{ fontSize: '12px' }}
-          >
+          <div style={{ fontSize: '12px', color: 'rgba(0, 0, 0, 0.45)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
             {getNotificationDescription(item)}
-          </Text>
+          </div>
         }
       />
       {item.readStatus === 0 && (
@@ -551,13 +546,13 @@ const NotificationDropdown = () => {
   const showLoading = loading && ((activeTabKey === "1" && authActivities.length === 0) || 
                                 (activeTabKey === "2" && adminActivities.length === 0));
 
-  const notificationDropdownContent = (
-    <div className="notification-dropdown">
-      <Tabs activeKey={activeTabKey} onChange={handleTabChange} centered>
-        <TabPane 
-          tab={<Badge count={unreadAuthCount} size="small" offset={[8, 0]}>Đăng nhập</Badge>} 
-          key="1"
-        >
+  // Define tab items configuration
+  const tabItems = [
+    {
+      key: "1",
+      label: <Badge count={unreadAuthCount} size="small" offset={[8, 0]}>Đăng nhập</Badge>,
+      children: (
+        <>
           <div className="notification-header">
             <Title level={5}>Hoạt động đăng nhập</Title>
             <Button 
@@ -585,12 +580,14 @@ const NotificationDropdown = () => {
           ) : (
             <Empty description="Không có thông báo" />
           )}
-        </TabPane>
-        
-        <TabPane 
-          tab={<Badge count={unreadAdminCount} size="small" offset={[8, 0]}>Hoạt động</Badge>} 
-          key="2"
-        >
+        </>
+      )
+    },
+    {
+      key: "2",
+      label: <Badge count={unreadAdminCount} size="small" offset={[8, 0]}>Hoạt động</Badge>,
+      children: (
+        <>
           <div className="notification-header">
             <Title level={5}>Hoạt động quản trị</Title>
             <Button 
@@ -618,8 +615,19 @@ const NotificationDropdown = () => {
           ) : (
             <Empty description="Không có thông báo" />
           )}
-        </TabPane>
-      </Tabs>
+        </>
+      )
+    }
+  ];
+
+  const notificationDropdownContent = (
+    <div className="notification-dropdown">
+      <Tabs 
+        activeKey={activeTabKey} 
+        onChange={handleTabChange} 
+        centered
+        items={tabItems}
+      />
       
       <div className="notification-footer">
         <Button type="link" onClick={() => {
@@ -632,10 +640,18 @@ const NotificationDropdown = () => {
     </div>
   );
 
+  // Create menu object for Dropdown
+  const menu = {
+    items: [{
+      key: '1',
+      label: notificationDropdownContent
+    }]
+  };
+
   return (
     <>
       <Dropdown
-        overlay={notificationDropdownContent}
+        menu={menu}
         trigger={['click']}
         open={dropdownOpen}
         onOpenChange={(visible) => {
@@ -650,7 +666,8 @@ const NotificationDropdown = () => {
         }}
         placement="bottomRight"
         arrow={{ pointAtCenter: true }}
-        destroyPopupOnHide={false} // Important: keeps the dropdown content mounted
+        dropdownRender={() => notificationDropdownContent}
+        destroyPopupOnHide={false}
       >
         <div className="notification-trigger">
           <Badge 
