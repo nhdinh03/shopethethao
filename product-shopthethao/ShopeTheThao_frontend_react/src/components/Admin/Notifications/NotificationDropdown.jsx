@@ -547,6 +547,10 @@ const NotificationDropdown = () => {
                                 (activeTabKey === "2" && adminActivities.length === 0));
 
   // Define tab items configuration
+  const filterUnreadNotifications = (notifications) => {
+    return notifications.filter(item => item.readStatus === 0);
+  };
+
   const tabItems = [
     {
       key: "1",
@@ -554,7 +558,7 @@ const NotificationDropdown = () => {
       children: (
         <>
           <div className="notification-header">
-            <Title level={5}>Hoạt động đăng nhập</Title>
+            <Title level={5}>Hoạt động đăng nhập chưa đọc</Title>
             <Button 
               type="link" 
               size="small" 
@@ -570,15 +574,15 @@ const NotificationDropdown = () => {
             <div style={{ textAlign: 'center', padding: '20px' }}>
               <Spin />
             </div>
-          ) : authActivities.length > 0 ? (
+          ) : unreadAuthCount > 0 ? (
             <List
               className="notification-list"
               itemLayout="horizontal"
-              dataSource={authActivities}
+              dataSource={filterUnreadNotifications(authActivities)}
               renderItem={renderNotificationItem}
             />
           ) : (
-            <Empty description="Không có thông báo" />
+            <Empty description="Không có thông báo chưa đọc" />
           )}
         </>
       )
@@ -589,7 +593,7 @@ const NotificationDropdown = () => {
       children: (
         <>
           <div className="notification-header">
-            <Title level={5}>Hoạt động quản trị</Title>
+            <Title level={5}>Hoạt động quản trị chưa đọc</Title>
             <Button 
               type="link"
               size="small" 
@@ -605,15 +609,15 @@ const NotificationDropdown = () => {
             <div style={{ textAlign: 'center', padding: '20px' }}>
               <Spin />
             </div>
-          ) : adminActivities.length > 0 ? (
+          ) : unreadAdminCount > 0 ? (
             <List
               className="notification-list"
               itemLayout="horizontal"
-              dataSource={adminActivities}
+              dataSource={filterUnreadNotifications(adminActivities)}
               renderItem={renderNotificationItem}
             />
           ) : (
-            <Empty description="Không có thông báo" />
+            <Empty description="Không có thông báo chưa đọc" />
           )}
         </>
       )

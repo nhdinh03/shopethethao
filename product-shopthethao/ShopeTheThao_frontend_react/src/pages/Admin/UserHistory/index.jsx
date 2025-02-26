@@ -12,6 +12,7 @@ import {
   Typography,
   Modal,
   Descriptions,
+  Spin,
 } from "antd";
 import {
   SearchOutlined,
@@ -340,55 +341,52 @@ const UserHistory = () => {
         onCancel={() => setDetailModalVisible(false)}
         footer={null}
         width={700}
-        confirmLoading={modalLoading}
       >
-        {selectedRecord && (
-          <Descriptions 
-            column={1} 
-            bordered
-            loading={modalLoading}
-          >
-            <Descriptions.Item label="Người dùng">
-              <Space direction="vertical">
-                <Text strong>{selectedRecord.username}</Text>
-                <Tag color="purple">{selectedRecord.userId}</Tag>
-                <Tag color="cyan">{selectedRecord.userRole}</Tag>
-              </Space>
-            </Descriptions.Item>
+        <Spin spinning={modalLoading}>
+          {selectedRecord && (
+            <Descriptions column={1} bordered>
+              <Descriptions.Item label="Người dùng">
+                <Space direction="vertical">
+                  <Text strong>{selectedRecord.username}</Text>
+                  <Tag color="purple">{selectedRecord.userId}</Tag>
+                  <Tag color="cyan">{selectedRecord.userRole}</Tag>
+                </Space>
+              </Descriptions.Item>
 
-            <Descriptions.Item label="Hành động">
-              <Tag color={getActionTypeColor(selectedRecord.actionType)}>
-                {selectedRecord.actionType.replace(/_/g, " ")}
-              </Tag>
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Thời gian">
-              {formatDateTime(selectedRecord.historyDateTime)}
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Ghi chú">
-              <NoteDisplay note={selectedRecord.note} expanded={true} />
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Thiết bị">
-              <DeviceInfoDisplay
-                deviceInfo={selectedRecord.deviceInfo}
-                ipAddress={selectedRecord.ipAddress}
-              />
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Trạng thái">
-              <Space direction="vertical">
-                <Tag color={selectedRecord.status === 1 ? "success" : "error"}>
-                  {selectedRecord.status === 1 ? "Thành công" : "Thất bại"}
+              <Descriptions.Item label="Hành động">
+                <Tag color={getActionTypeColor(selectedRecord.actionType)}>
+                  {selectedRecord.actionType.replace(/_/g, " ")}
                 </Tag>
-                <Tag color={selectedRecord.readStatus === 1 ? "success" : "warning"}>
-                  {selectedRecord.readStatus === 1 ? "Đã xem" : "Chưa xem"}
-                </Tag>
-              </Space>
-            </Descriptions.Item>
-          </Descriptions>
-        )}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Thời gian">
+                {formatDateTime(selectedRecord.historyDateTime)}
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Ghi chú">
+                <NoteDisplay note={selectedRecord.note} expanded={true} />
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Thiết bị">
+                <DeviceInfoDisplay
+                  deviceInfo={selectedRecord.deviceInfo}
+                  ipAddress={selectedRecord.ipAddress}
+                />
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Trạng thái">
+                <Space direction="vertical">
+                  <Tag color={selectedRecord.status === 1 ? "success" : "error"}>
+                    {selectedRecord.status === 1 ? "Thành công" : "Thất bại"}
+                  </Tag>
+                  <Tag color={selectedRecord.readStatus === 1 ? "success" : "warning"}>
+                    {selectedRecord.readStatus === 1 ? "Đã xem" : "Chưa xem"}
+                  </Tag>
+                </Space>
+              </Descriptions.Item>
+            </Descriptions>
+          )}
+        </Spin>
       </Modal>
     </div>
   );

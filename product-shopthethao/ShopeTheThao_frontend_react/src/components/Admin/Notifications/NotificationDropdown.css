@@ -17,6 +17,7 @@
   padding: 12px 16px 0;
 }
 
+/* Thêm style mới cho thông báo chưa đọc */
 .notification-list {
   max-height: 350px;
   overflow-y: auto;
@@ -43,10 +44,11 @@
   transition: background-color 0.2s;
   border-radius: 4px;
   margin-bottom: 4px;
+  background-color: rgba(24, 144, 255, 0.05);
 }
 
 .notification-item:hover {
-  background-color: #f0f7ff;
+  background-color: rgba(24, 144, 255, 0.1);
 }
 
 .notification-item.unread {
