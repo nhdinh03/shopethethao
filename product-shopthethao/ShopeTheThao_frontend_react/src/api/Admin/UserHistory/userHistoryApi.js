@@ -3,7 +3,7 @@ import BaseApi from "api/global/baseApi";
 
 class UserHistoryAPI extends BaseApi {
   constructor() {
-    super("userhistory-sse"); // Updated to match the new server endpoint
+    super("userhistory-sse");
   }
 
   async getAllauthactivities() {
