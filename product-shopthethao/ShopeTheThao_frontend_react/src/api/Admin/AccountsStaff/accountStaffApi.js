@@ -4,8 +4,6 @@ class AccountStaffApi extends BaseApi {
   constructor() {
     super("accountStaff");
   }
-
-
 }
 
 const accountsstaffApi = new AccountStaffApi();

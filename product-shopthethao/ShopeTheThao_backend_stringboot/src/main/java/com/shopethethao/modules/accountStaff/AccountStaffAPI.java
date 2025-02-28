@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,7 @@ import com.shopethethao.dto.AccountServiceDTO;
 import com.shopethethao.dto.AccountsUserDto;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.account.Account;
+import com.shopethethao.modules.account.AccountAPI;
 import com.shopethethao.modules.account.AccountDAO;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
@@ -54,6 +57,8 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/accountStaff")
 public class AccountStaffAPI {
+    
+        private static final Logger logger = LoggerFactory.getLogger(AccountAPI.class);
 
     @Autowired
     private AccountDAO accountDao;
@@ -254,7 +259,7 @@ public class AccountStaffAPI {
             Optional<Account> existingAccountOpt = accountDao.findById(id);
             if (existingAccountOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new MessageResponse("Không tìm thấy thông tin nhân viên"));
+                        .body(new MessageResponse("Người dùng không tồn tại"));
             }
 
             Account account = existingAccountOpt.get();
@@ -263,43 +268,34 @@ public class AccountStaffAPI {
 
             // Check and record changes
             if (!Objects.equals(account.getFullname(), updatedAccount.getFullname())) {
-                changes.add(String.format("- Họ tên: '%s' -> '%s'", 
-                    account.getFullname(), updatedAccount.getFullname()));
+                changes.add(String.format("- Họ tên: '%s' -> '%s'",
+                        account.getFullname(), updatedAccount.getFullname()));
                 account.setFullname(updatedAccount.getFullname());
             }
             if (!Objects.equals(account.getPhone(), updatedAccount.getPhone())) {
-                changes.add(String.format("- Số điện thoại: '%s' -> '%s'", 
-                    account.getPhone(), updatedAccount.getPhone()));
+                changes.add(String.format("- Số điện thoại: '%s' -> '%s'",
+                        account.getPhone(), updatedAccount.getPhone()));
                 account.setPhone(updatedAccount.getPhone());
             }
             if (!Objects.equals(account.getEmail(), updatedAccount.getEmail())) {
-                changes.add(String.format("- Email: '%s' -> '%s'", 
-                    account.getEmail(), updatedAccount.getEmail()));
+                changes.add(String.format("- Email: '%s' -> '%s'",
+                        account.getEmail(), updatedAccount.getEmail()));
                 account.setEmail(updatedAccount.getEmail());
             }
             if (!Objects.equals(account.getStatus(), updatedAccount.getStatus())) {
-                changes.add(String.format("- Trạng thái: '%s' -> '%s'", 
-                    account.getStatus() == 1 ? "Hoạt động" : "Khóa",
-                    updatedAccount.getStatus() == 1 ? "Hoạt động" : "Khóa"));
+                changes.add(String.format("- Trạng thái: '%s' -> '%s'",
+                        account.getStatus() == 1 ? "Hoạt động" : "Khóa",
+                        updatedAccount.getStatus() == 1 ? "Hoạt động" : "Khóa"));
                 account.setStatus(updatedAccount.getStatus());
             }
-            if (!Objects.equals(account.getAddress(), updatedAccount.getAddress())) {
-                changes.add(String.format("- Địa chỉ: '%s' -> '%s'",
-                    account.getAddress() != null ? account.getAddress() : "Chưa cập nhật",
-                    updatedAccount.getAddress() != null ? updatedAccount.getAddress() : "Chưa cập nhật"));
-                account.setAddress(updatedAccount.getAddress());
-            }
-            if (!Objects.equals(account.getGender(), updatedAccount.getGender())) {
-                changes.add(String.format("- Giới tính: '%s' -> '%s'",
-                    account.getGender() != null ? account.getGender() : "Chưa cập nhật",
-                    updatedAccount.getGender() != null ? updatedAccount.getGender() : "Chưa cập nhật"));
-                account.setGender(updatedAccount.getGender());
-            }
 
-            // Update other fields that don't need change tracking
+            // Update other fields
+            account.setAddress(updatedAccount.getAddress());
             account.setBirthday(updatedAccount.getBirthday());
+            account.setGender(updatedAccount.getGender());
             account.setImage(updatedAccount.getImage());
             account.setVerified(updatedAccount.getVerified());
+            account.setPoints(updatedAccount.getPoints());
 
             if (updatedAccount.getPassword() != null && !updatedAccount.getPassword().isEmpty()) {
                 account.setPassword(encoder.encode(updatedAccount.getPassword()));
@@ -325,7 +321,7 @@ public class AccountStaffAPI {
 
             // Create single detailed log message
             String logMessage = String.format("""
-                    ADMIN: %s đã cập nhật thông tin nhân viên #%s
+                    ADMIN: %s đã cập nhật tài khoản #%s
                     Chi tiết thay đổi:
                     %s""",
                     getCurrentUserId(),
@@ -334,17 +330,17 @@ public class AccountStaffAPI {
 
             // Log the action once
             userHistoryService.logUserAction(
-                getCurrentUserId(),
-                UserActionType.UPDATE_ACCOUNTSTAFF,
-                logMessage,
-                getClientIp(request),
-                getClientInfo(request)
-            );
+                    getCurrentUserId(),
+                    UserActionType.UPDATE_ACCOUNT,
+                    logMessage,
+                    getClientIp(request),
+                    getClientInfo(request));
 
-            return ResponseEntity.ok(new MessageResponse("Cập nhật thông tin nhân viên thành công!"));
+            return ResponseEntity.ok(new MessageResponse("Cập nhật tài khoản thành công!"));
         } catch (Exception e) {
+            logger.error("Lỗi khi cập nhật tài khoản {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResponse("Lỗi hệ thống khi cập nhật thông tin nhân viên: " + e.getMessage()));
+                    .body(new MessageResponse("Lỗi hệ thống: " + e.getMessage()));
         }
     }
 
@@ -366,29 +362,26 @@ public class AccountStaffAPI {
             accountService.deleteAccount(id); // Call deleteAccount method from AccountService
 
             // Log the staff account deletion
-             String logMessage = String.format("""
-                ADMIN: %s đã xóa tài khoản nhân viên
-                Chi tiết tài khoản đã xóa:
-                - ID: %s
-                - Họ tên: %s
-                - Email: %s
-                - Số điện thoại: %s""",
-                getCurrentUserId(),
-                existingAccount.getId(),
-                existingAccount.getFullname(),
-                existingAccount.getEmail(),
-                existingAccount.getPhone()
-        );
+            String logMessage = String.format("""
+                    ADMIN: %s đã xóa tài khoản nhân viên
+                    Chi tiết tài khoản đã xóa:
+                    - ID: %s
+                    - Họ tên: %s
+                    - Email: %s
+                    - Số điện thoại: %s""",
+                    getCurrentUserId(),
+                    existingAccount.getId(),
+                    existingAccount.getFullname(),
+                    existingAccount.getEmail(),
+                    existingAccount.getPhone());
 
-        // Log the action
-        userHistoryService.logUserAction(
-            getCurrentUserId(),
-            UserActionType.DELETE_ACCOUNTSTAFF,
-            logMessage,
-            getClientIp(request),
-            getClientInfo(request)
-        );
-
+            // Log the action
+            userHistoryService.logUserAction(
+                    getCurrentUserId(),
+                    UserActionType.DELETE_ACCOUNTSTAFF,
+                    logMessage,
+                    getClientIp(request),
+                    getClientInfo(request));
 
             return ResponseEntity.ok("Đã xóa thông tin nhân viên thành công.");
         } catch (Exception e) {

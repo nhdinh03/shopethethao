@@ -6,19 +6,19 @@ import {
   Row,
   Select,
   Tag,
-  Space,
   Tooltip,
+  Space,
   Popconfirm,
   Alert,
 } from "antd";
 import {
-  PlusOutlined,
-  PhoneOutlined,
-  EnvironmentOutlined,
-  EditOutlined,
   DeleteOutlined,
-  LockOutlined,
+  EditOutlined,
+  EnvironmentOutlined,
   EyeOutlined,
+  LockOutlined,
+  PhoneOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import PaginationComponent from "components/PaginationComponent";
 import { accountsstaffApi, lockreasonsApi } from "api/Admin";
@@ -88,12 +88,12 @@ const AccountStaff = () => {
       const updatedUser = {
         ...editUser,
         status: 1,
-        lockReasons: []
+        lockReasons: [],
       };
-      
+
       const res = await accountsstaffApi.update(editUser.id, {
         status: 1,
-        lockReasons: []
+        lockReasons: [],
       });
 
       if (res.status === 200) {
@@ -214,60 +214,55 @@ const AccountStaff = () => {
       const values = await form.validateFields();
       const isLockedAccount = editUser && editUser.status === 0;
 
-      // If account is locked, only allow status and lock reason updates
+      // Nếu là tài khoản bị khóa
       if (isLockedAccount) {
         const updateData = {
-          status: statusChecked ? 1 : 0,
-          lockReasons:
-            showLockReason && !statusChecked && values.lockReasons
-              ? [{ reason: values.lockReasons }]
-              : [],
+          status: 1, // Chuyển trạng thái thành hoạt động
+          lockReasons: [] // Xóa lý do khóa
         };
 
         const res = await accountsstaffApi.update(editUser.id, updateData);
         if (res.status === 200) {
-          message.success("Cập nhật trạng thái tài khoản thành công!");
-          setOpen(false);
-          form.resetFields();
-          setFileList([]);
-          setRefresh((prev) => !prev);
-          setWorkSomeThing(!workSomeThing);
-        } else {
-          throw new Error(`Lỗi API: ${res.statusText}`);
+          message.success("Đã mở khóa tài khoản thành công!");
+          handleCancel();
+          setRefresh(prev => !prev);
         }
+        return;
+      }
+
+      let image = FileList.length > 0 ? FileList[0].url.split("/").pop() : null;
+
+      const newUserData = {
+        ...values,
+        image: image,
+        birthday: values.birthday ? values.birthday.format("YYYY-MM-DD") : null,
+        role: ["STAFF"],
+        status: statusChecked ? 1 : 0,
+        lockReasons:
+          showLockReason && !statusChecked && values.lockReasons
+            ? [{ reason: values.lockReasons }]
+            : [],
+      };
+
+      let res;
+      if (editUser) {
+        // Sửa từ accountsStaff thành accountsstaffApi
+        res = await accountsstaffApi.update(editUser.id, newUserData);
+        message.success("Cập nhật nhân viên thành công!");
       } else {
-        let image = FileList.length > 0 ? FileList[0].url.split("/").pop() : null;
+        // Sửa từ accountsStaff thành accountsstaffApi
+        res = await accountsstaffApi.create(newUserData);
+        message.success("Thêm nhân viên thành công!");
+      }
 
-        const newStaffData = {
-          ...values,
-          image: image,
-          birthday: values.birthday ? values.birthday.format("YYYY-MM-DD") : null,
-          role: ["STAFF"], // Set default role as STAFF
-          status: statusChecked ? 1 : 0,
-          lockReasons:
-            showLockReason && !statusChecked && values.lockReasons
-              ? [{ reason: values.lockReasons }]
-              : [],
-        };
-
-        let res;
-        if (editUser) {
-          res = await accountsstaffApi.update(editUser.id, newStaffData);
-          message.success("Cập nhật nhân viên thành công!");
-        } else {
-          res = await accountsstaffApi.create(newStaffData);
-          message.success("Thêm nhân viên thành công!");
-        }
-
-        if (res.status === 200) {
-          setOpen(false);
-          form.resetFields();
-          setFileList([]);
-          setRefresh((prev) => !prev);
-          setWorkSomeThing(!workSomeThing);
-        } else {
-          throw new Error(`Lỗi API: ${res.statusText}`);
-        }
+      if (res.status === 200) {
+        setOpen(false);
+        form.resetFields();
+        setFileList([]);
+        setRefresh((prev) => !prev);
+        setWorkSomeThing(!workSomeThing);
+      } else {
+        throw new Error(`Lỗi API: ${res.statusText}`);
       }
     } catch (error) {
       console.error("🚨 Lỗi khi thêm/cập nhật nhân viên:", error);
@@ -467,16 +462,32 @@ const AccountStaff = () => {
     {
       title: "Hành động",
       fixed: "right",
-      width: 100,
+      width: 150, // Tăng width để chứa 2 nút
       render: (_, record) => (
-        <Button
-          type="primary"
-          icon={<EyeOutlined />}
-          onClick={() => handleEditData(record)}
-          size="small"
-        >
-          Chi tiết
-        </Button>
+        <Space size="middle">
+          <Button
+            type="primary"
+            icon={<EyeOutlined />}
+            onClick={() => handleEditData(record)}
+            size="small"
+          >
+            Chi tiết
+          </Button>
+          <Button
+            type="primary"
+            style={{ backgroundColor: '#52c41a' }}
+            onClick={() => {
+              handleEditData(record);
+              setTimeout(() => {
+                form.setFieldsValue({ status: true });
+                handleModalOk();
+              }, 100);
+            }}
+            size="small"
+          >
+            Mở khóa
+          </Button>
+        </Space>
       ),
     },
   ];
