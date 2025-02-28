@@ -32,7 +32,7 @@ public class UploadImageController {
     // Xem ảnh
     @GetMapping("/{id}")
     public ResponseEntity<Resource> readImage(@PathVariable String id) throws IOException {
-        String path = Paths.get(System.getProperty("user.dir"), "product-shopthethao/ShopeTheThao_backend_stringboot/src/main/resources/static/images/" + id).toString();
+        String path = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/images/" + id).toString();
 
         File imageFile = new File(path);
         if (!imageFile.exists()) {
@@ -69,7 +69,7 @@ public class UploadImageController {
         }
 
         try {
-            String path = Paths.get(System.getProperty("user.dir"), "product-shopthethao/ShopeTheThao_backend_stringboot/src/main/resources/static/").toString();
+            String path = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/").toString();
 
             File dir = new File(path, "images");
             if (!dir.exists()) {
@@ -101,7 +101,7 @@ public class UploadImageController {
     public ResponseEntity<?> updateImage(@PathVariable String imageName, @RequestParam("file_to_upload") MultipartFile file) throws IOException {
         Map<String, String> response = new HashMap<>();
 
-        String path = Paths.get(System.getProperty("user.dir"), "product-shopthethao/ShopeTheThao_backend_stringboot/src/main/resources/static/images/" + imageName).toString();
+        String path = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/images/" + imageName).toString();
 
         File imageFile = new File(path);
 
@@ -143,7 +143,7 @@ public class UploadImageController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteImage(@PathVariable String id) {
-        String path = Paths.get(System.getProperty("user.dir"), "product-shopthethao/ShopeTheThao_backend_stringboot/src/main/resources/static/images/" + id).toString();
+        String path = Paths.get(System.getProperty("user.dir"), "src/main/resources/static/images/" + id).toString();
 
         File imageFile = new File(path);
         if (!imageFile.exists()) {
