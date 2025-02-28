@@ -81,18 +81,27 @@ const AccountStaff = () => {
 
   const handleStatusChange = async (lockReasonId) => {
     try {
-      // Call the API to delete the lock reason
       await lockreasonsApi.delete(lockReasonId);
       message.success("Xóa lý do khóa thành công!");
 
-      // Set the status to active and hide the lock reason
-      setEditUser((prevUser) => ({
-        ...prevUser,
-        status: 1, // Mark as active
-        lockReasons: [], // Remove lock reason
-      }));
-      setShowLockReason(false); // Hide the lock reason field
-      setStatusChecked(true); // Set status to active
+      // Preserve existing user data and only update status and lockReasons
+      const updatedUser = {
+        ...editUser,
+        status: 1,
+        lockReasons: []
+      };
+      
+      const res = await accountsstaffApi.update(editUser.id, {
+        status: 1,
+        lockReasons: []
+      });
+
+      if (res.status === 200) {
+        setEditUser(updatedUser);
+        setShowLockReason(false);
+        setStatusChecked(true);
+        setRefresh(!refresh);
+      }
     } catch (error) {
       console.error("Có lỗi khi xóa lý do khóa:", error);
       message.error("Không thể xóa lý do khóa, vui lòng thử lại!");
@@ -203,38 +212,62 @@ const AccountStaff = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
+      const isLockedAccount = editUser && editUser.status === 0;
 
-      let image = FileList.length > 0 ? FileList[0].url.split("/").pop() : null;
+      // If account is locked, only allow status and lock reason updates
+      if (isLockedAccount) {
+        const updateData = {
+          status: statusChecked ? 1 : 0,
+          lockReasons:
+            showLockReason && !statusChecked && values.lockReasons
+              ? [{ reason: values.lockReasons }]
+              : [],
+        };
 
-      const newStaffData = {
-        ...values,
-        image: image,
-        birthday: values.birthday ? values.birthday.format("YYYY-MM-DD") : null,
-        role: ["STAFF"], // Set default role as STAFF
-        status: statusChecked ? 1 : 0,
-        lockReasons:
-          showLockReason && !statusChecked && values.lockReasons
-            ? [{ reason: values.lockReasons }]
-            : [],
-      };
-
-      let res;
-      if (editUser) {
-        res = await accountsstaffApi.update(editUser.id, newStaffData);
-        message.success("Cập nhật nhân viên thành công!");
+        const res = await accountsstaffApi.update(editUser.id, updateData);
+        if (res.status === 200) {
+          message.success("Cập nhật trạng thái tài khoản thành công!");
+          setOpen(false);
+          form.resetFields();
+          setFileList([]);
+          setRefresh((prev) => !prev);
+          setWorkSomeThing(!workSomeThing);
+        } else {
+          throw new Error(`Lỗi API: ${res.statusText}`);
+        }
       } else {
-        res = await accountsstaffApi.create(newStaffData);
-        message.success("Thêm nhân viên thành công!");
-      }
+        let image = FileList.length > 0 ? FileList[0].url.split("/").pop() : null;
 
-      if (res.status === 200) {
-        setOpen(false);
-        form.resetFields();
-        setFileList([]);
-        setRefresh((prev) => !prev);
-        setWorkSomeThing(!workSomeThing);
-      } else {
-        throw new Error(`Lỗi API: ${res.statusText}`);
+        const newStaffData = {
+          ...values,
+          image: image,
+          birthday: values.birthday ? values.birthday.format("YYYY-MM-DD") : null,
+          role: ["STAFF"], // Set default role as STAFF
+          status: statusChecked ? 1 : 0,
+          lockReasons:
+            showLockReason && !statusChecked && values.lockReasons
+              ? [{ reason: values.lockReasons }]
+              : [],
+        };
+
+        let res;
+        if (editUser) {
+          res = await accountsstaffApi.update(editUser.id, newStaffData);
+          message.success("Cập nhật nhân viên thành công!");
+        } else {
+          res = await accountsstaffApi.create(newStaffData);
+          message.success("Thêm nhân viên thành công!");
+        }
+
+        if (res.status === 200) {
+          setOpen(false);
+          form.resetFields();
+          setFileList([]);
+          setRefresh((prev) => !prev);
+          setWorkSomeThing(!workSomeThing);
+        } else {
+          throw new Error(`Lỗi API: ${res.statusText}`);
+        }
       }
     } catch (error) {
       console.error("🚨 Lỗi khi thêm/cập nhật nhân viên:", error);

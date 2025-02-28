@@ -36,6 +36,9 @@ const AccountModal = ({
   handleResetForm,
   handleModalOk,
 }) => {
+  // Thêm hàm kiểm tra xem tài khoản có đang bị khóa không
+  const isLockedAccount = editUser && editUser.status === 0;
+
   return (
     <Modal
       title={editUser ? "Cập nhật tài khoản" : "Thêm tài khoản mới"}
@@ -53,7 +56,11 @@ const AccountModal = ({
               label="User Name"
               rules={[{ required: true, message: "Vui lòng nhập User Name!" }]}
             >
-              <Input prefix={<UserOutlined />} placeholder="Nhập User Name" />
+              <Input 
+                prefix={<UserOutlined />} 
+                placeholder="Nhập User Name" 
+                disabled={isLockedAccount}
+              />
             </Form.Item>
           </Col>
 
@@ -64,7 +71,11 @@ const AccountModal = ({
               label="Họ tên"
               rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
             >
-              <Input prefix={<UserOutlined />} placeholder="Nhập họ tên" />
+              <Input 
+                prefix={<UserOutlined />} 
+                placeholder="Nhập họ tên" 
+                disabled={isLockedAccount}
+              />
             </Form.Item>
           </Col>
 
@@ -73,13 +84,11 @@ const AccountModal = ({
             <Form.Item
               name="phone"
               label="Số điện thoại"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại!" },
-              ]}
             >
               <Input
                 prefix={<PhoneOutlined />}
                 placeholder="Nhập số điện thoại"
+                disabled={isLockedAccount}
               />
             </Form.Item>
           </Col>
@@ -89,15 +98,12 @@ const AccountModal = ({
             <Form.Item
               name="email"
               label="Email"
-              rules={[
-                {
-                  required: true,
-                  type: "email",
-                  message: "Vui lòng nhập email hợp lệ!",
-                },
-              ]}
             >
-              <Input prefix={<MailOutlined />} placeholder="Nhập email" />
+              <Input 
+                prefix={<MailOutlined />} 
+                placeholder="Nhập email" 
+                disabled={isLockedAccount}
+              />
             </Form.Item>
           </Col>
 
@@ -106,9 +112,12 @@ const AccountModal = ({
             <Form.Item
               name="address"
               label="Địa chỉ"
-              rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
             >
-              <Input prefix={<HomeOutlined />} placeholder="Nhập địa chỉ" />
+              <Input 
+                prefix={<HomeOutlined />} 
+                placeholder="Nhập địa chỉ" 
+                disabled={isLockedAccount}
+              />
             </Form.Item>
           </Col>
 
@@ -117,15 +126,12 @@ const AccountModal = ({
             <Form.Item
               name="birthday"
               label="Ngày sinh"
-              rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
             >
               <DatePicker
                 format="DD/MM/YYYY"
                 placeholder="Chọn ngày sinh"
                 style={{ width: "100%" }}
-                disabledDate={(current) =>
-                  current && current > dayjs().endOf("day")
-                }
+                disabled={isLockedAccount}
               />
             </Form.Item>
           </Col>
@@ -135,9 +141,11 @@ const AccountModal = ({
             <Form.Item
               name="gender"
               label="Giới tính"
-              rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
             >
-              <Select placeholder="Chọn giới tính">
+              <Select 
+                placeholder="Chọn giới tính"
+                disabled={isLockedAccount}
+              >
                 <Select.Option value="M">Nam giới</Select.Option>
                 <Select.Option value="F">Nữ giới</Select.Option>
                 <Select.Option value="O">Khác</Select.Option>
@@ -150,7 +158,6 @@ const AccountModal = ({
             <Form.Item
               label="Ảnh đại diện"
               name="image"
-              rules={[{ required: true, message: "Vui lòng chọn ảnh!" }]}
             >
               <Upload
                 beforeUpload={() => false}
@@ -160,6 +167,7 @@ const AccountModal = ({
                 onPreview={onPreview}
                 fileList={FileList}
                 maxCount={1}
+                disabled={isLockedAccount}
               >
                 {FileList.length < 1 && "+ Upload"}
               </Upload>
@@ -175,12 +183,12 @@ const AccountModal = ({
                 valuePropName="checked"
                 initialValue={true}
               >
-                <Checkbox>Đã xác thực</Checkbox>
+                <Checkbox disabled={isLockedAccount}>Đã xác thực</Checkbox>
               </Form.Item>
             </Col>
           )}
 
-          {/* Status */}
+          {/* Status - Luôn cho phép chỉnh sửa */}
           {editUser && (
             <Col xs={24} sm={12}>
               <Form.Item
@@ -188,7 +196,6 @@ const AccountModal = ({
                 label="Trạng thái"
                 valuePropName="checked"
                 initialValue={statusChecked}
-                disabled={!isStatusEditable}
               >
                 <Checkbox onChange={handleStatus}>
                   Tình Trạng Tài khoản
@@ -197,6 +204,7 @@ const AccountModal = ({
             </Col>
           )}
 
+          {/* Lock Reason - Luôn cho phép chỉnh sửa */}
           {editUser && !statusChecked && (
             <Col span={24}>
               <Form.Item
@@ -218,7 +226,7 @@ const AccountModal = ({
             </Col>
           )}
 
-          {/* Xóa lý do khóa Button */}
+          {/* Xóa lý do khóa Button - Luôn cho phép thực hiện */}
           {editUser && editUser.lockReasons?.length > 0 && (
             <Col span={24}>
               <Button
@@ -241,7 +249,10 @@ const AccountModal = ({
                   { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
                 ]}
               >
-                <Input.Password placeholder="Nhập mật khẩu" />
+                <Input.Password 
+                  placeholder="Nhập mật khẩu"
+                  disabled={isLockedAccount}
+                />
               </Form.Item>
             </Col>
           )}
