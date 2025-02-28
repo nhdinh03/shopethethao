@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 
 @Service
 public class UserHistorySSEService {
@@ -23,13 +21,15 @@ public class UserHistorySSEService {
     private final CopyOnWriteArrayList<SseEmitter> adminEmitters = new CopyOnWriteArrayList<>();
     private final ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
 
+    // Tăng tần suất gửi heartbeat lên 5 phút để giữ kết nối
     public UserHistorySSEService() {
-        // Send heartbeat every 30 seconds to keep connections alive
-        heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 0, 30, TimeUnit.SECONDS);
+        // Send heartbeat every 5 minutes to keep connections alive
+        heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 0, 5, TimeUnit.MINUTES);
     }
 
+    // Thay đổi thời gian timeout thành 1 giờ (3600000 milliseconds)
     public SseEmitter createAuthEmitter() {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        SseEmitter emitter = new SseEmitter(3600000L); // 1 hour timeout
         this.authEmitters.add(emitter);
         
         emitter.onCompletion(() -> {
@@ -39,7 +39,8 @@ public class UserHistorySSEService {
         
         emitter.onTimeout(() -> {
             this.authEmitters.remove(emitter);
-            logger.debug("Auth emitter timed out and removed, remaining: {}", authEmitters.size());
+            logger.info("Auth emitter timed out after 1 hour, attempting reconnection...");
+            // Client sẽ tự động kết nối lại khi nhận được timeout
         });
         
         emitter.onError((e) -> {
@@ -56,8 +57,9 @@ public class UserHistorySSEService {
         return emitter;
     }
 
+    // Thay đổi thời gian timeout thành 1 giờ (3600000 milliseconds)
     public SseEmitter createAdminEmitter() {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        SseEmitter emitter = new SseEmitter(3600000L); // 1 hour timeout
         this.adminEmitters.add(emitter);
         
         emitter.onCompletion(() -> {
@@ -67,7 +69,8 @@ public class UserHistorySSEService {
         
         emitter.onTimeout(() -> {
             this.adminEmitters.remove(emitter);
-            logger.debug("Admin emitter timed out and removed, remaining: {}", adminEmitters.size());
+            logger.info("Admin emitter timed out after 1 hour, attempting reconnection...");
+            // Client sẽ tự động kết nối lại khi nhận được timeout
         });
         
         emitter.onError((e) -> {
