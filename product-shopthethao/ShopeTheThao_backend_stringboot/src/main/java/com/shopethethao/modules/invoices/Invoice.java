@@ -37,7 +37,7 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "order_date", nullable = false)
+    @Column(name = "order_date", nullable = false, columnDefinition = "DATETIME DEFAULT GETDATE()")
     private LocalDateTime orderDate;
 
     @Column(name = "address", length = 200)
@@ -45,35 +45,31 @@ public class Invoice {
 
     @Column(name = "status", nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
-    private InvoiceStatus status;
+    private InvoiceStatus status = InvoiceStatus.PENDING;
 
     @Column(name = "note", length = 200)
     private String note;
 
-    @Column(name = "totalAmount", nullable = false, precision = 18, scale = 2)
-    private BigDecimal totalAmount;
+    @Column(name = "total_amount", nullable = false, precision = 18, scale = 2, columnDefinition = "DECIMAL(18,2) DEFAULT 0.00")
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "cancel_reason_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "FK_Invoices_CancelReason"), nullable = true)
+    @JoinColumn(name = "cancel_reason_id", foreignKey = @ForeignKey(name = "FK_Invoices_CancelReason"))
     private CancelReason cancelReason;
     
     @OneToMany(mappedBy = "invoice", fetch = FetchType.LAZY)
     private List<DetailedInvoices> detailedInvoices;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, foreignKey = @ForeignKey(name = "FK_Invoices_User"))
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false, 
+                foreignKey = @ForeignKey(name = "FK_Invoices_User"),
+                columnDefinition = "NVARCHAR(100)")
     private Account user;
 
     @PrePersist
     protected void onCreate() {
-        if (this.orderDate == null) {
-            this.orderDate = LocalDateTime.now();
-        }
-        if (this.status == null) {
-            this.status = InvoiceStatus.PENDING;
-        }
-        if (this.totalAmount == null) {
-            this.totalAmount = BigDecimal.ZERO;
+        if (orderDate == null) {
+            orderDate = LocalDateTime.now();
         }
     }
 }

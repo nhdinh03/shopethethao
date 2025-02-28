@@ -18,9 +18,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.shopethethao.auth.security.jwt.AuthEntryPointJwt;
-import com.shopethethao.auth.security.jwt.AuthTokenFilter;
-import com.shopethethao.auth.security.services.UserDetailsServiceImpl;
+import com.shopethethao.auth.security.jwt.filter.AuthTokenFilter;
+import com.shopethethao.auth.security.jwt.handler.AuthEntryPointJwt;
+import com.shopethethao.auth.security.user.service.UserDetailsServiceImpl;
 
 
 @Configuration
@@ -90,6 +90,8 @@ public class WebSecurityConfig {
         config.setAllowedOrigins(List.of("http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Content-Type", "X-Requested-With", "accept", "Origin", "Access-Control-Request-Method",
+                "Access-Control-Request-Headers", "Last-Event-ID"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

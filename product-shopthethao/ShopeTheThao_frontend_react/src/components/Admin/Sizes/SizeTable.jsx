@@ -6,8 +6,12 @@ import { SearchOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
-const SizeTable = ({ sizeData, handleEditData, handleDelete, loading }) => {
-
+const SizeTable = ({
+  sizeData,
+  handleEditData,
+  handleDelete,
+  loading = false
+}) => {
 
   const columns = [
     {
@@ -38,13 +42,29 @@ const SizeTable = ({ sizeData, handleEditData, handleDelete, loading }) => {
       ),
       onFilter: (value, record) =>
         record.name.toString().toLowerCase().includes(value.toLowerCase()),
-      width: "60%",
+      width: "30%",
+    },
+    {
+      title: "📝 Mô tả",
+      dataIndex: "description",
+      key: "description",
+      width: "30%",
+      render: (text) => (
+        <div style={{ 
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          maxHeight: '100px',
+          overflow: 'auto'
+        }}>
+          {text || '-'}
+        </div>
+      )
     },
     {
       ...ActionColumn(handleEditData, handleDelete),
       width: "25%",
       fixed: 'right'
-    },
+    }
   ];
 
   return (
@@ -67,15 +87,13 @@ SizeTable.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
+      description: PropTypes.string
+      
     })
   ).isRequired,
   handleEditData: PropTypes.func.isRequired,
   handleDelete: PropTypes.func.isRequired,
   loading: PropTypes.bool,
-};
-
-SizeTable.defaultProps = {
-  loading: false,
 };
 
 export default SizeTable;

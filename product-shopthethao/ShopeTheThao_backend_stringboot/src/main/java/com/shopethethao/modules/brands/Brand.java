@@ -29,7 +29,7 @@ public class Brand {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "name", nullable = false, length = 200)
+    @Column(name = "name", nullable = false, length = 200, unique = true)
     private String name;
 
     @Column(name = "phone_number", nullable = false, length = 10)
@@ -38,14 +38,10 @@ public class Brand {
     @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "address")
+    @Column(name = "address", columnDefinition = "NVARCHAR(MAX)")
     private String address;
 
     @JsonIgnore
     @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL)
     private List<StockReceipt> stockReceipts;
-
-    // @JsonIgnore
-    // @OneToMany(mappedBy = "brand")
-    // private List<StockReceipt> stockReceipts
 }

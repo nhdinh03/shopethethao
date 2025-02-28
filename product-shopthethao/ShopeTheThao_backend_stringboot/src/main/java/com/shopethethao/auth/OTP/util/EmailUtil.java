@@ -1,4 +1,4 @@
-package com.shopethethao.auth.OTP.util;
+package com.shopethethao.auth.otp.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;

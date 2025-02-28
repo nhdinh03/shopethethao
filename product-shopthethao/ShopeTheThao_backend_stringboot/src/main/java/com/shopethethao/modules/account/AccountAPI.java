@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,25 +30,32 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.shopethethao.auth.models.SecurityERole;
-import com.shopethethao.auth.payload.request.AccountsUser;
 import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.dto.AccountServiceDTO;
+import com.shopethethao.dto.AccountsUserDto;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
 import com.shopethethao.modules.role.Role;
 import com.shopethethao.modules.role.RoleDAO;
+import com.shopethethao.modules.role.ERole;
+import com.shopethethao.modules.userHistory.UserActionType;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
+import com.shopethethao.service.UserHistoryService;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/accounts")
 public class AccountAPI {
+
+    private static final Logger logger = LoggerFactory.getLogger(AccountAPI.class);
 
     @Autowired
     private AccountDAO accountDao;
@@ -64,6 +75,9 @@ public class AccountAPI {
     @Autowired
     private PasswordEncoder encoder;
 
+    @Autowired
+    private UserHistoryService userHistoryService;
+
     // ✅ Lấy tất cả tài khoản
     @GetMapping("/get/all")
     public ResponseEntity<List<Account>> findAll() {
@@ -81,32 +95,21 @@ public class AccountAPI {
         try {
             int page = pageNo.orElse(1);
             int pageSize = limit.orElse(10);
-            
-            // Convert role name to SecurityERole
-            SecurityERole roleEnum = SecurityERole.fromString(roleName);
-            
-            // Get the role
+            ERole roleEnum = ERole.fromString(roleName);           
             Role role = roleDAO.findByName(roleEnum)
                     .orElseThrow(() -> new RuntimeException("Error: Role " + roleName + " không tìm thấy"));
-            
-            // Sort by multiple fields in descending order
             Sort sort = Sort.by(
                 Sort.Order.desc("createdDate"),
                 Sort.Order.desc("id")
-            );
-            
+            );   
             Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
-            
-            // Find accounts with specified role
             Page<Account> accountPage = accountDao.findByRoles(role, pageable);
             List<Account> accounts = accountPage.getContent();
-            long totalItems = accountPage.getTotalElements();
-            
+            long totalItems = accountPage.getTotalElements();            
             ResponseDTO<Account> responseDTO = new ResponseDTO<>();
             responseDTO.setData(accounts);
             responseDTO.setTotalItems(totalItems);
             responseDTO.setTotalPages(accountPage.getTotalPages());
-    
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -114,12 +117,10 @@ public class AccountAPI {
         }
     }
 
-    // ✅ Lấy tài khoản theo ID
     @Transactional
     @PostMapping
-    public ResponseEntity<?> registerUser(@Valid @RequestBody AccountsUser accountsUser) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody AccountsUserDto accountsUser, HttpServletRequest request) {
         try {
-            // ✅ Kiểm tra xem ID, Email, hoặc Phone có bị trùng không
             boolean exists = accountDao.existsById(accountsUser.getId())
                     || accountDao.existsByEmail(accountsUser.getEmail())
                     || accountDao.existsByPhone(accountsUser.getPhone());
@@ -127,20 +128,15 @@ public class AccountAPI {
             if (exists) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Tài khoản hoặc thông tin đã tồn tại!"));
             }
-
-            // ✅ Tạo tài khoản mới
             Account account = new Account(
                     accountsUser.getId(),
                     accountsUser.getPhone(),
                     accountsUser.getFullname(),
                     accountsUser.getEmail(),
-                    encoder.encode(accountsUser.getPassword())); // Mã hóa mật khẩu
-
+                    encoder.encode(accountsUser.getPassword())); 
             account.setGender(accountsUser.getGender());
             account.setStatus(1);
             account.setCreatedDate(new Date());
-
-            // Handle birthday
             if (accountsUser.getBirthday() != null) {
                 LocalDate localDate = accountsUser.getBirthday();
                 Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -148,125 +144,178 @@ public class AccountAPI {
             } else {
                 account.setBirthday(null);
             }
-
-            account.setVerified(true); // Tự xác thực vì tạo từ admin
+            account.setVerified(true); 
             account.setAddress(accountsUser.getAddress());
-
-            // ✅ Xử lý vai trò (ROLE)
             Set<String> strRoles = accountsUser.getRole();
             Set<Role> roles = new HashSet<>();
-
-            // Nếu không có vai trò nào, gán vai trò mặc định là "USER"
             if (strRoles == null || strRoles.isEmpty()) {
-                Role userRole = roleDAO.findByName(SecurityERole.USER)
+                Role userRole = roleDAO.findByName(ERole.USER)
                         .orElseThrow(() -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò USER"));
-                roles.add(userRole); // Đảm bảo vai trò "USER" được gán khi không có vai trò nào được gửi
+                roles.add(userRole); 
             } else {
-                // Nếu có vai trò, duyệt qua danh sách và gán vai trò
                 for (String role : strRoles) {
                     try {
                         // Chuyển đổi từ String role sang SecurityERole enum
-                        SecurityERole roleEnum = SecurityERole.fromString(role); // Chuyển đổi role string sang enum
+                        ERole roleEnum = ERole.fromString(role);
                         Role roleFromDB = roleDAO.findByName(roleEnum)
                                 .orElseThrow(
                                         () -> new IllegalArgumentException("Lỗi: Không tìm thấy vai trò - " + role));
                         roles.add(roleFromDB);
                     } catch (IllegalArgumentException e) {
-                        // Nếu không tìm thấy vai trò, trả về lỗi
                         return ResponseEntity.badRequest().body(new MessageResponse("Lỗi: " + e.getMessage()));
                     }
                 }
             }
-
-            // Gán vai trò cho tài khoản
             account.setRoles(roles);
-
-            // **✅ LƯU ACCOUNT VÀO DB**
             account = accountDao.save(account);
-
             // Lưu thông tin xác thực cho tài khoản vừa tạo
             account.setImage(accountsUser.getImage());
             Verifications verifications = new Verifications();
-            verifications.setAccount(account); // Thiết lập đối tượng `Account`
+            verifications.setAccount(account); 
             verifications.setCode("ADMIN-VERIFIED");
             verifications.setActive(true);
             verifications.setCreatedAt(LocalDateTime.now());
             verifications.setExpiresAt(LocalDateTime.now().plusYears(10));
-
             verificationDAO.save(verifications);
+            // Create detailed log message
+            StringBuilder rolesStr = new StringBuilder();
+            account.getRoles().forEach(role -> 
+                rolesStr.append("\n  - ").append(role.getName()));
+
+            String logMessage = String.format("""
+                    ADMIN: %s đã tạo tài khoản mới
+                    Chi tiết:
+                    - ID: %s
+                    - Họ tên: %s
+                    - Email: %s
+                    - Số điện thoại: %s
+                    - Vai trò: %s
+                    - Trạng thái: %s
+                    - Địa chỉ: %s""",
+                    getCurrentUserId(),
+                    account.getId(),
+                    account.getFullname(),
+                    account.getEmail(),
+                    account.getPhone(),
+                    rolesStr.toString(),
+                    account.getStatus() == 1 ? "Hoạt động" : "Khóa",
+                    account.getAddress() != null ? account.getAddress() : "Chưa cập nhật"
+            );
+
+            // Log the action
+            userHistoryService.logUserAction(
+                getCurrentUserId(),
+                UserActionType.CREATE_ACCOUNT,
+                logMessage,
+                getClientIp(request),
+                getClientInfo(request)
+            );
 
             return ResponseEntity.ok(new MessageResponse("Người dùng đã đăng ký thành công!"));
-
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         } catch (Exception e) {
+            logger.error("Lỗi khi tạo tài khoản mới: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new MessageResponse("Lỗi hệ thống: " + e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAccount(@PathVariable("id") String id, @RequestBody Account updatedAccount) {
+    public ResponseEntity<?> updateAccount(@PathVariable("id") String id, @RequestBody Account updatedAccount, HttpServletRequest request) {
         try {
-            // Kiểm tra tài khoản tồn tại
-            Optional<Account> existingAccount = accountDao.findById(id);
-            if (existingAccount.isEmpty()) {
+            Optional<Account> existingAccountOpt = accountDao.findById(id);
+            if (existingAccountOpt.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new MessageResponse("Người dùng không tồn tại"));
             }
 
-            // Cập nhật thông tin tài khoản
-            Account account = existingAccount.get();
-            account.setFullname(updatedAccount.getFullname());
-            account.setPhone(updatedAccount.getPhone());
-            account.setEmail(updatedAccount.getEmail());
+            Account account = existingAccountOpt.get();
+            // Track all changes
+            List<String> changes = new ArrayList<>();
+
+            // Check and record changes
+            if (!Objects.equals(account.getFullname(), updatedAccount.getFullname())) {
+                changes.add(String.format("- Họ tên: '%s' -> '%s'", 
+                    account.getFullname(), updatedAccount.getFullname()));
+                account.setFullname(updatedAccount.getFullname());
+            }
+            if (!Objects.equals(account.getPhone(), updatedAccount.getPhone())) {
+                changes.add(String.format("- Số điện thoại: '%s' -> '%s'", 
+                    account.getPhone(), updatedAccount.getPhone()));
+                account.setPhone(updatedAccount.getPhone());
+            }
+            if (!Objects.equals(account.getEmail(), updatedAccount.getEmail())) {
+                changes.add(String.format("- Email: '%s' -> '%s'", 
+                    account.getEmail(), updatedAccount.getEmail()));
+                account.setEmail(updatedAccount.getEmail());
+            }
+            if (!Objects.equals(account.getStatus(), updatedAccount.getStatus())) {
+                changes.add(String.format("- Trạng thái: '%s' -> '%s'", 
+                    account.getStatus() == 1 ? "Hoạt động" : "Khóa",
+                    updatedAccount.getStatus() == 1 ? "Hoạt động" : "Khóa"));
+                account.setStatus(updatedAccount.getStatus());
+            }
+
+            // Update other fields
             account.setAddress(updatedAccount.getAddress());
             account.setBirthday(updatedAccount.getBirthday());
             account.setGender(updatedAccount.getGender());
             account.setImage(updatedAccount.getImage());
-            account.setStatus(updatedAccount.getStatus()); // Cập nhật trạng thái
             account.setVerified(updatedAccount.getVerified());
             account.setPoints(updatedAccount.getPoints());
 
-            // Nếu có mật khẩu mới, mã hóa lại mật khẩu
             if (updatedAccount.getPassword() != null && !updatedAccount.getPassword().isEmpty()) {
                 account.setPassword(encoder.encode(updatedAccount.getPassword()));
+                changes.add("- Mật khẩu: Đã được cập nhật");
             }
 
-            // Lưu lại thay đổi
+            // Save changes
             accountDao.save(account);
 
-            // Nếu trạng thái là khóa (status = 0), lưu lý do khóa
+            // Handle lock reasons if account is locked
             if (updatedAccount.getStatus() == 0) {
-                // Lấy danh sách lý do khóa
                 List<LockReasons> lockReasons = updatedAccount.getLockReasons();
-
                 if (lockReasons != null && !lockReasons.isEmpty()) {
-                    // Lấy lý do khóa từ phần tử đầu tiên (nếu có)
-                    String lockReason = lockReasons.get(0).getReason(); // Giả sử mỗi LockReasons có trường 'reason'
-
+                    String lockReason = lockReasons.get(0).getReason();
                     LockReasons lockReasonEntry = new LockReasons();
-                    lockReasonEntry.setAccount(account); // Gán tài khoản
-                    lockReasonEntry.setReason(lockReason); // Lý do khóa
+                    lockReasonEntry.setAccount(account);
+                    lockReasonEntry.setReason(lockReason);
                     lockReasonEntry.setCreatedAt(new Date());
-
-                    lockReasonsDAO.save(lockReasonEntry); // Lưu lý do khóa
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(new MessageResponse("Lý do khóa không có trong danh sách!"));
+                    lockReasonsDAO.save(lockReasonEntry);
+                    changes.add(String.format("- Lý do khóa: %s", lockReason));
                 }
             }
 
+            // Create single detailed log message
+            String logMessage = String.format("""
+                    ADMIN: %s đã cập nhật tài khoản #%s
+                    Chi tiết thay đổi:
+                    %s""",
+                    getCurrentUserId(),
+                    id,
+                    changes.isEmpty() ? "Không có thay đổi" : String.join("\n", changes));
+
+            // Log the action once
+            userHistoryService.logUserAction(
+                getCurrentUserId(),
+                UserActionType.UPDATE_ACCOUNT,
+                logMessage,
+                getClientIp(request),
+                getClientInfo(request)
+            );
+
             return ResponseEntity.ok(new MessageResponse("Cập nhật tài khoản thành công!"));
         } catch (Exception e) {
+            logger.error("Lỗi khi cập nhật tài khoản {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new MessageResponse("Lỗi hệ thống: " + e.getMessage()));
         }
     }
 
-    // ✅ Xóa tài khoản và LockReasons liên quan
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAccountById(@PathVariable String id) {
+    public ResponseEntity<String> deleteAccountById(@PathVariable String id, HttpServletRequest request) {
         try {
             Optional<Account> account = accountDao.findById(id);
             if (account.isEmpty()) {
@@ -276,14 +325,59 @@ public class AccountAPI {
 
             // Xoá tài khoản và LockReasons liên quan
             Account existingAccount = account.get();
-            // CascadeType.ALL ensures that LockReasons will be deleted as well
-            existingAccount.getLockReasons().clear(); // Clear the associated lock reasons if needed (optional)
+            existingAccount.getLockReasons().clear(); 
 
-            accountService.deleteAccount(id); // Call deleteAccount method from AccountService
+            accountService.deleteAccount(id); 
+
+            // Create detailed log message before deletion
+            String logMessage = String.format("""
+                    ADMIN: %s đã xóa tài khoản
+                    Chi tiết tài khoản đã xóa:
+                    - ID: %s
+                    - Họ tên: %s
+                    - Email: %s
+                    - Số điện thoại: %s""",
+                    getCurrentUserId(),
+                    existingAccount.getId(),
+                    existingAccount.getFullname(),
+                    existingAccount.getEmail(),
+                    existingAccount.getPhone()
+            );
+
+            // Log the action
+            userHistoryService.logUserAction(
+                getCurrentUserId(),
+                UserActionType.DELETE_ACCOUNT,
+                logMessage,
+                getClientIp(request),
+                getClientInfo(request)
+            );
+
             return ResponseEntity.ok("Tài khoản và vai trò đã được xóa thành công.");
         } catch (Exception e) {
+            logger.error("Lỗi khi xóa tài khoản {}: {}", id, e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi hệ thống, vui lòng thử lại sau.");
         }
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            return authentication.getName();
+        }
+        return null;
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String xfHeader = request.getHeader("X-Forwarded-For");
+        if (xfHeader == null) {
+            return request.getRemoteAddr();
+        }
+        return xfHeader.split(",")[0];
+    }
+
+    private String getClientInfo(HttpServletRequest request) {
+        return request.getHeader("User-Agent");
     }
 }

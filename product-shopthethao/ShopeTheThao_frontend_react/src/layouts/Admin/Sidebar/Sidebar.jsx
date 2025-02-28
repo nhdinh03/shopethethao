@@ -24,7 +24,6 @@ function Sidebar({ onClose }) {
       "/admin/categories": "grProducts", // Danh mục sản phẩm
       // "/admin/productsizes": "grProducts", // Nhãn hàng
 
-
       "/admin/suppliers": "grSuppliers", // Nhà cung cấp
       "/admin/brands": "grSuppliers", // Nhãn hàng
       "/admin/stock-receipts": "grSuppliers", // Phiếu nhập kho
@@ -41,6 +40,8 @@ function Sidebar({ onClose }) {
       "/admin/statistics-documents": "grStatistics", // Tài liệu thống kê
       "/admin/charts": "grStatistics", // Biểu đồ thống kê
       "/admin/verification": "grStatistics", // Biểu đồ thống kê
+
+      "/admin/userhistory": "grStatistics", // hoạt động
     };
     return parentMap[key];
   };
@@ -75,7 +76,10 @@ function Sidebar({ onClose }) {
     getItem(
       <span className="menu-group">Quản Lý Sản Phẩm</span>,
       "grProducts",
-      <FontAwesomeIcon icon={solidIcons.faBoxOpen} className="menu-icon product-icon" />,
+      <FontAwesomeIcon
+        icon={solidIcons.faBoxOpen}
+        className="menu-icon product-icon"
+      />,
       [
         getItem(
           <Link to="/admin/product" onClick={onClose}>
@@ -89,7 +93,10 @@ function Sidebar({ onClose }) {
             <span className="menu-item-label">Phân loại</span>
           </Link>,
           "/admin/categories",
-          <FontAwesomeIcon icon={solidIcons.faLayerGroup} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faLayerGroup}
+            className="submenu-icon"
+          />
         ),
         getItem(
           <Link to="/admin/sizes" onClick={onClose}>
@@ -105,14 +112,20 @@ function Sidebar({ onClose }) {
     getItem(
       <span className="menu-group">Đặc Trưng Sản Phẩm</span>,
       "grDistinctives",
-      <FontAwesomeIcon icon={solidIcons.faTags} className="menu-icon feature-icon" />,
+      <FontAwesomeIcon
+        icon={solidIcons.faTags}
+        className="menu-icon feature-icon"
+      />,
       [
         getItem(
           <Link to="/admin/product-attributes" onClick={onClose}>
             <span className="menu-item-label">Thuộc tính</span>
           </Link>,
           "/admin/product-attributes",
-          <FontAwesomeIcon icon={solidIcons.faListAlt} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faListAlt}
+            className="submenu-icon"
+          />
         ),
       ]
     ),
@@ -121,28 +134,40 @@ function Sidebar({ onClose }) {
     getItem(
       <span className="menu-group">Quản Lý Nhà Cung Cấp</span>,
       "grSuppliers",
-      <FontAwesomeIcon icon={solidIcons.faHandshake} className="menu-icon supplier-icon" />,
+      <FontAwesomeIcon
+        icon={solidIcons.faHandshake}
+        className="menu-icon supplier-icon"
+      />,
       [
         getItem(
           <Link to="/admin/suppliers" onClick={onClose}>
             <span className="menu-item-label">Danh sách nhà cung cấp</span>
           </Link>,
           "/admin/suppliers",
-          <FontAwesomeIcon icon={solidIcons.faBuilding} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faBuilding}
+            className="submenu-icon"
+          />
         ),
         getItem(
           <Link to="/admin/brands" onClick={onClose}>
             <span className="menu-item-label">Thương hiệu</span>
           </Link>,
           "/admin/brands",
-          <FontAwesomeIcon icon={solidIcons.faTrademark} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faTrademark}
+            className="submenu-icon"
+          />
         ),
         getItem(
           <Link to="/admin/stock-receipts" onClick={onClose}>
             <span className="menu-item-label">Nhập kho</span>
           </Link>,
           "/admin/stock-receipts",
-          <FontAwesomeIcon icon={solidIcons.faClipboardList} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faClipboardList}
+            className="submenu-icon"
+          />
         ),
       ]
     ),
@@ -151,21 +176,30 @@ function Sidebar({ onClose }) {
     getItem(
       <span className="menu-group">Quản Lý Bán Hàng</span>,
       "grInvoices",
-      <FontAwesomeIcon icon={solidIcons.faShoppingCart} className="menu-icon sales-icon" />,
+      <FontAwesomeIcon
+        icon={solidIcons.faShoppingCart}
+        className="menu-icon sales-icon"
+      />,
       [
         getItem(
           <Link to="/admin/invoices" onClick={onClose}>
             <span className="menu-item-label">Hóa đơn bán</span>
           </Link>,
           "/admin/invoices",
-          <FontAwesomeIcon icon={solidIcons.faFileInvoiceDollar} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faFileInvoiceDollar}
+            className="submenu-icon"
+          />
         ),
         getItem(
           <Link to="/admin/detailed-invoices" onClick={onClose}>
             <span className="menu-item-label">Chi tiết bán hàng</span>
           </Link>,
           "/admin/detailed-invoices",
-          <FontAwesomeIcon icon={solidIcons.faReceipt} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faReceipt}
+            className="submenu-icon"
+          />
         ),
       ]
     ),
@@ -174,30 +208,41 @@ function Sidebar({ onClose }) {
     getItem(
       <span className="menu-group">Quản Lý Tài Khoản</span>,
       "grAccounts",
-      <FontAwesomeIcon icon={solidIcons.faUsers} className="menu-icon user-icon" />,
+      <FontAwesomeIcon
+        icon={solidIcons.faUsers}
+        className="menu-icon user-icon"
+      />,
       [
         getItem(
           <Link to="/admin/roles" onClick={onClose}>
             <span className="menu-item-label">Phân quyền</span>
           </Link>,
           "/admin/roles",
-          <FontAwesomeIcon icon={solidIcons.faUserShield} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faUserShield}
+            className="submenu-icon"
+          />
         ),
         getItem(
           <Link to="/admin/accountStaff" onClick={onClose}>
             <span className="menu-item-label">Nhân viên</span>
           </Link>,
           "/admin/accountStaff",
-          <FontAwesomeIcon icon={solidIcons.faUserTie} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faUserTie}
+            className="submenu-icon"
+          />
         ),
         getItem(
           <Link to="/admin/account" onClick={onClose}>
             <span className="menu-item-label">Khách hàng</span>
           </Link>,
           "/admin/account",
-          <FontAwesomeIcon icon={solidIcons.faUserFriends} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faUserFriends}
+            className="submenu-icon"
+          />
         ),
- 
       ]
     ),
 
@@ -205,28 +250,50 @@ function Sidebar({ onClose }) {
     getItem(
       <span className="menu-group">Thống Kê & Báo Cáo</span>,
       "grStatistics",
-      <FontAwesomeIcon icon={solidIcons.faChartLine} className="menu-icon report-icon" />,
+      <FontAwesomeIcon
+        icon={solidIcons.faChartLine}
+        className="menu-icon report-icon"
+      />,
       [
+        getItem(
+          <Link to="/admin/userhistory" onClick={onClose}>
+            <span className="menu-item-label">Phân tích hoạt động</span>
+          </Link>,
+          "/admin/userhistory",
+          <FontAwesomeIcon
+            icon={solidIcons.faUserClock}
+            className="submenu-icon"
+          />
+        ),
         getItem(
           <Link to="/admin/verification" onClick={onClose}>
             <span className="menu-item-label">Thống kê tài khoản</span>
           </Link>,
           "/admin/verification",
-          <FontAwesomeIcon icon={solidIcons.faChartBar} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faChartBar}
+            className="submenu-icon"
+          />
         ),
         getItem(
           <Link to="/admin/statistics-documents" onClick={onClose}>
             <span className="menu-item-label">Báo cáo thống kê</span>
           </Link>,
           "/admin/statistics-documents",
-          <FontAwesomeIcon icon={solidIcons.faFileLines} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faFileLines}
+            className="submenu-icon"
+          />
         ),
         getItem(
           <Link to="/admin/charts" onClick={onClose}>
             <span className="menu-item-label">Biểu đồ phân tích</span>
           </Link>,
           "/admin/charts",
-          <FontAwesomeIcon icon={solidIcons.faChartPie} className="submenu-icon" />
+          <FontAwesomeIcon
+            icon={solidIcons.faChartPie}
+            className="submenu-icon"
+          />
         ),
       ]
     ),

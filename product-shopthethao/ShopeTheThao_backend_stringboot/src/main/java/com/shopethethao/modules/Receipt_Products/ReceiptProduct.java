@@ -48,7 +48,7 @@ public class ReceiptProduct {
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalAmount;
+    @Column(name = "total_amount", insertable = false, updatable = false)
+    private BigDecimal total_amount;
 
 }

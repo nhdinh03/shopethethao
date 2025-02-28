@@ -1,4 +1,4 @@
-package com.shopethethao.auth.OTP.config;
+package com.shopethethao.auth.otp.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

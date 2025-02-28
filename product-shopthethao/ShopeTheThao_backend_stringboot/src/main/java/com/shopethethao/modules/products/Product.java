@@ -39,12 +39,14 @@ public class Product {
     private Integer id;
 
     private String name;
+
     private int quantity;
 
     @Column(precision = 18, scale = 2)
     private BigDecimal price;
 
     private String description;
+    
     private Boolean status;
 
     @ManyToOne

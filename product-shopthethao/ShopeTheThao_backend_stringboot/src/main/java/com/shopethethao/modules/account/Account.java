@@ -1,19 +1,13 @@
 package com.shopethethao.modules.account;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.shopethethao.auth.models.Gender;
 import com.shopethethao.modules.accountRole.AccountRole;
 import com.shopethethao.modules.comments.Comment;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.role.Role;
+import com.shopethethao.modules.userHistory.UserHistory;
 import com.shopethethao.modules.verification.Verifications;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,9 +22,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.ArrayList;
 
 
 @Entity
@@ -101,6 +100,10 @@ public class Account {
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<LockReasons> lockReasons;
+
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<UserHistory> userHistories = new ArrayList<>();
 
     public Account(String id, String phone, String fullname, String email, String password) {
         this.id = id;

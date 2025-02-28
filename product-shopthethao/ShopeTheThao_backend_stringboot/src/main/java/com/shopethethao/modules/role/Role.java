@@ -3,7 +3,6 @@ package com.shopethethao.modules.role;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.shopethethao.auth.models.SecurityERole;
 import com.shopethethao.modules.accountRole.AccountRole;
 
 import jakarta.persistence.CascadeType;
@@ -34,7 +33,7 @@ public class Role {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "name", nullable = false, unique = true, length = 20)
-    private SecurityERole name;
+    private ERole name;
 
     @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;

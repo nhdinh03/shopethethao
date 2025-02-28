@@ -1,4 +1,4 @@
-package com.shopethethao.auth.OTP.util;
+package com.shopethethao.auth.otp.util;
 
 import com.shopethethao.auth.payload.response.MessageResponse;
 import org.springframework.http.HttpStatus;

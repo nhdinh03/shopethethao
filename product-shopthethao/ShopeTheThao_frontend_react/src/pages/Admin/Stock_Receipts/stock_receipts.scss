@@ -61,4 +61,12 @@
   .ant-table-cell {
     padding: 12px; /* Tăng khoảng cách trong các ô */
   }
+  .product-row .ant-form-item-has-error .ant-input-number {
+    border-color: #ff4d4f;
+  }
   
+  .product-row .ant-form-item-explain-error {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 4px;
+  }

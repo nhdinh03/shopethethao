@@ -1,4 +1,4 @@
-package com.shopethethao.auth.OTP.util;
+package com.shopethethao.auth.otp.util;
 
 public class AccountLockedException extends RuntimeException {
     public AccountLockedException(String message) {

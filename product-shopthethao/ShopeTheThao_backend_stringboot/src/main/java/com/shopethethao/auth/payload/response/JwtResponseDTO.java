@@ -3,7 +3,7 @@ package com.shopethethao.auth.payload.response;
 import java.util.Date;
 import java.util.List;
 
-import com.shopethethao.auth.models.Gender;
+import com.shopethethao.modules.account.Gender;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,10 +27,11 @@ public class JwtResponseDTO {
   private List<String> roles;
   private String token;
   private String type = "Bearer";
+  private String refreshToken; // Thêm trường này
 
   public JwtResponseDTO(String id, String phone, String fullname, String email,
       String address, Date birthday, String gender, // ✅ Chấp nhận String
-      String image, String accessToken, String type, List<String> roles) {
+      String image, String accessToken, String refreshToken, String type, List<String> roles) {
     this.id = id;
     this.phone = phone;
     this.fullname = fullname;
@@ -44,6 +45,16 @@ public class JwtResponseDTO {
     this.roles = roles;
     this.token = accessToken;
     this.type = type;
+    this.refreshToken = refreshToken;
+  }
+
+  // Thêm getter/setter cho refreshToken
+  public String getRefreshToken() {
+    return refreshToken;
+  }
+
+  public void setRefreshToken(String refreshToken) {
+    this.refreshToken = refreshToken;
   }
 
 }

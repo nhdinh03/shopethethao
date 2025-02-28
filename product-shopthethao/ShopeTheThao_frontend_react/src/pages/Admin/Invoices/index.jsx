@@ -25,19 +25,28 @@ import {
   faTruck,
   faBan,
 } from "@fortawesome/free-solid-svg-icons";
-import { PlusOutlined } from "@ant-design/icons";
+
 import {
   UserOutlined,
   CalendarOutlined,
   HomeOutlined,
   TagOutlined,
   ShoppingOutlined,
+  EyeOutlined,
+  CheckOutlined,
+  StopOutlined,
+  UndoOutlined,
+  ClockCircleOutlined,
+  SyncOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import { Col, Row as AntRow, Divider, Statistic } from "antd";
 
 import moment from "moment";
 import { invoicesApi } from "api/Admin";
 import cancelReasonApi from "api/Admin/cancelReason/CancelReasonApi";
+import PaginationComponent from "components/PaginationComponent";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -55,6 +64,49 @@ const Invoices = () => {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [cancelReasons, setCancelReasons] = useState([]); // Add this state
 
+  // Separate pagination states for each tab
+  const [pendingPagination, setPendingPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    totalItems: 0
+  });
+
+  const [shippingPagination, setShippingPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    totalItems: 0
+  });
+
+  const [deliveredPagination, setDeliveredPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    totalItems: 0
+  });
+
+  const [cancelledPagination, setCancelledPagination] = useState({
+    currentPage: 1,
+    pageSize: 5,
+    totalItems: 0
+  });
+
+  // Handle page size change for each tab
+  const handlePageSizeChange = (value, type) => {
+    switch (type) {
+      case 'pending':
+        setPendingPagination(prev => ({ ...prev, pageSize: value, currentPage: 1 }));
+        break;
+      case 'shipping':
+        setShippingPagination(prev => ({ ...prev, pageSize: value, currentPage: 1 }));
+        break;
+      case 'delivered':
+        setDeliveredPagination(prev => ({ ...prev, pageSize: value, currentPage: 1 }));
+        break;
+      case 'cancelled':
+        setCancelledPagination(prev => ({ ...prev, pageSize: value, currentPage: 1 }));
+        break;
+    }
+  };
+
   // Form instances
   const [updateForm] = Form.useForm();
 
@@ -62,6 +114,87 @@ const Invoices = () => {
     fetchInvoices();
     fetchCancelReasons(); // Add this call
   }, []);
+
+  useEffect(() => {
+    const fetchPendingInvoices = async () => {
+      setLoading(true);
+      try {
+        const response = await invoicesApi.getPending(
+          pendingPagination.currentPage,
+          pendingPagination.pageSize
+        );
+        setPendingInvoices(response.data);
+        setPendingPagination(prev => ({ ...prev, totalItems: response.totalItems }));
+      } catch (error) {
+        message.error("Không thể tải dữ liệu hóa đơn chờ xử lý!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPendingInvoices();
+  }, [pendingPagination.currentPage, pendingPagination.pageSize]);
+
+  // Similar useEffects for other statuses
+  useEffect(() => {
+    const fetchShippingInvoices = async () => {
+      setLoading(true);
+      try {
+        const response = await invoicesApi.getShipping(
+          shippingPagination.currentPage,
+          shippingPagination.pageSize
+        );
+        setShippingInvoices(response.data);
+        setShippingPagination(prev => ({ ...prev, totalItems: response.totalItems }));
+      } catch (error) {
+        message.error("Không thể tải dữ liệu hóa đơn đang giao!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShippingInvoices();
+  }, [shippingPagination.currentPage, shippingPagination.pageSize]);
+
+  useEffect(() => {
+    const fetchDeliveredInvoices = async () => {
+      setLoading(true);
+      try {
+        const response = await invoicesApi.getDelivered(
+          deliveredPagination.currentPage,
+          deliveredPagination.pageSize
+        );
+        setDeliveredInvoices(response.data);
+        setDeliveredPagination(prev => ({ ...prev, totalItems: response.totalItems }));
+      } catch (error) {
+        message.error("Không thể tải dữ liệu hóa đơn đã giao!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeliveredInvoices();
+  }, [deliveredPagination.currentPage, deliveredPagination.pageSize]);
+
+  useEffect(() => {
+    const fetchCancelledInvoices = async () => {
+      setLoading(true);
+      try {
+        const response = await invoicesApi.getCancelled(
+          cancelledPagination.currentPage,
+          cancelledPagination.pageSize
+        );
+        setCancelledInvoices(response.data);
+        setCancelledPagination(prev => ({ ...prev, totalItems: response.totalItems }));
+      } catch (error) {
+        message.error("Không thể tải dữ liệu hóa đơn đã hủy!");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCancelledInvoices();
+  }, [cancelledPagination.currentPage, cancelledPagination.pageSize]);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -265,175 +398,206 @@ const Invoices = () => {
     </Modal>
   );
 
-  // Các cột cho bảng trạng thái PENDING
-  const columnsPending = [
-    { title: "Mã hóa đơn", dataIndex: "invoiceId", key: "invoiceId" },
-    { title: "Ngày đặt hàng", dataIndex: "orderDate", key: "orderDate" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
-    { title: "Tên khách hàng", dataIndex: "customerName", key: "customerName" },
-    {
-      title: "Giá đơn hàng",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (value) => {
-        return new Intl.NumberFormat("vi-VN", {
+  // Common column configurations
+const commonColumns = {
+  invoiceId: {
+    title: "Mã hóa đơn",
+    dataIndex: "invoiceId",
+    key: "invoiceId",
+    width: 150,
+    render: (id) => (
+      <Tag color="blue" style={{ fontSize: '14px', padding: '4px 8px' }}>
+        {id}
+      </Tag>
+    ),
+  },
+  orderDate: {
+    title: "Ngày đặt hàng",
+    dataIndex: "orderDate",
+    key: "orderDate",
+    width: 180,
+    render: (date) => (
+      <span>
+        <CalendarOutlined style={{ marginRight: 8 }} />
+        {moment(date).format("DD/MM/YYYY HH:mm")}
+      </span>
+    ),
+  },
+  status: {
+    title: "Trạng thái",
+    dataIndex: "status",
+    key: "status",
+    width: 150,
+    render: (status) => {
+      const statusConfig = {
+        "Chờ xử lý": { color: "gold", icon: <ClockCircleOutlined /> },
+        "Đang giao hàng": { color: "processing", icon: <SyncOutlined spin /> },
+        "Đã giao hàng": { color: "success", icon: <CheckCircleOutlined /> },
+        "Đã hủy": { color: "error", icon: <CloseCircleOutlined /> },
+      };
+      const config = statusConfig[status] || { color: "default", icon: null };
+      return (
+        <Tag color={config.color} icon={config.icon}>
+          {status}
+        </Tag>
+      );
+    },
+  },
+  customerName: {
+    title: "Tên khách hàng",
+    dataIndex: "customerName",
+    key: "customerName",
+    width: 200,
+    render: (name) => (
+      <span>
+        <UserOutlined style={{ marginRight: 8 }} />
+        {name}
+      </span>
+    ),
+  },
+  totalAmount: {
+    title: "Giá đơn hàng",
+    dataIndex: "totalAmount",
+    key: "totalAmount",
+    width: 180,
+    align: 'right',
+    render: (value) => (
+      <Text strong style={{ color: '#f50' }}>
+        {new Intl.NumberFormat("vi-VN", {
           style: "currency",
           currency: "VND",
-        }).format(value);
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => DetailedInvoices(record.invoiceId)}
-            className="add-btn"
-          >
-            Xem chi tiết
-          </Button>
-          <Tooltip title="Xác nhận đơn">
-            <Button
-              type="primary"
-              icon={<FontAwesomeIcon icon={faCheckCircle} />}
-              onClick={() => handleStatusUpdate(record.invoiceId, "SHIPPING")}
-            >
-              Xác nhận đơn
-            </Button>
-          </Tooltip>
-          <Tooltip title="Hủy đơn">
-            <Button
-              type="danger"
-              icon={<FontAwesomeIcon icon={faBan} />}
-              onClick={() => handleStatusUpdate(record.invoiceId, "CANCELLED")}
-              disabled={record.status === "CANCELLED"} // Disable nếu đơn đã bị hủy
-            >
-              Hủy đơn
-            </Button>
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
+        }).format(value)}
+      </Text>
+    ),
+  },
+};
 
-  // Các cột cho bảng trạng thái SHIPPING
-  const columnsShipping = [
-    { title: "Mã hóa đơn", dataIndex: "invoiceId", key: "invoiceId" },
-    { title: "Ngày đặt hàng", dataIndex: "orderDate", key: "orderDate" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
-    { title: "Tên khách hàng", dataIndex: "customerName", key: "customerName" },
-    {
-      title: "Giá đơn hàng",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (value) => {
-        return new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(value);
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => DetailedInvoices(record.invoiceId)}
-            className="add-btn"
-          >
-            Xem chi tiết
-          </Button>
-          <Tooltip title="Xác nhận giao hàng">
-            <Button
-              type="default"
-              icon={<FontAwesomeIcon icon={faTruck} />}
-              onClick={() => handleStatusUpdate(record.invoiceId, "DELIVERED")}
-            >
-              Xác nhận giao
-            </Button>
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
+// Enhanced action buttons with consistent styling
+const getActionButtons = (record, type) => {
+  const viewDetailsButton = (
+    <Button
+      key="view"
+      type="primary"
+      icon={<EyeOutlined />}
+      onClick={() => DetailedInvoices(record.invoiceId)}
+      style={{ background: '#1890ff' }}
+    >
+      Chi tiết
+    </Button>
+  );
 
-  // Các cột cho bảng trạng thái DELIVERED
-  const columnsDelivered = [
-    { title: "Mã hóa đơn", dataIndex: "invoiceId", key: "invoiceId" },
-    { title: "Ngày đặt hàng", dataIndex: "orderDate", key: "orderDate" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
-    { title: "Tên khách hàng", dataIndex: "customerName", key: "customerName" },
-    // { title: "Chi tiết đơn hàng", dataIndex: "customerName", key: "customerName" },
-    {
-      title: "Giá đơn hàng",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (value) => {
-        return new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(value);
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => DetailedInvoices(record.invoiceId)}
-            className="add-btn"
-          >
-            Xem chi tiết
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+  const actionButtons = {
+    pending: [
+      viewDetailsButton,
+      <Button
+        key="confirm"
+        type="primary"
+        icon={<CheckOutlined />}
+        onClick={() => handleStatusUpdate(record.invoiceId, "SHIPPING")}
+        style={{ background: '#52c41a' }}
+      >
+        Xác nhận
+      </Button>,
+      <Button
+        key="cancel"
+        danger
+        icon={<StopOutlined />}
+        onClick={() => handleStatusUpdate(record.invoiceId, "CANCELLED")}
+        disabled={record.status === "CANCELLED"}
+      >
+        Hủy đơn
+      </Button>
+    ],
+    shipping: [
+      viewDetailsButton,
+      <Button
+        key="deliver"
+        type="primary"
+        icon={<FontAwesomeIcon icon={faTruck} />}
+        onClick={() => handleStatusUpdate(record.invoiceId, "DELIVERED")}
+        style={{ background: '#13c2c2' }}
+      >
+        Xác nhận giao
+      </Button>
+    ],
+    delivered: [viewDetailsButton],
+    cancelled: [
+      viewDetailsButton,
+      <Button
+        key="restore"
+        type="primary"
+        icon={<UndoOutlined />}
+        onClick={() => updateInvoiceStatus(record.invoiceId, "PENDING")}
+        style={{ background: '#722ed1' }}
+      >
+        Khôi phục
+      </Button>
+    ]
+  };
 
-  // Các cột cho bảng trạng thái CANCELLED
-  const columnsCancelled = [
-    { title: "Mã hóa đơn", dataIndex: "invoiceId", key: "invoiceId" },
-    { title: "Ngày đặt hàng", dataIndex: "orderDate", key: "orderDate" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
-    { title: "Tên khách hàng", dataIndex: "customerName", key: "customerName" },
-    {
-      title: "Giá đơn hàng",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
-      render: (value) => {
-        return new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(value);
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Khôi phục đơn">
-            <Button
-              type="primary"
-              icon={<FontAwesomeIcon icon={faCheckCircle} />}
-              onClick={() => updateInvoiceStatus(record.invoiceId, "PENDING")}
-            >
-              Khôi phục
-            </Button>
-          </Tooltip>
-        </Space>
-      ),
-    },
-  ];
+  return (
+    <Space size="middle">
+      {actionButtons[type]}
+    </Space>
+  );
+};
+
+// Updated column definitions
+const columnsPending = [
+  commonColumns.invoiceId,
+  commonColumns.orderDate,
+  commonColumns.status,
+  commonColumns.customerName,
+  commonColumns.totalAmount,
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 300,
+    render: (_, record) => getActionButtons(record, 'pending'),
+  },
+];
+
+const columnsShipping = [
+  commonColumns.invoiceId,
+  commonColumns.orderDate,
+  commonColumns.status,
+  commonColumns.customerName,
+  commonColumns.totalAmount,
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 250,
+    render: (_, record) => getActionButtons(record, 'shipping'),
+  },
+];
+
+const columnsDelivered = [
+  commonColumns.invoiceId,
+  commonColumns.orderDate,
+  commonColumns.status,
+  commonColumns.customerName,
+  commonColumns.totalAmount,
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 120,
+    render: (_, record) => getActionButtons(record, 'delivered'),
+  },
+];
+
+const columnsCancelled = [
+  commonColumns.invoiceId,
+  commonColumns.orderDate,
+  commonColumns.status,
+  commonColumns.customerName,
+  commonColumns.totalAmount,
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 250,
+    render: (_, record) => getActionButtons(record, 'cancelled'),
+  },
+];
 
   // Define tab items with the recommended format
   const items = [
@@ -441,56 +605,164 @@ const Invoices = () => {
       key: "1",
       label: "Chờ xử lý",
       children: (
-        <Table
-          loading={loading}
-          columns={columnsPending}
-          dataSource={pendingInvoices.map((item, index) => ({
-            ...item,
-            key: item.id || index,
-          }))}
-        />
+        <>
+          <Table
+            loading={loading}
+            columns={columnsPending}
+            dataSource={pendingInvoices.map((item, index) => ({
+              ...item,
+              key: item.id || index,
+            }))}
+            pagination={false}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 10,
+              gap: 10,
+            }}
+          >
+            <PaginationComponent
+              totalPages={Math.ceil(pendingPagination.totalItems / pendingPagination.pageSize)}
+              currentPage={pendingPagination.currentPage}
+              setCurrentPage={(page) => setPendingPagination(prev => ({ ...prev, currentPage: page }))}
+            />
+            <Select
+              value={pendingPagination.pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={(value) => handlePageSizeChange(value, 'pending')}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+              <Select.Option value={50}>50 hàng</Select.Option>
+            </Select>
+          </div>
+        </>
       ),
     },
     {
       key: "2",
       label: "Đang giao hàng",
       children: (
-        <Table
-          loading={loading}
-          columns={columnsShipping}
-          dataSource={shippingInvoices.map((item, index) => ({
-            ...item,
-            key: item.id || index,
-          }))}
-        />
+        <>
+          <Table
+            loading={loading}
+            columns={columnsShipping}
+            dataSource={shippingInvoices.map((item, index) => ({
+              ...item,
+              key: item.id || index,
+            }))}
+            pagination={false}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 10,
+              gap: 10,
+            }}
+          >
+            <PaginationComponent
+              totalPages={Math.ceil(shippingPagination.totalItems / shippingPagination.pageSize)}
+              currentPage={shippingPagination.currentPage}
+              setCurrentPage={(page) => setShippingPagination(prev => ({ ...prev, currentPage: page }))}
+            />
+            <Select
+              value={shippingPagination.pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={(value) => handlePageSizeChange(value, 'shipping')}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+              <Select.Option value={50}>50 hàng</Select.Option>
+            </Select>
+          </div>
+        </>
       ),
     },
     {
       key: "3",
       label: "Đã giao hàng",
       children: (
-        <Table
-          loading={loading}
-          columns={columnsDelivered}
-          dataSource={deliveredInvoices.map((item, index) => ({
-            ...item,
-            key: item.id || index,
-          }))}
-        />
+        <>
+          <Table
+            loading={loading}
+            columns={columnsDelivered}
+            dataSource={deliveredInvoices.map((item, index) => ({
+              ...item,
+              key: item.id || index,
+            }))}
+            pagination={false}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 10,
+              gap: 10,
+            }}
+          >
+            <PaginationComponent
+              totalPages={Math.ceil(deliveredPagination.totalItems / deliveredPagination.pageSize)}
+              currentPage={deliveredPagination.currentPage}
+              setCurrentPage={(page) => setDeliveredPagination(prev => ({ ...prev, currentPage: page }))}
+            />
+            <Select
+              value={deliveredPagination.pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={(value) => handlePageSizeChange(value, 'delivered')}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+              <Select.Option value={50}>50 hàng</Select.Option>
+            </Select>
+          </div>
+        </>
       ),
     },
     {
       key: "4",
       label: "Đã hủy",
       children: (
-        <Table
-          loading={loading}
-          columns={columnsCancelled}
-          dataSource={cancelledInvoices.map((item, index) => ({
-            ...item,
-            key: item.id || index,
-          }))}
-        />
+        <>
+          <Table
+            loading={loading}
+            columns={columnsCancelled}
+            dataSource={cancelledInvoices.map((item, index) => ({
+              ...item,
+              key: item.id || index,
+            }))}
+            pagination={false}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: 10,
+              gap: 10,
+            }}
+          >
+            <PaginationComponent
+              totalPages={Math.ceil(cancelledPagination.totalItems / cancelledPagination.pageSize)}
+              currentPage={cancelledPagination.currentPage}
+              setCurrentPage={(page) => setCancelledPagination(prev => ({ ...prev, currentPage: page }))}
+            />
+            <Select
+              value={cancelledPagination.pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={(value) => handlePageSizeChange(value, 'cancelled')}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+              <Select.Option value={50}>50 hàng</Select.Option>
+            </Select>
+          </div>
+        </>
       ),
     },
   ];

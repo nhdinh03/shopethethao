@@ -506,7 +506,7 @@ const AccountStaff = () => {
         />
         <Select
           value={pageSize}
-          style={{ width: 120 }}
+          style={{ width: 120, marginTop: 20 }}
           onChange={handlePageSizeChange}
         >
           <Select.Option value={5}>5 hàng</Select.Option>

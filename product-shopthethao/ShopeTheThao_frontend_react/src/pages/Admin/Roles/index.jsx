@@ -21,6 +21,7 @@ import { useRolesManagement } from "hooks/useRolesManagement";
 import PaginationComponent from "components/PaginationComponent";
 import "..//index.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
+import { useAvailableRoles } from 'hooks/useAvailableRoles';
 
 const Roles = () => {
   const [open, setOpen] = useState(false);
@@ -39,6 +40,8 @@ const Roles = () => {
     updateRole,
     deleteRole
   } = useRolesManagement();
+
+  const availableRoles = useAvailableRoles(roles);
 
   const handleEditData = (role) => {
     setEditRole(role);
@@ -66,10 +69,13 @@ const Roles = () => {
       if (success) {
         setOpen(false);
         handleResetForm();
+        // message.success(editRole ? 'Cập nhật vai trò thành công!' : 'Thêm vai trò mới thành công!');
       }
     } catch (error) {
       if (error.response?.data) {
-        message.error(error.response.data);
+        // message.error(error.response.data);
+      } else {
+        message.error('Có lỗi xảy ra, vui lòng thử lại!');
       }
     }
   };
@@ -118,12 +124,15 @@ const Roles = () => {
                 }
               ]}
             >
-              <Select placeholder="Chọn Vai trò">
-                <Select.Option value="ADMIN">ADMIN</Select.Option>
-                <Select.Option value="USER">USER</Select.Option>
-                <Select.Option value="MANAGER">MANAGER</Select.Option>
-                <Select.Option value="SUPPLIER">SUPPLIER</Select.Option>
-                <Select.Option value="STAFF">STAFF</Select.Option>
+              <Select 
+                placeholder="Chọn Vai trò"
+                disabled={!availableRoles.length && !editRole}
+              >
+                {(editRole ? [editRole.name] : availableRoles).map(role => (
+                  <Select.Option key={role} value={role}>
+                    {role}
+                  </Select.Option>
+                ))}
               </Select>
             </Form.Item>
 

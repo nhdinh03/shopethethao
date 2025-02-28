@@ -1,7 +1,5 @@
 package com.shopethethao.modules.size;
 
-
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,8 +9,6 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
 
 @Entity
 @Table(name = "Sizes")
@@ -28,4 +24,13 @@ public class Size {
     @Column(nullable = false, unique = true)
     private String name; 
 
+    @Column(name = "description")
+    private String description;
+
+    @Override
+    public String toString() {
+        return String.format("Size{id=%d, name='%s'}", 
+            this.getId(), 
+            this.getName());
+    }
 }

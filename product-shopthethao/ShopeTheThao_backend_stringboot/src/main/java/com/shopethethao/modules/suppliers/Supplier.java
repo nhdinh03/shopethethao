@@ -1,5 +1,10 @@
 package com.shopethethao.modules.suppliers;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.shopethethao.modules.stock_receipts.StockReceipt;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,4 +33,8 @@ public class Supplier {
 
     @Column(name = "address")
     private String address;
+
+    // @JsonIgnore
+    // @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
+    // private List<StockReceipt> stockReceipts;
 }
