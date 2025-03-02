@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Modal,
   Form,
@@ -36,8 +36,16 @@ const AccountModal = ({
   handleResetForm,
   handleModalOk,
 }) => {
-  // Thêm hàm kiểm tra xem tài khoản có đang bị khóa không
+  // Add state to track if form should be disabled
+  const [isFormDisabled, setIsFormDisabled] = useState(false);
   const isLockedAccount = editUser && editUser.status === 0;
+
+  // Modify the handleStatusChange wrapper
+  const handleUnlockAndDisable = (lockReasonId) => {
+    handleStatusChange(lockReasonId);
+    setIsFormDisabled(true); // Disable all fields after unlock
+    form.setFieldsValue({ status: true });
+  };
 
   return (
     <Modal
@@ -59,7 +67,7 @@ const AccountModal = ({
               <Input 
                 prefix={<UserOutlined />} 
                 placeholder="Nhập User Name" 
-                disabled={isLockedAccount}
+                disabled={isLockedAccount || isFormDisabled}
               />
             </Form.Item>
           </Col>
@@ -74,7 +82,7 @@ const AccountModal = ({
               <Input 
                 prefix={<UserOutlined />} 
                 placeholder="Nhập họ tên" 
-                disabled={isLockedAccount}
+                disabled={isLockedAccount || isFormDisabled}
               />
             </Form.Item>
           </Col>
@@ -88,7 +96,7 @@ const AccountModal = ({
               <Input
                 prefix={<PhoneOutlined />}
                 placeholder="Nhập số điện thoại"
-                disabled={isLockedAccount}
+                disabled={isLockedAccount || isFormDisabled}
               />
             </Form.Item>
           </Col>
@@ -102,7 +110,7 @@ const AccountModal = ({
               <Input 
                 prefix={<MailOutlined />} 
                 placeholder="Nhập email" 
-                disabled={isLockedAccount}
+                disabled={isLockedAccount || isFormDisabled}
               />
             </Form.Item>
           </Col>
@@ -116,7 +124,7 @@ const AccountModal = ({
               <Input 
                 prefix={<HomeOutlined />} 
                 placeholder="Nhập địa chỉ" 
-                disabled={isLockedAccount}
+                disabled={isLockedAccount || isFormDisabled}
               />
             </Form.Item>
           </Col>
@@ -131,7 +139,7 @@ const AccountModal = ({
                 format="DD/MM/YYYY"
                 placeholder="Chọn ngày sinh"
                 style={{ width: "100%" }}
-                disabled={isLockedAccount}
+                disabled={isLockedAccount || isFormDisabled}
               />
             </Form.Item>
           </Col>
@@ -144,7 +152,7 @@ const AccountModal = ({
             >
               <Select 
                 placeholder="Chọn giới tính"
-                disabled={isLockedAccount}
+                disabled={isLockedAccount || isFormDisabled}
               >
                 <Select.Option value="M">Nam giới</Select.Option>
                 <Select.Option value="F">Nữ giới</Select.Option>
@@ -167,7 +175,7 @@ const AccountModal = ({
                 onPreview={onPreview}
                 fileList={FileList}
                 maxCount={1}
-                disabled={isLockedAccount}
+                disabled={isLockedAccount || isFormDisabled}
               >
                 {FileList.length < 1 && "+ Upload"}
               </Upload>
@@ -183,12 +191,12 @@ const AccountModal = ({
                 valuePropName="checked"
                 initialValue={true}
               >
-                <Checkbox disabled={isLockedAccount}>Đã xác thực</Checkbox>
+                <Checkbox disabled={isLockedAccount || isFormDisabled}>Đã xác thực</Checkbox>
               </Form.Item>
             </Col>
           )}
 
-          {/* Status - Luôn cho phép chỉnh sửa */}
+          {/* Status - Làm cho checkbox không thể tương tác khi có lý do khóa */}
           {editUser && (
             <Col xs={24} sm={12}>
               <Form.Item
@@ -197,7 +205,10 @@ const AccountModal = ({
                 valuePropName="checked"
                 initialValue={statusChecked}
               >
-                <Checkbox onChange={handleStatus}>
+                <Checkbox 
+                  onChange={handleStatus}
+                  disabled={editUser.lockReasons?.length > 0} // Disable checkbox if there are lock reasons
+                >
                   Tình Trạng Tài khoản
                 </Checkbox>
               </Form.Item>
@@ -226,12 +237,12 @@ const AccountModal = ({
             </Col>
           )}
 
-          {/* Xóa lý do khóa Button - Luôn cho phép thực hiện */}
+          {/* Xóa lý do khóa Button */}
           {editUser && editUser.lockReasons?.length > 0 && (
             <Col span={24}>
               <Button
                 type="danger"
-                onClick={() => handleStatusChange(editUser.lockReasons[0].id)}
+                onClick={() => handleUnlockAndDisable(editUser.lockReasons[0].id)}
               >
                 Xóa lý do khóa
               </Button>
@@ -251,7 +262,7 @@ const AccountModal = ({
               >
                 <Input.Password 
                   placeholder="Nhập mật khẩu"
-                  disabled={isLockedAccount}
+                  disabled={isLockedAccount || isFormDisabled}
                 />
               </Form.Item>
             </Col>
@@ -266,8 +277,8 @@ const AccountModal = ({
             width: "100%",
           }}
         >
-          <Button onClick={handleResetForm}>Làm mới</Button>
-          <Button type="primary" onClick={handleModalOk}>
+          <Button onClick={handleResetForm} disabled={isFormDisabled}>Làm mới</Button>
+          <Button type="primary" onClick={handleModalOk} >
             {editUser ? "Cập nhật" : "Thêm mới"}
           </Button>
         </Space>
