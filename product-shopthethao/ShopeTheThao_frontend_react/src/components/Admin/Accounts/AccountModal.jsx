@@ -11,6 +11,7 @@ import {
   Col,
   Button,
   Space,
+  Tooltip,
 } from "antd";
 import {
   UserOutlined,
@@ -18,6 +19,7 @@ import {
   MailOutlined,
   HomeOutlined,
   PlusOutlined,
+  UnlockOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -237,15 +239,39 @@ const AccountModal = ({
             </Col>
           )}
 
-          {/* Xóa lý do khóa Button */}
+          {/* Xóa lý do khóa Button - Enhanced UI */}
           {editUser && editUser.lockReasons?.length > 0 && (
             <Col span={24}>
-              <Button
-                type="danger"
-                onClick={() => handleUnlockAndDisable(editUser.lockReasons[0].id)}
-              >
-                Xóa lý do khóa
-              </Button>
+              <div style={{ 
+                padding: '16px',
+                background: '#f6f6f6',
+                borderRadius: '8px',
+                marginBottom: '16px'
+              }}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <div style={{ color: '#666', marginBottom: '8px' }}>
+                    Tài khoản hiện đang bị khóa
+                  </div>
+                  <Tooltip title="Nhấn để mở khóa tài khoản này">
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<UnlockOutlined />}
+                      onClick={() => handleUnlockAndDisable(editUser.lockReasons[0].id)}
+                      style={{
+                        width: '100%',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      Mở khóa tài khoản
+                    </Button>
+                  </Tooltip>
+                </Space>
+              </div>
             </Col>
           )}
 
