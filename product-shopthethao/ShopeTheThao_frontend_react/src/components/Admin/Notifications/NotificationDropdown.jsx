@@ -87,41 +87,41 @@ const NotificationDropdown = () => {
   }, []);
 
   // Update refs when state changes
-  useEffect(() => {
-    authActivitiesRef.current = authActivities;
+  // useEffect(() => {
+  //   authActivitiesRef.current = authActivities;
 
-    // Cache the auth data when it changes
-    if (authActivities.length > 0) {
-      try {
-        localStorage.setItem(CACHE_KEY_AUTH, JSON.stringify(authActivities));
-        // Set or update expiry time
-        localStorage.setItem(
-          CACHE_EXPIRY,
-          (Date.now() + CACHE_VALIDITY).toString()
-        );
-      } catch (error) {
-        console.error("Error caching auth notifications:", error);
-      }
-    }
-  }, [authActivities]);
+  //   // Cache the auth data when it changes
+  //   if (authActivities.length > 0) {
+  //     try {
+  //       localStorage.setItem(CACHE_KEY_AUTH, JSON.stringify(authActivities));
+  //       // Set or update expiry time
+  //       localStorage.setItem(
+  //         CACHE_EXPIRY,
+  //         (Date.now() + CACHE_VALIDITY).toString()
+  //       );
+  //     } catch (error) {
+  //       console.error("Error caching auth notifications:", error);
+  //     }
+  //   }
+  // }, [authActivities]);
 
-  useEffect(() => {
-    adminActivitiesRef.current = adminActivities;
+  // useEffect(() => {
+  //   adminActivitiesRef.current = adminActivities;
 
-    // Cache the admin data when it changes
-    if (adminActivities.length > 0) {
-      try {
-        localStorage.setItem(CACHE_KEY_ADMIN, JSON.stringify(adminActivities));
-        // Set or update expiry time
-        localStorage.setItem(
-          CACHE_EXPIRY,
-          (Date.now() + CACHE_VALIDITY).toString()
-        );
-      } catch (error) {
-        console.error("Error caching admin notifications:", error);
-      }
-    }
-  }, [adminActivities]);
+  //   // Cache the admin data when it changes
+  //   if (adminActivities.length > 0) {
+  //     try {
+  //       localStorage.setItem(CACHE_KEY_ADMIN, JSON.stringify(adminActivities));
+  //       // Set or update expiry time
+  //       localStorage.setItem(
+  //         CACHE_EXPIRY,
+  //         (Date.now() + CACHE_VALIDITY).toString()
+  //       );
+  //     } catch (error) {
+  //       console.error("Error caching admin notifications:", error);
+  //     }
+  //   }
+  // }, [adminActivities]);
 
   // Calculate unread counts when activities change
   useEffect(() => {

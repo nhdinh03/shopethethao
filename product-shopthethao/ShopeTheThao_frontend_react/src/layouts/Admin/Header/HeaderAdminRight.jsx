@@ -22,7 +22,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import NotificationDropdown from "components/Admin/Notifications/NotificationDropdown";
-import AuthService from 'services/authService';
+import authApi from "api/Admin/Auth/Login";
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);
@@ -32,7 +32,7 @@ function HeaderAdminRight() {
 
   useEffect(() => {
     // Use AuthService to get user data from localStorage
-    const userLocalData = AuthService.getUserData().user;
+    const userLocalData = authApi.getUserData().user;
     // console.log("User data from localStorage:", userLocalData);
     
     if (userLocalData) {
@@ -58,7 +58,7 @@ function HeaderAdminRight() {
   const handleLogout = async () => {
     try {
       // Use AuthService for logout
-      AuthService.logout();
+      authApi.logout();
       // Navigate to login page
       navigate('/login');
       // Optional: Show success message

@@ -34,12 +34,12 @@ class UserHistoryAPI extends BaseApi {
     return axiosClient.get(`${this.uri}/${historyId}`);
   }
 
-  async getAll() {
-    return axiosClient.get("/api/user-history");
-  }
-  async updateReadStatu(id) {
-    return axiosClient.put(`/api/user-history/${id}/read-status`);
-  }
+  // async getAll() {
+  //   return axiosClient.get("/api/user-history");
+  // }
+  // async updateReadStatu(id) {
+  //   return axiosClient.put(`/api/user-history/${id}/read-status`);
+  // }
 }
 
 const userHistoryApi = new UserHistoryAPI();

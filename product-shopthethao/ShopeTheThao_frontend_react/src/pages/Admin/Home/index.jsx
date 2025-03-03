@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { FiPackage, FiUsers, FiDollarSign, FiShoppingCart, FiActivity, FiTrendingUp, FiCalendar, FiPieChart } from "react-icons/fi";
+import { FiPackage, FiUsers, FiDollarSign, FiShoppingCart, FiTrendingUp, FiPieChart } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { message, Spin, notification } from "antd";
 import moment from "moment";
@@ -196,13 +196,6 @@ const AdminIndex = () => {
   const handleMouseLeave = (e) => {
     e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
   };
-
-  const renderLoadingSpinner = () => (
-    <div className="flex items-center justify-center">
-      <Spin />
-      <span className="ml-2 text-gray-600">Đang cập nhật...</span>
-    </div>
-  );
 
   //danh sách
   const getLatestFive = (items) => {

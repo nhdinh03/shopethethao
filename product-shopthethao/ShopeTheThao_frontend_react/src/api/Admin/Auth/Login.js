@@ -12,6 +12,10 @@ const endpoints = {
 };
 
 const authApi = {
+  login: function(credentials) {
+    return this.getLogin(credentials);
+  },
+
   getLogin: async (values) => {
     try {
       const response = await axiosClient.post(endpoints.auth, values);
@@ -140,6 +144,14 @@ const authApi = {
     }
   },
 
+  getUserData() {
+    return {
+      token: localStorage.getItem('token'),
+      user: JSON.parse(localStorage.getItem('user') || 'null'),
+      roles: JSON.parse(localStorage.getItem('roles') || '[]')
+    };
+  },
+
   getUser() {
     const user = localStorage.getItem("user");
     if (user) {
@@ -176,6 +188,24 @@ const authApi = {
         // Return success anyway since we've cleared localStorage
         return { message: "Đăng xuất thành công" };
     });
+  },
+
+  isAuthenticated() {
+    const token = localStorage.getItem('token');
+    return !!token; // Returns true if token exists and is not empty
+  },
+
+  hasRole(role) {
+    try {
+      const userData = this.getUserData();
+      if (!userData || !userData.user || !userData.user.role) {
+        return false;
+      }
+      return userData.user.role === role;
+    } catch (error) {
+      console.error('Error checking role:', error);
+      return false;
+    }
   }
 };
 

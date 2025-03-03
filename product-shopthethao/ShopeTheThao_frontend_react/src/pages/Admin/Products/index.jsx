@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Input,
   Space,
   Form,
   Modal,
-  Popconfirm,
   message,
   Image,
   Tag,
@@ -15,17 +14,15 @@ import {
   Row,
   Upload,
   Col,
-  Typography,
 } from "antd";
 import {
   MinusCircleOutlined,
   PlusOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import uploadApi from "api/service/uploadApi";
 import PaginationComponent from "components/PaginationComponent";
 import { useCategories, useSizes } from "hooks";
@@ -35,7 +32,6 @@ import styles from "..//modalStyles.module.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 const Products = () => {
-  const [searchText, setSearchText] = useState("");
   const [open, setOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [form] = Form.useForm();
@@ -50,6 +46,8 @@ const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
+  const [isFormChanged, setIsFormChanged] = useState(false);
+  const originalProductRef = useRef(null);
 
   //api
   const sizes = useSizes();
@@ -59,11 +57,7 @@ const Products = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const resProducts = await productsApi.getByPage(
-          currentPage,
-          pageSize,
-          searchText
-        );
+        const resProducts = await productsApi.getByPage(currentPage, pageSize);
         setProducts(resProducts.data);
         setTotalItems(resProducts.totalItems);
       } catch (error) {
@@ -74,7 +68,7 @@ const Products = () => {
       }
     };
     fetchData();
-  }, [currentPage, pageSize, searchText, workSomeThing]);
+  }, [currentPage, pageSize, workSomeThing]);
 
   // Thêm hàm xử lý URL ảnh
   const processImageUrls = (images) => {
@@ -85,40 +79,132 @@ const Products = () => {
       return {
         uid: `${index}`,
         name: imageUrl,
-        status: 'done',
+        status: "done",
         url: fullUrl,
-        imageUrl: imageUrl // Lưu lại imageUrl gốc
+        imageUrl: imageUrl, // Lưu lại imageUrl gốc
       };
     });
+  };
+
+  const compareFormWithOriginal = () => {
+    if (!editingProduct || !originalProductRef.current) return true;
+
+    const currentValues = form.getFieldsValue();
+    const original = originalProductRef.current;
+
+    // Kiểm tra các thay đổi cơ bản
+    if (currentValues.name !== original.name) return true;
+    if (currentValues.description !== original.description) return true;
+    if (parseFloat(currentValues.price) !== original.price) return true;
+    if (currentValues.categorie !== original.categorie?.id) return true;
+
+    // Kiểm tra thay đổi trong sizes
+    const currentSizes = currentValues.sizes || [];
+    const originalSizes = original.sizes || [];
+    
+    if (currentSizes.length !== originalSizes.length) return true;
+    
+    // So sánh từng size
+    for (let i = 0; i < currentSizes.length; i++) {
+      const curr = currentSizes[i];
+      const orig = originalSizes[i];
+      
+      if (!curr || !orig) return true;
+      if (curr.size !== orig.size.id) return true;
+      if (parseInt(curr.quantity) !== orig.quantity) return true;
+      if (parseFloat(curr.price) !== orig.price) return true;
+    }
+
+    // Kiểm tra ảnh
+    const currentImages = currentValues.images?.fileList || [];
+    const originalImages = original.images || [];
+
+    if (currentImages.length !== originalImages.length) return true;
+
+    // So sánh từng ảnh
+    for (const currImg of currentImages) {
+      if (currImg.originFileObj) return true; // Có ảnh mới
+      
+      // Kiểm tra xem ảnh có trong ảnh gốc không
+      const imgUrl = currImg.imageUrl || currImg.url?.split('/').pop();
+      const exists = originalImages.some(origImg => origImg.imageUrl === imgUrl);
+      if (!exists) return true;
+    }
+
+    return false; // Không có thay đổi
+  };
+
+  const handleFormValuesChange = () => {
+    const hasChanges = compareFormWithOriginal();
+    setIsFormChanged(hasChanges);
   };
 
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
+      
+      // Nếu đang cập nhật và không có thay đổi, đóng modal và không làm gì cả
+      if (editingProduct && !isFormChanged) {
+        setOpen(false);
+        setEditingProduct(null);
+        form.resetFields();
+        setFileList([]);
+        return;
+      }
+
       const imagesFileList = values.images?.fileList || [];
       let uploadedImages = [];
 
-      uploadedImages = await Promise.all(
-        imagesFileList.map(async (file) => {
-          if (file.originFileObj) {
-            // Nếu là file mới upload
-            const uploadedUrl = await uploadApi.post(file.originFileObj);
-            return uploadedUrl;
-          }
-          // Nếu là ảnh đã có sẵn, lấy imageUrl từ file
-          return file.imageUrl;
-        })
-      );
+      // Xử lý ảnh khi cập nhật sản phẩm
+      if (editingProduct) {
+        uploadedImages = await Promise.all(
+          imagesFileList.map(async (file) => {
+            // Nếu là ảnh đã tồn tại (có imageUrl hoặc url)
+            if (file.imageUrl || (file.url && !file.originFileObj)) {
+              const imageUrl = file.imageUrl || file.url.split('/').pop();
+              return {
+                imageUrl: imageUrl,
+                isExisting: true
+              };
+            }
+            // Nếu là ảnh mới (có originFileObj)
+            if (file.originFileObj) {
+              const uploadedUrl = await uploadApi.post(file.originFileObj);
+              return {
+                imageUrl: uploadedUrl,
+                isExisting: false
+              };
+            }
+            return null;
+          })
+        );
+      } else {
+        // Xử lý ảnh khi thêm mới sản phẩm
+        uploadedImages = await Promise.all(
+          imagesFileList.map(async (file) => {
+            if (file.originFileObj) {
+              const uploadedUrl = await uploadApi.post(file.originFileObj);
+              return {
+                imageUrl: uploadedUrl,
+                isExisting: false
+              };
+            }
+            return null;
+          })
+        );
+      }
+
+      // Lọc bỏ các giá trị null
+      uploadedImages = uploadedImages.filter(img => img !== null);
 
       const newProduct = {
         name: values.name,
         description: values.description,
         totalQuantity: values.totalQuantity,
         categorie: { id: values.categorie },
-        images: uploadedImages.map((imageUrl) => ({ imageUrl })),
+        images: uploadedImages.map(img => ({ imageUrl: img.imageUrl })),
         price: parseFloat(values.price),
         sizes: values.sizes.map((size) => ({
-          // size: { id: parseInt(size.size) },
           size: { id: size.size },
           quantity: parseInt(size.quantity),
           price: parseFloat(size.price),
@@ -134,13 +220,13 @@ const Products = () => {
         message.success("Thêm sản phẩm thành công!");
       }
 
-      // form.setFieldsValue({ sizes: [] });
       setOpen(false);
       form.resetFields();
       setFileList([]);
       setEditingProduct(null);
       setWorkSomeThing(!workSomeThing);
     } catch (error) {
+      console.error("Error saving product:", error);
       message.error("Lỗi khi lưu sản phẩm! Vui lòng thử lại.");
     }
   };
@@ -151,7 +237,9 @@ const Products = () => {
     setFileList(processedImages);
     setOpen(true);
     setEditingProduct(record);
-
+    // Lưu bản gốc của sản phẩm để so sánh sau này
+    originalProductRef.current = JSON.parse(JSON.stringify(record));
+    
     form.setFieldsValue({
       ...record,
       categorie: record.categorie?.id,
@@ -160,10 +248,15 @@ const Products = () => {
         quantity: size.quantity,
         price: size.price,
       })),
+      // Đảm bảo cấu trúc dữ liệu images được đặt đúng
+      images: { fileList: processedImages }
     });
 
     const totalQuantity = calculateTotalQuantity(record.sizes);
     setTotalQuantity(totalQuantity);
+    
+    // Reset trạng thái isFormChanged
+    setIsFormChanged(false);
   };
 
   // 🔥 Xóa sản phẩm
@@ -208,7 +301,7 @@ const Products = () => {
     setPreviewOpen(true);
   };
 
-//kiểm tra kích cở trùng không
+  //kiểm tra kích cở trùng không
   const handleSizeChange = (value, name) => {
     const sizes = form.getFieldValue("sizes") || [];
     // Kiểm tra nếu kích cỡ đã tồn tại trong danh sách, ngoại trừ phần tử hiện tại (name)
@@ -228,10 +321,25 @@ const Products = () => {
     });
   };
 
+  //trùng ảnh và xóa ảnh
+  const handleUploadChange = ({ fileList: newFileList, file }) => {
+    // Kiểm tra nếu là thao tác xóa
+    if (file.status === "removed") {
+      // Nếu đang trong chế độ chỉnh sửa và file có imageUrl (ảnh cũ)
+      if (editingProduct && file.imageUrl) {
+        // Xóa ảnh từ server
+        uploadApi
+          .delete(file.imageUrl)
+          .then(() => {
+            message.success(`Đã xóa ảnh ${file.name}`);
+          })
+          .catch((error) => {
+            message.error(`Không thể xóa ảnh ${file.name}`);
+            console.error("Error deleting image:", error);
+          });
+      }
+    }
 
-
-  //trùng ảnh
-  const handleUploadChange = ({ fileList: newFileList }) => {
     // Lọc ra danh sách ảnh không trùng lặp
     const uniqueFiles = [];
     const fileNames = new Set();
@@ -421,16 +529,49 @@ const Products = () => {
         <Modal
           title={
             <div className={styles.modalTitle}>
-              {editingProduct ? "Cập nhật sản phẩm" : "Thêm sản phẩm mới"}
+              {editingProduct ? (
+                <span>
+                  <EditOutlined /> Cập nhật sản phẩm: {editingProduct.name}
+                </span>
+              ) : (
+                <span>
+                  <PlusOutlined /> Thêm sản phẩm mới
+                </span>
+              )}
             </div>
           }
           open={open}
           onOk={handleModalOk}
           onCancel={handleModalCancel}
           centered
-          className={styles.modalWidth} // Áp dụng kích thước chuẩn
+          className={styles.modalWidth}
+          okText={
+            <span>
+              {editingProduct ? (
+                <>
+                  <EditOutlined /> Cập nhật
+                </>
+              ) : (
+                <>
+                  <PlusOutlined /> Thêm mới
+                </>
+              )}
+            </span>
+          }
+          okButtonProps={{
+            style: {
+              backgroundColor: editingProduct ? '#faad14' : '#1890ff',
+              borderColor: editingProduct ? '#faad14' : '#1890ff'
+            },
+            disabled: editingProduct && !isFormChanged
+          }}
+          cancelText="Hủy"
         >
-          <Form form={form} layout="vertical">
+          <Form 
+            form={form} 
+            layout="vertical"
+            onValuesChange={handleFormValuesChange}
+          >
             <Row gutter={16}>
               <Col span={24}>
                 <Form.Item
