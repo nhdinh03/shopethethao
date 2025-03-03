@@ -13,78 +13,154 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-
 @Service
 public class UserHistorySSEService {
     private static final Logger logger = LoggerFactory.getLogger(UserHistorySSEService.class);
+
+    // Danh sách trình phát SSE cho người dùng xác thực và quản trị viên Quản lý kết nối:
     private final CopyOnWriteArrayList<SseEmitter> authEmitters = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<SseEmitter> adminEmitters = new CopyOnWriteArrayList<>();
     private final ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
 
-    // Tăng tần suất gửi heartbeat lên 5 phút để giữ kết nối
+    // Thời gian timeout cho emitter (24 giờ)
+    private static final long TIMEOUT = 24 * 60 * 60 * 1000L;
+    // Thời gian giữa các lần gửi heartbeat (10 giây)
+    private static final long HEARTBEAT_DELAY = 10;
+
     public UserHistorySSEService() {
-        // Send heartbeat every 5 minutes to keep connections alive
-        heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 0, 5, TimeUnit.MINUTES);
+        heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 0, HEARTBEAT_DELAY, TimeUnit.SECONDS);
     }
 
-    // Thay đổi thời gian timeout thành 1 giờ (3600000 milliseconds)
     public SseEmitter createAuthEmitter() {
-        SseEmitter emitter = new SseEmitter(3600000L); // 1 hour timeout
+        SseEmitter emitter = new SseEmitter(TIMEOUT);
         this.authEmitters.add(emitter);
-        
+
         emitter.onCompletion(() -> {
             this.authEmitters.remove(emitter);
-            logger.debug("Auth emitter completed and removed, remaining: {}", authEmitters.size());
+            logger.debug("Trình phát xác thực đã hoàn tất và bị xóa, còn lại: {}", authEmitters.size());
         });
-        
+
         emitter.onTimeout(() -> {
             this.authEmitters.remove(emitter);
-            logger.info("Auth emitter timed out after 1 hour, attempting reconnection...");
-            // Client sẽ tự động kết nối lại khi nhận được timeout
+            logger.info("Trình phát xác thực đã hết thời gian chờ, máy khách sẽ tự động kết nối lại");
+            // Client sẽ thực hiện reconnect với retry strategy
         });
-        
+
         emitter.onError((e) -> {
             this.authEmitters.remove(emitter);
-            logger.error("Auth emitter error: {}", e.getMessage());
+            logger.error("Lỗi trình phát xác thực: {}", e.getMessage());
+            // Thêm logic để thử kết nối lại
+            attemptReconnection(emitter, true);
         });
 
         try {
-            emitter.send(SseEmitter.event().name("INIT").data("Connection established"));
+            // Gửi thông tin retry cho client
+            emitter.send(SseEmitter.event()
+                    .name("INIT")
+                    .data("Đã thiết lập kết nối")
+                    .reconnectTime(3000)); // Reconnect sau 3 giây nếu mất kết nối
         } catch (IOException e) {
-            logger.error("Error during auth emitter initialization", e);
+            logger.error("Lỗi trong quá trình khởi tạo trình phát xác thựcn", e);
+            attemptReconnection(emitter, true);
         }
-        
+
         return emitter;
     }
 
-    // Thay đổi thời gian timeout thành 1 giờ (3600000 milliseconds)
     public SseEmitter createAdminEmitter() {
-        SseEmitter emitter = new SseEmitter(3600000L); // 1 hour timeout
+        SseEmitter emitter = new SseEmitter(TIMEOUT);
         this.adminEmitters.add(emitter);
-        
+
+        // Tương tự như auth emitter
         emitter.onCompletion(() -> {
             this.adminEmitters.remove(emitter);
-            logger.debug("Admin emitter completed and removed, remaining: {}", adminEmitters.size());
+            logger.debug("Trình phát của quản trị viên đã hoàn tất và bị xóa, còn lại: {}", adminEmitters.size());
         });
-        
+
         emitter.onTimeout(() -> {
             this.adminEmitters.remove(emitter);
-            logger.info("Admin emitter timed out after 1 hour, attempting reconnection...");
-            // Client sẽ tự động kết nối lại khi nhận được timeout
+            logger.info("Trình phát của quản trị viên đã hết thời gian chờ, máy khách sẽ tự động kết nối lại");
         });
-        
+
         emitter.onError((e) -> {
             this.adminEmitters.remove(emitter);
-            logger.error("Admin emitter error: {}", e.getMessage());
+            logger.error("Lỗi trình phát của quản trị viên: {}", e.getMessage());
+            attemptReconnection(emitter, false);
         });
 
         try {
-            emitter.send(SseEmitter.event().name("INIT").data("Connection established"));
+            emitter.send(SseEmitter.event()
+                    .name("INIT")
+                    .data("Đã thiết lập kết nối")
+                    .reconnectTime(3000));
         } catch (IOException e) {
-            logger.error("Error during admin emitter initialization", e);
+            logger.error("Lỗi trong quá trình khởi tạo trình phát của quản trị viên", e);
+            attemptReconnection(emitter, false);
         }
-        
+
         return emitter;
+    }
+
+    private void attemptReconnection(SseEmitter emitter, boolean isAuth) {
+        try {
+            // Tạo emitter mới
+            SseEmitter newEmitter = new SseEmitter(TIMEOUT);
+            if (isAuth) {
+                authEmitters.add(newEmitter);
+            } else {
+                adminEmitters.add(newEmitter);
+            }
+            // Thông báo cho client về việc reconnect thành công
+            newEmitter.send(SseEmitter.event()
+                    .name("RECONNECTED")
+                    .data("Kết nối được thiết lập lại")
+                    .reconnectTime(3000));
+        } catch (IOException e) {
+            logger.error("Không kết nối lại được: {}", e.getMessage());
+        }
+    }
+
+    private void sendHeartbeat() {
+        // Gửi tín hiệu định kỳ để giữ kết nối
+        List<SseEmitter> deadAuthEmitters = new ArrayList<>();
+        List<SseEmitter> deadAdminEmitters = new ArrayList<>();
+
+        // Send heartbeat to auth emitters
+        authEmitters.forEach(emitter -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("HEARTBEAT")
+                        .data("ping")
+                        .id(String.valueOf(System.currentTimeMillis()))
+                        .reconnectTime(3000)); // Thêm reconnectTime cho mỗi heartbeat
+            } catch (IOException e) {
+                deadAuthEmitters.add(emitter);
+            }
+        });
+
+        // Send heartbeat to admin emitters
+        adminEmitters.forEach(emitter -> {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("HEARTBEAT")
+                        .data("ping")
+                        .id(String.valueOf(System.currentTimeMillis()))
+                        .reconnectTime(3000));
+            } catch (IOException e) {
+                deadAdminEmitters.add(emitter);
+            }
+        });
+
+        // Remove dead emitters and attempt reconnection
+        deadAuthEmitters.forEach(emitter -> {
+            authEmitters.remove(emitter);
+            attemptReconnection(emitter, true);
+        });
+
+        deadAdminEmitters.forEach(emitter -> {
+            adminEmitters.remove(emitter);
+            attemptReconnection(emitter, false);
+        });
     }
 
     public void notifyAuthActivity(Object data) {
@@ -93,18 +169,18 @@ public class UserHistorySSEService {
         authEmitters.forEach(emitter -> {
             try {
                 emitter.send(SseEmitter.event()
-                    .name("AUTH_ACTIVITY")
-                    .data(data)
-                    .id(String.valueOf(System.currentTimeMillis())));
-                logger.debug("Sent auth activity update to emitter");
+                        .name("AUTH_ACTIVITY")
+                        .data(data)
+                        .id(String.valueOf(System.currentTimeMillis())));
+                logger.debug("Đã gửi bản cập nhật hoạt động xác thực tới emiter");
             } catch (IOException e) {
-                logger.error("Failed to send auth activity update: {}", e.getMessage());
+                logger.error("Không gửi được bản cập nhật hoạt động xác thực: {}", e.getMessage());
                 deadEmitters.add(emitter);
             }
         });
 
         if (!deadEmitters.isEmpty()) {
-            logger.debug("Removing {} dead auth emitters", deadEmitters.size());
+            logger.debug("Đang xóa {} trình phát xác thực đã chết", deadEmitters.size());
             authEmitters.removeAll(deadEmitters);
         }
     }
@@ -115,66 +191,26 @@ public class UserHistorySSEService {
         adminEmitters.forEach(emitter -> {
             try {
                 emitter.send(SseEmitter.event()
-                    .name("ADMIN_ACTIVITY")
-                    .data(data)
-                    .id(String.valueOf(System.currentTimeMillis())));
-                logger.debug("Sent admin activity update to emitter");
+                        .name("ADMIN_ACTIVITY")
+                        .data(data)
+                        .id(String.valueOf(System.currentTimeMillis())));
+                logger.debug("Đã gửi bản cập nhật hoạt động của quản trị viên tới bộ phát");
             } catch (IOException e) {
-                logger.error("Failed to send admin activity update: {}", e.getMessage());
+                logger.error("Không gửi được thông tin cập nhật hoạt động của quản trị viên: {}", e.getMessage());
                 deadEmitters.add(emitter);
             }
         });
 
         if (!deadEmitters.isEmpty()) {
-            logger.debug("Removing {} dead admin emitters", deadEmitters.size());
+            logger.debug("Đang xóa {} trình phát của quản trị viên đã chết", deadEmitters.size());
             adminEmitters.removeAll(deadEmitters);
         }
     }
 
-    private void sendHeartbeat() {
-        List<SseEmitter> deadAuthEmitters = new ArrayList<>();
-        List<SseEmitter> deadAdminEmitters = new ArrayList<>();
-
-        // Send heartbeat to auth emitters
-        authEmitters.forEach(emitter -> {
-            try {
-                emitter.send(SseEmitter.event()
-                    .name("HEARTBEAT")
-                    .data("ping")
-                    .id(String.valueOf(System.currentTimeMillis())));
-            } catch (IOException e) {
-                deadAuthEmitters.add(emitter);
-            }
-        });
-
-        // Send heartbeat to admin emitters
-        adminEmitters.forEach(emitter -> {
-            try {
-                emitter.send(SseEmitter.event()
-                    .name("HEARTBEAT")
-                    .data("ping")
-                    .id(String.valueOf(System.currentTimeMillis())));
-            } catch (IOException e) {
-                deadAdminEmitters.add(emitter);
-            }
-        });
-
-        // Remove dead emitters
-        if (!deadAuthEmitters.isEmpty()) {
-            authEmitters.removeAll(deadAuthEmitters);
-            logger.debug("Removed {} dead auth emitters during heartbeat", deadAuthEmitters.size());
-        }
-        
-        if (!deadAdminEmitters.isEmpty()) {
-            adminEmitters.removeAll(deadAdminEmitters);
-            logger.debug("Removed {} dead admin emitters during heartbeat", deadAdminEmitters.size());
-        }
-    }
-    
     public int getAuthEmitterCount() {
         return authEmitters.size();
     }
-    
+
     public int getAdminEmitterCount() {
         return adminEmitters.size();
     }
