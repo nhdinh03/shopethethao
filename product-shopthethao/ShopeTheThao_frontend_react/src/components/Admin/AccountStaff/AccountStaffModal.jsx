@@ -21,6 +21,7 @@ import {
   UnlockOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import { Modal as AntModal } from 'antd';
 
 const AccountStaffModal = ({
   open,
@@ -40,13 +41,47 @@ const AccountStaffModal = ({
   // Thêm biến kiểm tra tài khoản bị khóa
   // Add state to track if form should be disabled
   const [isFormDisabled, setIsFormDisabled] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const isLockedAccount = editUser && editUser.status === 0;
 
-  // Modify the handleStatusChange wrapper
+  // Modify the handleCancel function
+  const handleModalCancel = () => {
+    if (isUnlocked) {
+      AntModal.warning({
+        title: 'Không thể hủy',
+        content: 'Vui lòng cập nhật thông tin sau khi mở khóa tài khoản',
+        okText: 'Đã hiểu',
+      });
+      return;
+    }
+    handleCancel();
+  };
+
+  // Modify the handleUnlockAndDisable function
   const handleUnlockAndDisable = (lockReasonId) => {
-    handleStatusChange(lockReasonId);
-    setIsFormDisabled(false); // Don't disable form after unlock
-    // Remove automatic form submission
+    AntModal.confirm({
+      title: 'Xác nhận mở khóa',
+      content: 'Bạn có chắc chắn muốn mở khóa tài khoản này?',
+      okText: 'Đồng ý',
+      cancelText: 'Hủy',
+      onOk: () => {
+        handleStatusChange(lockReasonId);
+        setIsFormDisabled(false);
+        setIsUnlocked(true);
+        form.setFieldsValue({ status: true });
+        AntModal.success({
+          title: 'Mở khóa thành công',
+          content: 'Vui lòng cập nhật thông tin để hoàn tất',
+          okText: 'Đã hiểu',
+        });
+      },
+    });
+  };
+
+  // Modify handleModalOk to reset the unlocked state
+  const onModalOk = () => {
+    handleModalOk();
+    setIsUnlocked(false);
   };
 
   // Remove defaultValue and use Form's initialValues instead
@@ -72,7 +107,7 @@ const AccountStaffModal = ({
       }
       open={open}
       footer={null}
-      onCancel={handleCancel}
+      onCancel={handleModalCancel}
       width={700}
     >
       <Form
@@ -367,10 +402,16 @@ const AccountStaffModal = ({
             width: "100%",
           }}
         >
-          <Button onClick={handleResetForm} disabled={isFormDisabled}>
+          <Button 
+            onClick={handleResetForm} 
+            disabled={isFormDisabled || isUnlocked}
+          >
             Làm mới
           </Button>
-          <Button type="primary" onClick={handleModalOk}>
+          <Button 
+            type="primary" 
+            onClick={onModalOk}
+          >
             {editUser ? "Cập nhật" : "Thêm mới"}
           </Button>
         </Space>
