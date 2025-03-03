@@ -146,6 +146,24 @@ public class ProductsAPI {
                 }
             }
 
+            // Validate image count
+            if (product.getImages() != null && product.getImages().size() > 5) {
+                return new ResponseEntity<>("Số lượng hình ảnh không được vượt quá 5!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Validate image URLs
+            if (product.getImages() != null) {
+                for (ProductImages img : product.getImages()) {
+                    if (img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
+                        return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
+                    }
+                    if (!img.getImageUrl().startsWith("http://localhost:8081/api/upload/")) {
+                        return new ResponseEntity<>("URL hình ảnh không hợp lệ! URL phải bắt đầu bằng 'http://localhost:8081/api/upload/'", 
+                            HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+
             // Save product first
             Product savedProduct = productsDAO.save(product);
 
@@ -192,87 +210,111 @@ public class ProductsAPI {
     // Cập nhật sản phẩm và kích cỡ
     @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id,
-            @RequestBody Product product) {
+    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id, @RequestBody Product product) {
         try {
+            // Add null check for product
+            if (product == null) {
+                return new ResponseEntity<>("Dữ liệu sản phẩm không hợp lệ!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Validate basic product info
+            if (product.getName() == null || product.getName().trim().isEmpty()) {
+                return new ResponseEntity<>("Tên sản phẩm không được để trống!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Validate sizes
+            if (product.getSizes() == null || product.getSizes().isEmpty()) {
+                return new ResponseEntity<>("Phải có ít nhất một kích cỡ cho sản phẩm!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Check if product exists
             Optional<Product> existingProductOpt = productsDAO.findById(id);
             if (existingProductOpt.isEmpty()) {
                 return new ResponseEntity<>("Sản phẩm không tồn tại!", HttpStatus.NOT_FOUND);
             }
 
-            Product oldProduct = existingProductOpt.get();
-            // Store current state before updates
-            Product oldState = new Product();
-            BeanUtils.copyProperties(oldProduct, oldState);
+            Product existingProduct = existingProductOpt.get();
 
-            Product updatedProduct = oldProduct;
-            updatedProduct.setName(product.getName());
-            updatedProduct.setQuantity(product.getQuantity());
-            updatedProduct.setPrice(product.getPrice());
-            updatedProduct.setDescription(product.getDescription());
-            updatedProduct.setStatus(product.getStatus());
-            updatedProduct.setCategorie(product.getCategorie());
+            // Handle image validation first
+            if (product.getImages() != null) {
+                // Validate image count
+                if (product.getImages().size() > 5) {
+                    return new ResponseEntity<>("Số lượng hình ảnh không được vượt quá 5!", HttpStatus.BAD_REQUEST);
+                }
 
-            productSizeDAO.deleteByProductId(id);
-
-            // **Kiểm tra trùng kích cỡ trước khi cập nhật**
-            for (int i = 0; i < product.getSizes().size(); i++) {
-                for (int j = i + 1; j < product.getSizes().size(); j++) {
-                    // So sánh kích cỡ
-                    if (product.getSizes().get(i).getSize().getId()
-                            .equals(product.getSizes().get(j).getSize().getId())) {
-                        return new ResponseEntity<>(
-                                "Kích cỡ " + product.getSizes().get(i).getSize().getName() + " đã tồn tại!",
-                                HttpStatus.BAD_REQUEST);
+                // Validate each image URL
+                for (ProductImages img : product.getImages()) {
+                    if (img == null || img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
+                        return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
                     }
                 }
+
+                // Update images with proper references
+                List<ProductImages> newImages = new ArrayList<>();
+                for (ProductImages img : product.getImages()) {
+                    ProductImages newImage = new ProductImages();
+                    newImage.setImageUrl(img.getImageUrl());
+                    newImage.setProduct(existingProduct);
+                    newImages.add(newImage);
+                }
+
+                // Clear existing images and add new ones
+                existingProduct.getImages().clear();
+                existingProduct.getImages().addAll(newImages);
             }
 
-            // **Xóa toàn bộ size trước khi cập nhật sản phẩm**
-            productSizeDAO.deleteByProductId(id);
-
-            // **Nếu `sizes` tồn tại trong request, cập nhật lại size mới**
-            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
+            // Handle size validation and updates
+            if (product.getSizes() != null) {
+                // Validate sizes for duplicates
+                Set<Integer> sizeIds = new HashSet<>();
                 for (ProductSize size : product.getSizes()) {
-                    // Kiểm tra xem kích cỡ đã tồn tại chưa
-                    Optional<ProductSize> existingSize = productSizeDAO.findByProductIdAndSizeId(id,
-                            size.getSize().getId());
-                    if (existingSize.isPresent()) {
-                        return new ResponseEntity<>(
-                                "Kích cỡ " + size.getSize().getName() + " đã tồn tại trong danh sách sản phẩm!",
-                                HttpStatus.BAD_REQUEST);
+                    if (size.getSize() == null || size.getSize().getId() == null) {
+                        return new ResponseEntity<>("Thông tin kích cỡ không hợp lệ!", HttpStatus.BAD_REQUEST);
                     }
-                    size.setProduct(updatedProduct);
-                    productSizeDAO.save(size);
+                    if (!sizeIds.add(size.getSize().getId())) {
+                        return new ResponseEntity<>("Phát hiện kích cỡ trùng lặp!", HttpStatus.BAD_REQUEST);
+                    }
                 }
+
+                // Update sizes with proper references
+                List<ProductSize> newSizes = new ArrayList<>();
+                for (ProductSize size : product.getSizes()) {
+                    Optional<Size> existingSize = sizeDAO.findById(size.getSize().getId());
+                    if (existingSize.isEmpty()) {
+                        return new ResponseEntity<>("Kích cỡ không tồn tại trong hệ thống!", HttpStatus.BAD_REQUEST);
+                    }
+                    
+                    ProductSize newSize = new ProductSize();
+                    newSize.setSize(existingSize.get());
+                    newSize.setQuantity(size.getQuantity());
+                    newSize.setPrice(size.getPrice());
+                    newSize.setProduct(existingProduct);
+                    newSizes.add(newSize);
+                }
+
+                // Clear existing sizes and add new ones
+                existingProduct.getSizes().clear();
+                existingProduct.getSizes().addAll(newSizes);
             }
 
-            // ✅ Cập nhật hình ảnh (nếu có)
-            if (product.getImages() != null && !product.getImages().isEmpty()) {
-                productImagesDAO.deleteByProductId(id); // Xóa ảnh cũ
-                for (ProductImages image : product.getImages()) {
-                    image.setProduct(updatedProduct);
-                    productImagesDAO.save(image);
-                }
+            // Update basic product information
+            existingProduct.setName(product.getName());
+            existingProduct.setDescription(product.getDescription());
+            existingProduct.setPrice(product.getPrice());
+            existingProduct.setStatus(product.getStatus());
+            if (product.getCategorie() != null) {
+                existingProduct.setCategorie(product.getCategorie());
             }
 
-            productsDAO.save(updatedProduct);
+            // Save updated product
+            Product savedProduct = productsDAO.save(existingProduct);
 
-            // Log with detailed change information
-            String userId = getCurrentUserId();
-            String logMessage = createUpdateLogMessage(userId, oldState, oldProduct);
-            userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.UPDATE_PRODUCT,
-                    logMessage,
-                    getClientIp(),
-                    getDeviceInfo());
+            return ResponseEntity.ok(savedProduct);
 
-            return ResponseEntity.ok(updatedProduct);
         } catch (Exception e) {
             logger.error("Error updating product {}: {}", id, e.getMessage(), e);
-            return new ResponseEntity<>("Lỗi hệ thống, vui lòng thử lại sau!",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi cập nhật sản phẩm: " + e.getMessage(), 
+                HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

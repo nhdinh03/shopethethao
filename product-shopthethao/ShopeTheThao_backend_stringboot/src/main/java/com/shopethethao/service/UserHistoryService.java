@@ -134,13 +134,7 @@ public class UserHistoryService {
             .collect(Collectors.toList());
     }
 
-    private List<UserHistoryDTO> fetchLatestAuthActivities() {
-        return getLatestAuthActivities();
-    }
 
-    private List<UserHistoryDTO> fetchLatestAdminActivities() {
-        return getLatestAdminActivities();
-    }
 
     public void sendInitialAuthActivitiesToEmitter(SseEmitter emitter) {
         try {

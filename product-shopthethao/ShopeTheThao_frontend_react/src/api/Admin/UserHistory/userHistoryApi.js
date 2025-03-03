@@ -9,7 +9,7 @@ class UserHistoryAPI extends BaseApi {
   async getAllauthactivities() {
     return axiosClient.get(this.uri + "/auth-activities");
   }
-  
+
   async getAlladminactivities() {
     return axiosClient.get(this.uri + "/admin-activities");
   }
@@ -29,9 +29,16 @@ class UserHistoryAPI extends BaseApi {
   async getUnreadCount() {
     return axiosClient.get(`${this.uri}/unread-count`);
   }
-  
+
   async getActivityDetails(historyId) {
     return axiosClient.get(`${this.uri}/${historyId}`);
+  }
+
+  async getAll() {
+    return axiosClient.get("/api/user-history");
+  }
+  async updateReadStatu(id) {
+    return axiosClient.put(`/api/user-history/${id}/read-status`);
   }
 }
 

@@ -76,22 +76,39 @@ const Products = () => {
     fetchData();
   }, [currentPage, pageSize, searchText, workSomeThing]);
 
+  // Thêm hàm xử lý URL ảnh
+  const processImageUrls = (images) => {
+    if (!images) return [];
+    return images.map((img, index) => {
+      const imageUrl = img.imageUrl;
+      const fullUrl = `http://localhost:8081/api/upload/${imageUrl}`;
+      return {
+        uid: `${index}`,
+        name: imageUrl,
+        status: 'done',
+        url: fullUrl,
+        imageUrl: imageUrl // Lưu lại imageUrl gốc
+      };
+    });
+  };
+
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
       const imagesFileList = values.images?.fileList || [];
       let uploadedImages = [];
-      // ✅ Upload ảnh trước khi gửi API
-      if (imagesFileList.length > 0) {
-        uploadedImages = await Promise.all(
-          imagesFileList.map(async (file) => {
-            if (file.originFileObj) {
-              return await uploadApi.post(file.originFileObj);
-            }
-            return file.url;
-          })
-        );
-      }
+
+      uploadedImages = await Promise.all(
+        imagesFileList.map(async (file) => {
+          if (file.originFileObj) {
+            // Nếu là file mới upload
+            const uploadedUrl = await uploadApi.post(file.originFileObj);
+            return uploadedUrl;
+          }
+          // Nếu là ảnh đã có sẵn, lấy imageUrl từ file
+          return file.imageUrl;
+        })
+      );
 
       const newProduct = {
         name: values.name,
@@ -130,15 +147,8 @@ const Products = () => {
 
   //edit sản phẩm
   const handleEditData = (record) => {
-    const newUploadFiles = record.images
-      ? record.images.map((img, index) => ({
-          uid: `${record.id}-${index}`,
-          name: img.imageUrl,
-          url: `http://localhost:8081/api/upload/${img.imageUrl}`,
-        }))
-      : [];
-
-    setFileList(newUploadFiles);
+    const processedImages = processImageUrls(record.images);
+    setFileList(processedImages);
     setOpen(true);
     setEditingProduct(record);
 
@@ -221,13 +231,13 @@ const Products = () => {
 
 
   //trùng ảnh
-  const handleUploadChange = ({ fileList }) => {
-    // ✅ Lọc ra danh sách ảnh không trùng lặp
+  const handleUploadChange = ({ fileList: newFileList }) => {
+    // Lọc ra danh sách ảnh không trùng lặp
     const uniqueFiles = [];
     const fileNames = new Set();
 
-    fileList.forEach((file) => {
-      const fileName = file.name || file.url;
+    newFileList.forEach((file) => {
+      const fileName = file.imageUrl || file.name;
       if (!fileNames.has(fileName)) {
         fileNames.add(fileName);
         uniqueFiles.push(file);
@@ -236,7 +246,7 @@ const Products = () => {
       }
     });
 
-    setFileList(uniqueFiles); // Cập nhật danh sách file không trùng
+    setFileList(uniqueFiles);
   };
 
   //cancel

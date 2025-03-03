@@ -92,6 +92,8 @@ CREATE TABLE Products
     FOREIGN KEY (category_id) REFERENCES Categories(id) ON DELETE CASCADE
 )
 GO
+CREATE INDEX idx_product_id ON Product_Images(product_id);
+CREATE INDEX idx_product_sizes ON Product_Sizes(product_id);
 
 -- Tạo bảng Suppliers (Nhà cung cấp)
 CREATE TABLE Suppliers
