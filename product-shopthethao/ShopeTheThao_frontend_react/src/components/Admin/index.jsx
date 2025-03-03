@@ -7,6 +7,9 @@ export { default as CategoryModal } from "./Categories/CategoryModal";
 export { default as CategoryTable } from "./Categories/CategoryTable";
 export { default as CategoryPagination    } from "./Categories/CategoryPagination";
 
+export { default as ProductColumns } from "./Products/ProductColumns";
+
+export { default as ProductForm } from "./Products/ProductForm";
 
 export { default as ProductAttributesModal } from "./Product_Attributes/ProductAttributesModal";
 export { default as ProductAttributesPagination } from "./Product_Attributes/ProductAttributesPagination";
