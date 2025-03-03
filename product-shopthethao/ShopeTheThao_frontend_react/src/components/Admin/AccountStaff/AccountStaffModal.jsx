@@ -21,7 +21,7 @@ import {
   UnlockOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { Modal as AntModal } from 'antd';
+import { Modal as AntModal } from "antd";
 
 const AccountStaffModal = ({
   open,
@@ -48,9 +48,9 @@ const AccountStaffModal = ({
   const handleModalCancel = () => {
     if (isUnlocked) {
       AntModal.warning({
-        title: 'Không thể hủy',
-        content: 'Vui lòng cập nhật thông tin sau khi mở khóa tài khoản',
-        okText: 'Đã hiểu',
+        title: "Không thể hủy",
+        content: "Vui lòng cập nhật thông tin sau khi mở khóa tài khoản",
+        okText: "Đã hiểu",
       });
       return;
     }
@@ -60,19 +60,19 @@ const AccountStaffModal = ({
   // Modify the handleUnlockAndDisable function
   const handleUnlockAndDisable = (lockReasonId) => {
     AntModal.confirm({
-      title: 'Xác nhận mở khóa',
-      content: 'Bạn có chắc chắn muốn mở khóa tài khoản này?',
-      okText: 'Đồng ý',
-      cancelText: 'Hủy',
+      title: "Xác nhận mở khóa",
+      content: "Bạn có chắc chắn muốn mở khóa tài khoản này?",
+      okText: "Đồng ý",
+      cancelText: "Hủy",
       onOk: () => {
         handleStatusChange(lockReasonId);
         setIsFormDisabled(false);
         setIsUnlocked(true);
         form.setFieldsValue({ status: true });
         AntModal.success({
-          title: 'Mở khóa thành công',
-          content: 'Vui lòng cập nhật thông tin để hoàn tất',
-          okText: 'Đã hiểu',
+          title: "Mở khóa thành công",
+          content: "Vui lòng cập nhật thông tin để hoàn tất",
+          okText: "Đã hiểu",
         });
       },
     });
@@ -342,40 +342,44 @@ const AccountStaffModal = ({
           )}
 
           {/* Xóa lý do khóa Button - Enhanced UI */}
-             {editUser && editUser.lockReasons?.length > 0 && (
-                <Col span={24}>
-                  <div style={{ 
-                    padding: '16px',
-                    background: '#f6f6f6',
-                    borderRadius: '8px',
-                    marginBottom: '16px'
-                  }}>
-                    <Space direction="vertical" style={{ width: '100%' }}>
-                      <div style={{ color: '#666', marginBottom: '8px' }}>
-                        Tài khoản hiện đang bị khóa
-                      </div>
-                      <Tooltip title="Nhấn để mở khóa tài khoản này">
-                        <Button
-                          type="primary"
-                          danger
-                          icon={<UnlockOutlined />}
-                          onClick={() => handleUnlockAndDisable(editUser.lockReasons[0].id)}
-                          style={{
-                            width: '100%',
-                            height: '40px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px'
-                          }}
-                        >
-                          Mở khóa tài khoản
-                        </Button>
-                      </Tooltip>
-                    </Space>
+          {editUser && editUser.lockReasons?.length > 0 && (
+            <Col span={24}>
+              <div
+                style={{
+                  padding: "16px",
+                  background: "#f6f6f6",
+                  borderRadius: "8px",
+                  marginBottom: "16px",
+                }}
+              >
+                <Space direction="vertical" style={{ width: "100%" }}>
+                  <div style={{ color: "#666", marginBottom: "8px" }}>
+                    Tài khoản hiện đang bị khóa
                   </div>
-                </Col>
-              )}
+                  <Tooltip title="Nhấn để mở khóa tài khoản này">
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<UnlockOutlined />}
+                      onClick={() =>
+                        handleUnlockAndDisable(editUser.lockReasons[0].id)
+                      }
+                      style={{
+                        width: "100%",
+                        height: "40px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      Mở khóa tài khoản
+                    </Button>
+                  </Tooltip>
+                </Space>
+              </div>
+            </Col>
+          )}
 
           {/* Password */}
           {!editUser && (
@@ -388,8 +392,10 @@ const AccountStaffModal = ({
                   { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
                 ]}
               >
-                <Input.Password placeholder="Nhập mật khẩu" />
-                disabled={isLockedAccount || isFormDisabled}
+                <Input.Password
+                  placeholder="Nhập mật khẩu"
+                  disabled={isLockedAccount || isFormDisabled}
+                />
               </Form.Item>
             </Col>
           )}
@@ -402,16 +408,13 @@ const AccountStaffModal = ({
             width: "100%",
           }}
         >
-          <Button 
-            onClick={handleResetForm} 
+          <Button
+            onClick={handleResetForm}
             disabled={isFormDisabled || isUnlocked}
           >
             Làm mới
           </Button>
-          <Button 
-            type="primary" 
-            onClick={onModalOk}
-          >
+          <Button type="primary" onClick={onModalOk}>
             {editUser ? "Cập nhật" : "Thêm mới"}
           </Button>
         </Space>
