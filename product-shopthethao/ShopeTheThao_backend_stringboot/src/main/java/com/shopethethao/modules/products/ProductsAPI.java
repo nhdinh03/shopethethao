@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -146,24 +147,6 @@ public class ProductsAPI {
                 }
             }
 
-            // Validate image count
-            if (product.getImages() != null && product.getImages().size() > 5) {
-                return new ResponseEntity<>("Số lượng hình ảnh không được vượt quá 5!", HttpStatus.BAD_REQUEST);
-            }
-
-            // Validate image URLs
-            if (product.getImages() != null) {
-                for (ProductImages img : product.getImages()) {
-                    if (img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
-                        return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
-                    }
-                    if (!img.getImageUrl().startsWith("http://localhost:8081/api/upload/")) {
-                        return new ResponseEntity<>("URL hình ảnh không hợp lệ! URL phải bắt đầu bằng 'http://localhost:8081/api/upload/'", 
-                            HttpStatus.BAD_REQUEST);
-                    }
-                }
-            }
-
             // Save product first
             Product savedProduct = productsDAO.save(product);
 
@@ -210,111 +193,87 @@ public class ProductsAPI {
     // Cập nhật sản phẩm và kích cỡ
     @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id, @RequestBody Product product) {
+    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id,
+            @RequestBody Product product) {
         try {
-            // Add null check for product
-            if (product == null) {
-                return new ResponseEntity<>("Dữ liệu sản phẩm không hợp lệ!", HttpStatus.BAD_REQUEST);
-            }
-
-            // Validate basic product info
-            if (product.getName() == null || product.getName().trim().isEmpty()) {
-                return new ResponseEntity<>("Tên sản phẩm không được để trống!", HttpStatus.BAD_REQUEST);
-            }
-
-            // Validate sizes
-            if (product.getSizes() == null || product.getSizes().isEmpty()) {
-                return new ResponseEntity<>("Phải có ít nhất một kích cỡ cho sản phẩm!", HttpStatus.BAD_REQUEST);
-            }
-
-            // Check if product exists
             Optional<Product> existingProductOpt = productsDAO.findById(id);
             if (existingProductOpt.isEmpty()) {
                 return new ResponseEntity<>("Sản phẩm không tồn tại!", HttpStatus.NOT_FOUND);
             }
 
-            Product existingProduct = existingProductOpt.get();
+            Product oldProduct = existingProductOpt.get();
+            // Store current state before updates
+            Product oldState = new Product();
+            BeanUtils.copyProperties(oldProduct, oldState);
 
-            // Handle image validation first
-            if (product.getImages() != null) {
-                // Validate image count
-                if (product.getImages().size() > 5) {
-                    return new ResponseEntity<>("Số lượng hình ảnh không được vượt quá 5!", HttpStatus.BAD_REQUEST);
-                }
+            Product updatedProduct = oldProduct;
+            updatedProduct.setName(product.getName());
+            updatedProduct.setQuantity(product.getQuantity());
+            updatedProduct.setPrice(product.getPrice());
+            updatedProduct.setDescription(product.getDescription());
+            updatedProduct.setStatus(product.getStatus());
+            updatedProduct.setCategorie(product.getCategorie());
 
-                // Validate each image URL
-                for (ProductImages img : product.getImages()) {
-                    if (img == null || img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
-                        return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
+            productSizeDAO.deleteByProductId(id);
+
+            // **Kiểm tra trùng kích cỡ trước khi cập nhật**
+            for (int i = 0; i < product.getSizes().size(); i++) {
+                for (int j = i + 1; j < product.getSizes().size(); j++) {
+                    // So sánh kích cỡ
+                    if (product.getSizes().get(i).getSize().getId()
+                            .equals(product.getSizes().get(j).getSize().getId())) {
+                        return new ResponseEntity<>(
+                                "Kích cỡ " + product.getSizes().get(i).getSize().getName() + " đã tồn tại!",
+                                HttpStatus.BAD_REQUEST);
                     }
                 }
-
-                // Update images with proper references
-                List<ProductImages> newImages = new ArrayList<>();
-                for (ProductImages img : product.getImages()) {
-                    ProductImages newImage = new ProductImages();
-                    newImage.setImageUrl(img.getImageUrl());
-                    newImage.setProduct(existingProduct);
-                    newImages.add(newImage);
-                }
-
-                // Clear existing images and add new ones
-                existingProduct.getImages().clear();
-                existingProduct.getImages().addAll(newImages);
             }
 
-            // Handle size validation and updates
-            if (product.getSizes() != null) {
-                // Validate sizes for duplicates
-                Set<Integer> sizeIds = new HashSet<>();
+            // **Xóa toàn bộ size trước khi cập nhật sản phẩm**
+            productSizeDAO.deleteByProductId(id);
+
+            // **Nếu `sizes` tồn tại trong request, cập nhật lại size mới**
+            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
                 for (ProductSize size : product.getSizes()) {
-                    if (size.getSize() == null || size.getSize().getId() == null) {
-                        return new ResponseEntity<>("Thông tin kích cỡ không hợp lệ!", HttpStatus.BAD_REQUEST);
+                    // Kiểm tra xem kích cỡ đã tồn tại chưa
+                    Optional<ProductSize> existingSize = productSizeDAO.findByProductIdAndSizeId(id,
+                            size.getSize().getId());
+                    if (existingSize.isPresent()) {
+                        return new ResponseEntity<>(
+                                "Kích cỡ " + size.getSize().getName() + " đã tồn tại trong danh sách sản phẩm!",
+                                HttpStatus.BAD_REQUEST);
                     }
-                    if (!sizeIds.add(size.getSize().getId())) {
-                        return new ResponseEntity<>("Phát hiện kích cỡ trùng lặp!", HttpStatus.BAD_REQUEST);
-                    }
+                    size.setProduct(updatedProduct);
+                    productSizeDAO.save(size);
                 }
-
-                // Update sizes with proper references
-                List<ProductSize> newSizes = new ArrayList<>();
-                for (ProductSize size : product.getSizes()) {
-                    Optional<Size> existingSize = sizeDAO.findById(size.getSize().getId());
-                    if (existingSize.isEmpty()) {
-                        return new ResponseEntity<>("Kích cỡ không tồn tại trong hệ thống!", HttpStatus.BAD_REQUEST);
-                    }
-                    
-                    ProductSize newSize = new ProductSize();
-                    newSize.setSize(existingSize.get());
-                    newSize.setQuantity(size.getQuantity());
-                    newSize.setPrice(size.getPrice());
-                    newSize.setProduct(existingProduct);
-                    newSizes.add(newSize);
-                }
-
-                // Clear existing sizes and add new ones
-                existingProduct.getSizes().clear();
-                existingProduct.getSizes().addAll(newSizes);
             }
 
-            // Update basic product information
-            existingProduct.setName(product.getName());
-            existingProduct.setDescription(product.getDescription());
-            existingProduct.setPrice(product.getPrice());
-            existingProduct.setStatus(product.getStatus());
-            if (product.getCategorie() != null) {
-                existingProduct.setCategorie(product.getCategorie());
+            // ✅ Cập nhật hình ảnh (nếu có)
+            if (product.getImages() != null && !product.getImages().isEmpty()) {
+                productImagesDAO.deleteByProductId(id); // Xóa ảnh cũ
+                for (ProductImages image : product.getImages()) {
+                    image.setProduct(updatedProduct);
+                    productImagesDAO.save(image);
+                }
             }
 
-            // Save updated product
-            Product savedProduct = productsDAO.save(existingProduct);
+            productsDAO.save(updatedProduct);
 
-            return ResponseEntity.ok(savedProduct);
+            // Log with detailed change information
+            String userId = getCurrentUserId();
+            String logMessage = createUpdateLogMessage(userId, oldState, oldProduct);
+            userHistoryService.logUserAction(
+                    userId,
+                    UserActionType.UPDATE_PRODUCT,
+                    logMessage,
+                    getClientIp(),
+                    getDeviceInfo());
 
+            return ResponseEntity.ok(updatedProduct);
         } catch (Exception e) {
             logger.error("Error updating product {}: {}", id, e.getMessage(), e);
-            return new ResponseEntity<>("Lỗi cập nhật sản phẩm: " + e.getMessage(), 
-                HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi hệ thống, vui lòng thử lại sau!",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -394,14 +353,17 @@ public class ProductsAPI {
     private String createProductLogMessage(String adminUsername, Product savedProduct) {
         StringBuilder logMessage = new StringBuilder();
 
-        // Get category name safely
-        String categoryName = savedProduct.getCategorie() != null ? savedProduct.getCategorie().getName()
-                : "Không có danh mục";
+        // Get category name safely - check both category and category name for null
+        String categoryName = "Chưa phân loại";
+        if (savedProduct.getCategorie() != null && savedProduct.getCategorie().getName() != null && 
+            !savedProduct.getCategorie().getName().trim().isEmpty()) {
+            categoryName = savedProduct.getCategorie().getName();
+        }
 
         // Format header section
         logMessage.append(String.format("""
                 ADMIN: %s đã thêm sản phẩm mới
-                ═══════════════════════════════
+                
                 THÔNG TIN CƠ BẢN:
                 - ID: #%d
                 - Tên sản phẩm: %s
@@ -419,16 +381,22 @@ public class ProductsAPI {
         // Format size and price section
         if (savedProduct.getSizes() != null && !savedProduct.getSizes().isEmpty()) {
             logMessage.append("\nCHI TIẾT KÍCH CỠ VÀ GIÁ:");
-            // Sort sizes by name for consistent display
+            // Sort sizes by name for consistent display and preload all sizes to avoid N+1 queries
+            Map<Integer, String> sizeNameCache = preloadSizeNames(savedProduct.getSizes());
             savedProduct.getSizes().stream()
-                    .sorted((s1, s2) -> s1.getSize().getName().compareTo(s2.getSize().getName()))
+                    .sorted((s1, s2) -> {
+                        // Handle possible null values with the preloaded cache
+                        String name1 = getSizeNameFromCache(s1, sizeNameCache);
+                        String name2 = getSizeNameFromCache(s2, sizeNameCache);
+                        return name1.compareTo(name2);
+                    })
                     .forEach(size -> {
                         logMessage.append(String.format("""
 
                                 ✦ Size %s:
                                   └─ Số lượng: %d cái
                                   └─ Giá bán: %s""",
-                                size.getSize().getName(),
+                                getSizeNameFromCache(size, sizeNameCache),
                                 size.getQuantity(),
                                 formatPrice(size.getPrice())));
                     });
@@ -450,7 +418,7 @@ public class ProductsAPI {
 
             logMessage.append(String.format("""
 
-                    ═══════════════════════════════
+                    
                     TỔNG QUAN:
                     - Tổng số lượng: %d cái
                     - Khoảng giá: %s → %s""",
@@ -459,20 +427,25 @@ public class ProductsAPI {
                     formatPrice(maxPrice)));
         }
 
-        // Format images section
+        // Format images section with better error handling
         if (savedProduct.getImages() != null && !savedProduct.getImages().isEmpty()) {
             logMessage.append(String.format("""
 
-                    ═══════════════════════════════
+                    
                     HÌNH ẢNH (%d):""",
                     savedProduct.getImages().size()));
 
             for (int i = 0; i < Math.min(savedProduct.getImages().size(), 3); i++) {
+                ProductImages image = savedProduct.getImages().get(i);
+                String imageUrl = image.getImageUrl();
+                if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                    imageUrl = "Không có URL";
+                }
                 logMessage.append(String.format("""
 
                         %d. %s""",
                         i + 1,
-                        savedProduct.getImages().get(i).getImageUrl()));
+                        imageUrl));
             }
 
             if (savedProduct.getImages().size() > 3) {
@@ -481,9 +454,95 @@ public class ProductsAPI {
                         ... và %d hình ảnh khác""",
                         savedProduct.getImages().size() - 3));
             }
+        } else {
+            logMessage.append("""
+
+                
+                    HÌNH ẢNH (0): Không có hình ảnh""");
         }
 
         return logMessage.toString();
+    }
+
+    /**
+     * Preloads all size names in a single query to avoid N+1 query problem
+     * @param sizes List of ProductSize objects
+     * @return Map of size ID to size name
+     */
+    private Map<Integer, String> preloadSizeNames(List<ProductSize> sizes) {
+        Map<Integer, String> sizeNameMap = new HashMap<>();
+        if (sizes == null || sizes.isEmpty()) {
+            return sizeNameMap;
+        }
+
+        // Extract all size IDs that need to be loaded
+        Set<Integer> sizeIds = new HashSet<>();
+        for (ProductSize size : sizes) {
+            if (size.getSize() != null && size.getSize().getId() != null) {
+                sizeIds.add(size.getSize().getId());
+            }
+        }
+
+        // Batch query to get all sizes at once
+        if (!sizeIds.isEmpty()) {
+            List<Size> sizeList = sizeDAO.findAllById(sizeIds);
+            for (Size size : sizeList) {
+                if (size != null && size.getId() != null) {
+                    sizeNameMap.put(size.getId(), size.getName() != null ? size.getName() : "Chưa xác định");
+                }
+            }
+        }
+
+        return sizeNameMap;
+    }
+
+    /**
+     * Gets size name from cache map to avoid database queries
+     */
+    private String getSizeNameFromCache(ProductSize productSize, Map<Integer, String> sizeNameCache) {
+        if (productSize == null || productSize.getSize() == null || productSize.getSize().getId() == null) {
+            return "Chưa xác định";
+        }
+        return sizeNameCache.getOrDefault(productSize.getSize().getId(), "Chưa xác định");
+    }
+
+    /**
+     * Safely gets the size name from a ProductSize object, handling null values
+     * @param productSize The ProductSize object
+     * @return The size name or a default value if null
+     */
+    private String getSafeSizeName(ProductSize productSize) {
+        if (productSize == null) {
+            return "Chưa xác định";
+        }
+        if (productSize.getSize() == null) {
+            return "Chưa xác định";
+        }
+        
+        // Attempt to get size from database if ID is available but name is null
+        if (productSize.getSize().getId() != null && productSize.getSize().getName() == null) {
+            Optional<Size> size = sizeDAO.findById(productSize.getSize().getId());
+            if (size.isPresent() && size.get().getName() != null) {
+                return size.get().getName();
+            }
+        }
+        
+        return productSize.getSize().getName() != null ? 
+               productSize.getSize().getName() : "Chưa xác định";
+    }
+
+    /**
+     * Gets the name of a size by its ID, handling null values and database lookup
+     * @param sizeId The ID of the size
+     * @return The size name or a default value if not found/null
+     */
+    private String getSizeName(Integer sizeId) {
+        if (sizeId == null)
+            return "Chưa xác định";
+            
+        Optional<Size> size = sizeDAO.findById(sizeId);
+        return size.isPresent() && size.get().getName() != null ? 
+               size.get().getName() : "Chưa xác định";
     }
 
     private String createUpdateLogMessage(String adminUsername, Product oldProduct, Product updatedProduct) {
@@ -497,10 +556,10 @@ public class ProductsAPI {
 
         // Format header with divider and timestamp
         logMessage.append(String.format("""
-                ══════════════════════════════════════════════════
+
                 ADMIN: %s đã cập nhật sản phẩm #%d
                 Thời gian: %s
-                ══════════════════════════════════════════════════
+
 
                 [1] THÔNG TIN CƠ BẢN:
                 """,
@@ -590,10 +649,20 @@ public class ProductsAPI {
         if (newSizes == null)
             newSizes = new ArrayList<>();
 
-        Map<Integer, ProductSize> oldSizeMap = oldSizes.stream()
-                .collect(Collectors.toMap(s -> s.getSize().getId(), s -> s, (s1, s2) -> s1));
-        Map<Integer, ProductSize> newSizeMap = newSizes.stream()
-                .collect(Collectors.toMap(s -> s.getSize().getId(), s -> s, (s1, s2) -> s1));
+        // Create maps for old and new sizes
+        Map<Integer, ProductSize> oldSizeMap = new HashMap<>();
+        for (ProductSize size : oldSizes) {
+            if (size.getSize() != null && size.getSize().getId() != null) {
+                oldSizeMap.put(size.getSize().getId(), size);
+            }
+        }
+        
+        Map<Integer, ProductSize> newSizeMap = new HashMap<>();
+        for (ProductSize size : newSizes) {
+            if (size.getSize() != null && size.getSize().getId() != null) {
+                newSizeMap.put(size.getSize().getId(), size);
+            }
+        }
 
         Set<Integer> allSizeIds = new HashSet<>();
         allSizeIds.addAll(oldSizeMap.keySet());
@@ -702,7 +771,7 @@ public class ProductsAPI {
             BigDecimal valueDiff = newTotalValue.subtract(oldTotalValue);
             logMessage.append(String.format("""
 
-                    ══════════════════════════════════════════════════
+    
                     📊 TỔNG HỢP THAY ĐỔI:
                     ├─ Số lượng: %d → %d cái (%s%d)
                     ├─ Tổng giá trị: %s → %s
@@ -723,6 +792,14 @@ public class ProductsAPI {
     // Create detailed log message for product deletion
     private String createDeleteLogMessage(String adminUsername, Product product) {
         StringBuilder logMessage = new StringBuilder();
+        
+        // Get category name safely - check both category and category name for null
+        String categoryName = "Chưa phân loại";
+        if (product.getCategorie() != null && product.getCategorie().getName() != null && 
+            !product.getCategorie().getName().trim().isEmpty()) {
+            categoryName = product.getCategorie().getName();
+        }
+        
         logMessage.append(String.format("""
                 ADMIN: %s đã xóa sản phẩm
                 Chi tiết sản phẩm đã xóa:
@@ -733,10 +810,13 @@ public class ProductsAPI {
                 adminUsername,
                 product.getId(),
                 product.getName(),
-                product.getCategorie() != null ? product.getCategorie().getName() : "Không có"));
+                categoryName));
 
-        // Add size-specific information
+        // Add size-specific information with preloaded size names
         if (product.getSizes() != null && !product.getSizes().isEmpty()) {
+            // Preload all size names at once
+            Map<Integer, String> sizeNameCache = preloadSizeNames(product.getSizes());
+            
             logMessage.append("\nChi tiết kích cỡ đã xóa:");
             for (ProductSize size : product.getSizes()) {
                 logMessage.append(String.format("""
@@ -744,7 +824,7 @@ public class ProductsAPI {
                         ✦ Size: %s
                           - Số lượng: %d cái
                           - Giá: %s""",
-                        size.getSize().getName(),
+                        getSizeNameFromCache(size, sizeNameCache),
                         size.getQuantity(),
                         formatPrice(size.getPrice())));
             }
@@ -787,7 +867,7 @@ public class ProductsAPI {
                         ➕ Thêm mới size %s:
                            Số lượng: %d cái
                            Giá: %s""",
-                        newSize.getSize().getName(),
+                        getSafeSizeName(newSize),
                         newSize.getQuantity(),
                         formatPrice(newSize.getPrice())));
             } else if (newSize == null) {
@@ -797,7 +877,7 @@ public class ProductsAPI {
                         ➖ Đã xóa size %s:
                            Số lượng: %d cái
                            Giá: %s""",
-                        oldSize.getSize().getName(),
+                        getSafeSizeName(oldSize),
                         oldSize.getQuantity(),
                         formatPrice(oldSize.getPrice())));
             } else if (!Objects.equals(oldSize.getQuantity(), newSize.getQuantity()) ||
@@ -808,7 +888,7 @@ public class ProductsAPI {
                         ✏ Size %s:
                            Số lượng: %d → %d cái
                            Giá: %s → %s""",
-                        oldSize.getSize().getName(),
+                        getSafeSizeName(oldSize),
                         oldSize.getQuantity(),
                         newSize.getQuantity(),
                         formatPrice(oldSize.getPrice()),
@@ -832,13 +912,6 @@ public class ProductsAPI {
         if (price == null)
             return "0 đ";
         return String.format("%,d đ", price);
-    }
-
-    private String getSizeName(Integer sizeId) {
-        if (sizeId == null)
-            return "Không xác định";
-        Optional<Size> size = sizeDAO.findById(sizeId);
-        return size.map(Size::getName).orElse("Không xác định");
     }
 
     private String formatDetailedChange(String field, String oldValue, String newValue) {
