@@ -17,9 +17,9 @@ export const validateId = (rule, value, callback) => {
     } else if (value.length > 20) {
         callback('Tài khoản không được dài quá 20 ký tự!');
     } 
-    // else if (/[^a-zA-Z0-9]/.test(value)) {
-    //     callback('Tài khoản không được chứa ký tự đặc biệt!');
-    // }
+    else if (/[^a-zA-Z0-9]/.test(value)) {
+        callback('Tài khoản không được chứa ký tự đặc biệt!');
+    }
      else {
         callback();
     }
