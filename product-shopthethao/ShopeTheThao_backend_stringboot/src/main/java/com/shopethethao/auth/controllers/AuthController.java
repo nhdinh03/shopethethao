@@ -114,30 +114,15 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(
             @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         try {
-            String loginValue = loginRequest.getId().trim();
-            String password = loginRequest.getPassword();
+            // Find and validate account
+            Account account = AccountValidationUtil.findAndValidateAccount(loginRequest.getId(), accountDAO);
 
-            // Find account
-            Account account = accountDAO.findById(loginValue)
-                    .orElseGet(() -> accountDAO.findByPhone(loginValue)
-                            .orElseThrow(() -> new UsernameNotFoundException(
-                                    "Không tìm thấy tài khoản với ID hoặc số điện thoại này " + loginValue)));
-
-            // Validate account
-            AccountValidationUtil.validateAccount(account, password, encoder);
+            // Basic account validation (verified, not locked, correct password)
+            AccountValidationUtil.validateAccount(account, loginRequest.getPassword(), encoder);
 
             // Authenticate
-            Authentication authentication;
-            try {
-                authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(account.getId(), password));
-            } catch (Exception e) {
-                throw new InvalidCredentialsException("Thông tin đăng nhập không chính xác");
-            }
-
-            if (!(authentication.getPrincipal() instanceof UserDetailsImpl)) {
-                throw new RuntimeException("Lỗi hệ thống: Không thể xác thực người dùng");
-            }
+            Authentication authentication = AccountValidationUtil.authenticateUser(
+                account, loginRequest.getPassword(), authenticationManager);
 
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
