@@ -1,13 +1,30 @@
 import { AdminLayout, LayoutPageDefault, UserLayout } from "layouts";
-import { HomePage, LoginForm } from "../pages/User";
+import { HomePage } from "../pages/User";
 import * as PageAdmin from "../pages/Admin";
+import * as PageUser from "../pages/User";
 import NotFound from "../pages/NotFound/notFound";
 
 export const publicRoutes = [
   { path: "/", component: HomePage, layout: UserLayout },
   {
     path: "/login",
-    component: LoginForm,
+    component: PageUser.LoginForm,
+    layout: LayoutPageDefault,
+  },
+  {
+    path: "/register",
+    component: PageUser.RegisterForm,
+    layout: LayoutPageDefault,
+  },
+  { path: "/otp", component: PageUser.OtpForm, layout: LayoutPageDefault },
+  {
+    path: "/changepassword",
+    component: PageUser.ChangePasswordForm,
+    layout: LayoutPageDefault,
+  },
+  {
+    path: "/forgotpassword",
+    component: PageUser.ResetPasswordForm,
     layout: LayoutPageDefault,
   },
   {
