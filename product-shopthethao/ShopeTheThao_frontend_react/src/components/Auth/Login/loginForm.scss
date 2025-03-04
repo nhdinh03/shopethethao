@@ -180,6 +180,18 @@
             }
             // Removed the transform scale effect
           }
+          
+          &.error {
+            border-color: #ff4d4f;
+            
+            input {
+              color: #ff4d4f;
+            }
+            
+            .field-icon {
+              color: #ff4d4f;
+            }
+          }
         }
       }
 
@@ -420,6 +432,13 @@
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
     }
   }
+}
+
+.error-message {
+  color: #ff4d4f;
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 8px;
 }
 
 @media (max-width: 1024px) {

@@ -3,19 +3,53 @@ import { useNavigate } from "react-router-dom";
 import { FiLock, FiEye, FiEyeOff, FiUser } from "react-icons/fi";
 import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import "./login.scss";
+import "./loginForm.scss";
 import img from "assets/Img";
 import { useAuth } from "hooks/useAuth";
 import { message } from "antd";
-import { getRedirectPath, getLoginMessage } from 'utils/roleManager';
+import { getRedirectPath, getLoginMessage } from "utils/roleManager";
+import { validateId, validatePassword } from "../Custom";
 
-const Login = () => {
+const LoginForm = () => {
   const navigate = useNavigate();
   const { login, loading, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({
+    id: "",
+    password: "",
+  });
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { id: "", password: "" };
+
+    // Validate ID
+    validateId(null, formData.id, (error) => {
+      if (error) {
+        newErrors.id = error;
+        isValid = false;
+      }
+    });
+
+    // Validate Password
+    validatePassword(null, formData.password, (error) => {
+      if (error) {
+        newErrors.password = error;
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      message.error("Vui lòng kiểm tra lại thông tin đăng nhập!");
+      return;
+    }
 
     try {
       const response = await login({
@@ -29,7 +63,10 @@ const Login = () => {
       navigate(redirectPath);
       message.success(loginMessage);
     } catch (err) {
-      message.error("Đăng nhập thất bại kiểm tra lại thông tin!");
+      const errorMessage =
+        err.response?.data?.message ||
+        "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!";
+      message.error(errorMessage);
     }
   };
 
@@ -39,6 +76,14 @@ const Login = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value.trim(),
     }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
   useEffect(() => {
@@ -84,8 +129,8 @@ const Login = () => {
       >
         <motion.div
           className="form-container"
-          whileHover={{ scale: 1.005 }}  // Reduced from 1.01
-          transition={{ type: "spring", stiffness: 200 }}  // Reduced stiffness
+          whileHover={{ scale: 1.005 }} // Reduced from 1.01
+          transition={{ type: "spring", stiffness: 200 }} // Reduced stiffness
         >
           {/* Form Header with Hover Effect */}
           <motion.div className="form-header">
@@ -93,8 +138,8 @@ const Login = () => {
               src={img.Co_VN}
               alt="Logo"
               className="brand-logo"
-              whileHover={{ scale: 1.05 }}  // Reduced from 1.1
-              whileTap={{ scale: 0.98 }}   // Increased from 0.95
+              whileHover={{ scale: 1.05 }} // Reduced from 1.1
+              whileTap={{ scale: 0.98 }} // Increased from 0.95
             />
             <motion.h2
               initial={{ y: 20, opacity: 0 }}
@@ -108,12 +153,13 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="login-form">
             {/* Enhanced Input Fields */}
             <InputField
-              icon={<FiUser />} 
-              type="text" 
+              icon={<FiUser />}
+              type="text"
               name="id"
               placeholder="Nhập ID hoặc số điện thoại"
               value={formData.id}
               onChange={handleChange}
+              error={errors.id}
             />
 
             <InputField
@@ -123,6 +169,7 @@ const Login = () => {
               placeholder="Nhập mật khẩu của bạn"
               value={formData.password}
               onChange={handleChange}
+              error={errors.password}
               endIcon={
                 <button
                   type="button"
@@ -149,8 +196,8 @@ const Login = () => {
               type="submit"
               className="submit-button"
               disabled={loading}
-              whileHover={{ scale: 1.01 }}  // Reduced from 1.02
-              whileTap={{ scale: 0.99 }}    // Increased from 0.98
+              whileHover={{ scale: 1.01 }} // Reduced from 1.02
+              whileTap={{ scale: 0.99 }} // Increased from 0.98
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
@@ -205,14 +252,14 @@ const Login = () => {
 };
 
 // Optimized helper components
-const InputField = ({ icon, endIcon, ...props }) => (
+const InputField = ({ icon, endIcon, error, ...props }) => (
   <motion.div
     className="form-group"
-    whileHover={{ scale: 1.01 }}    // Reduced from 1.02
-    whileTap={{ scale: 0.99 }}      // Increased from 0.98
-    transition={{ duration: 0.1 }}   // Reduced from 0.2
+    whileHover={{ scale: 1.01 }} // Reduced from 1.02
+    whileTap={{ scale: 0.99 }} // Increased from 0.98
+    transition={{ duration: 0.1 }} // Reduced from 0.2
   >
-    <div className="input-field">
+    <div className={`input-field ${error ? "error" : ""}`}>
       <motion.span
         className="field-icon"
         initial={{ opacity: 0.5 }}
@@ -223,6 +270,16 @@ const InputField = ({ icon, endIcon, ...props }) => (
       <input {...props} />
       {endIcon}
     </div>
+    {error && (
+      <motion.div
+        className="error-message"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        {error}
+      </motion.div>
+    )}
   </motion.div>
 );
 
@@ -240,15 +297,15 @@ const SocialButton = ({ icon, label, color }) => (
     className={`social-button ${label.toLowerCase()}`}
     style={{ "--button-color": color }}
     whileHover={{
-      scale: 1.02,                        // Reduced from 1.03
-      boxShadow: `0 2px 8px ${color}33`,  // Reduced shadow
+      scale: 1.02, // Reduced from 1.03
+      boxShadow: `0 2px 8px ${color}33`, // Reduced shadow
     }}
-    whileTap={{ scale: 0.99 }}           // Added gentle tap effect
-    transition={{ type: "spring", stiffness: 300, damping: 15 }}  // Optimized spring
+    whileTap={{ scale: 0.99 }} // Added gentle tap effect
+    transition={{ type: "spring", stiffness: 300, damping: 15 }} // Optimized spring
   >
     <motion.span className="icon">{icon}</motion.span>
     <span className="label">{label}</span>
   </motion.button>
 );
 
-export default Login;
+export default LoginForm;

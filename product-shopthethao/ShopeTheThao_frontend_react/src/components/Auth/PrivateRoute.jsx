@@ -1,26 +1,28 @@
-import UserNotFound from 'pages/NotFound/UserNotFound';
-import { Navigate } from 'react-router-dom';
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { hasPermission, isAdminRole } from '../../utils/roleManager';
+import UserNotFound from '../../pages/NotFound/UserNotFound';
 
+const PrivateRoute = ({ children, requiredPermission }) => {
+  const userRoles = JSON.parse(localStorage.getItem('roles') || '[]');
+  const isAuthenticated = localStorage.getItem('token');
+  const location = useLocation();
+  const isAdminPath = location.pathname.startsWith('/admin');
 
-const PrivateRoute = ({ children }) => {
-    try {
-        const userString = localStorage.getItem('user');
-        if (!userString) {
-            return <Navigate to="/login" replace />;
-        }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
 
-        const user = JSON.parse(userString);
-        
-        if (user.roles && Array.isArray(user.roles) && user.roles.includes('ADMIN')) {
-            return children;
-        }
+  // Kiểm tra quyền truy cập đường dẫn admin
+  if (isAdminPath && !isAdminRole(userRoles)) {
+    return <UserNotFound />;
+  }
 
-        return <UserNotFound />;
-        
-    } catch (error) {
-        console.error('Lỗi xác thực:', error);
-        return <Navigate to="/login" replace />;
-    }
+  if (requiredPermission && !hasPermission(userRoles, requiredPermission)) {
+    return <UserNotFound />;
+  }
+
+  return children;
 };
 
 export default PrivateRoute;
