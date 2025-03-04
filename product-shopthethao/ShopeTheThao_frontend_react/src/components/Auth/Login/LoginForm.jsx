@@ -63,9 +63,14 @@ const LoginForm = () => {
       navigate(redirectPath);
       message.success(loginMessage);
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!";
+      const errorMessage = err.response?.data?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!";
+      
+      if (errorMessage.startsWith('Tài khoản chưa được xác thực:')) {
+        message.info(errorMessage.split(':')[1]);
+        navigate('/otp', { state: { id: formData.id.trim() } });
+        return;
+      }
+      
       message.error(errorMessage);
     }
   };

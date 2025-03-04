@@ -32,8 +32,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.shopethethao.auth.otp.util.AccountLockedException;
+import com.shopethethao.auth.otp.util.AccountNotVerifiedException;
 import com.shopethethao.auth.otp.util.AccountValidationUtil;
 import com.shopethethao.auth.otp.util.EmailUtil;
+import com.shopethethao.auth.otp.util.InvalidCredentialsException;
 import com.shopethethao.auth.otp.util.OtpUtil;
 import com.shopethethao.auth.payload.auth.request.LoginRequest;
 import com.shopethethao.auth.payload.auth.request.SignupRequest;
@@ -107,87 +110,58 @@ public class AuthController {
     @Autowired
     private UserHistoryService userHistoryService;
 
-
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(
-            @Valid @RequestBody LoginRequest loginRequest,
-            HttpServletRequest request) {
+            @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         try {
-            // ✅ Kiểm tra nếu ID/Phone bị null hoặc trống
-            if (loginRequest.getId() == null || loginRequest.getId().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("ID hoặc số điện thoại không hợp lệ");
-            }
-
             String loginValue = loginRequest.getId().trim();
+            String password = loginRequest.getPassword();
 
-            // ✅ Tìm tài khoản bằng ID trước, nếu không có thì tìm bằng phone
+            // Find account
             Account account = accountDAO.findById(loginValue)
                     .orElseGet(() -> accountDAO.findByPhone(loginValue)
                             .orElseThrow(() -> new UsernameNotFoundException(
-                                    "Không tìm thấy người dùng với ID hoặc phone: " + loginValue)));
+                                    "Không tìm thấy tài khoản với ID hoặc số điện thoại này " + loginValue)));
 
-            // ✅ Kiểm tra tài khoản có bị khóa hay chưa xác minh không
-            AccountValidationUtil.validateAccount(account, loginRequest.getPassword(), encoder);
+            // Validate account
+            AccountValidationUtil.validateAccount(account, password, encoder);
 
+            // Authenticate
             Authentication authentication;
             try {
                 authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(account.getId(), loginRequest.getPassword()));
+                        new UsernamePasswordAuthenticationToken(account.getId(), password));
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Sai thông tin đăng nhập hoặc token không hợp lệ");
+                throw new InvalidCredentialsException("Thông tin đăng nhập không chính xác");
             }
 
-            // ✅ Kiểm tra `authentication.getPrincipal()`
             if (!(authentication.getPrincipal() instanceof UserDetailsImpl)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Lỗi xác thực, không thể lấy thông tin người dùng");
+                throw new RuntimeException("Lỗi hệ thống: Không thể xác thực người dùng");
             }
 
-            // ✅ Lấy thông tin từ `UserDetailsImpl`
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-            // Trước khi tạo token mới, xóa hết token cũ
+            // Token management
             String userId = userDetails.getId();
-            tokenManager.removeAllTokensForUser(userId);
-            tokenStore.invalidateToken(userId);
-            refreshTokenService.deleteByAccountId(userId);
+            cleanupExistingTokens(userId);
 
-            // Tạo token mới
             String jwt = jwtUtils.generateJwtToken(authentication);
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(userId);
+            tokenStore.saveNewToken(userId, jwt);
 
+            // Process user details
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            tokenStore.saveNewToken(userDetails.getId(), jwt);
+            String gender = (userDetails.getGender() != null) ? 
+                           userDetails.getGender().toString() : 
+                           "Không xác định";
 
-            // ✅ Xử lý `gender` để tránh lỗi `NullPointerException`
-            String gender = (userDetails.getGender() != null) ? userDetails.getGender().toString() : "Không xác định";
+            // Log successful login
+            logSuccessfulLogin(userDetails, roles, request);
 
-            // Thêm try-catch cho việc ghi log
-            try {
-                userHistoryService.logUserAction(
-                        userDetails.getId(),
-                        UserActionType.LOGIN,
-                        String.format("""
-                                Đăng nhập thành công
-                                Chi tiết:
-                                - ID: %s
-                                - Họ tên: %s
-                                - Vai trò: %s""",
-                                userDetails.getId(),
-                                userDetails.getFullname(),
-                                String.join(", ", roles)),
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent"));
-
-            } catch (Exception e) {
-                logger.error("Failed to log login action for user {}: {}", userDetails.getId(), e.getMessage());
-            }
-
-            // ✅ Trả về JWT và thông tin người dùng
+            // Return successful response
             return ResponseEntity.ok(new JwtResponseDTO(
                     userDetails.getId(),
                     userDetails.getPhone(),
@@ -198,13 +172,59 @@ public class AuthController {
                     gender,
                     userDetails.getImage(),
                     jwt,
-                    refreshToken.getToken(), // Thêm refresh token vào response
+                    refreshToken.getToken(),
                     "Bearer",
                     roles));
-        } catch (Exception e) {
+
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (AccountNotVerifiedException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (AccountLockedException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (InvalidCredentialsException e) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(new MessageResponse("Đăng nhập thất bại: " + e.getMessage()));
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Lỗi đăng nhập không mong muốn: ", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại sau."));
+        }
+    }
+
+    private void cleanupExistingTokens(String userId) {
+        tokenManager.removeAllTokensForUser(userId);
+        tokenStore.invalidateToken(userId);
+        refreshTokenService.deleteByAccountId(userId);
+    }
+
+    private void logSuccessfulLogin(UserDetailsImpl userDetails, List<String> roles, HttpServletRequest request) {
+        try {
+            userHistoryService.logUserAction(
+                    userDetails.getId(),
+                    UserActionType.LOGIN,
+                    String.format("""
+                            Đăng nhập thành công
+                            Chi tiết:
+                            - ID: %s
+                            - Họ tên: %s
+                            - Vai trò: %s""",
+                            userDetails.getId(),
+                            userDetails.getFullname(),
+                            String.join(", ", roles)),
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"));
+        } catch (Exception e) {
+            logger.error("Không ghi được log đăng nhập cho người dùng {}: {}", 
+                        userDetails.getId(), e.getMessage());
         }
     }
 
@@ -378,8 +398,8 @@ public class AuthController {
                     verificationDAO.save(verification);
                     securityAccount.setVerified(true);
                     accountDAO.save(securityAccount);
-                    isOtpValid = true;
-                    break; // Dừng vòng lặp nếu OTP hợp lệ
+                    isOtpValid = true; // Dừng vòng lặp nếu OTP hợp lệ
+                    break;
                 } else {
                     return ResponseEntity.badRequest()
                             .body(new MessageResponse("Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới."));

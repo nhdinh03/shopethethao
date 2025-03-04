@@ -7,14 +7,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class AccountValidationUtil {
 
     public static void validateAccount(Account account, String password, PasswordEncoder encoder) {
-        if (!account.getVerified()) { // ✅ Sử dụng getter đúng kiểu
-            throw new AccountNotVerifiedException("Tài khoản chưa được xác thực. Vui lòng xác thực email của bạn!");
+        if (!account.getVerified()) {
+            throw new AccountNotVerifiedException(
+                "Tài khoản chưa được xác thực: Vui lòng thực hiện xác thực tài khoản để đăng nhập !.");
         }
+        
         if (account.getStatus() == 0) {
-            throw new AccountLockedException("Tài khoản của bạn bị khóa, vui lòng liên hệ quản trị viên!");
+            throw new AccountLockedException(
+                "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.");
         }
+        
         if (!encoder.matches(password, account.getPassword())) {
-            throw new InvalidCredentialsException("Sai mật khẩu, vui lòng kiểm tra lại!");
+            throw new InvalidCredentialsException(
+                "Mật khẩu không chính xác. Vui lòng kiểm tra lại.");
         }
     }
 }
