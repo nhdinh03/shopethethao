@@ -5,26 +5,33 @@ import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import "./login.scss";
 import img from "assets/Img";
-import { useAuth } from 'hooks/useAuth';
+import { useAuth } from "hooks/useAuth";
+import { message } from "antd";
+import { getRedirectPath, getLoginMessage } from 'utils/roleManager';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login, loading, isAuthenticated } = useAuth();
-  
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/');
-    }
-  }, [isAuthenticated, navigate]);
-
-  const [formData, setFormData] = useState({
-    id: "",
-    password: "",
-    remember: false,
-  });
-
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await login({
+        id: formData.id.trim(),
+        password: formData.password,
+      });
+
+      const redirectPath = getRedirectPath(response.roles);
+      const loginMessage = getLoginMessage(response.roles);
+
+      navigate(redirectPath);
+      message.success(loginMessage);
+    } catch (err) {
+      message.error("Đăng nhập thất bại kiểm tra lại thông tin!");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -34,32 +41,24 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    try {
-      const response = await login({
-        id: formData.id.trim(),
-        password: formData.password
-      });
-      
-      if (response.roles.includes('ADMIN')) {
-        navigate("/admin/index");
-      } else {
-        navigate("/");
-      }
-    } catch (err) {
-      // Error is handled by useAuth hook
-      console.error("Login failed:", err.message);
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
     }
-  };
+  }, [isAuthenticated, navigate]);
+
+  const [formData, setFormData] = useState({
+    id: "",
+    password: "",
+    remember: false,
+  });
 
   return (
     <div className="login-wrapper">
       {/* Right Side with Welcome Content */}
       <motion.div
         className="login-left"
-        initial={{ opacity: 0, x: 100 }}  // Changed from -100 to 100
+        initial={{ opacity: 0, x: 100 }} // Changed from -100 to 100
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
       >
@@ -79,14 +78,14 @@ const Login = () => {
       {/* Left Side with Form */}
       <motion.div
         className="login-right"
-        initial={{ opacity: 0, x: -100 }}  // Changed from 100 to -100
+        initial={{ opacity: 0, x: -100 }} // Changed from 100 to -100
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
       >
         <motion.div
           className="form-container"
-          whileHover={{ scale: 1.01 }}
-          transition={{ type: "spring", stiffness: 300 }}
+          whileHover={{ scale: 1.005 }}  // Reduced from 1.01
+          transition={{ type: "spring", stiffness: 200 }}  // Reduced stiffness
         >
           {/* Form Header with Hover Effect */}
           <motion.div className="form-header">
@@ -94,8 +93,8 @@ const Login = () => {
               src={img.Co_VN}
               alt="Logo"
               className="brand-logo"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.05 }}  // Reduced from 1.1
+              whileTap={{ scale: 0.98 }}   // Increased from 0.95
             />
             <motion.h2
               initial={{ y: 20, opacity: 0 }}
@@ -109,10 +108,10 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="login-form">
             {/* Enhanced Input Fields */}
             <InputField
-              icon={<FiUser />} // Changed from FiMail to FiUser
-              type="text" // Changed from email to text
-              name="id" // Changed from email to id
-              placeholder="Nhập ID hoặc số điện thoại" // Updated placeholder
+              icon={<FiUser />} 
+              type="text" 
+              name="id"
+              placeholder="Nhập ID hoặc số điện thoại"
               value={formData.id}
               onChange={handleChange}
             />
@@ -125,22 +124,19 @@ const Login = () => {
               value={formData.password}
               onChange={handleChange}
               endIcon={
-                <motion.button
+                <button
                   type="button"
                   className="visibility-toggle"
-                  onClick={() =>
-                    setShowPassword(!showPassword)
-                  }
-                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <FiEyeOff /> : <FiEye />}
-                </motion.button>
+                </button>
               }
             />
 
             {/* Enhanced Checkbox */}
             <motion.div className="form-options" whileHover={{ scale: 1.02 }}>
-              <CustomCheckbox 
+              <CustomCheckbox
                 checked={formData.remember}
                 onChange={(e) => handleChange(e)}
                 name="remember"
@@ -153,8 +149,8 @@ const Login = () => {
               type="submit"
               className="submit-button"
               disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}  // Reduced from 1.02
+              whileTap={{ scale: 0.99 }}    // Increased from 0.98
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
@@ -212,9 +208,9 @@ const Login = () => {
 const InputField = ({ icon, endIcon, ...props }) => (
   <motion.div
     className="form-group"
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    transition={{ duration: 0.2 }}
+    whileHover={{ scale: 1.01 }}    // Reduced from 1.02
+    whileTap={{ scale: 0.99 }}      // Increased from 0.98
+    transition={{ duration: 0.1 }}   // Reduced from 0.2
   >
     <div className="input-field">
       <motion.span
@@ -244,10 +240,11 @@ const SocialButton = ({ icon, label, color }) => (
     className={`social-button ${label.toLowerCase()}`}
     style={{ "--button-color": color }}
     whileHover={{
-      scale: 1.03,
-      boxShadow: `0 4px 12px ${color}33`,
+      scale: 1.02,                        // Reduced from 1.03
+      boxShadow: `0 2px 8px ${color}33`,  // Reduced shadow
     }}
-    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+    whileTap={{ scale: 0.99 }}           // Added gentle tap effect
+    transition={{ type: "spring", stiffness: 300, damping: 15 }}  // Optimized spring
   >
     <motion.span className="icon">{icon}</motion.span>
     <span className="label">{label}</span>

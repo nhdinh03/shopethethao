@@ -15,6 +15,7 @@ import {
   Avatar,
   Tooltip,
   Switch,
+  message,
 } from "antd";
 import img from "assets/Img";
 import { useDarkMode } from "config/DarkModeProvider";
@@ -31,42 +32,28 @@ function HeaderAdminRight() {
   const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
-    // Use AuthService to get user data from localStorage
     const userLocalData = authApi.getUserData().user;
-    // console.log("User data from localStorage:", userLocalData);
-    
     if (userLocalData) {
       setUserData(userLocalData);
-      
-      // Generate and store image URL for debugging
       if (userLocalData.image) {
         const imgUrl = `http://localhost:8081/api/upload/${userLocalData.image}`;
-        // console.log("Generated image URL:", imgUrl);
         setImageUrl(imgUrl);
       }
     }
   }, []);
-
-  // Function to get the image URL, matching the pattern used in Accounts component
   const getImageUrl = (imageName) => {
     if (!imageName) return '';
     const url = `http://localhost:8081/api/upload/${imageName}`;
-    // console.log("Image URL being used:", url);
     return url;
   };
 
   const handleLogout = async () => {
     try {
-      // Use AuthService for logout
       authApi.logout();
-      // Navigate to login page
       navigate('/login');
-      // Optional: Show success message
-      toast.success('Đăng xuất thành công!');
+      message.success("Đăng xuất thành công!");
     } catch (error) {
-      console.error('Logout failed:', error);
-      // Optional: Show error message
-      toast.error('Đăng xuất thất bại, vui lòng thử lại!');
+      message.error("Đăng xuất thất bại!");
     }
   };
 

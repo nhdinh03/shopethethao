@@ -71,7 +71,7 @@ public class WebSecurityConfig {
                             "/api/categories/**", "/api/comment/**", "/api/detailedInvoices/**", "/api/invoice/**",
                             "/api/productattributemappings/**", "/api/productattributes/**", "/api/products/**",
                             "/api/productsizes/**", "/api/receiptproduct/**", "/api/role/**", "/api/size/**",
-                            "/api/stockReceipts/**", "/api/suppliers/**", "/api/userhistory/**",
+                            "/api/stockReceipts/**", "/api/suppliers/**", "/api/userhistory-sse/**",
                             "/api/verifications/**").permitAll();
 
                     auth.requestMatchers("/test/test/**").permitAll();

@@ -1,9 +1,6 @@
 import axios from 'axios';
-import httpStatus from './httpStatus';
-import funcUtils from 'utils/funcUtils';
 import authApi from 'api/Admin/Auth/Login';
 
-// import authApi from '../user/Security/authApi';
 
 const baseUrl = process.env.REACT_APP_ShopeTheThao_PRODUCTION_REST_API;
 // setup axios client
@@ -15,6 +12,34 @@ const axiosClient = axios.create({
     },
     // withCredentials: true,
 });
+
+// axiosClient.interceptors.response.use(
+//     (response) => {
+//         if (response && response.data) {
+//             return response;
+//         }
+//         return response;
+//     },
+//     (error) => {
+//         if (error.response) {
+//             switch (error.response.status) {
+//                 case httpStatus.INTERNAL_SERVER_ERROR:
+//                     funcUtils.notify('Lỗi kết nối server', 'error');
+//                     break;
+//                 // case 401:
+//                 //     funcUtils.notify(error.response.data.message, 'error');
+//                 //     break;
+//                 // case httpStatus.CONFLICT:
+//                 //     funcUtils.notify(error.response.data, 'error');
+//                 //     break;
+//                 default:
+//                     console.log(error);
+//                     break;
+//             }
+//         }
+//         return Promise.reject(error);
+//     },
+// );
 
 axiosClient.interceptors.request.use(
     (config) => {
@@ -30,16 +55,4 @@ axiosClient.interceptors.request.use(
     },
     (error) => Promise.reject(error)
 );
-
-axiosClient.interceptors.response.use(
-    response => response,
-    error => {
-        if (error.response?.status === 401) {
-            authApi.logout();
-            window.location.href = '/login';
-        }
-        return Promise.reject(error);
-    }
-);
-
 export default axiosClient;
