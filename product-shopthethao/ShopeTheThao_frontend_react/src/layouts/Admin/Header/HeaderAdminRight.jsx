@@ -188,7 +188,7 @@ function HeaderAdminRight() {
       </span>
     </Tooltip>
 
-    {/* Thông báo - Replaced with the new component */}
+    {/* Thông báo */}
     <NotificationDropdown />
 
     {/* Nút cài đặt */}

@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Modal, Descriptions, Tag, Space } from 'antd';
 import moment from 'moment';
 
 const UserHistoryDetailModal = ({ visible, record, onClose }) => {
+  useEffect(() => {
+    if (visible && record && record.readStatus === 0) {
+      // Dispatch custom event when notification is viewed
+      const event = new CustomEvent('notificationRead', {
+        detail: { idHistory: record.idHistory }
+      });
+      window.dispatchEvent(event);
+    }
+  }, [visible, record]);
+
   if (!record) return null;
 
   return (
