@@ -62,6 +62,7 @@ import com.shopethethao.modules.userHistory.UserActionType;
 import com.shopethethao.modules.role.ERole;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
+import com.shopethethao.service.UserHistorySSEService;
 import com.shopethethao.service.UserHistoryService;
 
 import jakarta.mail.MessagingException;
@@ -109,6 +110,9 @@ public class AuthController {
 
     @Autowired
     private UserHistoryService userHistoryService;
+
+    @Autowired
+    private UserHistorySSEService sseService;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(
@@ -541,31 +545,54 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+        String userId = null;
         try {
             String token = request.getHeader("Authorization");
-            String userId = null;
 
             if (token != null && token.startsWith("Bearer ")) {
                 String jwt = token.substring(7);
                 try {
                     userId = jwtUtils.getUserNameFromJwtToken(jwt);
-                    // Get user details for logging
+                    
+                    // 1. First get account info
                     Account account = accountDAO.findById(userId)
                             .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+                    String rolesStr = getRolesAsString(account);
+                    
+                    // 2. Log the logout action
+                    try {
+                        userHistoryService.logUserAction(
+                            userId,
+                            UserActionType.LOGOUT,
+                            String.format("""
+                                    Đăng xuất thành công
+                                    Chi tiết:
+                                    - ID: %s
+                                    - Họ tên: %s
+                                    - Vai trò: %s
+                                    - Thời gian: %s""",
+                                    account.getId(),
+                                    account.getFullname(),
+                                    rolesStr,
+                                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))),
+                            request.getRemoteAddr(),
+                            request.getHeader("User-Agent"));
+                    } catch (Exception e) {
+                        logger.warn("Error logging logout action: {}", e.getMessage());
+                    }
 
-                    // Get roles as string
-                    String roles = account.getRoles().stream()
-                            .map(role -> role.getName().name())
-                            .collect(Collectors.joining(", "));
+                    // 3. Clean up SSE connections
+                    try {
+                        sseService.removeEmittersForUser(userId);
+                    } catch (Exception e) {
+                        logger.warn("Error cleaning up SSE connections: {}", e.getMessage());
+                    }
 
-                    // Cleanup tokens
+                    // 4. Finally invalidate tokens
                     cleanupUserTokens(userId);
 
-                    // Enhanced logout logging
-                    logDetailedUserLogout(account, roles, request);
-
                 } catch (Exception e) {
-                    logger.warn("lỗi khi đăng xuất: {}", e.getMessage());
+                    logger.warn("Error during logout process: {}", e.getMessage());
                 }
             }
 
@@ -573,41 +600,26 @@ public class AuthController {
             return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công"));
 
         } catch (Exception e) {
-            logger.error("Logout error: {}", e.getMessage());
+            logger.error("Critical error during logout: {}", e.getMessage());
             SecurityContextHolder.clearContext();
             return ResponseEntity.ok(new MessageResponse("Đăng xuất hoàn tất"));
         }
     }
 
-    private void logDetailedUserLogout(Account account, String roles, HttpServletRequest request) {
+    private String getRolesAsString(Account account) {
+        return account.getRoles().stream()
+                .map(role -> role.getName().name())
+                .collect(Collectors.joining(", "));
+    }
+
+    private void cleanupUserTokens(String userId) {
         try {
-            String logMessage = String.format("""
-                    Đăng xuất thành công
-                    Chi tiết người dùng:
-                    - ID: %s
-                    - Họ tên: %s
-                    - Vai trò: %s
-                    - Thời gian: %s""",
-                    account.getId(),
-                    account.getFullname(),
-                    roles,
-                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
-
-            userHistoryService.logUserAction(
-                    account.getId(),
-                    UserActionType.LOGOUT,
-                    logMessage,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent"));
-
-            logger.info("Người dùng đã đăng xuất - ID: {}, Tên: {}, Vai trò: {}",
-                    account.getId(),
-                    account.getFullname(),
-                    roles);
-
+            refreshTokenService.deleteByAccountId(userId);
+            tokenStore.invalidateToken(userId);
+            tokenManager.removeToken(userId);
         } catch (Exception e) {
-            logger.error("Không thể thực hiện hành động đăng xuất cho người dùng {}: {}", account.getId(),
-                    e.getMessage());
+            logger.error("Token cleanup failed for user {}: {}", userId, e.getMessage());
+            // Continue with logout even if token cleanup fails
         }
     }
 
@@ -624,16 +636,6 @@ public class AuthController {
                 })
                 .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
                         "Refresh token không có trong database!"));
-    }
-
-    private void cleanupUserTokens(String userId) {
-        try {
-            refreshTokenService.deleteByAccountId(userId);
-            tokenStore.invalidateToken(userId);
-            tokenManager.removeToken(userId);
-        } catch (Exception e) {
-            logger.error("Token cleanup failed for user {}: {}", userId, e.getMessage());
-        }
     }
 
 }

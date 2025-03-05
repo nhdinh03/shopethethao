@@ -17,7 +17,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class UserHistorySSEService {
     private static final Logger logger = LoggerFactory.getLogger(UserHistorySSEService.class);
 
-    // Danh sách trình phát SSE cho người dùng xác thực và quản trị viên Quản lý kết nối:
+    // Danh sách trình phát SSE cho người dùng xác thực và quản trị viên Quản lý kết
+    // nối:
     private final CopyOnWriteArrayList<SseEmitter> authEmitters = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<SseEmitter> adminEmitters = new CopyOnWriteArrayList<>();
     private final ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
@@ -213,5 +214,44 @@ public class UserHistorySSEService {
 
     public int getAdminEmitterCount() {
         return adminEmitters.size();
+    }
+
+    public void removeEmittersForUser(String userId) {
+        List<SseEmitter> toRemoveAuth = new ArrayList<>();
+        List<SseEmitter> toRemoveAdmin = new ArrayList<>();
+
+        // Just mark emitters for removal without trying to send final messages
+        authEmitters.forEach(emitter -> {
+            try {
+                emitter.complete(); // Complete the emitter properly
+                toRemoveAuth.add(emitter);
+            } catch (Exception e) {
+                logger.debug("Error completing auth emitter: {}", e.getMessage());
+                toRemoveAuth.add(emitter);
+            }
+        });
+
+        adminEmitters.forEach(emitter -> {
+            try {
+                emitter.complete(); // Complete the emitter properly
+                toRemoveAdmin.add(emitter);
+            } catch (Exception e) {
+                logger.debug("Error completing admin emitter: {}", e.getMessage());
+                toRemoveAdmin.add(emitter);
+            }
+        });
+
+        // Remove all marked emitters
+        if (!toRemoveAuth.isEmpty()) {
+            authEmitters.removeAll(toRemoveAuth);
+            logger.debug("Removed {} auth emitters", toRemoveAuth.size());
+        }
+
+        if (!toRemoveAdmin.isEmpty()) {
+            adminEmitters.removeAll(toRemoveAdmin);
+            logger.debug("Removed {} admin emitters", toRemoveAdmin.size());
+        }
+
+        logger.info("Cleaned up SSE emitters for user {}", userId);
     }
 }
