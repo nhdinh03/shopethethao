@@ -1,5 +1,7 @@
 package com.shopethethao.auth.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,14 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.auth.security.jwt.util.JwtUtils;
 import com.shopethethao.auth.security.token.TokenStore;
 import com.shopethethao.auth.security.user.entity.UserDetailsImpl;
-import com.shopethethao.auth.payload.response.MessageResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RequestMapping("/users")
 @RestController
