@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as solidIcons from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.scss";
-import { HomeFilled, FileTextOutlined } from "@ant-design/icons";
+import { HomeFilled } from "@ant-design/icons";
 
 function getItem(label, key, icon, children, type) {
   return { key, icon, children, label, type };

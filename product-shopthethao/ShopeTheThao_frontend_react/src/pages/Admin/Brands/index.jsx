@@ -1,30 +1,15 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Table,
   message,
   Button,
-  Space,
-  Modal,
-  Typography,
   Form,
-  Input,
-  Popconfirm,
-  Tooltip,
-  Select,
   Row,
 } from "antd";
 import {
-  HomeOutlined,
-  MailOutlined,
-  PhoneOutlined,
   PlusOutlined,
-  TagOutlined,
 } from "@ant-design/icons";
 
 import brandsApi from "api/Admin/Brands/Brands";
-import styles from "..//index.scss";
-
-import { Edit, Trash2, Search } from "lucide-react";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { BrandsModal, BrandsPagination, BrandsTable } from "components/Admin";
 const Brands = () => {
@@ -33,14 +18,14 @@ const Brands = () => {
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
-  const [searchText, setSearchText] = useState("");
+  // const [searchText, setSearchText] = useState("");
   const [brands, setBrands] = useState([]);
   const [open, setOpen] = useState(false);
   const [editBrand, setEditBrand] = useState(null);
   const [loading, setLoading] = useState(false);
   const [workSomeThing, setWorkSomeThing] = useState(false); // cập nhật danh sách
   const [form] = Form.useForm();
-  const { Title, Text } = Typography;
+
 
   useEffect(() => {
     let isMounted = true;
@@ -50,7 +35,7 @@ const Brands = () => {
         const res = await brandsApi.getByPage(
           currentPage,
           pageSize,
-          searchText
+          // searchText
         );
         if (isMounted) {
           setBrands(res.data);
@@ -66,7 +51,7 @@ const Brands = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, searchText, workSomeThing]);
+  }, [currentPage, pageSize, workSomeThing]);
 
   const handleEditData = (brand) => {
     setEditBrand(brand);
@@ -119,10 +104,10 @@ const Brands = () => {
     setCurrentPage(1);
   };
 
-  const handleSearch = (value) => {
-    setSearchText(value);
-    setCurrentPage(1);
-  };
+  // const handleSearch = (value) => {
+  //   setSearchText(value);
+  //   setCurrentPage(1);
+  // };
 
   const columns = [
     { title: "🆔 ID", dataIndex: "id", key: "id", width: 80 },

@@ -10,9 +10,9 @@ public class JwtSecretGenerator {
         byte[] keyBytes = Keys.secretKeyFor(SignatureAlgorithm.HS256).getEncoded();
         String secretKey = Base64.getEncoder().encodeToString(keyBytes);
         
-        // System.out.println("Generated JWT Secret Key (Base64):");
-        // System.out.println(secretKey);
-        // System.out.println("Key length: " + keyBytes.length * 8 + " bits");
+        System.out.println("Generated JWT Secret Key (Base64):");
+        System.out.println(secretKey);
+        System.out.println("Key length: " + keyBytes.length * 8 + " bits");
     }
 }
 

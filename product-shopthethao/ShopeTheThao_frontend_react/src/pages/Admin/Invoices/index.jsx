@@ -10,7 +10,6 @@ import {
   Modal,
   Form,
   Input,
-  DatePicker,
   Select,
   Image,
   Tag,
@@ -18,18 +17,16 @@ import {
   Empty,
   Typography,
   Card,
+  Col,
 } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCheckCircle,
   faTruck,
-  faBan,
 } from "@fortawesome/free-solid-svg-icons";
 
 import {
   UserOutlined,
   CalendarOutlined,
-  HomeOutlined,
   TagOutlined,
   ShoppingOutlined,
   EyeOutlined,
@@ -41,15 +38,14 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
-import { Col, Row as AntRow, Divider, Statistic } from "antd";
+
 
 import moment from "moment";
 import { invoicesApi } from "api/Admin";
 import cancelReasonApi from "api/Admin/cancelReason/CancelReasonApi";
 import PaginationComponent from "components/PaginationComponent";
-
 const { Text } = Typography;
-const { Option } = Select;
+
 
 const Invoices = () => {
   const [pendingInvoices, setPendingInvoices] = useState([]);

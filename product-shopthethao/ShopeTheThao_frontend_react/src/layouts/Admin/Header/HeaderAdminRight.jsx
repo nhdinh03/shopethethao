@@ -1,20 +1,15 @@
 import { LogoutOutlined, SearchOutlined, SettingOutlined } from "@ant-design/icons";
 import {
   faGear,
-  faRightFromBracket,
   faUser,
   faTrophy,
-  faSun,
-  faMoon,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Dropdown,
   Input,
-  Popconfirm,
   Avatar,
   Tooltip,
-  Switch,
   message,
 } from "antd";
 import img from "assets/Img";

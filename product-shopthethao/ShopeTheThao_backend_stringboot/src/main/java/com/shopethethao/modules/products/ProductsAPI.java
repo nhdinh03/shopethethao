@@ -40,6 +40,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.shopethethao.dto.ProductDetailDTO;
 import com.shopethethao.dto.ResponseDTO;
+import com.shopethethao.modules.categories.Categorie;
+import com.shopethethao.modules.categories.CategorieDAO;
 import com.shopethethao.modules.productSizes.ProductSize;
 import com.shopethethao.modules.productSizes.ProductSizeDAO;
 import com.shopethethao.modules.product_Images.ProductImages;
@@ -69,6 +71,9 @@ public class ProductsAPI {
 
     @Autowired
     private ProductSizeDAO productSizeDAO;
+
+    @Autowired
+    private CategorieDAO categorieDAO;
 
     @Autowired
     private SizeDAO sizeDAO;
@@ -349,21 +354,38 @@ public class ProductsAPI {
         return request.getHeader("User-Agent");
     }
 
+    private String getCategoryName(Product product) {
+        if (product == null || product.getCategorie() == null) {
+            return "Chưa phân loại";
+        }
+
+        // Ensure category is loaded from database
+        try {
+            Integer categoryId = product.getCategorie().getId();
+            if (categoryId != null) {
+                Optional<Categorie> category = categorieDAO.findById(categoryId);
+                if (category.isPresent() && category.get().getName() != null &&
+                        !category.get().getName().trim().isEmpty()) {
+                    return category.get().getName();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error loading category for product {}: {}",
+                    product.getId(), e.getMessage());
+        }
+
+        return "Chưa phân loại";
+    }
+
     // Create detailed log message for product creation
     private String createProductLogMessage(String adminUsername, Product savedProduct) {
         StringBuilder logMessage = new StringBuilder();
 
-        // Get category name safely - check both category and category name for null
-        String categoryName = "Chưa phân loại";
-        if (savedProduct.getCategorie() != null && savedProduct.getCategorie().getName() != null && 
-            !savedProduct.getCategorie().getName().trim().isEmpty()) {
-            categoryName = savedProduct.getCategorie().getName();
-        }
-
+        String categoryName = getCategoryName(savedProduct);
         // Format header section
         logMessage.append(String.format("""
                 ADMIN: %s đã thêm sản phẩm mới
-                
+
                 THÔNG TIN CƠ BẢN:
                 - ID: #%d
                 - Tên sản phẩm: %s
@@ -381,7 +403,8 @@ public class ProductsAPI {
         // Format size and price section
         if (savedProduct.getSizes() != null && !savedProduct.getSizes().isEmpty()) {
             logMessage.append("\nCHI TIẾT KÍCH CỠ VÀ GIÁ:");
-            // Sort sizes by name for consistent display and preload all sizes to avoid N+1 queries
+            // Sort sizes by name for consistent display and preload all sizes to avoid N+1
+            // queries
             Map<Integer, String> sizeNameCache = preloadSizeNames(savedProduct.getSizes());
             savedProduct.getSizes().stream()
                     .sorted((s1, s2) -> {
@@ -418,7 +441,7 @@ public class ProductsAPI {
 
             logMessage.append(String.format("""
 
-                    
+
                     TỔNG QUAN:
                     - Tổng số lượng: %d cái
                     - Khoảng giá: %s → %s""",
@@ -431,7 +454,7 @@ public class ProductsAPI {
         if (savedProduct.getImages() != null && !savedProduct.getImages().isEmpty()) {
             logMessage.append(String.format("""
 
-                    
+
                     HÌNH ẢNH (%d):""",
                     savedProduct.getImages().size()));
 
@@ -457,7 +480,7 @@ public class ProductsAPI {
         } else {
             logMessage.append("""
 
-                
+
                     HÌNH ẢNH (0): Không có hình ảnh""");
         }
 
@@ -466,6 +489,7 @@ public class ProductsAPI {
 
     /**
      * Preloads all size names in a single query to avoid N+1 query problem
+     * 
      * @param sizes List of ProductSize objects
      * @return Map of size ID to size name
      */
@@ -508,6 +532,7 @@ public class ProductsAPI {
 
     /**
      * Safely gets the size name from a ProductSize object, handling null values
+     * 
      * @param productSize The ProductSize object
      * @return The size name or a default value if null
      */
@@ -518,7 +543,7 @@ public class ProductsAPI {
         if (productSize.getSize() == null) {
             return "Chưa xác định";
         }
-        
+
         // Attempt to get size from database if ID is available but name is null
         if (productSize.getSize().getId() != null && productSize.getSize().getName() == null) {
             Optional<Size> size = sizeDAO.findById(productSize.getSize().getId());
@@ -526,23 +551,22 @@ public class ProductsAPI {
                 return size.get().getName();
             }
         }
-        
-        return productSize.getSize().getName() != null ? 
-               productSize.getSize().getName() : "Chưa xác định";
+
+        return productSize.getSize().getName() != null ? productSize.getSize().getName() : "Chưa xác định";
     }
 
     /**
      * Gets the name of a size by its ID, handling null values and database lookup
+     * 
      * @param sizeId The ID of the size
      * @return The size name or a default value if not found/null
      */
     private String getSizeName(Integer sizeId) {
         if (sizeId == null)
             return "Chưa xác định";
-            
+
         Optional<Size> size = sizeDAO.findById(sizeId);
-        return size.isPresent() && size.get().getName() != null ? 
-               size.get().getName() : "Chưa xác định";
+        return size.isPresent() && size.get().getName() != null ? size.get().getName() : "Chưa xác định";
     }
 
     private String createUpdateLogMessage(String adminUsername, Product oldProduct, Product updatedProduct) {
@@ -656,7 +680,7 @@ public class ProductsAPI {
                 oldSizeMap.put(size.getSize().getId(), size);
             }
         }
-        
+
         Map<Integer, ProductSize> newSizeMap = new HashMap<>();
         for (ProductSize size : newSizes) {
             if (size.getSize() != null && size.getSize().getId() != null) {
@@ -771,7 +795,7 @@ public class ProductsAPI {
             BigDecimal valueDiff = newTotalValue.subtract(oldTotalValue);
             logMessage.append(String.format("""
 
-    
+
                     📊 TỔNG HỢP THAY ĐỔI:
                     ├─ Số lượng: %d → %d cái (%s%d)
                     ├─ Tổng giá trị: %s → %s
@@ -792,14 +816,14 @@ public class ProductsAPI {
     // Create detailed log message for product deletion
     private String createDeleteLogMessage(String adminUsername, Product product) {
         StringBuilder logMessage = new StringBuilder();
-        
+
         // Get category name safely - check both category and category name for null
         String categoryName = "Chưa phân loại";
-        if (product.getCategorie() != null && product.getCategorie().getName() != null && 
-            !product.getCategorie().getName().trim().isEmpty()) {
+        if (product.getCategorie() != null && product.getCategorie().getName() != null &&
+                !product.getCategorie().getName().trim().isEmpty()) {
             categoryName = product.getCategorie().getName();
         }
-        
+
         logMessage.append(String.format("""
                 ADMIN: %s đã xóa sản phẩm
                 Chi tiết sản phẩm đã xóa:
@@ -816,7 +840,7 @@ public class ProductsAPI {
         if (product.getSizes() != null && !product.getSizes().isEmpty()) {
             // Preload all size names at once
             Map<Integer, String> sizeNameCache = preloadSizeNames(product.getSizes());
-            
+
             logMessage.append("\nChi tiết kích cỡ đã xóa:");
             for (ProductSize size : product.getSizes()) {
                 logMessage.append(String.format("""
