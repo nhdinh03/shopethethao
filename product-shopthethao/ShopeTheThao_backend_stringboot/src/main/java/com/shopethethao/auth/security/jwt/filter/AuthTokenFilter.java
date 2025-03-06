@@ -39,6 +39,19 @@ public class AuthTokenFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
     try {
+      // Skip authentication for preflight requests
+      if (request.getMethod().equals("OPTIONS")) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+      
+      // Skip authentication for public paths
+      String path = request.getServletPath();
+      if (isPublicPath(path)) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+
       String jwt = parseJwt(request);
       if (jwt != null) {
         boolean isValid = jwtUtils.validateJwtToken(jwt);
@@ -51,6 +64,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
           authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
           SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+          // Only send error for API requests, not for resources
+          if (path.startsWith("/api/") && !isPublicPath(path)) {
+            sendErrorResponse(response, "Token không hợp lệ hoặc đã hết hạn", "TOKEN_EXPIRED");
+            return;
+          }
         }
       }
       filterChain.doFilter(request, response);
@@ -58,6 +77,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       logger.error("Cannot set user authentication: {}", e.getMessage());
       filterChain.doFilter(request, response);
     }
+  }
+  
+  private boolean isPublicPath(String path) {
+    // Define paths that don't need authentication
+    return path.startsWith("/api/auth/") || 
+           path.equals("/api/products") || 
+           path.startsWith("/api/categories") ||
+           path.startsWith("/api/brands");
   }
 
   private void sendErrorResponse(HttpServletResponse response, String message, String code) throws IOException {
@@ -84,85 +111,3 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     return null;
   }
 }
-
-// package com.shopethethao.auth.security.jwt.filter;
-
-// import java.io.IOException;
-
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-// import org.springframework.security.core.context.SecurityContextHolder;
-// import org.springframework.security.core.userdetails.UserDetails;
-// import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-// import org.springframework.util.StringUtils;
-// import org.springframework.web.filter.OncePerRequestFilter;
-
-// import com.shopethethao.auth.security.jwt.util.JwtUtils;
-// import com.shopethethao.auth.security.user.service.UserDetailsServiceImpl;
-
-// import jakarta.servlet.FilterChain;
-// import jakarta.servlet.ServletException;
-// import jakarta.servlet.http.HttpServletRequest;
-// import jakarta.servlet.http.HttpServletResponse;
-
-// public class AuthTokenFilter extends OncePerRequestFilter {
-//   @Autowired
-//   private JwtUtils jwtUtils;
-
-//   @Autowired
-//   private UserDetailsServiceImpl userDetailsService;
-
-//   private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
-
-//   @Override
-//   protected void doFilterInternal(HttpServletRequest request,
-//       HttpServletResponse response, FilterChain filterChain)
-//       throws ServletException, IOException {
-//     try {
-//       String jwt = parseJwt(request);
-//       if (jwt != null) {
-//         logger.debug("Processing token in filter");
-
-//         boolean isValid = jwtUtils.validateJwtToken(jwt);
-//         logger.debug("Token validation result: {}", isValid);
-
-//         if (!isValid) {
-//           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//           response.getWriter().write("{\"error\":\"Token không hợp lệ hoặc đã hết hạn\",\"code\":\"TOKEN_EXPIRED\"}");
-//           return;
-//         }
-
-//         // Continue with authentication only if token is valid
-//         String username = jwtUtils.getUserNameFromJwtToken(jwt);
-//         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-//         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-//             userDetails, null, userDetails.getAuthorities());
-//         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-//         SecurityContextHolder.getContext().setAuthentication(authentication);
-//       }
-//     } catch (Exception e) {
-//       logger.error("Cannot set user authentication: {}", e.getMessage());
-//       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//       response.setContentType("application/json");
-//       response.getWriter().write("{\"error\":\"" + e.getMessage() +
-//           "\",\"code\":\"AUTH_ERROR\"}");
-//       return;
-//     }
-
-//     filterChain.doFilter(request, response);
-//   }
-
-//   private String parseJwt(HttpServletRequest request) {
-//     String headerAuth = request.getHeader("Authorization");
-
-//     if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-//       return headerAuth.substring(7);
-//     }
-
-//     return null;
-//   }
-// }

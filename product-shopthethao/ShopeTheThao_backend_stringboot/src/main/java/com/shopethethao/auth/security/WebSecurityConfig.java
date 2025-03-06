@@ -87,12 +87,29 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Allow more origins, including development and production URLs
+        config.setAllowedOrigins(List.of(
+            "http://localhost:3000", 
+            "http://localhost:8080",
+            "http://127.0.0.1:3000", 
+            "http://127.0.0.1:5173",
+            "http://localhost:5173"
+            // Add your production domain when needed
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Content-Type", "X-Requested-With", "accept", "Origin", "Access-Control-Request-Method",
-                "Access-Control-Request-Headers", "Last-Event-ID"));
+        config.setExposedHeaders(List.of(
+            "Content-Type", 
+            "X-Requested-With", 
+            "accept", 
+            "Origin", 
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers", 
+            "Last-Event-ID",
+            "Authorization"
+        ));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // Cache preflight request for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
