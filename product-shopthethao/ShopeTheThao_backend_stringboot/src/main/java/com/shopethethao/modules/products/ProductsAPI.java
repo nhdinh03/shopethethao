@@ -125,6 +125,9 @@ public class ProductsAPI {
     @PostMapping
     public ResponseEntity<?> createProductWithSizes(@RequestBody Product product) {
         try {
+
+            // Log with detailed information
+            String userId = getCurrentUserId();
             // Validate basic product info
             if (product.getName() == null || product.getName().trim().isEmpty()) {
                 return new ResponseEntity<>("Tên sản phẩm không được để trống!", HttpStatus.BAD_REQUEST);
@@ -155,16 +158,6 @@ public class ProductsAPI {
             // Save product first
             Product savedProduct = productsDAO.save(product);
 
-            // Log with detailed information
-            String userId = getCurrentUserId();
-            String logMessage = createProductLogMessage(userId, savedProduct);
-            userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.CREATE_PRODUCT,
-                    logMessage,
-                    getClientIp(),
-                    getDeviceInfo());
-
             // Save sizes
             for (ProductSize size : product.getSizes()) {
                 Optional<Size> existingSize = sizeDAO.findById(size.getSize().getId());
@@ -185,6 +178,22 @@ public class ProductsAPI {
                     img.setProduct(savedProduct);
                     productImagesDAO.save(img);
                 }
+            }
+
+            try {
+                // Create log message with admin username
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                String adminUsername = auth.getName(); // Get actual username
+                String logMessage = createProductLogMessage(adminUsername, savedProduct);
+
+                // Log the action with full details
+                safeLogUserAction(
+                        userId,
+                        UserActionType.CREATE_PRODUCT,
+                        logMessage);
+            } catch (Exception e) {
+                logger.warn("Failed to log product creation: {}", e.getMessage());
+                // Continue execution even if logging fails
             }
 
             return ResponseEntity.ok(savedProduct);
@@ -267,12 +276,7 @@ public class ProductsAPI {
             // Log with detailed change information
             String userId = getCurrentUserId();
             String logMessage = createUpdateLogMessage(userId, oldState, oldProduct);
-            userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.UPDATE_PRODUCT,
-                    logMessage,
-                    getClientIp(),
-                    getDeviceInfo());
+            safeLogUserAction(userId, UserActionType.UPDATE_PRODUCT, logMessage);
 
             return ResponseEntity.ok(updatedProduct);
         } catch (Exception e) {
@@ -303,12 +307,7 @@ public class ProductsAPI {
             productImagesDAO.deleteByProductId(id);
 
             // Log the deletion with detailed information
-            userHistoryService.logUserAction(
-                    userId,
-                    UserActionType.DELETE_PRODUCT,
-                    logMessage,
-                    getClientIp(),
-                    getDeviceInfo());
+            safeLogUserAction(userId, UserActionType.DELETE_PRODUCT, logMessage);
 
             return ResponseEntity.ok("Xóa sản phẩm và size thành công!");
         } catch (DataIntegrityViolationException e) {
@@ -325,13 +324,32 @@ public class ProductsAPI {
         return productService.getProductDetailsById(productId);
     }
 
-    // Helper method to get current user ID
     private String getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            return authentication.getName();
+            String username = authentication.getName();
+            return "anonymousUser".equals(username) ? null : username;
         }
         return null;
+    }
+
+    // Helper method to safely log user actions
+    private void safeLogUserAction(String userId, UserActionType actionType, String message) {
+        if (userId == null || userId.equals("anonymousUser")) {
+            logger.warn("Attempted to log action without valid user");
+            return;
+        }
+
+        try {
+            userHistoryService.logUserAction(
+                    userId,
+                    actionType,
+                    message,
+                    getClientIp(),
+                    getDeviceInfo());
+        } catch (Exception e) {
+            logger.warn("Failed to log user action: {}", e.getMessage());
+        }
     }
 
     // Helper method to get client IP
@@ -487,12 +505,6 @@ public class ProductsAPI {
         return logMessage.toString();
     }
 
-    /**
-     * Preloads all size names in a single query to avoid N+1 query problem
-     * 
-     * @param sizes List of ProductSize objects
-     * @return Map of size ID to size name
-     */
     private Map<Integer, String> preloadSizeNames(List<ProductSize> sizes) {
         Map<Integer, String> sizeNameMap = new HashMap<>();
         if (sizes == null || sizes.isEmpty()) {
@@ -520,9 +532,6 @@ public class ProductsAPI {
         return sizeNameMap;
     }
 
-    /**
-     * Gets size name from cache map to avoid database queries
-     */
     private String getSizeNameFromCache(ProductSize productSize, Map<Integer, String> sizeNameCache) {
         if (productSize == null || productSize.getSize() == null || productSize.getSize().getId() == null) {
             return "Chưa xác định";
@@ -530,12 +539,6 @@ public class ProductsAPI {
         return sizeNameCache.getOrDefault(productSize.getSize().getId(), "Chưa xác định");
     }
 
-    /**
-     * Safely gets the size name from a ProductSize object, handling null values
-     * 
-     * @param productSize The ProductSize object
-     * @return The size name or a default value if null
-     */
     private String getSafeSizeName(ProductSize productSize) {
         if (productSize == null) {
             return "Chưa xác định";
@@ -555,12 +558,6 @@ public class ProductsAPI {
         return productSize.getSize().getName() != null ? productSize.getSize().getName() : "Chưa xác định";
     }
 
-    /**
-     * Gets the name of a size by its ID, handling null values and database lookup
-     * 
-     * @param sizeId The ID of the size
-     * @return The size name or a default value if not found/null
-     */
     private String getSizeName(Integer sizeId) {
         if (sizeId == null)
             return "Chưa xác định";

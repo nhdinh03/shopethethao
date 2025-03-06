@@ -44,13 +44,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
         return;
       }
-      
-      // Skip authentication for public paths
-      String path = request.getServletPath();
-      if (isPublicPath(path)) {
-        filterChain.doFilter(request, response);
-        return;
-      }
 
       String jwt = parseJwt(request);
       if (jwt != null) {
@@ -65,8 +58,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
           SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
-          // Only send error for API requests, not for resources
-          if (path.startsWith("/api/") && !isPublicPath(path)) {
+          // Only send error for API requests
+          if (request.getServletPath().startsWith("/api/")) {
             sendErrorResponse(response, "Token không hợp lệ hoặc đã hết hạn", "TOKEN_EXPIRED");
             return;
           }
@@ -77,14 +70,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       logger.error("Cannot set user authentication: {}", e.getMessage());
       filterChain.doFilter(request, response);
     }
-  }
-  
-  private boolean isPublicPath(String path) {
-    // Define paths that don't need authentication
-    return path.startsWith("/api/auth/") || 
-           path.equals("/api/products") || 
-           path.startsWith("/api/categories") ||
-           path.startsWith("/api/brands");
   }
 
   private void sendErrorResponse(HttpServletResponse response, String message, String code) throws IOException {
