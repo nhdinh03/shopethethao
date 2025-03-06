@@ -18,16 +18,13 @@ import {
   message,
 } from "antd";
 import img from "assets/Img";
-import { useDarkMode } from "config/DarkModeProvider";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import NotificationDropdown from "components/Admin/Notifications/NotificationDropdown";
 import authApi from "api/Admin/Auth/Login";
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const navigate = useNavigate();
   const [imageUrl, setImageUrl] = useState('');
 
@@ -169,7 +166,7 @@ function HeaderAdminRight() {
     </Dropdown>
 
     {/* Chuyển đổi chế độ sáng/tối */}
-    <Tooltip
+    {/* <Tooltip
       title={isDarkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
     >
       <Switch
@@ -179,7 +176,7 @@ function HeaderAdminRight() {
         onChange={toggleDarkMode}
         className="text-lg"
       />
-    </Tooltip>
+    </Tooltip> */}
 
     {/* Biểu tượng thành tích */}
     <Tooltip title="Thành tích">
