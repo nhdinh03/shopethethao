@@ -81,6 +81,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     errorResponse.put("success", false);
     errorResponse.put("message", message);
     errorResponse.put("code", code);
+    errorResponse.put("timestamp", System.currentTimeMillis());
+    errorResponse.put("status", HttpServletResponse.SC_UNAUTHORIZED);
 
     ObjectMapper mapper = new ObjectMapper();
     mapper.writeValue(response.getOutputStream(), errorResponse);

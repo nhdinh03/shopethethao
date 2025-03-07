@@ -1,11 +1,11 @@
 import { AdminLayout, LayoutPageDefault, UserLayout } from "layouts";
-import { HomePage } from "../pages/User";
 import * as PageAdmin from "../pages/Admin";
 import * as PageUser from "../pages/User";
 import NotFound from "../pages/NotFound/notFound";
 
 export const publicRoutes = [
-  { path: "/", component: HomePage, layout: UserLayout },
+  { path: "/", component: PageUser.HomeIndex, layout: UserLayout },
+  { path: "/products", component: PageUser.Products, layout: UserLayout },
   {
     path: "/login",
     component: PageUser.LoginForm,

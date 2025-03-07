@@ -122,6 +122,140 @@ const Footer = () => {
         </div>
       </motion.div>
 
+      {/* Main Footer Content */}
+      <motion.div 
+        className="footer-main"
+        variants={sectionVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="container">
+          <div className="footer-grid">
+            {/* About Us */}
+            <motion.div variants={sectionVariants}>
+              <h4>Về chúng tôi</h4>
+              <p>
+                Nhdinh Shope - Nhà sưu tầm và phân phối chính hãng các thương hiệu thời trang 
+                quốc tế hàng đầu Việt Nam. Chúng tôi cam kết mang đến những sản phẩm chất lượng nhất.
+              </p>
+              <div className="social-links">
+                <SocialLink Icon={FiFacebook} href="https://facebook.com/" />
+                <SocialLink Icon={FiInstagram} href="https://instagram.com/" />
+                <SocialLink Icon={FiTwitter} href="https://twitter.com/" />
+                <SocialLink Icon={FiYoutube} href="https://youtube.com/" />
+              </div>
+            </motion.div>
+
+            {/* Quick Links */}
+            <motion.div variants={sectionVariants}>
+              <h4>Liên kết nhanh</h4>
+              <ul className="footer-links">
+                {footerLinks.slice(0, 5).map((link, index) => (
+                  <motion.li 
+                    key={index}
+                    custom={index}
+                    variants={listItemVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <FooterLink text={link.text} to={link.to} />
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Policy Links */}
+            <motion.div variants={sectionVariants}>
+              <h4>Chính sách</h4>
+              <ul className="footer-links">
+                {footerLinks.slice(5).map((link, index) => (
+                  <motion.li 
+                    key={index}
+                    custom={index}
+                    variants={listItemVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <FooterLink text={link.text} to={link.to} />
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Contact Info */}
+            <motion.div variants={sectionVariants}>
+              <h4>Liên hệ</h4>
+              <ul className="contact-info">
+                <ContactInfo Icon={FiMapPin} text="123 Đường Nguyễn Văn Linh, Quận 7, TP. HCM" />
+                <ContactInfo Icon={FiPhone} text="(+84) 123 456 789" />
+                <ContactInfo Icon={FiMail} text="info@nhdinh-shop.com" />
+                <ContactInfo Icon={FiClock} text="Thứ 2 - Chủ nhật: 9:00 - 21:00" />
+              </ul>
+            </motion.div>
+
+            {/* Newsletter */}
+            <motion.div className="footer-newsletter" variants={sectionVariants}>
+              <h4>Đăng ký nhận tin</h4>
+              <p>Đăng ký để nhận thông tin về sản phẩm mới và khuyến mãi đặc biệt</p>
+              <form onSubmit={handleSubscribe}>
+                <div className="newsletter-input">
+                  <AnimatePresence>
+                    {isSubscribed && (
+                      <motion.div
+                        className="success-message"
+                        variants={successMessageVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                      >
+                        <FiCheck /> Đăng ký thành công!
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <input
+                    type="email"
+                    placeholder="Email của bạn"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <button type="submit">Đăng ký</button>
+              </form>
+            </motion.div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Bottom Footer */}
+      <div className="footer-bottom">
+        <div className="container">
+          <div className="copyright">
+            <p>© {new Date().getFullYear()} Nhdinh Shope. Tất cả quyền được bảo lưu.</p>
+            <div className="footer-extra-links">
+              <a href="/sitemap">Sơ đồ trang</a>
+              <a href="/faq">Câu hỏi thường gặp</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scroll to Top Button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            className="scroll-top"
+            onClick={scrollToTop}
+            variants={scrollTopButtonVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            aria-label="Scroll to top"
+          >
+            <FiArrowUp />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </footer>
   );
 };
