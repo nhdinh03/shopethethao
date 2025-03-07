@@ -1,6 +1,7 @@
 package com.shopethethao.modules.products;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -60,7 +61,7 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<ProductSize> sizes;
+    private List<ProductSize> sizes = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -69,5 +70,22 @@ public class Product {
     @JsonIgnore
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ReceiptProduct> receiptProducts;
+
+    // Add helper methods to manage the bidirectional relationship
+    public void addSize(ProductSize size) {
+        sizes.add(size);
+        size.setProduct(this);
+    }
+
+    public void removeSize(ProductSize size) {
+        sizes.remove(size);
+        size.setProduct(null);
+    }
+
+    public void clearSizes() {
+        for (ProductSize size : new ArrayList<>(sizes)) {
+            removeSize(size);
+        }
+    }
 
 }

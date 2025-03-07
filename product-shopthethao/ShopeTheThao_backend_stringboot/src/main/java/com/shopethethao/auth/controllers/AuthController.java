@@ -245,8 +245,8 @@ public class AuthController {
             }
 
             // Password strength validation
-            if (signUpRequest.getPassword().length() < 6) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu phải có ít nhất 6 ký tự"));
+            if (signUpRequest.getPassword().length() < 8) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu phải có ít nhất 8 ký tự"));
             }
 
             // Check for existing account

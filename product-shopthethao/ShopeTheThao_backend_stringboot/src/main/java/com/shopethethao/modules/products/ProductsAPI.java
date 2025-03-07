@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,8 +34,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.shopethethao.dto.ProductDetailDTO;
 import com.shopethethao.dto.ResponseDTO;
@@ -207,82 +204,95 @@ public class ProductsAPI {
     // Cập nhật sản phẩm và kích cỡ
     @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id,
-            @RequestBody Product product) {
+    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id, @RequestBody Product product) {
         try {
-            Optional<Product> existingProductOpt = productsDAO.findById(id);
+            String userId = getCurrentUserId();
+
+            Optional<Product> existingProductOpt = productsDAO.findByIdWithSizes(id);
             if (existingProductOpt.isEmpty()) {
                 return new ResponseEntity<>("Sản phẩm không tồn tại!", HttpStatus.NOT_FOUND);
             }
 
             Product oldProduct = existingProductOpt.get();
-            // Store current state before updates
+            // Store complete state before updates
             Product oldState = new Product();
             BeanUtils.copyProperties(oldProduct, oldState);
+            oldState.setSizes(new ArrayList<>(oldProduct.getSizes()));
 
-            Product updatedProduct = oldProduct;
-            updatedProduct.setName(product.getName());
-            updatedProduct.setQuantity(product.getQuantity());
-            updatedProduct.setPrice(product.getPrice());
-            updatedProduct.setDescription(product.getDescription());
-            updatedProduct.setStatus(product.getStatus());
-            updatedProduct.setCategorie(product.getCategorie());
+            if (oldProduct.getCategorie() != null) {
+                Categorie oldCategorie = new Categorie();
+                BeanUtils.copyProperties(oldProduct.getCategorie(), oldCategorie);
+                oldState.setCategorie(oldCategorie);
+            }
 
-            productSizeDAO.deleteByProductId(id);
+            // Update basic properties
+            oldProduct.setName(product.getName());
+            oldProduct.setQuantity(product.getQuantity());
+            oldProduct.setPrice(product.getPrice());
+            oldProduct.setDescription(product.getDescription());
+            oldProduct.setStatus(product.getStatus());
 
-            // **Kiểm tra trùng kích cỡ trước khi cập nhật**
-            for (int i = 0; i < product.getSizes().size(); i++) {
-                for (int j = i + 1; j < product.getSizes().size(); j++) {
-                    // So sánh kích cỡ
-                    if (product.getSizes().get(i).getSize().getId()
-                            .equals(product.getSizes().get(j).getSize().getId())) {
-                        return new ResponseEntity<>(
-                                "Kích cỡ " + product.getSizes().get(i).getSize().getName() + " đã tồn tại!",
-                                HttpStatus.BAD_REQUEST);
-                    }
+            // Update category if provided
+            if (product.getCategorie() != null) {
+                Optional<Categorie> newCategorie = categorieDAO.findById(product.getCategorie().getId());
+                if (newCategorie.isPresent()) {
+                    oldProduct.setCategorie(newCategorie.get());
                 }
             }
 
-            // **Xóa toàn bộ size trước khi cập nhật sản phẩm**
-            productSizeDAO.deleteByProductId(id);
-
-            // **Nếu `sizes` tồn tại trong request, cập nhật lại size mới**
-            if (product.getSizes() != null && !product.getSizes().isEmpty()) {
+            // Handle sizes update
+            if (product.getSizes() != null) {
+                // Validate sizes first
+                Set<Integer> sizeIds = new HashSet<>();
                 for (ProductSize size : product.getSizes()) {
-                    // Kiểm tra xem kích cỡ đã tồn tại chưa
-                    Optional<ProductSize> existingSize = productSizeDAO.findByProductIdAndSizeId(id,
-                            size.getSize().getId());
-                    if (existingSize.isPresent()) {
-                        return new ResponseEntity<>(
-                                "Kích cỡ " + size.getSize().getName() + " đã tồn tại trong danh sách sản phẩm!",
-                                HttpStatus.BAD_REQUEST);
+                    if (size.getSize() == null || size.getSize().getId() == null) {
+                        return new ResponseEntity<>("Thông tin kích cỡ không hợp lệ!", HttpStatus.BAD_REQUEST);
                     }
-                    size.setProduct(updatedProduct);
-                    productSizeDAO.save(size);
+                    if (!sizeIds.add(size.getSize().getId())) {
+                        return new ResponseEntity<>("Kích cỡ bị trùng lặp!", HttpStatus.BAD_REQUEST);
+                    }
+                }
+
+                // Clear existing sizes
+                oldProduct.clearSizes();
+
+                // Add new sizes
+                for (ProductSize newSize : product.getSizes()) {
+                    Optional<Size> existingSize = sizeDAO.findById(newSize.getSize().getId());
+                    if (existingSize.isEmpty()) {
+                        return new ResponseEntity<>("Kích cỡ không tồn tại!", HttpStatus.BAD_REQUEST);
+                    }
+
+                    ProductSize size = new ProductSize();
+                    size.setSize(existingSize.get());
+                    size.setQuantity(newSize.getQuantity());
+                    size.setPrice(newSize.getPrice());
+                    oldProduct.addSize(size);
                 }
             }
 
-            // ✅ Cập nhật hình ảnh (nếu có)
-            if (product.getImages() != null && !product.getImages().isEmpty()) {
-                productImagesDAO.deleteByProductId(id); // Xóa ảnh cũ
-                for (ProductImages image : product.getImages()) {
-                    image.setProduct(updatedProduct);
-                    productImagesDAO.save(image);
+            // Save the updated product
+            Product updatedProduct = productsDAO.save(oldProduct);
+
+            // Log changes
+            try {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                String adminUsername = auth.getName();
+                String logMessage = createUpdateLogMessage(adminUsername, oldState, updatedProduct);
+
+                if (userId != null) {
+                    safeLogUserAction(userId, UserActionType.UPDATE_PRODUCT, logMessage);
+                    logger.info("Product update logged successfully for user {} and product {}", userId, id);
                 }
+            } catch (Exception e) {
+                logger.error("Failed to log product update: {}", e.getMessage(), e);
             }
-
-            productsDAO.save(updatedProduct);
-
-            // Log with detailed change information
-            String userId = getCurrentUserId();
-            String logMessage = createUpdateLogMessage(userId, oldState, oldProduct);
-            safeLogUserAction(userId, UserActionType.UPDATE_PRODUCT, logMessage);
 
             return ResponseEntity.ok(updatedProduct);
+
         } catch (Exception e) {
             logger.error("Error updating product {}: {}", id, e.getMessage(), e);
-            return new ResponseEntity<>("Lỗi hệ thống, vui lòng thử lại sau!",
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Lỗi hệ thống, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -435,8 +445,8 @@ public class ProductsAPI {
                         logMessage.append(String.format("""
 
                                 ✦ Size %s:
-                                  └─ Số lượng: %d cái
-                                  └─ Giá bán: %s""",
+                                  - Số lượng: %d cái
+                                  - Giá bán: %s""",
                                 getSizeNameFromCache(size, sizeNameCache),
                                 size.getQuantity(),
                                 formatPrice(size.getPrice())));
@@ -459,7 +469,6 @@ public class ProductsAPI {
 
             logMessage.append(String.format("""
 
-
                     TỔNG QUAN:
                     - Tổng số lượng: %d cái
                     - Khoảng giá: %s → %s""",
@@ -471,7 +480,6 @@ public class ProductsAPI {
         // Format images section with better error handling
         if (savedProduct.getImages() != null && !savedProduct.getImages().isEmpty()) {
             logMessage.append(String.format("""
-
 
                     HÌNH ẢNH (%d):""",
                     savedProduct.getImages().size()));
@@ -497,7 +505,6 @@ public class ProductsAPI {
             }
         } else {
             logMessage.append("""
-
 
                     HÌNH ẢNH (0): Không có hình ảnh""");
         }
@@ -558,59 +565,55 @@ public class ProductsAPI {
         return productSize.getSize().getName() != null ? productSize.getSize().getName() : "Chưa xác định";
     }
 
-    private String getSizeName(Integer sizeId) {
-        if (sizeId == null)
-            return "Chưa xác định";
-
-        Optional<Size> size = sizeDAO.findById(sizeId);
-        return size.isPresent() && size.get().getName() != null ? size.get().getName() : "Chưa xác định";
-    }
-
     private String createUpdateLogMessage(String adminUsername, Product oldProduct, Product updatedProduct) {
         StringBuilder logMessage = new StringBuilder();
 
-        // Get category names
-        String oldCategoryName = oldProduct.getCategorie() != null ? oldProduct.getCategorie().getName()
+        // Get category names with null safety
+        String oldCategoryName = oldProduct.getCategorie() != null && oldProduct.getCategorie().getName() != null
+                ? oldProduct.getCategorie().getName()
                 : "Không có danh mục";
-        String newCategoryName = updatedProduct.getCategorie() != null ? updatedProduct.getCategorie().getName()
-                : "Không có danh mục";
+        String newCategoryName = updatedProduct.getCategorie() != null
+                && updatedProduct.getCategorie().getName() != null
+                        ? updatedProduct.getCategorie().getName()
+                        : "Không có danh mục";
 
-        // Format header with divider and timestamp
+        // Format header
         logMessage.append(String.format("""
-
                 ADMIN: %s đã cập nhật sản phẩm #%d
                 Thời gian: %s
 
-
-                [1] THÔNG TIN CƠ BẢN:
-                """,
+                [1] THÔNG TIN CƠ BẢN:""",
                 adminUsername,
                 updatedProduct.getId(),
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss dd/MM/yyyy"))));
 
-        // Track if any basic changes were made
+        // Track basic changes
         boolean hasBasicChanges = false;
 
-        // Compare and format name changes
         if (!Objects.equals(oldProduct.getName(), updatedProduct.getName())) {
             logMessage.append(formatDetailedChange("Tên sản phẩm", oldProduct.getName(), updatedProduct.getName()));
             hasBasicChanges = true;
         }
 
-        // Compare and format category changes
-        if (!oldCategoryName.equals(newCategoryName)) {
+        if (!Objects.equals(oldCategoryName, newCategoryName)) {
             logMessage.append(formatDetailedChange("Danh mục", oldCategoryName, newCategoryName));
             hasBasicChanges = true;
         }
 
-        // Compare and format description changes
         if (!Objects.equals(oldProduct.getDescription(), updatedProduct.getDescription())) {
-            logMessage.append(
-                    formatDetailedChange("Mô tả", oldProduct.getDescription(), updatedProduct.getDescription()));
+            logMessage.append(formatDetailedChange("Mô tả",
+                    oldProduct.getDescription() != null ? oldProduct.getDescription() : "Không có",
+                    updatedProduct.getDescription() != null ? updatedProduct.getDescription() : "Không có"));
             hasBasicChanges = true;
         }
 
-        // Compare and format status changes
+        if (!Objects.equals(oldProduct.getPrice(), updatedProduct.getPrice())) {
+            logMessage.append(formatDetailedChange("Giá bán",
+                    formatPrice(oldProduct.getPrice()),
+                    formatPrice(updatedProduct.getPrice())));
+            hasBasicChanges = true;
+        }
+
         if (!Objects.equals(oldProduct.getStatus(), updatedProduct.getStatus())) {
             logMessage.append(formatDetailedChange("Trạng thái",
                     oldProduct.getStatus() != null && oldProduct.getStatus() ? "Hoạt động" : "Không hoạt động",
@@ -619,150 +622,86 @@ public class ProductsAPI {
             hasBasicChanges = true;
         }
 
-        // If no basic changes, indicate it
         if (!hasBasicChanges) {
             logMessage.append("\nKhông có thay đổi thông tin cơ bản");
         }
 
-        // Size changes section with detailed comparison
+        // Size changes section
         logMessage.append("\n\n[2] THAY ĐỔI KÍCH CỠ VÀ GIÁ:");
-        compareSizesWithDetails(oldProduct.getSizes(), updatedProduct.getSizes(), logMessage);
 
-        // Image changes section with detailed formatting (similar to creation log)
-        logMessage.append("\n\n[3] THAY ĐỔI HÌNH ẢNH:");
-        formatImageChangesDetailed(oldProduct.getImages(), updatedProduct.getImages(), logMessage);
-
-        return logMessage.toString();
-    }
-
-    private void formatImageChangesDetailed(List<ProductImages> oldImages, List<ProductImages> newImages,
-            StringBuilder logMessage) {
-        int oldCount = oldImages != null ? oldImages.size() : 0;
-        int newCount = newImages != null ? newImages.size() : 0;
-
-        logMessage.append(String.format("""
-                ├─ Số lượng cũ: %d hình%s
-                └─ Số lượng mới: %d hình%s""",
-                oldCount,
-                oldCount > 0 ? formatImageUrls(oldImages, "CŨ") : "",
-                newCount,
-                newCount > 0 ? formatImageUrls(newImages, "MỚI") : ""));
-    }
-
-    private String formatImageUrls(List<ProductImages> images, String label) {
-        if (images == null || images.isEmpty())
-            return "";
-
-        StringBuilder urls = new StringBuilder(String.format("\n   Danh sách hình ảnh %s:", label));
-        for (int i = 0; i < Math.min(images.size(), 3); i++) {
-            urls.append(String.format("\n   %d. %s", i + 1, images.get(i).getImageUrl()));
-        }
-        if (images.size() > 3) {
-            urls.append(String.format("\n   ... và %d hình ảnh khác", images.size() - 3));
-        }
-        return urls.toString();
-    }
-
-    private void compareSizesWithDetails(List<ProductSize> oldSizes, List<ProductSize> newSizes,
-            StringBuilder logMessage) {
-        if (oldSizes == null)
-            oldSizes = new ArrayList<>();
-        if (newSizes == null)
-            newSizes = new ArrayList<>();
-
-        // Create maps for old and new sizes
-        Map<Integer, ProductSize> oldSizeMap = new HashMap<>();
-        for (ProductSize size : oldSizes) {
-            if (size.getSize() != null && size.getSize().getId() != null) {
-                oldSizeMap.put(size.getSize().getId(), size);
-            }
-        }
-
-        Map<Integer, ProductSize> newSizeMap = new HashMap<>();
-        for (ProductSize size : newSizes) {
-            if (size.getSize() != null && size.getSize().getId() != null) {
-                newSizeMap.put(size.getSize().getId(), size);
-            }
-        }
+        Map<Integer, ProductSize> oldSizes = oldProduct.getSizes().stream()
+                .collect(Collectors.toMap(s -> s.getSize().getId(), s -> s));
+        Map<Integer, ProductSize> newSizes = updatedProduct.getSizes().stream()
+                .collect(Collectors.toMap(s -> s.getSize().getId(), s -> s));
 
         Set<Integer> allSizeIds = new HashSet<>();
-        allSizeIds.addAll(oldSizeMap.keySet());
-        allSizeIds.addAll(newSizeMap.keySet());
+        allSizeIds.addAll(oldSizes.keySet());
+        allSizeIds.addAll(newSizes.keySet());
 
-        // Track totals for summary
+        boolean hasSizeChanges = false;
         int oldTotalQty = 0, newTotalQty = 0;
-        BigDecimal oldTotalValue = BigDecimal.ZERO, newTotalValue = BigDecimal.ZERO;
+        BigDecimal oldTotalValue = BigDecimal.ZERO;
+        BigDecimal newTotalValue = BigDecimal.ZERO;
 
-        // Sort sizes by name for consistent display
+        // Sort size IDs for consistent display
         List<Integer> sortedSizeIds = new ArrayList<>(allSizeIds);
         sortedSizeIds.sort((id1, id2) -> {
-            String name1 = getSizeName(id1);
-            String name2 = getSizeName(id2);
+            String name1 = oldSizes.containsKey(id1) ? oldSizes.get(id1).getSize().getName()
+                    : newSizes.get(id1).getSize().getName();
+            String name2 = oldSizes.containsKey(id2) ? oldSizes.get(id2).getSize().getName()
+                    : newSizes.get(id2).getSize().getName();
             return name1.compareTo(name2);
         });
 
-        // Track changes by type
-        List<String> addedSizes = new ArrayList<>();
-        List<String> removedSizes = new ArrayList<>();
-        List<String> modifiedSizes = new ArrayList<>();
-
         for (Integer sizeId : sortedSizeIds) {
-            ProductSize oldSize = oldSizeMap.get(sizeId);
-            ProductSize newSize = newSizeMap.get(sizeId);
-            String sizeName = getSizeName(sizeId);
+            ProductSize oldSize = oldSizes.get(sizeId);
+            ProductSize newSize = newSizes.get(sizeId);
+            String sizeName = oldSize != null ? oldSize.getSize().getName() : newSize.getSize().getName();
 
             if (oldSize == null && newSize != null) {
-                // Added size
-                addedSizes.add(String.format("""
+                logMessage.append(String.format("""
 
                         ➕ THÊM MỚI Size %s:
-                           ├─ Số lượng: %d cái
-                           └─ Giá bán: %s""",
-                        sizeName,
-                        newSize.getQuantity(),
-                        formatPrice(newSize.getPrice())));
+                           - Số lượng: %d cái
+                           - Giá bán: %s""",
+                        sizeName, newSize.getQuantity(), formatPrice(newSize.getPrice())));
+                hasSizeChanges = true;
                 newTotalQty += newSize.getQuantity();
                 newTotalValue = newTotalValue.add(BigDecimal.valueOf(newSize.getPrice() * newSize.getQuantity()));
             } else if (oldSize != null && newSize == null) {
-                // Removed size
-                removedSizes.add(String.format("""
+                logMessage.append(String.format("""
 
                         ➖ ĐÃ XÓA Size %s:
-                           ├─ Số lượng: %d cái
-                           └─ Giá bán: %s""",
-                        sizeName,
-                        oldSize.getQuantity(),
-                        formatPrice(oldSize.getPrice())));
+                           - Số lượng: %d cái
+                           - Giá bán: %s""",
+                        sizeName, oldSize.getQuantity(), formatPrice(oldSize.getPrice())));
+                hasSizeChanges = true;
                 oldTotalQty += oldSize.getQuantity();
                 oldTotalValue = oldTotalValue.add(BigDecimal.valueOf(oldSize.getPrice() * oldSize.getQuantity()));
-            } else if (oldSize != null && newSize != null) {
-                // Check for modifications
-                List<String> changes = new ArrayList<>();
+            } else if (oldSize != null && newSize != null &&
+                    (!Objects.equals(oldSize.getQuantity(), newSize.getQuantity()) ||
+                            !Objects.equals(oldSize.getPrice(), newSize.getPrice()))) {
+
+                StringBuilder changes = new StringBuilder();
                 if (!Objects.equals(oldSize.getQuantity(), newSize.getQuantity())) {
-                    String trend = newSize.getQuantity() > oldSize.getQuantity() ? "↑" : "↓";
-                    int diff = Math.abs(newSize.getQuantity() - oldSize.getQuantity());
-                    changes.add(String.format("├─ Số lượng: %d → %d cái (%s%d)",
-                            oldSize.getQuantity(),
-                            newSize.getQuantity(),
-                            trend,
-                            diff));
+                    int diff = newSize.getQuantity() - oldSize.getQuantity();
+                    changes.append(String.format("    - Số lượng: %d → %d cái (%s%d)\n",
+                            oldSize.getQuantity(), newSize.getQuantity(),
+                            diff > 0 ? "+" : "", diff));
                 }
                 if (!Objects.equals(oldSize.getPrice(), newSize.getPrice())) {
-                    String trend = newSize.getPrice() > oldSize.getPrice() ? "↑" : "↓";
-                    int diff = Math.abs(newSize.getPrice() - oldSize.getPrice());
-                    changes.add(String.format("└─ Giá bán: %s → %s (%s%s)",
-                            formatPrice(oldSize.getPrice()),
-                            formatPrice(newSize.getPrice()),
-                            trend,
-                            formatPrice(diff)));
+                    int diff = newSize.getPrice() - oldSize.getPrice();
+                    changes.append(String.format("       - Giá bán: %s → %s (%s%s)",
+                            formatPrice(oldSize.getPrice()), formatPrice(newSize.getPrice()),
+                            diff > 0 ? "+" : "", formatPrice(Math.abs(diff))));
                 }
-                if (!changes.isEmpty()) {
-                    modifiedSizes.add(String.format("""
 
-                            ✏ Size %s:
-                            %s""",
-                            sizeName,
-                            String.join("\n", changes)));
+                if (changes.length() > 0) {
+                    logMessage.append(String.format("""
+
+                            ✏️ Size %s:
+                            %s""", sizeName, changes));
+                    hasSizeChanges = true;
                 }
 
                 oldTotalQty += oldSize.getQuantity();
@@ -772,42 +711,26 @@ public class ProductsAPI {
             }
         }
 
-        // Add changes in organized sections
-        if (!addedSizes.isEmpty()) {
-            logMessage.append("\n🆕 KÍCH CỠ MỚI THÊM:");
-            addedSizes.forEach(logMessage::append);
-        }
-        if (!removedSizes.isEmpty()) {
-            logMessage.append("\n❌ KÍCH CỠ ĐÃ XÓA:");
-            removedSizes.forEach(logMessage::append);
-        }
-        if (!modifiedSizes.isEmpty()) {
-            logMessage.append("\n📝 KÍCH CỠ ĐÃ CHỈNH SỬA:");
-            modifiedSizes.forEach(logMessage::append);
-        }
-
-        // Add summary if there are any changes
-        if (oldTotalQty != newTotalQty || !oldTotalValue.equals(newTotalValue)) {
+        if (hasSizeChanges) {
             int qtyDiff = newTotalQty - oldTotalQty;
             BigDecimal valueDiff = newTotalValue.subtract(oldTotalValue);
+
             logMessage.append(String.format("""
 
-
-                    📊 TỔNG HỢP THAY ĐỔI:
-                    ├─ Số lượng: %d → %d cái (%s%d)
-                    ├─ Tổng giá trị: %s → %s
-                    └─ Chênh lệch: %s%s""",
-                    oldTotalQty,
-                    newTotalQty,
-                    qtyDiff > 0 ? "+" : "",
-                    Math.abs(qtyDiff),
-                    formatPrice(oldTotalValue),
-                    formatPrice(newTotalValue),
-                    valueDiff.compareTo(BigDecimal.ZERO) > 0 ? "+" : "",
+                       📊 TỔNG KẾT THAY ĐỔI:
+                    - Tổng số lượng: %d → %d cái (%s%d)
+                      -Tổng giá trị: %s → %s
+                       -Chênh lệch: %s%s""",
+                    oldTotalQty, newTotalQty,
+                    qtyDiff >= 0 ? "+" : "", Math.abs(qtyDiff),
+                    formatPrice(oldTotalValue), formatPrice(newTotalValue),
+                    valueDiff.compareTo(BigDecimal.ZERO) >= 0 ? "+" : "",
                     formatPrice(valueDiff.abs())));
         } else {
-            logMessage.append("\n💡 Không có thay đổi về số lượng và giá trị");
+            logMessage.append("\n💡 Không có thay đổi về kích cỡ và giá");
         }
+
+        return logMessage.toString();
     }
 
     // Create detailed log message for product deletion
@@ -864,64 +787,6 @@ public class ProductsAPI {
         return logMessage.toString();
     }
 
-    private void compareSizes(List<ProductSize> oldSizes, List<ProductSize> newSizes, StringBuilder logMessage) {
-        Map<Integer, ProductSize> oldSizeMap = oldSizes.stream()
-                .collect(Collectors.toMap(s -> s.getSize().getId(), s -> s));
-        Map<Integer, ProductSize> newSizeMap = newSizes.stream()
-                .collect(Collectors.toMap(s -> s.getSize().getId(), s -> s));
-
-        Set<Integer> allSizeIds = new HashSet<>();
-        allSizeIds.addAll(oldSizeMap.keySet());
-        allSizeIds.addAll(newSizeMap.keySet());
-
-        boolean hasSizeChanges = false;
-        StringBuilder sizeChanges = new StringBuilder("\nThay đổi chi tiết kích cỡ:");
-
-        for (Integer sizeId : allSizeIds) {
-            ProductSize oldSize = oldSizeMap.get(sizeId);
-            ProductSize newSize = newSizeMap.get(sizeId);
-
-            if (oldSize == null) {
-                hasSizeChanges = true;
-                sizeChanges.append(String.format("""
-
-                        ➕ Thêm mới size %s:
-                           Số lượng: %d cái
-                           Giá: %s""",
-                        getSafeSizeName(newSize),
-                        newSize.getQuantity(),
-                        formatPrice(newSize.getPrice())));
-            } else if (newSize == null) {
-                hasSizeChanges = true;
-                sizeChanges.append(String.format("""
-
-                        ➖ Đã xóa size %s:
-                           Số lượng: %d cái
-                           Giá: %s""",
-                        getSafeSizeName(oldSize),
-                        oldSize.getQuantity(),
-                        formatPrice(oldSize.getPrice())));
-            } else if (!Objects.equals(oldSize.getQuantity(), newSize.getQuantity()) ||
-                    !Objects.equals(oldSize.getPrice(), newSize.getPrice())) {
-                hasSizeChanges = true;
-                sizeChanges.append(String.format("""
-
-                        ✏ Size %s:
-                           Số lượng: %d → %d cái
-                           Giá: %s → %s""",
-                        getSafeSizeName(oldSize),
-                        oldSize.getQuantity(),
-                        newSize.getQuantity(),
-                        formatPrice(oldSize.getPrice()),
-                        formatPrice(newSize.getPrice())));
-            }
-        }
-
-        if (hasSizeChanges) {
-            logMessage.append(sizeChanges);
-        }
-    }
-
     private String formatPrice(BigDecimal price) {
         if (price == null)
             return "0 đ";
@@ -938,9 +803,9 @@ public class ProductsAPI {
     private String formatDetailedChange(String field, String oldValue, String newValue) {
         return String.format("""
 
-                ├─ %s:
-                │  ├─ Cũ: %s
-                │  └─ Mới: %s""",
+                - %s:
+                │  - Cũ: %s
+                │  - Mới: %s""",
                 field,
                 oldValue != null ? oldValue : "Không có",
                 newValue != null ? newValue : "Không có");
