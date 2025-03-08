@@ -3,15 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiSearch, 
-  FiShoppingBag, 
-  FiHeart, 
-  FiUser, 
   FiMenu, 
   FiX,
   FiChevronDown,
   FiPhone,
-  FiMail
+  FiMail,
+  FiUser
 } from 'react-icons/fi';
+import { AiOutlineHeart, AiOutlineShoppingCart, AiOutlineUser } from 'react-icons/ai';
 import './header.scss';
 
 const Header = () => {
@@ -22,6 +21,8 @@ const Header = () => {
   const [cartCount] = useState(3); // Sample cart count
   const [wishlistCount] = useState(5); // Sample wishlist count
   const navigate = useNavigate();
+  const [searchResults, setSearchResults] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Categories for dropdown
   const categories = [
@@ -50,6 +51,26 @@ const Header = () => {
       setSearchOpen(false);
       setSearchQuery('');
     }
+  };
+
+  const handleInputChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Mock search results
+    if (query) {
+      setSearchResults([
+        { id: 1, name: 'Product 1', price: '$20' },
+        { id: 2, name: 'Product 2', price: '$30' },
+      ]);
+    } else {
+      setSearchResults([]);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
   // Close mobile menu when clicking outside
@@ -95,8 +116,14 @@ const Header = () => {
         </p>
         
         <div className="auth-buttons">
-          <Link to="/login" className="btn-login">Đăng nhập</Link>
-          <Link to="/register" className="btn-register">Đăng ký</Link>
+          {isAuthenticated ? (
+            <Link to="/account" className="btn-login">Tài khoản</Link>
+          ) : (
+            <>
+              <Link to="/login" className="btn-login">Đăng nhập</Link>
+              <Link to="/register" className="btn-register">Đăng ký</Link>
+            </>
+          )}
         </div>
       </div>
       
@@ -144,17 +171,17 @@ const Header = () => {
               </button>
               
               <Link to="/wishlist" className="action-icon">
-                <FiHeart />
+                <AiOutlineHeart />
                 {wishlistCount > 0 && <span className="count-badge">{wishlistCount}</span>}
               </Link>
               
               <Link to="/cart" className="action-icon">
-                <FiShoppingBag />
+                <AiOutlineShoppingCart />
                 {cartCount > 0 && <span className="count-badge">{cartCount}</span>}
               </Link>
               
               <Link to="/account" className="action-icon user-icon">
-                <FiUser />
+                <AiOutlineUser />
               </Link>
               
               <button 
@@ -186,13 +213,31 @@ const Header = () => {
                   type="text"
                   placeholder="Tìm kiếm sản phẩm..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleInputChange}
                   autoFocus
                 />
                 <button type="submit" aria-label="Search">
                   <FiSearch />
                 </button>
               </form>
+              {searchQuery && searchResults.length > 0 && (
+                <div className="search-suggestions">
+                  <div className="suggestion-header">
+                    <h4>Sản phẩm gợi ý</h4>
+                    <button onClick={clearSearch}>Xóa</button>
+                  </div>
+                  <div className="suggested-products">
+                    {searchResults.map(product => (
+                      <Link to={`/product/${product.id}`} key={product.id} className="product-item">
+                        <div className="product-info">
+                          <h5>{product.name}</h5>
+                          <span className="price">{product.price}</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -258,9 +303,15 @@ const Header = () => {
             </nav>
             
             <div className="mobile-menu-footer">
-              <Link to="/login" className="mobile-btn" onClick={() => setMobileMenuOpen(false)}>
-                <FiUser /> Đăng nhập / Đăng ký
-              </Link>
+              {isAuthenticated ? (
+                <Link to="/account" className="mobile-btn" onClick={() => setMobileMenuOpen(false)}>
+                  <FiUser /> Tài khoản
+                </Link>
+              ) : (
+                <Link to="/login" className="mobile-btn" onClick={() => setMobileMenuOpen(false)}>
+                  <FiUser /> Đăng nhập / Đăng ký
+                </Link>
+              )}
               <div className="social-links">
                 <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer">Facebook</a>
                 <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>

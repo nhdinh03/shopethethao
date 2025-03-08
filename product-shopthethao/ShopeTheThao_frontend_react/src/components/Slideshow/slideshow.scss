@@ -1,0 +1,145 @@
+.slide-container {
+  width: 100%;
+  margin: 0 auto;
+  
+  .each-slide {
+    > div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-size: cover;
+      background-position: center;
+      height: 500px;
+      position: relative;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to right, rgba(0,0,0,0.5), rgba(0,0,0,0));
+      }
+    }
+    
+    .slide-caption {
+      position: relative;
+      color: white;
+      text-align: left;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      width: 100%;
+      
+      h2 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      
+      .shop-now {
+        padding: 12px 30px;
+        background: var(--color-accent);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background: darken(#ff4400, 10%);
+          transform: translateY(-2px);
+        }
+      }
+    }
+  }
+  
+  // Custom navigation arrows
+  .react-slideshow-container {
+    .nav {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      
+      &:hover {
+        background: white;
+      }
+      
+      svg {
+        fill: var(--color-primary);
+      }
+    }
+    
+    .nav:first-of-type {
+      margin-left: 20px;
+    }
+    
+    .nav:last-of-type {
+      margin-right: 20px;
+    }
+  }
+  
+  // Custom indicators
+  .indicators {
+    padding: 20px 0;
+    
+    .each-slideshow-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.5);
+      margin: 0 5px;
+      
+      &.active {
+        background: white;
+      }
+    }
+  }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .slide-container {
+    .each-slide {
+      > div {
+        height: 400px;
+      }
+      
+      .slide-caption {
+        text-align: center;
+        
+        h2 {
+          font-size: 2rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .slide-container {
+    .each-slide {
+      > div {
+        height: 300px;
+      }
+      
+      .slide-caption {
+        h2 {
+          font-size: 1.5rem;
+        }
+        
+        .shop-now {
+          padding: 10px 20px;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}

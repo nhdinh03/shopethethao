@@ -5,6 +5,8 @@ import Footer from "./Footer";
 import Snowfall from "./Snowfall/Snowfall";
 import "./User.module.scss"; // Import as global stylesheet
 import { Products } from "pages/User";
+import Slideshow from "components/Slideshow";
+
 
 const UserLayout = () => {
   const location = useLocation();
@@ -19,6 +21,7 @@ const UserLayout = () => {
       <div className="layout-wrapper">
         <main className={`layout-main ${isProductsPage ? 'products-main' : ''}`}>
           <div className="content-wrapper">
+            <Slideshow/>
           {!isProductsPage && <Products />}
             <Outlet />
           </div>
