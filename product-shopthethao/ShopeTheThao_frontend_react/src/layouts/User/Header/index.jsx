@@ -266,34 +266,7 @@ const Header = () => {
                         <div
                           className={`mega-menu ${
                             activeCategory === category.id ? "active" : ""
-                          }`}
-                          style={{
-                            position: "fixed",
-                            top: `${isScrolled ? "60px" : "120px"}`,
-                            left: 0,
-                            right: 0, // Chiếm toàn bộ chiều rộng màn hình
-                            width: "100%",
-                            background: "white",
-                            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.15)",
-                            opacity: activeCategory === category.id ? 1 : 0,
-                            visibility:
-                              activeCategory === category.id
-                                ? "visible"
-                                : "hidden",
-                            transform:
-                              activeCategory === category.id
-                                ? "translateY(0)"
-                                : "translateY(10px)",
-                            transition: "all 0.3s ease-in-out",
-                            zIndex: 999,
-                            pointerEvents:
-                              activeCategory === category.id ? "auto" : "none",
-                            padding: "20px 0",// tránh bị tràn màn hình
-                            maxHeight: `calc(100vh - ${
-                              isScrolled ? "60px" : "120px"
-                            })`,
-                            overflowY: "auto",
-                          }}
+                          } ${isScrolled ? "scrolled" : ""}`}
                         >
                           <div className="mega-menu-inner">
                             <div className="mega-menu-categories">

@@ -48,12 +48,33 @@ html {
   }
 
   .mega-menu {
-    transition: opacity 0.2s ease; // Simplified transition
+    position: fixed;
+    top: 120px;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    background: white;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    padding: 20px 0;
+    z-index: 999;
+    transition: opacity 0.15s ease;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+    transform: none !important;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+
+    &.scrolled {
+      top: 60px;
+      max-height: calc(100vh - 60px);
+    }
 
     &.active {
       opacity: 1;
       visibility: visible;
-      transform: none; // Remove transform animation
       pointer-events: auto;
     }
 
@@ -942,7 +963,7 @@ html {
               }
 
               .view-all {
-                color: var(--color-accent);
+                color: var (--color-accent);
                 font-weight: 500;
               }
             }
@@ -1018,7 +1039,7 @@ html {
           height: 36px;
           border-radius: 50%;
           background: var(--color-gray-light);
-          color: var(--color-text);
+          color: var (--color-text);
           text-decoration: none;
           display: flex;
           align-items: center;
@@ -1521,5 +1542,9 @@ html {
 }
 
 .desktop-nav {
-  position: relative;
+  position: initial;
+  
+  ul li.has-mega-menu {
+    position: static;
+  }
 }
