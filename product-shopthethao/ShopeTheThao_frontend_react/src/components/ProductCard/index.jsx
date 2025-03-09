@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { FiHeart, FiShoppingCart, FiStar, FiEye } from 'react-icons/fi';
 import './ProductCard.scss';
 
-const ProductCard = ({ product, index, onQuickView }) => {
+const ProductCard = ({ product, index, onQuickView, showAlternate }) => {
   if (!product) {
     console.error("Product data is undefined");
     return <div className="product-card error">Dữ liệu sản phẩm không hợp lệ</div>;
@@ -54,7 +54,11 @@ const ProductCard = ({ product, index, onQuickView }) => {
       </div>
       
       <Link to={`/products/${product.id}`} className="product-image-container">
-        <img src={product.thumbnail} alt={product.name} className="product-image" />
+        <img 
+          src={showAlternate && product.alternateThumbnail ? product.alternateThumbnail : product.thumbnail} 
+          alt={product.name} 
+          className="product-image"
+        />
         <div className="product-actions">
           <button className="action-btn wishlist-btn" title="Thêm vào danh sách yêu thích">
             <FiHeart />

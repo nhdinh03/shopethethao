@@ -21,6 +21,7 @@ const Products = () => {
   const [sortOption, setSortOption] = useState('popular');
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const location = useLocation();
+  const [showAlternate, setShowAlternate] = useState(null);
 
   // Calculate category and brand counts
   const categories = products.reduce((acc, product) => {
@@ -367,6 +368,8 @@ const Products = () => {
                   key={product.id} 
                   className="product-item"
                   variants={itemVariants}
+                  onMouseEnter={() => setShowAlternate(product.id)}
+                  onMouseLeave={() => setShowAlternate(null)}
                 >
                   <ProductCard 
                     product={product} 
@@ -383,6 +386,8 @@ const Products = () => {
                         <FiEye /> Xem nhanh
                       </button>
                     }
+                    onClick={() => setShowAlternate(showAlternate === product.id ? null : product.id)}
+                    showAlternate={showAlternate === product.id}
                   />
                 </motion.div>
               ))}

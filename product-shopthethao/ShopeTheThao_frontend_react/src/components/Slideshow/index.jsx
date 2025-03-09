@@ -28,19 +28,23 @@ const Slideshow = () => {
   };
 
   return (
-    <div className="slide-container">
-      <Slide {...properties}>
-        {slideImages.map((image, index) => (
-          <div className="each-slide" key={index}>
-            <div style={{ backgroundImage: `url(${image.url})` }}>
-              <div className="slide-caption">
-                <h2>{image.caption}</h2>
-                <button className="shop-now">Shop Now</button>
+    <div className="slideshow-section">
+      <div className="container">
+        <div className="slide-container">
+          <Slide {...properties}>
+            {slideImages.map((image, index) => (
+              <div className="each-slide" key={index}>
+                <div style={{ backgroundImage: `url(${image.url})` }}>
+                  <div className="slide-caption">
+                    <h2>{image.caption}</h2>
+                    <button className="shop-now">Shop Now</button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </Slide>
+            ))}
+          </Slide>
+        </div>
+      </div>
     </div>
   );
 };
