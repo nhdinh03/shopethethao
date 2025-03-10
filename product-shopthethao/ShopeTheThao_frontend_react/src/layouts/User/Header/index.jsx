@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import img from "assets/Img";
 import {
   FiSearch,
   FiMenu,
@@ -11,7 +12,7 @@ import {
   FiUser,
   FiShoppingBag,
 } from "react-icons/fi";
-import { AiOutlineHeart, AiOutlineShoppingCart } from "react-icons/ai";
+import { AiOutlineHeart } from "react-icons/ai";
 import "./header.scss";
 
 const Header = () => {
@@ -33,6 +34,22 @@ const Header = () => {
     "Giày đá bóng",
     "Quần thể thao",
   ]);
+
+  // Add these states and constants near the top with other states
+  const [rotatingText, setRotatingText] = useState("GIAO HÀNG MIỄN PHÍ CHO THÀNH VIÊN , TRẢ HÀNG DỄ DÀNG");
+  
+  // Add this useEffect for text rotation
+  useEffect(() => {
+    const messages = ["GIAO HÀNG MIỄN PHÍ CHO THÀNH VIÊN", "TRẢ HÀNG DỄ DÀNG"];
+    let index = 0;
+    
+    const interval = setInterval(() => {
+      index = (index + 1) % messages.length;
+      setRotatingText(messages[index]);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Reorder main categories to keep OUTLET in center
   const mainCategories = [
@@ -657,6 +674,34 @@ const Header = () => {
     return classes.join(" ");
   };
 
+  // Add this useEffect to check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('token'); // or however you store your auth token
+      setIsAuthenticated(!!token);
+    };
+    
+    checkAuth();
+  }, []);
+
+  // Modify the auth buttons section
+  const renderAuthButtons = () => {
+    if (isAuthenticated) {
+      return null; // Don't render anything if authenticated
+    }
+    
+    return (
+      <div className="auth-buttons">
+        <Link to="/login" className="btn-login">
+          Đăng nhập
+        </Link>
+        <Link to="/register" className="btn-register">
+          Đăng ký
+        </Link>
+      </div>
+    );
+  };
+
   return (
     <header className={`header ${isScrolled ? "scrolled" : ""}`}>
       {/* Top Bar */}
@@ -671,26 +716,22 @@ const Header = () => {
           </span>
         </div>
 
-        <p className="brand-desc">
-          ShopTheThao - Chuyên phân phối chính hãng các thương hiệu thể thao
-          quốc tế hàng đầu Việt Nam
-        </p>
+        <div className="brand-desc-wrapper">
+          <motion.p
+            key={rotatingText}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="brand-desc"
+          >
+            {rotatingText}
+          </motion.p>
+        </div>
 
-        <div className="auth-buttons">
-          {isAuthenticated ? (
-            <Link to="/account" className="btn-login">
-              Tài khoản
-            </Link>
-          ) : (
-            <>
-              <Link to="/login" className="btn-login">
-                Đăng nhập
-              </Link>
-              <Link to="/register" className="btn-register">
-                Đăng ký
-              </Link>
-            </>
-          )}
+        {/* Add empty div to maintain layout when auth buttons are hidden */}
+        <div className="auth-buttons-wrapper">
+          {renderAuthButtons()}
         </div>
       </div>
 
@@ -700,8 +741,8 @@ const Header = () => {
           <div className="nav-wrapper">
             {/* Logo */}
             <Link to="/" className="logo">
-              <h1>
-                Shop<span>TheThao</span>
+              <h1 style={{fontSize: "3.5rem"}}>
+                Shope<span>Nhdinh</span>
               </h1>
             </Link>
 

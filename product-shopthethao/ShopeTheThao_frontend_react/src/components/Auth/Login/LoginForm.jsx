@@ -97,6 +97,14 @@ const LoginForm = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  useEffect(() => {
+    // Check if user is already authenticated
+    const token = localStorage.getItem('token'); // or however you store your auth token
+    if (token || isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
   const [formData, setFormData] = useState({
     id: "",
     password: "",

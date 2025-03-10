@@ -214,7 +214,7 @@ const Products = () => {
       {/* Main Content */}
       <div className="container">
         {/* Breadcrumbs */}
-        <div className="breadcrumbs">
+        
           {/* <Link to="/" className="breadcrumb-item">
             <FiHome /> Trang chủ
           </Link> */}
@@ -229,7 +229,7 @@ const Products = () => {
               </Link>
             </React.Fragment>
           ))}
-        </div>
+
 
         {/* Product Count Summary */}
         <div className="product-summary">

@@ -263,50 +263,68 @@ html {
       }
     }
 
-    .brand-desc {
-      font-size: 13px;
-      color: var(--color-light);
-      flex: 1;
-      text-align: center;
-      margin: 0 15px;
-      letter-spacing: 0.3px;
-      font-weight: 500;
+    .brand-desc-wrapper {
+      flex: 2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      min-height: 20px; // Add fixed height to prevent jumping
+      
+      .brand-desc {
+        margin: 0;
+        font-size: 13px;
+        color: var(--color-light);
+        text-align: center;
+        letter-spacing: 0.3px;
+        font-weight: 500;
+        position: absolute;
+        width: 100%;
+        padding: 0 15px;
+      }
     }
 
-    .auth-buttons {
+    .auth-buttons-wrapper {
+      flex: 1;
+      min-width: fit-content; // Ensure buttons don't shrink
       display: flex;
-      gap: 10px;
+      justify-content: flex-end;
+      
+      .auth-buttons {
+        display: flex;
+        gap: 10px;
 
-      .btn-login,
-      .btn-register {
-        padding: 6px 14px;
-        border: none;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-      }
-
-      .btn-login {
-        background: var(--color-primary);
-        color: white;
-
-        &:hover {
-          background: rgba(0, 0, 0, 0.05);
+        .btn-login,
+        .btn-register {
+          padding: 6px 14px;
+          border: none;
+          border-radius: 20px;
+          cursor: pointer;
+          transition: var(--transition);
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
         }
-      }
 
-      .btn-register {
-        background: var(--color-primary);
-        color: white;
+        .btn-login {
+          background: var(--color-primary);
+          color: white;
 
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          &:hover {
+            background: rgba(0, 0, 0, 0.05);
+          }
+        }
+
+        .btn-register {
+          background: var(--color-primary);
+          color: white;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          }
         }
       }
     }
@@ -761,7 +779,68 @@ html {
       }
 
       .mobile-menu-toggle {
-        display: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: none; // Hidden by default, shown in mobile
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--color-primary);
+        
+        &:hover {
+          background: rgba(255, 68, 0, 0.1);
+          color: var(--color-accent);
+          transform: scale(1.05);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+
+        svg {
+          font-size: 24px;
+          transition: transform 0.3s ease;
+        }
+
+        // Custom ripple effect
+        &::after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: rgba(255, 68, 0, 0.2);
+          opacity: 0;
+          transform: scale(0.5);
+          transition: all 0.3s ease;
+        }
+
+        &:active::after {
+          opacity: 1;
+          transform: scale(1.2);
+          transition: 0s;
+        }
+
+        // Show in mobile view
+        @media (max-width: 1024px) {
+          display: flex;
+          margin-left: 8px;
+        }
+
+        // Adjust for smaller screens
+        @media (max-width: 480px) {
+          width: 36px;
+          height: 36px;
+          
+          svg {
+            font-size: 20px;
+          }
+        }
       }
     }
   }
