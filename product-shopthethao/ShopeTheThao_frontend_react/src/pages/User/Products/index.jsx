@@ -215,9 +215,9 @@ const Products = () => {
       <div className="container">
         {/* Breadcrumbs */}
         <div className="breadcrumbs">
-          <Link to="/" className="breadcrumb-item">
+          {/* <Link to="/" className="breadcrumb-item">
             <FiHome /> Trang chủ
-          </Link>
+          </Link> */}
           {pathSegments.map((segment, index) => (
             <React.Fragment key={index}>
               <FiChevronRight className="breadcrumb-separator" />
@@ -233,7 +233,7 @@ const Products = () => {
 
         {/* Product Count Summary */}
         <div className="product-summary">
-          <span className="result-count">
+          <span className="result-count" style={{fontSize: "10px" ,textAlign: "center"}}>
             Hiển thị {filteredProducts.length} sản phẩm
           </span>
           {activeFilters.category.length > 0 ||
@@ -287,7 +287,7 @@ const Products = () => {
                 <option value="newest">Mới nhất</option>
                 <option value="rating">Đánh giá cao nhất</option>
               </select>
-              <FiChevronDown className="dropdown-icon" />
+              {/* <FiChevronDown className="dropdown-icon" /> */}
             </div>
           </div>
         </div>
@@ -304,6 +304,7 @@ const Products = () => {
                 <button
                   className="close-filters"
                   onClick={() => setFilterOpen(false)}
+                  aria-label="Close filters"
                 >
                   <FiX />
                 </button>
