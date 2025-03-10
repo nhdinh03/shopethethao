@@ -1,21 +1,21 @@
-import React from 'react';
-import { Slide } from 'react-slideshow-image';
-import 'react-slideshow-image/dist/styles.css';
-import './slideshow.scss';
+import React from "react";
+import { Slide } from "react-slideshow-image";
+import "react-slideshow-image/dist/styles.css";
+import "./slideshow.scss";
 
 const slideImages = [
   {
-    url: 'https://example.com/slide1.jpg',
-    caption: 'Summer Collection 2024'
+    url: "https://example.com/slide1.jpg",
+    caption: "Summer Collection 2024",
   },
   {
-    url: 'https://example.com/slide2.jpg', 
-    caption: 'New Arrivals'
+    url: "https://example.com/slide2.jpg",
+    caption: "New Arrivals",
   },
   {
-    url: 'https://example.com/slide3.jpg',
-    caption: 'Special Offers'
-  }
+    url: "https://example.com/slide3.jpg",
+    caption: "Special Offers",
+  },
 ];
 
 const Slideshow = () => {
@@ -24,7 +24,7 @@ const Slideshow = () => {
     transitionDuration: 500,
     infinite: true,
     indicators: true,
-    arrows: true
+    arrows: false,
   };
 
   return (

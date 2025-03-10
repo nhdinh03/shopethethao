@@ -86,39 +86,122 @@ html {
       padding: 30px 20px;
 
       .mega-menu-categories {
+        display: grid;
+        grid-template-columns: 3fr 3fr 3fr 3fr 4fr; // Điều chỉnh cột cuối rộng hơn
+        gap: 30px; // Tăng khoảng cách giữa các cột
+        margin-bottom: 20px;
         position: relative;
 
-        // Add divider after first column (featured items)
-        .category-column:first-child::after {
-          content: "";
+        // Thêm đường kẻ dọc giữa các cột
+        .category-column:not(:last-child)::after {
+          content: '';
           position: absolute;
           top: 0;
-          right: -10px;
+          right: -15px;
           height: 100%;
           width: 1px;
-          background: linear-gradient(
-            to bottom,
-            transparent,
-            var(--color-gray-light) 10%,
-            var(--color-gray-light) 90%,
-            transparent
-          );
+          background: var(--color-gray-light);
         }
 
-        // Adjust spacing for better visual separation
-        .category-column:first-child {
-          padding-right: 20px;
+        .category-column {
+          position: relative;
+          padding: 0 15px;
+
+          h4 {
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--color-primary);
+            margin: 0 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--color-gray-light);
+
+            &.highlight {
+              color: var(--color-accent);
+              border-bottom-color: var(--color-accent);
+            }
+          }
+
+          ul {
+            display: flex;
+            flex-direction: column;
+            gap: 8px; // Thêm khoảng cách giữa các items
+
+            li a {
+              display: block;
+              padding: 8px 0;
+              font-size: 14px;
+              color: var(--color-text);
+              transition: all 0.2s ease;
+
+              &:hover {
+                color: var(--color-accent);
+                padding-left: 10px;
+              }
+
+              &.new-item::after {
+                content: 'Mới';
+                margin-left: 8px;
+                font-size: 11px;
+                padding: 2px 6px;
+                border-radius: 10px;
+                background: var(--color-accent);
+                color: white;
+              }
+            }
+          }
         }
 
-        .category-column:nth-child(2) {
-          padding-left: 20px;
-        }
+        // Featured column styling
+        .featured-column {
+          grid-column: 5;
+          padding-left: 30px;
 
-        // Highlight featured section
-        .category-column:first-child {
-          h4.highlight {
-            color: var(--color-accent);
-            border-bottom-color: var(--color-accent);
+          .featured-image {
+            height: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+
+            .featured-content {
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              padding: 20px;
+              background: linear-gradient(
+                to top,
+                rgba(0,0,0,0.8),
+                transparent
+              );
+              color: white;
+            }
+          }
+        }
+      }
+
+      // Quick links section
+      .quick-links {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--color-gray-light);
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+
+        .quick-link {
+          color: var(--color-accent);
+          font-weight: 500;
+          transition: all 0.2s ease;
+
+          &:hover {
+            text-decoration: underline;
           }
         }
       }

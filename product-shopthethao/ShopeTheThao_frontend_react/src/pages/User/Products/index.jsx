@@ -1,34 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useLocation, Link } from 'react-router-dom';
-import { FiFilter, FiGrid, FiList, FiChevronDown, FiX, FiHome, FiChevronRight, FiEye, FiRefreshCw } from 'react-icons/fi';
-import ProductCard from '../../../components/ProductCard';
-import QuickView from '../../../components/QuickView';
-import { mockProducts } from '../../../data/mockData';
-import './Products.scss';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useLocation, Link } from "react-router-dom";
+import {
+  FiFilter,
+  FiGrid,
+  FiList,
+  FiChevronDown,
+  FiX,
+  FiHome,
+  FiChevronRight,
+  FiEye,
+  FiRefreshCw,
+} from "react-icons/fi";
+import ProductCard from "../../../components/ProductCard";
+import QuickView from "../../../components/QuickView";
+import { mockProducts } from "../../../data/mockData";
+import "./Products.scss";
 
 const Products = () => {
   const products = mockProducts || [];
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState("grid");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [activeFilters, setActiveFilters] = useState({
     category: [],
     brand: [],
-    priceRange: 2000000
+    priceRange: 2000000,
   });
-  const [sortOption, setSortOption] = useState('popular');
+  const [sortOption, setSortOption] = useState("popular");
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const location = useLocation();
   const [showAlternate, setShowAlternate] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("YOU GOT THIS");
+
+  const featuredCategories = [
+    "YOU GOT THIS",
+    "TERREX",
+    "Sporty & Rich",
+    "Pantone Color- Mocha Mousse",
+  ];
+
+  const featuredProducts = products.slice(0, 4);
 
   // Calculate category and brand counts
   const categories = products.reduce((acc, product) => {
     acc[product.category] = (acc[product.category] || 0) + 1;
     return acc;
   }, {});
-  
+
   const brands = products.reduce((acc, product) => {
     acc[product.brand] = (acc[product.brand] || 0) + 1;
     return acc;
@@ -36,16 +56,16 @@ const Products = () => {
 
   // Handle filter changes
   const handleFilterChange = (type, value) => {
-    setActiveFilters(prev => {
-      if (type === 'category' || type === 'brand') {
+    setActiveFilters((prev) => {
+      if (type === "category" || type === "brand") {
         const updated = { ...prev };
         if (updated[type].includes(value)) {
-          updated[type] = updated[type].filter(item => item !== value);
+          updated[type] = updated[type].filter((item) => item !== value);
         } else {
           updated[type] = [...updated[type], value];
         }
         return updated;
-      } else if (type === 'priceRange') {
+      } else if (type === "priceRange") {
         return { ...prev, priceRange: value };
       }
       return prev;
@@ -57,64 +77,78 @@ const Products = () => {
     setActiveFilters({
       category: [],
       brand: [],
-      priceRange: 2000000
+      priceRange: 2000000,
     });
   };
 
   // Apply filters and sorting
   useEffect(() => {
     let result = [...products];
-    
+
     // Apply category filter
     if (activeFilters.category.length > 0) {
-      result = result.filter(product => activeFilters.category.includes(product.category));
+      result = result.filter((product) =>
+        activeFilters.category.includes(product.category)
+      );
     }
-    
+
     // Apply brand filter
     if (activeFilters.brand.length > 0) {
-      result = result.filter(product => activeFilters.brand.includes(product.brand));
+      result = result.filter((product) =>
+        activeFilters.brand.includes(product.brand)
+      );
     }
-    
+
     // Apply price filter
-    result = result.filter(product => {
-      const finalPrice = product.discountPercentage 
-        ? product.price * (1 - product.discountPercentage / 100) 
+    result = result.filter((product) => {
+      const finalPrice = product.discountPercentage
+        ? product.price * (1 - product.discountPercentage / 100)
         : product.price;
       return finalPrice <= activeFilters.priceRange;
     });
-    
+
     // Apply sorting
     switch (sortOption) {
-      case 'price-low-high':
+      case "price-low-high":
         result.sort((a, b) => {
-          const priceA = a.discountPercentage ? a.price * (1 - a.discountPercentage / 100) : a.price;
-          const priceB = b.discountPercentage ? b.price * (1 - b.discountPercentage / 100) : b.price;
+          const priceA = a.discountPercentage
+            ? a.price * (1 - a.discountPercentage / 100)
+            : a.price;
+          const priceB = b.discountPercentage
+            ? b.price * (1 - b.discountPercentage / 100)
+            : b.price;
           return priceA - priceB;
         });
         break;
-      case 'price-high-low':
+      case "price-high-low":
         result.sort((a, b) => {
-          const priceA = a.discountPercentage ? a.price * (1 - a.discountPercentage / 100) : a.price;
-          const priceB = b.discountPercentage ? b.price * (1 - b.discountPercentage / 100) : b.price;
+          const priceA = a.discountPercentage
+            ? a.price * (1 - a.discountPercentage / 100)
+            : a.price;
+          const priceB = b.discountPercentage
+            ? b.price * (1 - b.discountPercentage / 100)
+            : b.price;
           return priceB - priceA;
         });
         break;
-      case 'newest':
-        result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+      case "newest":
+        result.sort(
+          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+        );
         break;
-      case 'rating':
+      case "rating":
         result.sort((a, b) => b.rating - a.rating);
         break;
       default: // popular
         result.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0));
     }
-    
+
     setFilteredProducts(result);
   }, [products, activeFilters, sortOption]);
 
   // Format price for display
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+    return new Intl.NumberFormat("vi-VN").format(price) + "đ";
   };
 
   // Simple loading simulation
@@ -123,12 +157,14 @@ const Products = () => {
     const timer = setTimeout(() => {
       setLoading(false);
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
   // Get path segments for breadcrumbs
-  const pathSegments = location.pathname.split('/').filter(segment => segment);
+  const pathSegments = location.pathname
+    .split("/")
+    .filter((segment) => segment);
 
   // Animation variants
   const containerVariants = {
@@ -136,18 +172,18 @@ const Products = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05
-      }
-    }
+        staggerChildren: 0.05,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.3 }
-    }
+      transition: { duration: 0.3 },
+    },
   };
 
   // Handle quick view
@@ -175,14 +211,6 @@ const Products = () => {
   // Return the product page with products
   return (
     <div className="products-page">
-      {/* Banner */}
-      <div className="page-banner">
-        <div className="container">
-          <h1>Sản Phẩm Thể Thao</h1>
-          <p>Khám phá bộ sưu tập quần áo và phụ kiện thể thao cao cấp</p>
-        </div>
-      </div>
-      
       {/* Main Content */}
       <div className="container">
         {/* Breadcrumbs */}
@@ -193,8 +221,8 @@ const Products = () => {
           {pathSegments.map((segment, index) => (
             <React.Fragment key={index}>
               <FiChevronRight className="breadcrumb-separator" />
-              <Link 
-                to={`/${pathSegments.slice(0, index + 1).join('/')}`}
+              <Link
+                to={`/${pathSegments.slice(0, index + 1).join("/")}`}
                 className="breadcrumb-item"
               >
                 {segment.charAt(0).toUpperCase() + segment.slice(1)}
@@ -205,46 +233,51 @@ const Products = () => {
 
         {/* Product Count Summary */}
         <div className="product-summary">
-          <span className="result-count">Hiển thị {filteredProducts.length} sản phẩm</span>
-          {activeFilters.category.length > 0 || activeFilters.brand.length > 0 && (
-            <button className="clear-filters-btn" onClick={resetFilters}>
-              <FiRefreshCw /> Xóa bộ lọc
-            </button>
-          )}
+          <span className="result-count">
+            Hiển thị {filteredProducts.length} sản phẩm
+          </span>
+          {activeFilters.category.length > 0 ||
+            (activeFilters.brand.length > 0 && (
+              <button className="clear-filters-btn" onClick={resetFilters}>
+                <FiRefreshCw /> Xóa bộ lọc
+              </button>
+            ))}
         </div>
-        
+
         {/* Toolbar */}
         <div className="products-toolbar">
-          <button 
-            className="filter-toggle" 
+          <button
+            className="filter-toggle"
             onClick={() => setFilterOpen(!filterOpen)}
           >
-            <FiFilter /> {filterOpen ? 'Ẩn bộ lọc' : 'Hiện bộ lọc'}
+            <FiFilter /> {filterOpen ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
           </button>
-          
+
           <div className="view-options">
-            <span className="product-count">Tìm thấy {filteredProducts.length} sản phẩm</span>
-            
+            <span className="product-count">
+              Tìm thấy {filteredProducts.length} sản phẩm
+            </span>
+
             <div className="view-buttons">
-              <button 
-                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
+              <button
+                className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
+                onClick={() => setViewMode("grid")}
                 aria-label="Grid view"
               >
                 <FiGrid />
               </button>
-              <button 
-                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
+              <button
+                className={`view-btn ${viewMode === "list" ? "active" : ""}`}
+                onClick={() => setViewMode("list")}
                 aria-label="List view"
               >
                 <FiList />
               </button>
             </div>
-            
+
             <div className="sort-dropdown">
-              <select 
-                aria-label="Sort products" 
+              <select
+                aria-label="Sort products"
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value)}
               >
@@ -258,125 +291,132 @@ const Products = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Products Container */}
-        <div className={`products-container ${filterOpen ? 'with-filters' : ''}`}>
+        <div
+          className={`products-container ${filterOpen ? "with-filters" : ""}`}
+        >
           {/* Filters Sidebar */}
           {filterOpen && (
             <div className="filters-sidebar">
               <div className="filters-header">
                 <h3>Bộ lọc sản phẩm</h3>
-                <button 
+                <button
                   className="close-filters"
                   onClick={() => setFilterOpen(false)}
                 >
                   <FiX />
                 </button>
               </div>
-              
+
               <div className="filter-section">
                 <h4>Danh mục</h4>
                 <div className="filter-options">
                   {Object.entries(categories).map(([category, count]) => (
                     <label className="checkbox-label" key={category}>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={activeFilters.category.includes(category)}
-                        onChange={() => handleFilterChange('category', category)}
-                      /> 
+                        onChange={() =>
+                          handleFilterChange("category", category)
+                        }
+                      />
                       {category} <span className="count">({count})</span>
                     </label>
                   ))}
                 </div>
               </div>
-              
+
               <div className="filter-section">
                 <h4>Thương hiệu</h4>
                 <div className="filter-options">
                   {Object.entries(brands).map(([brand, count]) => (
                     <label className="checkbox-label" key={brand}>
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         checked={activeFilters.brand.includes(brand)}
-                        onChange={() => handleFilterChange('brand', brand)}
-                      /> 
+                        onChange={() => handleFilterChange("brand", brand)}
+                      />
                       {brand} <span className="count">({count})</span>
                     </label>
                   ))}
                 </div>
               </div>
-              
+
               <div className="filter-section">
                 <h4>Khoảng giá</h4>
                 <div className="price-range">
-                  <input 
-                    type="range" 
-                    min="0" 
-                    max="5000000" 
+                  <input
+                    type="range"
+                    min="0"
+                    max="5000000"
                     step="100000"
                     value={activeFilters.priceRange}
-                    onChange={(e) => handleFilterChange('priceRange', parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleFilterChange("priceRange", parseInt(e.target.value))
+                    }
                   />
                   <div className="price-inputs">
                     <span>0đ - {formatPrice(activeFilters.priceRange)}</span>
                   </div>
                 </div>
               </div>
-              
+
               <div className="applied-filters">
                 <h4>Đang áp dụng</h4>
                 <div className="filters-tags">
-                  {activeFilters.category.map(cat => (
+                  {activeFilters.category.map((cat) => (
                     <span className="filter-tag" key={`cat-${cat}`}>
                       {cat}
-                      <button onClick={() => handleFilterChange('category', cat)}>
+                      <button
+                        onClick={() => handleFilterChange("category", cat)}
+                      >
                         <FiX />
                       </button>
                     </span>
                   ))}
-                  
-                  {activeFilters.brand.map(brand => (
+
+                  {activeFilters.brand.map((brand) => (
                     <span className="filter-tag" key={`brand-${brand}`}>
                       {brand}
-                      <button onClick={() => handleFilterChange('brand', brand)}>
+                      <button
+                        onClick={() => handleFilterChange("brand", brand)}
+                      >
                         <FiX />
                       </button>
                     </span>
                   ))}
                 </div>
               </div>
-              
-              <button 
-                className="reset-filters"
-                onClick={resetFilters}
-              >
+
+              <button className="reset-filters" onClick={resetFilters}>
                 Xóa bộ lọc
               </button>
             </div>
           )}
-          
+
           {/* Products Grid */}
           {filteredProducts.length > 0 ? (
-            <motion.div 
+            <motion.div
               className={`products-grid view-${viewMode}`}
               variants={containerVariants}
               initial="hidden"
               animate="visible"
             >
               {filteredProducts.map((product, index) => (
-                <motion.div 
-                  key={product.id} 
+                <motion.div
+                  key={product.id}
                   className="product-item"
                   variants={itemVariants}
                   onMouseEnter={() => setShowAlternate(product.id)}
                   onMouseLeave={() => setShowAlternate(null)}
                 >
-                  <ProductCard 
-                    product={product} 
-                    index={index} 
-                    onQuickView={() => openQuickView(product)} 
+                  <ProductCard
+                    product={product}
+                    index={index}
+                    onQuickView={() => openQuickView(product)}
                     quickViewButton={
-                      <button 
+                      <button
                         className="quick-view-btn"
                         onClick={(e) => {
                           e.preventDefault();
@@ -386,7 +426,11 @@ const Products = () => {
                         <FiEye /> Xem nhanh
                       </button>
                     }
-                    onClick={() => setShowAlternate(showAlternate === product.id ? null : product.id)}
+                    onClick={() =>
+                      setShowAlternate(
+                        showAlternate === product.id ? null : product.id
+                      )
+                    }
                     showAlternate={showAlternate === product.id}
                   />
                 </motion.div>
@@ -399,7 +443,10 @@ const Products = () => {
                   <FiFilter size={50} />
                 </div>
                 <h3>Không tìm thấy sản phẩm phù hợp</h3>
-                <p>Vui lòng thử lại với bộ lọc khác hoặc xem tất cả sản phẩm của chúng tôi.</p>
+                <p>
+                  Vui lòng thử lại với bộ lọc khác hoặc xem tất cả sản phẩm của
+                  chúng tôi.
+                </p>
                 <button className="reset-button" onClick={resetFilters}>
                   <FiRefreshCw /> Xóa bộ lọc
                 </button>
@@ -407,7 +454,7 @@ const Products = () => {
             </div>
           )}
         </div>
-        
+
         {/* Pagination */}
         {filteredProducts.length > 0 && (
           <div className="pagination">
@@ -416,18 +463,52 @@ const Products = () => {
             <button className="page-btn">3</button>
             <button className="page-btn">4</button>
             <button className="page-btn next">
-              <span>Tiếp</span> →
+              <FiChevronRight />
             </button>
           </div>
-        )}
+         
+        )} <br />
+      </div>
+
+      {/* Banner */}
+      <div className="page-banner">
+        <div className="container">
+          <div className="featured-section">
+            <div className="category-buttons">
+              {featuredCategories.map((category) => (
+                <button
+                  key={category}
+                  className={activeCategory === category ? "active" : ""}
+                  onClick={() => setActiveCategory(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            <div className="product-slider">
+              <div className="products-row">
+                {featuredProducts.map((product) => (
+                  <div key={product.id} className="featured-product">
+                    <img src={product.thumbnail} alt={product.name} />
+                    <div className="product-info">
+                      <h3>{product.name}</h3>
+                      <div className="price">
+                        {new Intl.NumberFormat("vi-VN").format(product.price)}₫
+                      </div>
+                      <div className="category">Performance</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Quick View Modal */}
       {quickViewProduct && (
-        <QuickView 
-          product={quickViewProduct} 
-          onClose={closeQuickView} 
-        />
+        <QuickView product={quickViewProduct} onClose={closeQuickView} />
       )}
     </div>
   );
