@@ -254,11 +254,11 @@ const Header = () => {
                     onMouseEnter={() => setActiveCategory(category.id)}
                     onMouseLeave={() => setActiveCategory(null)}
                   >
-                    <Link to={category.path}>
+                    <Link 
+                      to={category.path} 
+                      className={activeCategory === category.id ? "active-menu-item" : ""}
+                    >
                       {category.name}
-                      {categoryDetails[category.id] && (
-                        <FiChevronDown className="dropdown-icon" />
-                      )}
                     </Link>
 
                     {categoryDetails[category.id] && (

@@ -988,8 +988,8 @@ html {
           border-radius: 8px;
           background: var(--color-gray-light);
           text-decoration: none;
-          color: var(--color-text);
-          transition: var(--transition);
+          color: var (--color-text);
+          transition: var (--transition);
 
           svg {
             font-size: 22px;
@@ -1181,6 +1181,28 @@ html {
 
         &:hover .dropdown-icon {
           transform: rotate(180deg);
+        }
+
+        .dropdown-icon {
+          display: none; /* Hide the dropdown icon */
+        }
+
+        a {
+          &.active-menu-item {
+            color: var(--color-accent);
+            font-weight: 700;
+            position: relative;
+
+            &:after {
+              content: '';
+              position: absolute;
+              bottom: 0;
+              left: 0;
+              width: 100%;
+              height: 2px;
+              background-color: var(--color-accent);
+            }
+          }
         }
       }
 
