@@ -26,6 +26,7 @@
   --gl-body-font-lineheight-functional-2: 1.4;
   --gl-body-font-decoration-functional-2: none;
   --gl-body-font-case-functional-2: uppercase;
+  --gl-button-font-set-weight-functional-1: 700;
 }
 
 body,
@@ -83,6 +84,44 @@ html {
       width: 100%;
       margin: 0 auto;
       padding: 30px 20px;
+
+      .mega-menu-categories {
+        position: relative;
+
+        // Add divider after first column (featured items)
+        .category-column:first-child::after {
+          content: "";
+          position: absolute;
+          top: 0;
+          right: -10px;
+          height: 100%;
+          width: 1px;
+          background: linear-gradient(
+            to bottom,
+            transparent,
+            var(--color-gray-light) 10%,
+            var(--color-gray-light) 90%,
+            transparent
+          );
+        }
+
+        // Adjust spacing for better visual separation
+        .category-column:first-child {
+          padding-right: 20px;
+        }
+
+        .category-column:nth-child(2) {
+          padding-left: 20px;
+        }
+
+        // Highlight featured section
+        .category-column:first-child {
+          h4.highlight {
+            color: var(--color-accent);
+            border-bottom-color: var(--color-accent);
+          }
+        }
+      }
     }
   }
 
@@ -106,7 +145,7 @@ html {
   }
 
   .top-bar {
-    background: linear-gradient(90deg, #f5f5f5, #ffffff);
+    background: black;
     padding: 8px max(20px, calc((100% - var(--container-width)) / 2));
     display: flex;
     justify-content: space-between;
@@ -130,7 +169,7 @@ html {
         }
 
         a {
-          color: var(--color-text);
+          color: var(--color-light);
           text-decoration: none;
           transition: var(--transition);
 
@@ -143,7 +182,7 @@ html {
 
     .brand-desc {
       font-size: 13px;
-      color: var(--color-text);
+      color: var(--color-light);
       flex: 1;
       text-align: center;
       margin: 0 15px;
@@ -170,8 +209,8 @@ html {
       }
 
       .btn-login {
-        background: transparent;
-        color: var(--color-text);
+        background: var(--color-primary);
+        color: white;
 
         &:hover {
           background: rgba(0, 0, 0, 0.05);
@@ -232,6 +271,7 @@ html {
     }
 
     .desktop-nav {
+      justify-content: center;
       display: flex;
       height: 100%;
       flex: 1;
@@ -261,12 +301,10 @@ html {
               var(--gl-font-family-fallback);
             font-size: var(--gl-body-font-size-functional-2);
             font-style: var(--gl-body-font-style-functional-2);
-            font-weight: var(--gl-body-font-weight-functional-2);
             letter-spacing: var(--gl-body-font-letterspacing-functional-2);
             line-height: var(--gl-body-font-lineheight-functional-2);
             text-decoration: var(--gl-body-font-decoration-functional-2);
             text-transform: var(--gl-body-font-case-functional-2);
-            letter-spacing: 1.87px;
             transition: var(--transition);
 
             &:hover,
@@ -276,6 +314,16 @@ html {
 
             svg {
               margin-left: 4px;
+            }
+            &.primary-item, &.special-item {
+              > a {
+                font-weight: var(--gl-button-font-set-weight-functional-1);
+                letter-spacing: 0.5px;
+              }
+            }
+      
+            &.special-item > a {
+              color: var(--color-accent);
             }
           }
 
@@ -798,6 +846,7 @@ html {
       }
     }
   }
+  
 
   .mobile-menu {
     position: fixed;
@@ -1074,7 +1123,7 @@ html {
   line-height: var(--gl-body-font-set-lineheight-functional-2);
   text-decoration: var(--gl-body-font-set-decoration-functional-2);
   text-transform: uppercase;
-  letter-spacing: 1.87px;
+
 }
 
 // Media Queries
@@ -1161,9 +1210,21 @@ html {
 // Update the mega-menu styling
 .desktop-nav {
   ul {
-    
     li {
-      
+      &.bold-text {
+        > a {
+          font-weight: var(--gl-button-font-set-weight-functional-1);
+          letter-spacing: 0.5px;
+        }
+      }
+
+      &.special-item.bold-text > a {
+        color: var(--color-accent);
+      }
+    
+  
+
+
       &.has-mega-menu {
         position: static;
 
@@ -1194,7 +1255,7 @@ html {
             position: relative;
 
             &:after {
-              content: '';
+              content: "";
               position: absolute;
               bottom: 0;
               left: 0;
@@ -1212,7 +1273,7 @@ html {
         left: 0;
         width: 100vw; /* Chiếm toàn bộ chiều rộng màn hình */
         background: white;
-        
+
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         opacity: 0;
         visibility: hidden;
@@ -1221,25 +1282,22 @@ html {
         z-index: 999;
         pointer-events: none;
         padding: 20px 0;
-        // margin-left: calc(-50vw + 400%); 
+        // margin-left: calc(-50vw + 400%);
 
         &.active {
           opacity: 1;
           visibility: visible;
           transform: none; // Remove transform animation
           pointer-events: auto;
-          
         }
 
         .mega-menu-inner {
-          
           max-width: var(--container-width);
           width: 100%;
           margin: 0 auto;
           padding: 30px 20px;
 
           .mega-menu-categories {
-            
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 20px;
@@ -1256,7 +1314,6 @@ html {
               }
 
               ul {
-                
                 display: flex;
                 flex-direction: column;
                 height: auto;
@@ -1304,7 +1361,11 @@ html {
                   left: 0;
                   width: 100%;
                   padding: 20px;
-                  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+                  background: linear-gradient(
+                    to top,
+                    rgba(0, 0, 0, 0.8),
+                    rgba(0, 0, 0, 0)
+                  );
                   color: white;
 
                   h3 {
@@ -1565,8 +1626,44 @@ html {
 
 .desktop-nav {
   position: initial;
-  
+
   ul li.has-mega-menu {
     position: static;
+  }
+}
+
+.desktop-nav {
+  ul {
+    li {
+      &[data-bold="true"] {
+        > a {
+          font-weight: var(--gl-button-font-set-weight-functional-1);
+          position: relative;
+          color: var(--color-primary);
+
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background-color: var(--color-accent);
+            transition: width 0.3s ease;
+          }
+
+          &:hover {
+            color: var(--color-accent);
+            
+            &::after {
+              width: 100%;
+            }
+          }
+
+     
+        }
+      }
+    }
   }
 }

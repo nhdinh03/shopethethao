@@ -24,86 +24,177 @@ const Header = () => {
   const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [wishlistCount] = useState(0);
+  const [popularSearches] = useState([
+    "Giày chạy bộ",
+    "Áo thể thao nam",
+    "Đồ tập gym nữ",
+    "Giày đá bóng",
+    "Quần thể thao",
+  ]);
 
-  // Main navigation categories
+  // Reorder main categories to keep OUTLET in center
   const mainCategories = [
-    { id: "giay", name: "GIÀY", path: "/category/giay" },
-    { id: "nam", name: "NAM", path: "/category/nam" },
-    { id: "nu", name: "NỮ", path: "/category/nu" },
-    { id: "tre-em", name: "TRẺ EM", path: "/category/tre-em" },
-    { id: "the-thao", name: "THỂ THAO", path: "/category/the-thao" },
-    { id: "nhan-hieu", name: "CÁC NHÃN HIỆU", path: "/category/nhan-hieu" },
-    { id: "outlet", name: "OUTLET", path: "/category/outlet" },
+    {
+      id: "giay",
+      name: "GIÀY",
+      path: "/category/giay",
+      isPrimary: true,
+      bold: true,
+    },
+    {
+      id: "nam",
+      name: "NAM",
+      path: "/category/nam",
+      isPrimary: true,
+      bold: true,
+    },
+    {
+      id: "nu",
+      name: "NỮ",
+      path: "/category/nu",
+      isPrimary: true,
+      bold: true,
+    },
+
+    {
+      id: "tre-em",
+      name: "TRẺ EM",
+      path: "/category/tre-em",
+    },
+    {
+      id: "the-thao",
+      name: "THỂ THAO",
+      path: "/category/the-thao",
+    },
+    {
+      id: "nhan-hieu",
+      name: "NHÃN HIỆU",
+      path: "/category/nhan-hieu",
+    },
+    {
+      id: "outlet",
+      name: "OUTLET",
+      path: "/category/outlet",
+      isSpecial: true,
+      isCentered: true,
+      bold: true,
+    },
   ];
 
-  // Detailed category structure for dropdowns
+  // Define categoryDetails with realistic structures based on the provided information
   const categoryDetails = {
+    giay: {
+      title: "Giày",
+      path: "/category/giay",
+      groups: [
+        {
+          title: "Nổi bật",
+          isHighlight: true,
+          items: [
+            { name: "Hàng mới về", path: "/category/giay/moi-ve", isNew: true },
+            { name: "Trending shoes", path: "/category/giay/trending" },
+            {
+              name: "Every Day Running",
+              path: "/category/giay/everyday-running",
+            },
+            { name: "Tiếp sức đường chạy", path: "/category/giay/marathon" },
+            { name: "Race to win", path: "/category/giay/race" },
+          ],
+        },
+        {
+          title: "Các mẫu nổi bật",
+          items: [
+            { name: "Samba", path: "/category/giay/samba" },
+            { name: "Gazelle", path: "/category/giay/gazelle" },
+            { name: "Campus", path: "/category/giay/campus" },
+            { name: "Spezial", path: "/category/giay/spezial" },
+            { name: "Duramo", path: "/category/giay/duramo" },
+            { name: "SL 72", path: "/category/giay/sl-72" },
+          ],
+        },
+        {
+          title: "Theo môn thể thao",
+          items: [
+            { name: "Chạy bộ", path: "/category/giay/chay-bo" },
+            { name: "Bóng đá", path: "/category/giay/bong-da" },
+            { name: "Tập luyện", path: "/category/giay/tap-luyen" },
+            { name: "Bóng rổ", path: "/category/giay/bong-ro" },
+            { name: "Tennis", path: "/category/giay/tennis" },
+            { name: "Golf", path: "/category/giay/golf" },
+          ],
+        },
+      ],
+      featuredImage: {
+        src: "https://assets.adidas.com/images/w_600,f_auto,q_auto/068eefec8e1a47c8872cad26000ee265_9366/FW3286_01_standard.jpg",
+        alt: "Giày thể thao mới nhất",
+        title: "BỘ SƯU TẬP GIÀY MỚI",
+        description: "Khám phá các mẫu giày thể thao mới nhất",
+        link: "/category/giay/new-collection",
+      },
+      quickLinks: [
+        { name: "Tất cả giày", path: "/category/giay" },
+        { name: "Giày nam", path: "/category/giay/nam" },
+        { name: "Giày nữ", path: "/category/giay/nu" },
+        { name: "Giày trẻ em", path: "/category/giay/tre-em" },
+      ],
+    },
+
     nam: {
       title: "Nam",
       path: "/category/nam",
       groups: [
         {
-          title: "Nổi bật",
+          title: "Các sản phẩm nổi bật",
+          isHighlight: true,
           items: [
-            { name: "Hàng mới về", path: "/category/nam/hang-moi-ve" },
-            { name: "Bộ sưu tập mới", path: "/category/nam/bo-suu-tap-moi" },
-            { name: "Xu hướng", path: "/category/nam/xu-huong" },
-            { name: "Bestsellers", path: "/category/nam/bestsellers" },
-            { name: "Giảm giá", path: "/category/nam/giam-gia" },
+            {
+              name: "Hàng mới về",
+              path: "/category/nam/hang-moi-ve",
+              isNew: true,
+            },
+            { name: "Release Dates", path: "/category/nam/release-dates" },
+            { name: "Độc quyền hội viên", path: "/category/nam/doc-quyen" },
+            { name: "Optime", path: "/category/nam/optime" },
+            { name: "Equipment", path: "/category/nam/equipment" },
           ],
         },
         {
           title: "Giày",
           items: [
-            { name: "Tất cả giày", path: "/category/nam/giay" },
-            { name: "Giày thể thao", path: "/category/nam/giay-the-thao" },
-            { name: "Giày chạy bộ", path: "/category/nam/giay-chay-bo" },
-            { name: "Giày bóng đá", path: "/category/nam/giay-bong-da" },
-            { name: "Giày bóng rổ", path: "/category/nam/giay-bong-ro" },
-            { name: "Giày tập luyện", path: "/category/nam/giay-tap-luyen" },
-            { name: "Dép & Sandals", path: "/category/nam/dep-sandals" },
+            { name: "Originals", path: "/category/nam/giay/originals" },
+            { name: "Chạy bộ", path: "/category/nam/giay/chay-bo" },
+            { name: "Tập luyện", path: "/category/nam/giay/tap-luyen" },
+            { name: "Dép & Dép xỏ ngón", path: "/category/nam/giay/dep" },
+            { name: "Quần vợt", path: "/category/nam/giay/quan-vot" },
+            { name: "Sportswear", path: "/category/nam/giay/sportswear" },
+            { name: "Sneakers", path: "/category/nam/giay/sneakers" },
           ],
         },
         {
           title: "Quần áo",
           items: [
-            { name: "Tất cả quần áo", path: "/category/nam/quan-ao" },
-            { name: "Áo thun & Polo", path: "/category/nam/ao-thun-polo" },
-            { name: "Áo khoác", path: "/category/nam/ao-khoac" },
-            { name: "Áo nỉ & Hoodie", path: "/category/nam/ao-ni-hoodie" },
             {
-              name: "Quần dài & Legging",
-              path: "/category/nam/quan-dai-legging",
+              name: "Áo thun & croptop",
+              path: "/category/nam/quan-ao/ao-thun",
             },
-            { name: "Quần shorts", path: "/category/nam/quan-shorts" },
-            { name: "Đồ bộ thể thao", path: "/category/nam/do-bo-the-thao" },
-          ],
-        },
-        {
-          title: "Phụ kiện",
-          items: [
-            { name: "Tất cả phụ kiện", path: "/category/nam/phu-kien" },
-            { name: "Balo & Túi", path: "/category/nam/balo-tui" },
-            { name: "Tất", path: "/category/nam/tat" },
-            { name: "Mũ & Nón", path: "/category/nam/mu-non" },
-            { name: "Băng bảo vệ", path: "/category/nam/bang-bao-ve" },
-            { name: "Găng tay", path: "/category/nam/gang-tay" },
-            { name: "Bình nước", path: "/category/nam/binh-nuoc" },
+            { name: "Áo Nỉ", path: "/category/nam/quan-ao/ao-ni" },
+            { name: "Áo Hoodie", path: "/category/nam/quan-ao/ao-hoodie" },
+            { name: "Áo khoác", path: "/category/nam/quan-ao/ao-khoac" },
+            { name: "Quần", path: "/category/nam/quan-ao/quan" },
+            { name: "Quần short", path: "/category/nam/quan-ao/quan-short" },
           ],
         },
         {
           title: "Thể thao",
           items: [
-            { name: "Bóng đá", path: "/category/nam/the-thao/bong-da" },
-            { name: "Chạy bộ", path: "/category/nam/the-thao/chay-bo" },
-            { name: "Tập gym", path: "/category/nam/the-thao/tap-gym" },
-            { name: "Tennis", path: "/category/nam/the-thao/tennis" },
+            { name: "Chạy", path: "/category/nam/the-thao/chay" },
+            { name: "Tập luyện", path: "/category/nam/the-thao/tap-luyen" },
             { name: "Golf", path: "/category/nam/the-thao/golf" },
-            { name: "Bơi lội", path: "/category/nam/the-thao/boi-loi" },
-            {
-              name: "Thể thao điện tử",
-              path: "/category/nam/the-thao/the-thao-dien-tu",
-            },
+            { name: "Quần vợt", path: "/category/nam/the-thao/quan-vot" },
+            { name: "Bóng rổ", path: "/category/nam/the-thao/bong-ro" },
+            { name: "Motorsport", path: "/category/nam/the-thao/motorsport" },
           ],
         },
       ],
@@ -115,15 +206,353 @@ const Header = () => {
         link: "/category/nam/motorsport",
       },
       quickLinks: [
-        { name: "Tất cả sản phẩm dành cho Nam", path: "/category/nam" },
-        { name: "Tất cả giày Nam", path: "/category/nam/giay" },
-        {
-          name: "Tất cả phụ kiện dành cho Nam",
-          path: "/category/nam/phu-kien",
-        },
+        { name: "Tất cả sản phẩm nam", path: "/category/nam" },
+        { name: "Tất cả giày nam", path: "/category/nam/giay" },
+        { name: "Tất cả quần áo nam", path: "/category/nam/quan-ao" },
       ],
     },
-    // Similar structures would exist for other categories
+
+    nu: {
+      title: "Nữ",
+      path: "/category/nu",
+      groups: [
+        {
+          title: "Nổi bật",
+          isHighlight: true,
+          items: [
+            {
+              name: "Hàng mới về",
+              path: "/category/nu/hang-moi-ve",
+              isNew: true,
+            },
+            { name: "Bestsellers", path: "/category/nu/bestsellers" },
+            { name: "Bộ sưu tập mới", path: "/category/nu/bo-suu-tap-moi" },
+          ],
+        },
+        {
+          title: "Giày",
+          items: [
+            { name: "Originals", path: "/category/nu/giay/originals" },
+            { name: "Chạy bộ", path: "/category/nu/giay/chay-bo" },
+            { name: "Tập luyện", path: "/category/nu/giay/tap-luyen" },
+            { name: "Dép & Dép xỏ ngón", path: "/category/nu/giay/dep" },
+            { name: "Quần vợt", path: "/category/nu/giay/quan-vot" },
+            { name: "Sportswear", path: "/category/nu/giay/sportswear" },
+            { name: "Sneakers", path: "/category/nu/giay/sneakers" },
+          ],
+        },
+        {
+          title: "Quần áo",
+          items: [
+            { name: "Áo thun & croptop", path: "/category/nu/quan-ao/ao-thun" },
+            { name: "Áo ngực thể thao", path: "/category/nu/quan-ao/ao-nguc" },
+            { name: "Áo hoodie & nỉ", path: "/category/nu/quan-ao/ao-hoodie" },
+            { name: "Áo khoác", path: "/category/nu/quan-ao/ao-khoac" },
+            { name: "Quần & Leggings", path: "/category/nu/quan-ao/quan" },
+            { name: "Quần short", path: "/category/nu/quan-ao/quan-short" },
+            { name: "Đầm & Chân váy", path: "/category/nu/quan-ao/vay" },
+          ],
+        },
+        {
+          title: "Thể thao",
+          items: [
+            { name: "Chạy", path: "/category/nu/the-thao/chay" },
+            { name: "Tập luyện", path: "/category/nu/the-thao/tap-luyen" },
+            { name: "Tập Yoga", path: "/category/nu/the-thao/yoga" },
+            { name: "Golf", path: "/category/nu/the-thao/golf" },
+            { name: "Quần vợt", path: "/category/nu/the-thao/quan-vot" },
+          ],
+        },
+      ],
+      featuredImage: {
+        src: "https://assets.adidas.com/images/w_600,f_auto,q_auto/f6bfb2dbc8f24b91bb3eaf0600e78281_9366/HK2929_21_model.jpg",
+        alt: "Bộ sưu tập nữ mới",
+        title: "BỘ SƯU TẬP SPORTSWEAR",
+        description: "Năng động và thời trang mỗi ngày",
+        link: "/category/nu/sportswear",
+      },
+      quickLinks: [
+        { name: "Tất cả sản phẩm nữ", path: "/category/nu" },
+        { name: "Tất cả giày nữ", path: "/category/nu/giay" },
+        { name: "Tất cả quần áo nữ", path: "/category/nu/quan-ao" },
+      ],
+    },
+
+    "tre-em": {
+      title: "Trẻ em",
+      path: "/category/tre-em",
+      groups: [
+        {
+          title: "Nổi bật",
+          isHighlight: true,
+          items: [
+            {
+              name: "Mới cho trẻ em",
+              path: "/category/tre-em/hang-moi-ve",
+              isNew: true,
+            },
+            { name: "Sản phẩm bán chạy", path: "/category/tre-em/ban-chay" },
+            { name: "Essentials", path: "/category/tre-em/essentials" },
+            { name: "Star Wars", path: "/category/tre-em/star-wars" },
+            { name: "Disney", path: "/category/tre-em/disney" },
+            { name: "Hello Kitty", path: "/category/tre-em/hello-kitty" },
+          ],
+        },
+        {
+          title: "Thanh thiếu niên (8-16 tuổi)",
+          items: [
+            {
+              name: "Quần áo bé trai",
+              path: "/category/tre-em/teen/quan-ao-be-trai",
+            },
+            {
+              name: "Quần áo bé gái",
+              path: "/category/tre-em/teen/quan-ao-be-gai",
+            },
+            {
+              name: "Giày bé trai",
+              path: "/category/tre-em/teen/giay-be-trai",
+            },
+            { name: "Giày bé gái", path: "/category/tre-em/teen/giay-be-gai" },
+          ],
+        },
+        {
+          title: "Trẻ em (4-8 tuổi)",
+          items: [
+            {
+              name: "Quần áo bé trai",
+              path: "/category/tre-em/nhi/quan-ao-be-trai",
+            },
+            {
+              name: "Quần áo bé gái",
+              path: "/category/tre-em/nhi/quan-ao-be-gai",
+            },
+            { name: "Giày bé trai", path: "/category/tre-em/nhi/giay-be-trai" },
+            { name: "Giày bé gái", path: "/category/tre-em/nhi/giay-be-gai" },
+          ],
+        },
+        {
+          title: "Trẻ nhỏ (1-4 tuổi)",
+          items: [
+            { name: "Quần áo", path: "/category/tre-em/nho/quan-ao" },
+            { name: "Giày", path: "/category/tre-em/nho/giay" },
+          ],
+        },
+      ],
+      featuredImage: {
+        src: "https://assets.adidas.com/images/w_600,f_auto,q_auto/0e61f130f32d401bb990ae36011035a7_9366/GW9220_01_standard.jpg",
+        alt: "Thời trang trẻ em",
+        title: "BỘ SƯU TẬP DISNEY",
+        description: "Phong cách năng động cho bé yêu",
+        link: "/category/tre-em/disney",
+      },
+      quickLinks: [
+        { name: "Tất cả sản phẩm trẻ em", path: "/category/tre-em" },
+        { name: "Dành cho bé trai", path: "/category/tre-em/be-trai" },
+        { name: "Dành cho bé gái", path: "/category/tre-em/be-gai" },
+      ],
+    },
+
+    "the-thao": {
+      title: "Thể thao",
+      path: "/category/the-thao",
+      groups: [
+        {
+          title: "Bóng đá",
+          isHighlight: true,
+          items: [
+            {
+              name: "Hàng mới về",
+              path: "/category/the-thao/bong-da/hang-moi-ve",
+            },
+            { name: "Giày", path: "/category/the-thao/bong-da/giay" },
+            { name: "Quần áo", path: "/category/the-thao/bong-da/quan-ao" },
+            { name: "Phụ kiện", path: "/category/the-thao/bong-da/phu-kien" },
+            { name: "Bóng", path: "/category/the-thao/bong-da/bong" },
+          ],
+        },
+        {
+          title: "Chạy",
+          items: [
+            { name: "Giày", path: "/category/the-thao/chay/giay" },
+            { name: "Quần áo", path: "/category/the-thao/chay/quan-ao" },
+            { name: "Phụ kiện", path: "/category/the-thao/chay/phu-kien" },
+            { name: "Ultraboost", path: "/category/the-thao/chay/ultraboost" },
+            { name: "4DFWD", path: "/category/the-thao/chay/4dfwd" },
+          ],
+        },
+        {
+          title: "Bóng rổ",
+          items: [
+            { name: "Giày", path: "/category/the-thao/bong-ro/giay" },
+            { name: "Quần áo", path: "/category/the-thao/bong-ro/quan-ao" },
+            { name: "Phụ kiện", path: "/category/the-thao/bong-ro/phu-kien" },
+          ],
+        },
+        {
+          title: "Các môn thể thao khác",
+          items: [
+            { name: "Tập luyện", path: "/category/the-thao/tap-luyen" },
+            { name: "Motorsport", path: "/category/the-thao/motorsport" },
+            { name: "Ngoài trời", path: "/category/the-thao/ngoai-troi" },
+            { name: "Tennis", path: "/category/the-thao/tennis" },
+            { name: "Yoga", path: "/category/the-thao/yoga" },
+            { name: "Golf", path: "/category/the-thao/golf" },
+          ],
+        },
+      ],
+      featuredImage: {
+        src: "https://brand.assets.adidas.com/image/upload/f_auto,q_auto,fl_lossy/viVN/Images/football-ss22-predator-educate-nav-dropdown-d_tcm337-891247.jpg",
+        alt: "Trang thiết bị thể thao",
+        title: "TRANG BỊ CHUYÊN NGHIỆP",
+        description: "Nâng cao hiệu suất với trang bị chất lượng cao",
+        link: "/category/the-thao/chuyen-nghiep",
+      },
+      quickLinks: [
+        { name: "Tất cả trang thiết bị thể thao", path: "/category/the-thao" },
+        { name: "Bóng đá", path: "/category/the-thao/bong-da" },
+        { name: "Chạy bộ", path: "/category/the-thao/chay" },
+      ],
+    },
+
+    "nhan-hieu": {
+      title: "Các nhãn hiệu",
+      path: "/category/nhan-hieu",
+      groups: [
+        {
+          title: "Originals",
+          isHighlight: true,
+          items: [
+            {
+              name: "Hàng mới về",
+              path: "/category/nhan-hieu/originals/hang-moi-ve",
+            },
+            { name: "Giày", path: "/category/nhan-hieu/originals/giay" },
+            { name: "Quần áo", path: "/category/nhan-hieu/originals/quan-ao" },
+            {
+              name: "Phụ kiện",
+              path: "/category/nhan-hieu/originals/phu-kien",
+            },
+          ],
+        },
+        {
+          title: "Sportswear",
+          items: [
+            { name: "Giày", path: "/category/nhan-hieu/sportswear/giay" },
+            { name: "Quần áo", path: "/category/nhan-hieu/sportswear/quan-ao" },
+            {
+              name: "Hàng mới về",
+              path: "/category/nhan-hieu/sportswear/hang-moi-ve",
+            },
+          ],
+        },
+        {
+          title: "Terrex",
+          items: [
+            { name: "About Terrex", path: "/category/nhan-hieu/terrex/about" },
+            { name: "Giày", path: "/category/nhan-hieu/terrex/giay" },
+            { name: "Quần áo", path: "/category/nhan-hieu/terrex/quan-ao" },
+            { name: "Phụ kiện", path: "/category/nhan-hieu/terrex/phu-kien" },
+          ],
+        },
+        {
+          title: "Sustainability",
+          items: [
+            {
+              name: "Thực vật",
+              path: "/category/nhan-hieu/sustainability/thuc-vat",
+            },
+            {
+              name: "Thành phần tái chế",
+              path: "/category/nhan-hieu/sustainability/tai-che",
+            },
+            {
+              name: "Cotton hữu cơ",
+              path: "/category/nhan-hieu/sustainability/cotton-huu-co",
+            },
+          ],
+        },
+      ],
+      featuredImage: {
+        src: "https://assets.adidas.com/images/w_600,f_auto,q_auto/ea89eb2ffe9840288c14aaea012a08fc_9366/FY6682_01_standard.jpg",
+        alt: "Thương hiệu Originals",
+        title: "BỘ SƯU TẬP ORIGINALS",
+        description: "Di sản thể thao kết hợp phong cách đường phố",
+        link: "/category/nhan-hieu/originals",
+      },
+      quickLinks: [
+        { name: "Tất cả thương hiệu", path: "/category/nhan-hieu" },
+        { name: "Originals", path: "/category/nhan-hieu/originals" },
+        { name: "Sportswear", path: "/category/nhan-hieu/sportswear" },
+      ],
+    },
+
+    outlet: {
+      title: "Outlet",
+      path: "/category/outlet",
+      groups: [
+        {
+          title: "Các nhãn hiệu",
+          isHighlight: true,
+          items: [
+            {
+              name: "Originals",
+              path: "/category/outlet/originals",
+              isSale: true,
+            },
+            { name: "Chạy", path: "/category/outlet/chay", isSale: true },
+            { name: "Bóng đá", path: "/category/outlet/bong-da", isSale: true },
+            {
+              name: "Đánh gôn",
+              path: "/category/outlet/danh-gon",
+              isSale: true,
+            },
+          ],
+        },
+        {
+          title: "Nam",
+          items: [
+            { name: "Giày", path: "/category/outlet/nam/giay" },
+            { name: "Quần áo", path: "/category/outlet/nam/quan-ao" },
+            { name: "Áo phông & áo polo", path: "/category/outlet/nam/ao" },
+            { name: "Quần short", path: "/category/outlet/nam/quan-short" },
+            { name: "Phụ kiện", path: "/category/outlet/nam/phu-kien" },
+          ],
+        },
+        {
+          title: "Nữ",
+          items: [
+            { name: "Giày", path: "/category/outlet/nu/giay" },
+            { name: "Dép", path: "/category/outlet/nu/dep" },
+            { name: "Quần áo", path: "/category/outlet/nu/quan-ao" },
+            { name: "Áo phông & áo không tay", path: "/category/outlet/nu/ao" },
+            { name: "Phụ kiện", path: "/category/outlet/nu/phu-kien" },
+            { name: "Áo ngực thể thao", path: "/category/outlet/nu/ao-nguc" },
+          ],
+        },
+        {
+          title: "Trẻ em",
+          items: [
+            { name: "Giày", path: "/category/outlet/tre-em/giay" },
+            { name: "Quần áo", path: "/category/outlet/tre-em/quan-ao" },
+            { name: "Phụ kiện", path: "/category/outlet/tre-em/phu-kien" },
+          ],
+        },
+      ],
+      featuredImage: {
+        src: "https://assets.adidas.com/images/w_600,f_auto,q_auto/85c3fbd63a7a4649b07bac210127f278_9366/GV7612_01_standard.jpg",
+        alt: "Khuyến mãi đặc biệt",
+        title: "GIẢM GIÁ SỐC",
+        description: "Ưu đãi lên đến 70% cho các sản phẩm chọn lọc",
+        link: "/category/outlet/khuyen-mai-soc",
+      },
+      quickLinks: [
+        { name: "Tất cả khuyến mãi", path: "/category/outlet" },
+        { name: "Nam", path: "/category/outlet/nam" },
+        { name: "Nữ", path: "/category/outlet/nu" },
+        { name: "Trẻ em", path: "/category/outlet/tre-em" },
+      ],
+    },
   };
 
   // Handle scroll event
@@ -139,6 +568,12 @@ const Header = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      // Add to recent searches
+      setRecentSearches((prev) => {
+        const updated = [searchQuery, ...prev.slice(0, 4)];
+        return [...new Set(updated)]; // Remove duplicates
+      });
+
       navigate(`/search?query=${encodeURIComponent(searchQuery)}`);
       setSearchOpen(false);
       setSearchQuery("");
@@ -192,6 +627,34 @@ const Header = () => {
   const searchBarVariants = {
     closed: { opacity: 0, y: -20 },
     open: { opacity: 1, y: 0 },
+  };
+
+  // Update the renderMegaMenu function to apply special styling to highlighted items
+  const renderMenuItem = (item, index) => {
+    let className = "";
+    if (item.isNew) className = "new-item";
+    if (item.isHot) className = "hot-item";
+    if (item.isSale) className = "sale-item";
+
+    return (
+      <li key={index}>
+        <Link to={item.path} className={className}>
+          {item.name}
+        </Link>
+      </li>
+    );
+  };
+
+  // Update the menu item class generator
+  const getMenuItemClasses = (category) => {
+    const classes = ["menu-item"];
+    if (categoryDetails[category.id]) classes.push("has-mega-menu");
+    if (category.isPrimary) classes.push("primary-item");
+    if (category.isSpecial) classes.push("special-item");
+    if (category.isCentered) classes.push("centered-item");
+    if (category.bold) classes.push("bold-text"); // Add this line
+    if (activeCategory === category.id) classes.push("active");
+    return classes.join(" ");
   };
 
   return (
@@ -248,15 +711,15 @@ const Header = () => {
                 {mainCategories.map((category) => (
                   <li
                     key={category.id}
-                    className={
-                      categoryDetails[category.id] ? "has-mega-menu" : ""
-                    }
+                    className={getMenuItemClasses(category)}
                     onMouseEnter={() => setActiveCategory(category.id)}
                     onMouseLeave={() => setActiveCategory(null)}
                   >
-                    <Link 
-                      to={category.path} 
-                      className={activeCategory === category.id ? "active-menu-item" : ""}
+                    <Link
+                      to={category.path}
+                      className={
+                        activeCategory === category.id ? "active-menu-item" : ""
+                      }
                     >
                       {category.name}
                     </Link>
@@ -276,15 +739,17 @@ const Header = () => {
                                     key={groupIndex}
                                     className="category-column"
                                   >
-                                    <h4>{group.title}</h4>
+                                    <h4
+                                      className={
+                                        group.isHighlight ? "highlight" : ""
+                                      }
+                                    >
+                                      {group.title}
+                                    </h4>
                                     <ul>
-                                      {group.items.map((item, itemIndex) => (
-                                        <li key={itemIndex}>
-                                          <Link to={item.path}>
-                                            {item.name}
-                                          </Link>
-                                        </li>
-                                      ))}
+                                      {group.items.map((item, itemIndex) =>
+                                        renderMenuItem(item, itemIndex)
+                                      )}
                                     </ul>
                                   </div>
                                 )
@@ -353,15 +818,19 @@ const Header = () => {
             {/* User Actions */}
             <div className="user-actions">
               <button
-                className="action-icon search-icon"
+                className={`action-icon search-icon ${
+                  searchOpen ? "is-active" : ""
+                }`}
                 onClick={() => setSearchOpen(!searchOpen)}
-                aria-label="Search"
+                aria-label={searchOpen ? "Close search" : "Search"}
               >
-                <FiSearch />
+                {searchOpen ? <FiX /> : <FiSearch />}
               </button>
-
-              <Link to="/account" className="action-icon">
-                <FiUser />
+              <Link to="/wishlist" className="action-icon wishlist-icon">
+                <AiOutlineHeart />
+                {wishlistCount > 0 && (
+                  <span className="count-badge">{wishlistCount}</span>
+                )}
               </Link>
 
               <Link to="/cart" className="action-icon cart-icon">
@@ -371,6 +840,9 @@ const Header = () => {
                 )}
               </Link>
 
+              <Link to="/account" className="action-icon">
+                <FiUser />
+              </Link>
               <button
                 className="mobile-menu-toggle"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -407,28 +879,70 @@ const Header = () => {
                   <FiSearch />
                 </button>
               </form>
-              {searchQuery && searchResults.length > 0 && (
-                <div className="search-suggestions">
-                  <div className="suggestion-header">
-                    <h4>Sản phẩm gợi ý</h4>
-                    <button onClick={clearSearch}>Xóa</button>
-                  </div>
-                  <div className="suggested-products">
-                    {searchResults.map((product) => (
-                      <Link
-                        to={`/product/${product.id}`}
-                        key={product.id}
-                        className="product-item"
-                      >
-                        <div className="product-info">
-                          <h5>{product.name}</h5>
-                          <span className="price">{product.price}</span>
+              <div className="search-content">
+                {searchQuery ? (
+                  // Show search results
+                  <div className="search-results">
+                    {searchQuery && searchResults.length > 0 && (
+                      <div className="search-suggestions">
+                        <div className="suggestion-header">
+                          <h4>Sản phẩm gợi ý</h4>
+                          <button onClick={clearSearch}>Xóa</button>
                         </div>
-                      </Link>
-                    ))}
+                        <div className="suggested-products">
+                          {searchResults.map((product) => (
+                            <Link
+                              to={`/product/${product.id}`}
+                              key={product.id}
+                              className="product-item"
+                            >
+                              <div className="product-info">
+                                <h5>{product.name}</h5>
+                                <span className="price">{product.price}</span>
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                ) : (
+                  // Show suggestions when no query
+                  <div className="search-suggestions">
+                    {recentSearches.length > 0 && (
+                      <div className="recent-searches">
+                        <h4>Tìm kiếm gần đây</h4>
+                        <div className="search-tags">
+                          {recentSearches.map((term, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setSearchQuery(term)}
+                              className="search-tag"
+                            >
+                              {term}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="popular-searches">
+                      <h4>Xu hướng tìm kiếm</h4>
+                      <div className="search-tags">
+                        {popularSearches.map((term, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSearchQuery(term)}
+                            className="search-tag popular"
+                          >
+                            {term}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
