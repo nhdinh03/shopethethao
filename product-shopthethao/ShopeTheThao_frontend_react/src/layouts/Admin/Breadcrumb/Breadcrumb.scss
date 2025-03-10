@@ -58,3 +58,25 @@
       color: #999;
     }
   }
+
+.admin-breadcrumb {
+  padding: 16px 24px;
+  background-color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+
+  .ant-breadcrumb {
+    font-size: 14px;
+
+    a {
+      color: #1890ff;
+      
+      &:hover {
+        color: #40a9ff;
+      }
+    }
+
+    .anticon {
+      margin-right: 8px;
+    }
+  }
+}

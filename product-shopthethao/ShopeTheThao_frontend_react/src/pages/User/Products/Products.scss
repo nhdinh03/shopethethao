@@ -259,11 +259,11 @@ $border-radius: 8px;
 
 // Loading Spinner
 .loading-spinner {
-  // display: flex;
-  // flex-direction: column;
-  // align-items: center;
-  // justify-content: center;
-  // padding: 4rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
   
   .spinner {
     width: 50px;

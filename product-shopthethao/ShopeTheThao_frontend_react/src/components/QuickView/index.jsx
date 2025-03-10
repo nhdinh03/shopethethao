@@ -244,8 +244,17 @@ const QuickView = ({ product, onClose }) => {
                 </button>
               </div>
               
-              <Link to={`/products/${product.id}`} className="view-full-details">
-                Xem chi tiết đầy đủ
+              <Link 
+                to={`/seefulldetails/${product.id}`} 
+                className="view-full-details"
+                onClick={() => {
+                  onClose();
+                  window.scrollTo(0, 0);
+                }}
+                replace={true}
+                state={{ scrollTop: true }}
+              >
+                Xem chi tiết đầy đủ <FiChevronRight />
               </Link>
             </div>
           </div>

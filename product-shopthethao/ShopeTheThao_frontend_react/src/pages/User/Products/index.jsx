@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   FiFilter,
   FiGrid,
@@ -33,6 +33,7 @@ const Products = () => {
   const location = useLocation();
   const [showAlternate, setShowAlternate] = useState(null);
   const [activeCategory, setActiveCategory] = useState("YOU GOT THIS");
+  const navigate = useNavigate();
 
   const featuredCategories = [
     "YOU GOT THIS",
@@ -195,6 +196,27 @@ const Products = () => {
     setQuickViewProduct(null);
   };
 
+  // Handle view product detail
+  const handleViewProductDetail = (productId) => {
+    window.scrollTo(0, 0);
+    navigate(`/seefulldetails/${productId}`, { 
+      replace: true,
+      state: { scrollTop: true }
+    });
+  };
+
+  // Remove the existing scroll effect and replace with this one
+  useEffect(() => {
+    if (location.state?.scrollTop) {
+      window.scrollTo(0, 0);
+      // Clear the state after scrolling
+      navigate(location.pathname, { 
+        replace: true, 
+        state: {} 
+      });
+    }
+  }, [location, navigate]);
+
   if (loading) {
     return (
       <div className="products-page">
@@ -213,27 +235,15 @@ const Products = () => {
     <div className="products-page">
       {/* Main Content */}
       <div className="container">
-        {/* Breadcrumbs */}
+        {/* BreadcrumbsUser */}
+
         
-          {/* <Link to="/" className="breadcrumb-item">
-            <FiHome /> Trang chủ
-          </Link> */}
-          {pathSegments.map((segment, index) => (
-            <React.Fragment key={index}>
-              <FiChevronRight className="breadcrumb-separator" />
-              <Link
-                to={`/${pathSegments.slice(0, index + 1).join("/")}`}
-                className="breadcrumb-item"
-              >
-                {segment.charAt(0).toUpperCase() + segment.slice(1)}
-              </Link>
-            </React.Fragment>
-          ))}
-
-
         {/* Product Count Summary */}
         <div className="product-summary">
-          <span className="result-count" style={{fontSize: "10px" ,textAlign: "center"}}>
+          <span
+            className="result-count"
+            style={{ fontSize: "10px", textAlign: "center" }}
+          >
             Hiển thị {filteredProducts.length} sản phẩm
           </span>
           {activeFilters.category.length > 0 ||
@@ -243,7 +253,6 @@ const Products = () => {
               </button>
             ))}
         </div>
-
         {/* Toolbar */}
         <div className="products-toolbar">
           <button
@@ -291,7 +300,6 @@ const Products = () => {
             </div>
           </div>
         </div>
-
         {/* Products Container */}
         <div
           className={`products-container ${filterOpen ? "with-filters" : ""}`}
@@ -424,14 +432,9 @@ const Products = () => {
                           openQuickView(product);
                         }}
                       >
-                        <FiEye /> Xem nhanh
                       </button>
                     }
-                    onClick={() =>
-                      setShowAlternate(
-                        showAlternate === product.id ? null : product.id
-                      )
-                    }
+                    onClick={() => handleViewProductDetail(product.id)}
                     showAlternate={showAlternate === product.id}
                   />
                 </motion.div>
@@ -455,7 +458,6 @@ const Products = () => {
             </div>
           )}
         </div>
-
         {/* Pagination */}
         {filteredProducts.length > 0 && (
           <div className="pagination">
@@ -467,8 +469,8 @@ const Products = () => {
               <FiChevronRight />
             </button>
           </div>
-         
-        )} <br />
+        )}{" "}
+        <br />
       </div>
 
       {/* Banner */}

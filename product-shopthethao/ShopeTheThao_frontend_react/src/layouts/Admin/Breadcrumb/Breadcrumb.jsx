@@ -23,7 +23,11 @@ const Bread = ({ path }) => {
         items.push({ title: matchingItem.title });
     }
 
-    return <Breadcrumb items={items} />;
+    return (
+        <div className="admin-breadcrumb">
+            <Breadcrumb items={items} />
+        </div>
+    );
 };
 
 Bread.propTypes = {

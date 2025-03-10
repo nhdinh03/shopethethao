@@ -7,5 +7,6 @@ export { default as OtpForm } from "components/Auth/Otp/OtpForm";
 export { default as ChangePasswordForm } from "components/Auth/ChangePassword/ChangePasswordForm";
 
 
+export { default as Seefulldetails } from "components/Seefulldetails";
 
 
