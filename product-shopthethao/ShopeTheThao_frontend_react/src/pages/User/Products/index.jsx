@@ -21,7 +21,7 @@ const Products = () => {
   const products = mockProducts || [];
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState("grid");
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [activeFilters, setActiveFilters] = useState({
     category: [],

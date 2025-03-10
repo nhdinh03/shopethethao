@@ -80,27 +80,28 @@ $border-radius: 8px;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: opacity 0.5s ease;
+      transition: opacity 0.3s ease;
 
       &.primary {
         opacity: 1;
+        z-index: 1;
       }
 
       &.alternate {
         opacity: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
+        z-index: 0;
       }
     }
 
     &:hover {
       .product-image.primary {
         opacity: 0;
+        z-index: 0;
       }
       
       .product-image.alternate {
         opacity: 1;
+        z-index: 1;
       }
     }
     
@@ -114,6 +115,7 @@ $border-radius: 8px;
       gap: 10px;
       opacity: 0;
       transition: opacity 0.3s;
+      z-index: 10; // Increased z-index to keep actions above both images
       
       .action-btn {
         width: 40px;
@@ -216,37 +218,167 @@ $border-radius: 8px;
   }
 }
 
+// View mode toggle buttons
+.view-mode-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  justify-content: flex-end;
+
+  .view-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: $border-radius;
+    background-color: $light-bg;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: $transition;
+    color: $text-color;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    &:hover {
+      background-color: darken($light-bg, 5%);
+    }
+    
+    &.active {
+      background-color: $primary-color;
+      color: white;
+      border-color: $primary-color;
+    }
+  }
+}
+
 // List view styles
 .view-list .product-card {
   flex-direction: row;
+  align-items: stretch;
+  height: 200px;
+  margin-bottom: 15px;
   
   .product-image-container {
-    width: 150px;
-    min-width: 150px;
+    width: 200px;
+    min-width: 200px;
     padding-bottom: 0;
     height: auto;
     
     .product-image {
-      position: relative;
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      
+      &.primary,
+      &.alternate {
+        transition: opacity 0.3s ease;
+      }
+    }
+    
+    &:hover {
+      .product-image.primary {
+        opacity: 0;
+      }
+      
+      .product-image.alternate {
+        opacity: 1;
+      }
+    }
+
+    .product-badges {
+      left: 5px;
+      top: 5px;
+    }
+    
+    .product-actions {
+      bottom: 10px;
+      opacity: 0.9;
+      padding: 0 10px;
+      z-index: 10; // Increased z-index to keep actions above both images
+      
+      .action-btn {
+        width: 35px;
+        height: 35px;
+      }
     }
   }
   
   .product-info {
-    padding: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
     
     .product-name {
       font-size: 18px;
+      -webkit-line-clamp: 2;
+      margin-bottom: 10px;
+    }
+    
+    .product-category {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    
+    .product-rating {
+      margin-bottom: 15px;
+    }
+    
+    .product-description {
+      display: block;
+      margin: 10px 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      display: -webkit-box;
     }
     
     .product-price {
       flex-direction: row;
       align-items: center;
-      gap: 10px;
+      gap: 15px;
+      margin-top: auto;
+      
+      .original-price {
+        font-size: 15px;
+      }
     }
   }
 }
 
 // Responsive
+@media (max-width: 768px) {
+  .view-list .product-card {
+    height: auto;
+    
+    .product-image-container {
+      width: 120px;
+      min-width: 120px;
+    }
+    
+    .product-info {
+      padding: 15px;
+      
+      .product-name {
+        font-size: 16px;
+      }
+      
+      .product-description {
+        -webkit-line-clamp: 1;
+      }
+    }
+  }
+}
+
 @media (max-width: 576px) {
   .product-card {
     .product-image-container {
@@ -269,6 +401,41 @@ $border-radius: 8px;
           font-size: 0.875rem;
         }
       }
+    }
+  }
+  
+  .view-list .product-card {
+    flex-direction: column;
+    height: auto;
+    
+    .product-image-container {
+      width: 100%;
+      min-width: 100%;
+      padding-bottom: 70%;
+    }
+    
+    .product-info {
+      padding: 12px;
+      
+      .product-name {
+        margin-top: 5px;
+      }
+      
+      .product-price {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+    }
+  }
+  
+  .view-mode-container {
+    justify-content: center;
+    margin-bottom: 10px;
+    
+    .view-btn {
+      width: 35px;
+      height: 35px;
     }
   }
 }
