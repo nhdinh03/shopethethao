@@ -80,11 +80,28 @@ $border-radius: 8px;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.5s;
+      transition: opacity 0.5s ease;
+
+      &.primary {
+        opacity: 1;
+      }
+
+      &.alternate {
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
     }
-    
-    &:hover .product-image {
-      transform: scale(1.05);
+
+    &:hover {
+      .product-image.primary {
+        opacity: 0;
+      }
+      
+      .product-image.alternate {
+        opacity: 1;
+      }
     }
     
     .product-actions {

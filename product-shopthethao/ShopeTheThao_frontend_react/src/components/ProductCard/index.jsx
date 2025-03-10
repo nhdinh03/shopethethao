@@ -55,10 +55,17 @@ const ProductCard = ({ product, index, onQuickView, showAlternate }) => {
       
       <Link to={`/products/${product.id}`} className="product-image-container">
         <img 
-          src={showAlternate && product.alternateThumbnail ? product.alternateThumbnail : product.thumbnail} 
-          alt={product.name} 
-          className="product-image"
+          src={product.thumbnail}
+          alt={product.name}
+          className="product-image primary"
         />
+        {product.alternateThumbnail && (
+          <img 
+            src={product.alternateThumbnail}
+            alt={`${product.name} - alternate view`}
+            className="product-image alternate"
+          />
+        )}
         <div className="product-actions">
           <button className="action-btn wishlist-btn" title="Thêm vào danh sách yêu thích">
             <FiHeart />

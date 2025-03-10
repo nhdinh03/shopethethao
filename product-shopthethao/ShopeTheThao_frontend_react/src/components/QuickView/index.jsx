@@ -217,6 +217,13 @@ const QuickView = ({ product, onClose }) => {
                 </button>
               </div>
               
+              {/* <div className="quick-view-actions">
+                <button className="add-to-cart-btn">Add to Cart</button>
+                <Link to={`/products/${product.id}`} className="see-details-btn" onClick={onClose}>
+                  See Full Details
+                </Link>
+              </div> */}
+              
               <div className="product-meta">
                 <div className="meta-item">
                   <strong>Mã sản phẩm:</strong> {product.sku || product.id}

@@ -58,3 +58,37 @@
       color: #999;
     }
   }
+
+.layout-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  
+  &.with-header-footer {
+    margin-top: 60px; // Adjust based on header height
+    margin-bottom: 40px; // Space before footer
+  }
+}
+
+.card-content-page {
+  min-height: calc(100vh - 200px); // Adjust based on header/footer height
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+    
+    &.with-header-footer {
+      margin-top: 50px;
+      margin-bottom: 30px;
+    }
+  }
+}
