@@ -204,28 +204,16 @@
         border-radius: 0.5rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: background-color 0.2s;
         margin: 1.5rem 0;
 
         &:hover:not(:disabled) {
           background: #4338CA;
-          transform: translateY(-1px);
         }
 
-        .loading-spinner {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-
-          .spinner {
-            width: 16px;
-            height: 16px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-          }
+        &:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
         }
       }
 
@@ -291,7 +279,6 @@
 
             &:hover {
               background: #F8FAFC;
-              transform: translateY(-1px);
               color: white;
               
               &::before {
@@ -486,9 +473,5 @@
 @media (hover: hover) {
   .input-field:hover {
     background: rgba(79, 70, 229, 0.02);
-  }
-
-  .social-button:hover {
-    transform: translateY(-2px);
   }
 }

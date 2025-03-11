@@ -152,6 +152,24 @@ public class ProductsAPI {
                 }
             }
 
+            // Validate image count
+            if (product.getImages() != null && product.getImages().size() > 5) {
+                return new ResponseEntity<>("Số lượng hình ảnh không được vượt quá 5!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Validate image URLs
+            if (product.getImages() != null) {
+                for (ProductImages img : product.getImages()) {
+                    if (img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
+                        return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
+                    }
+                    if (!img.getImageUrl().startsWith("http://localhost:8081/api/upload/")) {
+                        return new ResponseEntity<>("URL hình ảnh không hợp lệ! URL phải bắt đầu bằng 'http://localhost:8081/api/upload/'", 
+                            HttpStatus.BAD_REQUEST);
+                    }
+                }
+            }
+
             // Save product first
             Product savedProduct = productsDAO.save(product);
 
@@ -208,12 +226,54 @@ public class ProductsAPI {
         try {
             String userId = getCurrentUserId();
 
+            if (product == null) {
+                return new ResponseEntity<>("Dữ liệu sản phẩm không hợp lệ!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Validate basic product info
+            if (product.getName() == null || product.getName().trim().isEmpty()) {
+                return new ResponseEntity<>("Tên sản phẩm không được để trống!", HttpStatus.BAD_REQUEST);
+            }
+
+            // Validate sizes
+            if (product.getSizes() == null || product.getSizes().isEmpty()) {
+                return new ResponseEntity<>("Phải có ít nhất một kích cỡ cho sản phẩm!", HttpStatus.BAD_REQUEST);
+            }
+
             Optional<Product> existingProductOpt = productsDAO.findByIdWithSizes(id);
             if (existingProductOpt.isEmpty()) {
                 return new ResponseEntity<>("Sản phẩm không tồn tại!", HttpStatus.NOT_FOUND);
             }
 
             Product oldProduct = existingProductOpt.get();
+
+
+            if (product.getImages() != null) {
+                // Validate image count
+                if (product.getImages().size() > 5) {
+                    return new ResponseEntity<>("Số lượng hình ảnh không được vượt quá 5!", HttpStatus.BAD_REQUEST);
+                }
+
+                // Validate each image URL
+                for (ProductImages img : product.getImages()) {
+                    if (img == null || img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
+                        return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
+                    }
+                }
+
+                // Update images with proper references
+                List<ProductImages> newImages = new ArrayList<>();
+                for (ProductImages img : product.getImages()) {
+                    ProductImages newImage = new ProductImages();
+                    newImage.setImageUrl(img.getImageUrl());
+                    newImage.setProduct(oldProduct);
+                    newImages.add(newImage);
+                }
+                oldProduct.getImages().clear();
+                oldProduct.getImages().addAll(newImages);
+            }
+
+
             // Store complete state before updates
             Product oldState = new Product();
             BeanUtils.copyProperties(oldProduct, oldState);
@@ -270,7 +330,13 @@ public class ProductsAPI {
                     oldProduct.addSize(size);
                 }
             }
-
+            oldProduct.setName(product.getName());
+            oldProduct.setDescription(product.getDescription());
+            oldProduct.setPrice(product.getPrice());
+            oldProduct.setStatus(product.getStatus());
+            if (product.getCategorie() != null) {
+                oldProduct.setCategorie(product.getCategorie());
+            }
             // Save the updated product
             Product updatedProduct = productsDAO.save(oldProduct);
 

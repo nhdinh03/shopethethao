@@ -142,8 +142,7 @@ const LoginForm = () => {
       >
         <motion.div
           className="form-container"
-          whileHover={{ scale: 1.005 }} // Reduced from 1.01
-          transition={{ type: "spring", stiffness: 200 }} // Reduced stiffness
+          transition={{ type: "spring", stiffness: 200 }}
         >
           {/* Form Header with Hover Effect */}
           <motion.div className="form-header">
@@ -151,12 +150,10 @@ const LoginForm = () => {
               src={img.Co_VN}
               alt="Logo"
               className="brand-logo"
-              whileHover={{ scale: 1.05 }} // Reduced from 1.1
-              whileTap={{ scale: 0.98 }} // Increased from 0.95
             />
             <motion.h2
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
               Đăng nhập
@@ -209,18 +206,17 @@ const LoginForm = () => {
               type="submit"
               className="submit-button"
               disabled={loading}
-              whileHover={{ scale: 1.01 }} // Reduced from 1.02
-              whileTap={{ scale: 0.99 }} // Increased from 0.98
+              whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
               <AnimatePresence mode="wait">
                 {loading ? (
                   <motion.div
-                    className="loading-spinner"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    // className="loading-spinner"
+                    // initial={{ opacity: 0 }}
+                    // animate={{ opacity: 1 }}
+                    // exit={{ opacity: 0 }}
                   >
                     <div className="spinner" />
                     <span>Đang đăng nhập...</span>
@@ -266,12 +262,7 @@ const LoginForm = () => {
 
 // Optimized helper components
 const InputField = ({ icon, endIcon, error, ...props }) => (
-  <motion.div
-    className="form-group"
-    whileHover={{ scale: 1.01 }} // Reduced from 1.02
-    whileTap={{ scale: 0.99 }} // Increased from 0.98
-    transition={{ duration: 0.1 }} // Reduced from 0.2
-  >
+  <motion.div className="form-group">
     <div className={`input-field ${error ? "error" : ""}`}>
       <motion.span
         className="field-icon"
@@ -286,8 +277,8 @@ const InputField = ({ icon, endIcon, error, ...props }) => (
     {error && (
       <motion.div
         className="error-message"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.2 }}
       >
         {error}
@@ -309,12 +300,7 @@ const SocialButton = ({ icon, label, color }) => (
     type="button"
     className={`social-button ${label.toLowerCase()}`}
     style={{ "--button-color": color }}
-    whileHover={{
-      scale: 1.02, // Reduced from 1.03
-      boxShadow: `0 2px 8px ${color}33`, // Reduced shadow
-    }}
-    whileTap={{ scale: 0.99 }} // Added gentle tap effect
-    transition={{ type: "spring", stiffness: 300, damping: 15 }} // Optimized spring
+    transition={{ type: "spring", stiffness: 300, damping: 15 }}
   >
     <motion.span className="icon">{icon}</motion.span>
     <span className="label">{label}</span>

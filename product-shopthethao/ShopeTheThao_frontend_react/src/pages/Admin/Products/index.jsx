@@ -229,6 +229,8 @@ const Products = () => {
     setFileList(processedImages);
     setOpen(true);
     setEditingProduct(record);
+    console.log(record);
+    
     // Lưu bản gốc của sản phẩm để so sánh sau này
     originalProductRef.current = JSON.parse(JSON.stringify(record));
     
