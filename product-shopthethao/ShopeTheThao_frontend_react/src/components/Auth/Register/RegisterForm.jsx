@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
+import { motion } from 'framer-motion';
 import authApi from '../../../api/Admin/Auth/Login';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,13 +26,17 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="register-form-container">
-      <h2>Đăng Ký Tài Khoản</h2>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <Form
         form={form}
         name="register"
         onFinish={onFinish}
         layout="vertical"
+className="register-form"
       >
         <Form.Item
           name="fullname"
@@ -76,7 +81,7 @@ const RegisterForm = () => {
           </Button>
         </Form.Item>
       </Form>
-    </div>
+    </motion.div>
   );
 };
 

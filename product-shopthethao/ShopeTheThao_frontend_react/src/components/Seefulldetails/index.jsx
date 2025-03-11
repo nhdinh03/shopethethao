@@ -292,6 +292,12 @@ const Seefulldetails = () => {
     }
   }, [product]);
 
+  // Optimize image handling states
+  const handleImageSelect = (index) => {
+    setSelectedImage(index);
+    setZoomActive(false); // Reset zoom when switching images
+  };
+
   if (loading) {
     return (
       <div className="product-details-page">
@@ -351,7 +357,7 @@ const Seefulldetails = () => {
 
         {/* Product Main Section */}
         <div className="product-main">
-          {/* Product Gallery */}
+          {/* Simplified Product Gallery */}
           <div className="product-gallery">
             <div className="gallery-layout">
               {/* Vertical thumbnails on the left */}
@@ -360,51 +366,21 @@ const Seefulldetails = () => {
                   <div
                     key={index}
                     className={`thumbnail ${selectedImage === index ? "active" : ""}`}
-                    onClick={() => setSelectedImage(index)}
+                    onClick={() => handleImageSelect(index)}
                   >
                     <img src={image} alt={`${product.name} - View ${index + 1}`} />
                   </div>
                 ))}
               </div>
 
-              {/* Main image on the right */}
+              {/* Main image display */}
               <div className={`main-image ${zoomActive ? "zoom-active" : ""}`}>
-                <motion.img
+                <img
                   src={selectedImage === 0 ? product.thumbnail : (product.images?.[selectedImage - 1] || product.thumbnail)}
                   alt={product.name}
-                  onClick={handleImageZoom}
-                  animate={{ scale: zoomActive ? 1.5 : 1 }}
-                  transition={{ duration: 0.5 }}
+                  onClick={() => setZoomActive(!zoomActive)}
                 />
-                {product.discountPercentage > 0 && (
-                  <div className="product-badge discount">
-                    -{product.discountPercentage}%
-                  </div>
-                )}
-                {product.isNew && <div className="product-badge new">Mới</div>}
-                <button className="zoom-icon" onClick={handleImageZoom}>
-                  <FiEye />
-                </button>
               </div>
-            </div>
-
-            {/* Media Controls */}
-            <div className="media-controls">
-              <button className="media-btn video" onClick={handleVideoClick}>
-                <FiPlay /> Xem video
-              </button>
-              <button
-                className="media-btn ar"
-                onClick={() => setShowARPreview(true)}
-              >
-                <FiRotateCw /> Xem AR
-              </button>
-              <button
-                className="media-btn view360"
-                onClick={() => setShow360View(true)}
-              >
-                <FiRotateCw /> Xem 360°
-              </button>
             </div>
           </div>
 

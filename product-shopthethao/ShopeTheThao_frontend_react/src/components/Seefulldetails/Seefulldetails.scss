@@ -197,140 +197,139 @@ $font-weight-bold: 700;
           grid-template-columns: 1fr;
           grid-template-rows: auto auto;
         }
-      }
-      
-      .thumbnails-column {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        max-height: 500px;
-        overflow-y: auto;
         
-        &::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        &::-webkit-scrollbar-thumb {
-          background: $accent-color;
-          border-radius: 3px;
-        }
-        
-        .thumbnail {
-          width: 100px;
-          height: 100px;
-          border: 2px solid transparent;
-          border-radius: 4px;
-          cursor: pointer;
-          overflow: hidden;
-          transition: all 0.3s ease;
+        .thumbnails-column {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          max-height: 500px;
+          overflow-y: auto;
           
-          &:hover {
-            border-color: darken($border-color, 10%);
+          &::-webkit-scrollbar {
+            width: 6px;
           }
           
-          &.active {
-            border-color: $accent-color;
-            box-shadow: $shadow-sm;
+          &::-webkit-scrollbar-thumb {
+            background: $accent-color;
+            border-radius: 3px;
+          }
+          
+          .thumbnail {
+            width: 100px;
+            height: 100px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            
+            &:hover {
+              border-color: $border-color;
+            }
+            
+            &.active {
+              border-color: $accent-color;
+            }
+            
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+          
+          @media (max-width: 768px) {
+            flex-direction: row;
+            max-height: none;
+            overflow-x: auto;
+            order: 2;
+            
+            .thumbnail {
+              flex: 0 0 100px;
+            }
+          }
+        }
+        
+        .main-image {
+          position: relative;
+          width: 100%;
+          height: 500px;
+          border-radius: $border-radius;
+          overflow: hidden;
+          border: 1px solid $border-color;
+          background-color: #f9f9f9;
+          transition: all 0.5s ease;
+          cursor: zoom-in;
+          
+          @media (max-width: 992px) {
+            height: 400px;
+          }
+          
+          @media (max-width: 768px) {
+            height: 350px;
+            order: 1;
           }
           
           img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-          }
-        }
-        
-        @media (max-width: 768px) {
-          flex-direction: row;
-          max-height: none;
-          overflow-x: auto;
-          order: 2;
-          
-          .thumbnail {
-            flex: 0 0 100px;
-          }
-        }
-      }
-      
-      .main-image {
-        position: relative;
-        width: 100%;
-        height: 500px;
-        border-radius: $border-radius;
-        overflow: hidden;
-        border: 1px solid $border-color;
-        background-color: #f9f9f9;
-        transition: all 0.5s ease;
-        cursor: zoom-in;
-        
-        @media (max-width: 992px) {
-          height: 400px;
-        }
-        
-        @media (max-width: 768px) {
-          height: 350px;
-          order: 1;
-        }
-        
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.5s ease;
-        }
-        
-        &.zoom-active {
-          cursor: zoom-out;
-          
-          img {
-            transform: scale(1.5);
-          }
-        }
-        
-        .product-badge {
-          position: absolute;
-          top: 15px;
-          left: 15px;
-          z-index: 2;
-          padding: 6px 14px;
-          border-radius: 20px;
-          font-weight: $font-weight-bold;
-          font-size: $font-size-xs;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: white;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-          
-          &.new {
-            background: linear-gradient(135deg, $primary-color, darken($primary-color, 15%));
+            object-fit: contain;
+            transition: transform 0.3s ease;
           }
           
-          &.discount {
-            background: linear-gradient(135deg, $accent-color, darken($accent-color, 15%));
-          }
-        }
-        
-        .zoom-icon {
-          @include button-reset;
-          position: absolute;
-          bottom: 15px;
-          right: 15px;
-          width: 45px;
-          height: 45px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.9);
-          @include flex-center;
-          transition: $transition;
-          color: $secondary-color;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-          
-          &:hover {
-            background: white;
-            transform: scale(1.1);
+          &.zoom-active {
+            cursor: zoom-out;
+            
+            img {
+              transform: scale(1.5);
+            }
           }
           
-          svg {
-            font-size: $font-size-lg;
+          .product-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 2;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: $font-weight-bold;
+            font-size: $font-size-xs;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            
+            &.new {
+              background: linear-gradient(135deg, $primary-color, darken($primary-color, 15%));
+            }
+            
+            &.discount {
+              background: linear-gradient(135deg, $accent-color, darken($accent-color, 15%));
+            }
+          }
+          
+          .zoom-icon {
+            @include button-reset;
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            @include flex-center;
+            transition: $transition;
+            color: $secondary-color;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            
+            &:hover {
+              background: white;
+              transform: scale(1.1);
+            }
+            
+            svg {
+              font-size: $font-size-lg;
+            }
           }
         }
       }
