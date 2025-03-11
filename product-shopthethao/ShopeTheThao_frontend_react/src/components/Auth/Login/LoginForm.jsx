@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FiLock, FiEye, FiEyeOff, FiUser, FiMail, FiArrowRight, FiPhone, FiInfo } from "react-icons/fi";
-import { FaFacebookF, FaGoogle, FaTwitter, FaGithub, FaMars, FaVenus, FaUserAlt } from "react-icons/fa";
+import {
+  FiLock,
+  FiEye,
+  FiEyeOff,
+  FiUser,
+  FiMail,
+  FiArrowRight,
+  FiPhone,
+  FiInfo,
+} from "react-icons/fi";
+import {
+  FaFacebookF,
+  FaGoogle,
+  FaTwitter,
+  FaGithub,
+  FaMars,
+  FaVenus,
+  FaUserAlt,
+} from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, message, Divider, Radio } from "antd";
 import "./loginForm.scss";
@@ -72,14 +89,16 @@ const LoginForm = () => {
       navigate(redirectPath);
       message.success(loginMessage);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!";
-      
-      if (errorMessage.startsWith('Tài khoản chưa được xác thực:')) {
-        message.info(errorMessage.split(':')[1]);
-        navigate('/otp', { state: { id: formData.id.trim() } });
+      const errorMessage =
+        err.response?.data?.message ||
+        "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!";
+
+      if (errorMessage.startsWith("Tài khoản chưa được xác thực:")) {
+        message.info(errorMessage.split(":")[1]);
+        navigate("/otp", { state: { id: formData.id.trim() } });
         return;
       }
-      
+
       message.error(errorMessage);
     }
   };
@@ -106,14 +125,17 @@ const LoginForm = () => {
       message.error("Vui lòng nhập email của bạn!");
       return;
     }
-    
+
     // Here you would normally call an API to handle password reset
     try {
       // const response = await authApi.forgotPassword({ email: forgotPasswordEmail });
       message.success("Link đặt lại mật khẩu đã được gửi đến email của bạn!");
       setShowForgotPassword(false);
     } catch (error) {
-      message.error("Không thể gửi email đặt lại mật khẩu: " + (error.response?.data?.message || "Có lỗi xảy ra"));
+      message.error(
+        "Không thể gửi email đặt lại mật khẩu: " +
+          (error.response?.data?.message || "Có lỗi xảy ra")
+      );
     }
   };
 
@@ -130,9 +152,9 @@ const LoginForm = () => {
 
   useEffect(() => {
     // Check if user is already authenticated
-    const token = localStorage.getItem('token'); // or however you store your auth token
+    const token = localStorage.getItem("token"); // or however you store your auth token
     if (token || isAuthenticated) {
-      navigate('/');
+      navigate("/");
     }
   }, [isAuthenticated, navigate]);
 
@@ -178,11 +200,7 @@ const LoginForm = () => {
         >
           {/* Form Header with Logo */}
           <motion.div className="form-header">
-            <motion.img
-              src={img.Co_VN}
-              alt="Logo"
-              className="brand-logo"
-            />
+            <motion.img src={img.Co_VN} alt="Logo" className="brand-logo" />
           </motion.div>
 
           <Tabs
@@ -197,7 +215,7 @@ const LoginForm = () => {
                 children: (
                   <AnimatePresence mode="wait">
                     {showForgotPassword ? (
-                      <ForgotPasswordForm 
+                      <ForgotPasswordForm
                         forgotPasswordEmail={forgotPasswordEmail}
                         setForgotPasswordEmail={setForgotPasswordEmail}
                         handleForgotPassword={handleForgotPassword}
@@ -297,7 +315,7 @@ const LoginForm = () => {
                               />
                             </div>
                           </div>
-                          
+
                           <div className="form-footer">
                             <p>Không có tài khoản?</p>
                             <Link
@@ -326,7 +344,9 @@ const LoginForm = () => {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <EnhancedRegisterForm onLoginClick={() => setActiveTab("login")} />
+                    <EnhancedRegisterForm
+                      onLoginClick={() => setActiveTab("login")}
+                    />
                   </motion.div>
                 ),
               },
@@ -376,12 +396,13 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
       case "id":
         if (!value.trim()) return "Tên tài khoản không được để trống";
         if (value.length < 4) return "Tên tài khoản phải có ít nhất 4 ký tự";
-        if (!/^[a-zA-Z0-9_]+$/.test(value)) return "Tên tài khoản chỉ chứa chữ cái, số và dấu gạch dưới";
+        if (!/^[a-zA-Z0-9_]+$/.test(value))
+          return "Tên tài khoản chỉ chứa chữ cái, số và dấu gạch dưới";
         return "";
 
       case "phone":
         if (!value.trim()) return "Số điện thoại không được để trống";
-        if (!/^[0-9]{10}$/.test(value.replace(/\s/g, ""))) 
+        if (!/^[0-9]{10}$/.test(value.replace(/\s/g, "")))
           return "Số điện thoại phải có 10 chữ số";
         return "";
 
@@ -392,13 +413,14 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 
       case "email":
         if (!value.trim()) return "Email không được để trống";
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email không hợp lệ";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+          return "Email không hợp lệ";
         return "";
 
       case "password":
         if (!value) return "Mật khẩu không được để trống";
         if (value.length < 6) return "Mật khẩu phải có ít nhất 6 ký tự";
-        if (!/[A-Za-z]/.test(value) || !/[0-9]/.test(value)) 
+        if (!/[A-Za-z]/.test(value) || !/[0-9]/.test(value))
           return "Mật khẩu phải chứa cả chữ và số";
         return "";
 
@@ -414,15 +436,15 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Validate field on change
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
-      [name]: validateField(name, value)
+      [name]: validateField(name, value),
     }));
 
     // Calculate password strength if password field changes
@@ -441,24 +463,24 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
     // Length check
     if (password.length >= 6) score += 1;
     if (password.length >= 10) score += 1;
-    
+
     // Character variety check
     if (/[A-Z]/.test(password)) score += 1;
     if (/[0-9]/.test(password)) score += 1;
     if (/[^A-Za-z0-9]/.test(password)) score += 1;
-    
+
     let label = "";
     if (score <= 2) label = "weak";
     else if (score <= 4) label = "medium";
     else label = "strong";
-    
+
     setPasswordStrength({ score, label });
   };
 
   const handleGenderChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      gender: e.target.value
+      gender: e.target.value,
     }));
   };
 
@@ -469,7 +491,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
     if (currentStep === 1) {
       // Validate Step 1 fields
       const fields = ["id", "phone", "fullname"];
-      fields.forEach(field => {
+      fields.forEach((field) => {
         const error = validateField(field, formData[field]);
         newErrors[field] = error;
         if (error) isValid = false;
@@ -477,7 +499,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
     } else if (currentStep === 2) {
       // Validate Step 2 fields
       const fields = ["email", "password", "confirmPassword"];
-      fields.forEach(field => {
+      fields.forEach((field) => {
         const error = validateField(field, formData[field]);
         newErrors[field] = error;
         if (error) isValid = false;
@@ -491,21 +513,21 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
   const nextStep = () => {
     if (validateStep(step)) {
       // Add smooth animation between steps
-      const content = document.querySelector('.step-content');
+      const content = document.querySelector(".step-content");
       if (content) {
-        content.classList.add('fade-out');
+        content.classList.add("fade-out");
         setTimeout(() => {
           setStep(step + 1);
-          content.classList.remove('fade-out');
+          content.classList.remove("fade-out");
         }, 300);
       } else {
         setStep(step + 1);
       }
     } else {
       // Shake animation for validation errors
-      const form = document.querySelector('.register-form');
-      form.classList.add('shake');
-      setTimeout(() => form.classList.remove('shake'), 500);
+      const form = document.querySelector(".register-form");
+      form.classList.add("shake");
+      setTimeout(() => form.classList.remove("shake"), 500);
     }
   };
 
@@ -524,13 +546,13 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
     setLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       console.log("Registering with data:", formData);
-      
+
       // Normally here you would call your API
       // const response = await authApi.register(formData);
-      
+
       setRegistrationComplete(true);
     } catch (error) {
       message.error(
@@ -543,12 +565,16 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 
   const renderStepIndicator = () => (
     <div className="step-indicator">
-      <div className={`step ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
+      <div
+        className={`step ${step >= 1 ? "active" : ""} ${
+          step > 1 ? "completed" : ""
+        }`}
+      >
         <div className="step-number">1</div>
         <div className="step-title">Thông tin cá nhân</div>
       </div>
-      <div className={`step-connector ${step > 1 ? 'half' : ''}`}></div>
-      <div className={`step ${step >= 2 ? 'active' : ''}`}>
+      <div className={`step-connector ${step > 1 ? "half" : ""}`}></div>
+      <div className={`step ${step >= 2 ? "active" : ""}`}>
         <div className="step-number">2</div>
         <div className="step-title">Thông tin tài khoản</div>
       </div>
@@ -563,11 +589,41 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
         {passwordStrength.label === "strong" && "Mạnh"}
       </span>
       <div className="strength-bars">
-        <div className={`bar ${passwordStrength.score >= 1 ? `active ${passwordStrength.label}` : ''}`}></div>
-        <div className={`bar ${passwordStrength.score >= 2 ? `active ${passwordStrength.label}` : ''}`}></div>
-        <div className={`bar ${passwordStrength.score >= 3 ? `active ${passwordStrength.label}` : ''}`}></div>
-        <div className={`bar ${passwordStrength.score >= 4 ? `active ${passwordStrength.label}` : ''}`}></div>
-        <div className={`bar ${passwordStrength.score >= 5 ? `active ${passwordStrength.label}` : ''}`}></div>
+        <div
+          className={`bar ${
+            passwordStrength.score >= 1
+              ? `active ${passwordStrength.label}`
+              : ""
+          }`}
+        ></div>
+        <div
+          className={`bar ${
+            passwordStrength.score >= 2
+              ? `active ${passwordStrength.label}`
+              : ""
+          }`}
+        ></div>
+        <div
+          className={`bar ${
+            passwordStrength.score >= 3
+              ? `active ${passwordStrength.label}`
+              : ""
+          }`}
+        ></div>
+        <div
+          className={`bar ${
+            passwordStrength.score >= 4
+              ? `active ${passwordStrength.label}`
+              : ""
+          }`}
+        ></div>
+        <div
+          className={`bar ${
+            passwordStrength.score >= 5
+              ? `active ${passwordStrength.label}`
+              : ""
+          }`}
+        ></div>
       </div>
     </div>
   );
@@ -575,20 +631,36 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
   if (registrationComplete) {
     return (
       <div className="register-success">
-        <motion.div 
-          className="success-icon" 
+        <motion.div
+          className="success-icon"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
         >
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M8 12L11 15L16 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M8 12L11 15L16 9"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </motion.div>
         <h3>Đăng ký thành công!</h3>
         <p>Tài khoản của bạn đã được tạo. Vui lòng đăng nhập để tiếp tục.</p>
-        <motion.button 
+        <motion.button
           className="submit-button login-button"
           onClick={onLoginClick}
           whileTap={{ scale: 0.98 }}
@@ -600,15 +672,15 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
   }
 
   return (
-    <motion.form 
-      onSubmit={handleSubmit} 
-      className={`register-form ${loading ? 'submitting' : ''}`}
+    <motion.form
+      onSubmit={handleSubmit}
+      className={`register-form ${loading ? "submitting" : ""}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
       {renderStepIndicator()}
-      
+
       <AnimatePresence mode="wait">
         {step === 1 ? (
           <motion.div
@@ -661,7 +733,10 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
             <div className="form-group">
               <label className="input-label">Giới tính</label>
               <div className="gender-select">
-                <Radio.Group onChange={handleGenderChange} value={formData.gender}>
+                <Radio.Group
+                  onChange={handleGenderChange}
+                  value={formData.gender}
+                >
                   <Radio value="M" className="gender-option">
                     <FaMars className="gender-icon male" /> Nam
                   </Radio>
@@ -791,14 +866,21 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 };
 
 // Optimized helper components
-const InputField = ({ icon, endIcon, error, toolTip, requirements, ...props }) => (
+const InputField = ({
+  icon,
+  endIcon,
+  error,
+  toolTip,
+  requirements,
+  ...props
+}) => (
   <motion.div className="form-group">
     {(toolTip || props.placeholder) && (
-      <div className={`input-label ${toolTip ? 'with-tooltip' : ''}`}>
+      <div className={`input-label ${toolTip ? "with-tooltip" : ""}`}>
         <span>{props.placeholder}</span>
         {toolTip && (
-          <motion.span 
-            className="tooltip-icon" 
+          <motion.span
+            className="tooltip-icon"
             title={toolTip}
             whileHover={{ scale: 1.2 }}
           >
@@ -807,7 +889,7 @@ const InputField = ({ icon, endIcon, error, toolTip, requirements, ...props }) =
         )}
       </div>
     )}
-    
+
     <div className={`input-field ${error ? "error" : ""}`}>
       <motion.span
         className="field-icon"
@@ -819,16 +901,16 @@ const InputField = ({ icon, endIcon, error, toolTip, requirements, ...props }) =
       <input {...props} />
       {endIcon}
     </div>
-    
+
     {requirements && !error && (
       <div className="field-requirements">{requirements}</div>
     )}
-    
+
     {error && (
       <motion.div
         className="error-message"
         initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: 'auto' }}
+        animate={{ opacity: 1, height: "auto" }}
         transition={{ duration: 0.2 }}
       >
         {error}
@@ -838,7 +920,12 @@ const InputField = ({ icon, endIcon, error, toolTip, requirements, ...props }) =
 );
 
 // Forgot Password Form Component
-const ForgotPasswordForm = ({ forgotPasswordEmail, setForgotPasswordEmail, handleForgotPassword, onCancel }) => (
+const ForgotPasswordForm = ({
+  forgotPasswordEmail,
+  setForgotPasswordEmail,
+  handleForgotPassword,
+  onCancel,
+}) => (
   <motion.div
     key="forgot-password"
     initial={{ opacity: 0, y: 10 }}
@@ -849,7 +936,7 @@ const ForgotPasswordForm = ({ forgotPasswordEmail, setForgotPasswordEmail, handl
   >
     <h3>Quên mật khẩu</h3>
     <p>Vui lòng nhập email của bạn để nhận link đặt lại mật khẩu.</p>
-    
+
     <form onSubmit={handleForgotPassword}>
       <InputField
         icon={<FiMail />}
@@ -858,7 +945,7 @@ const ForgotPasswordForm = ({ forgotPasswordEmail, setForgotPasswordEmail, handl
         value={forgotPasswordEmail}
         onChange={(e) => setForgotPasswordEmail(e.target.value)}
       />
-      
+
       <div className="button-group">
         <motion.button
           type="button"

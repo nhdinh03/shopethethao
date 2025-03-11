@@ -692,8 +692,8 @@ $border-color: #E2E8F0;
       z-index: 2;
       
       .step-number {
-        width: 20px;
-        height: 20px;
+        width: 25px;
+        height: 25px;
         border-radius: 50%;
         background-color: #E2E8F0;
         color: #94A3B8;
@@ -762,7 +762,7 @@ $border-color: #E2E8F0;
   }
   
   .step-content {
-    min-height: 350px;
+    // min-height: 350px;
     display: flex;
     flex-direction: column;
   }
@@ -965,16 +965,13 @@ $border-color: #E2E8F0;
   }
   
   .login-link {
-    color: $primary-color;
+    color: #4F46E5;
     text-decoration: none;
     font-weight: 600;
-    display: inline-flex;
+    display: inline-flex
+;
     align-items: center;
     gap: 0.25rem;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
 
     &:hover {
       color: $secondary-color;
