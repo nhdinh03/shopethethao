@@ -20,7 +20,21 @@ export const publicRoutes = [
     component: PageUser.Seefulldetails,
     layout: LayoutPageDefaultUser,
   },
-
+  {
+    path: "/products-wishlist",
+    component: PageUser.wishlist,
+    layout: LayoutPageDefaultUser,
+  },
+  {
+    path: "/products-cart",
+    component: PageUser.Cart,
+    layout: LayoutPageDefaultUser,
+  },
+  {
+    path: "/accounts-profile",
+    component: PageUser.UserProfile,
+    layout: LayoutPageDefaultUser,
+  },
   {
     path: "/login",
     component: PageUser.LoginForm,

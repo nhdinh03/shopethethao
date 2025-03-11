@@ -1,9 +1,9 @@
 .breadcrumb-container {
     display: flex;
     align-items: center;
-    margin-left: 10px;
+    // margin-left: 10px;
     font-size: 14px; // Tuỳ chỉnh kích thước chữ
-    color: #333; // Màu chữ
+    color: #ff0000; // Màu chữ
   }
   .breadcrumb-icon {
     display: flex;
@@ -61,7 +61,7 @@
 
 .admin-breadcrumb {
   padding: 16px 24px;
-  background-color: #fff;
+  // background-color: #fff;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
   .ant-breadcrumb {

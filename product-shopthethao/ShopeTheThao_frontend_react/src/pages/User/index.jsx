@@ -10,3 +10,9 @@ export { default as ChangePasswordForm } from "components/User/Auth/ChangePasswo
 export { default as Seefulldetails } from "components/User/Seefulldetails";
 
 
+export { default as UserProfile } from "./UserProfile";
+
+export { default as Cart } from "./Cart";
+
+export { default as wishlist } from "./wishlist";
+

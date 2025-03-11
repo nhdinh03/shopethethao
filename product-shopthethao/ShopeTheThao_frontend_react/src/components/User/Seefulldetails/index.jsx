@@ -1029,7 +1029,7 @@ const Seefulldetails = () => {
                   <button onClick={() => setShowNotification(false)}>
                     Tiếp tục mua sắm
                   </button>
-                  <button onClick={() => navigate("/cart")}>
+                  <button onClick={() => navigate("/products-cart")}>
                     Xem giỏ hàng
                   </button>
                 </div>

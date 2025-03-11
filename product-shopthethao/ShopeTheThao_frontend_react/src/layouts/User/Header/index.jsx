@@ -867,21 +867,21 @@ const Header = () => {
               >
                 {searchOpen ? <FiX /> : <FiSearch />}
               </button>
-              <Link to="/wishlist" className="action-icon wishlist-icon">
+              <Link to="/products-wishlist" className="action-icon wishlist-icon">
                 <AiOutlineHeart />
                 {wishlistCount > 0 && (
                   <span className="count-badge">{wishlistCount}</span>
                 )}
               </Link>
 
-              <Link to="/cart" className="action-icon cart-icon">
+              <Link to="/products-cart" className="action-icon cart-icon">
                 <FiShoppingBag />
                 {cartCount > 0 && (
                   <span className="count-badge">{cartCount}</span>
                 )}
               </Link>
 
-              <Link to="/account" className="action-icon">
+              <Link to="/accounts-profile" className="action-icon">
                 <FiUser />
               </Link>
               <button
