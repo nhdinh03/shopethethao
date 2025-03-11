@@ -20,7 +20,7 @@ import {
   PhoneOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 import { accountsstaffApi, lockreasonsApi } from "api/Admin";
 import "./accountsStaff.scss";
 import uploadApi from "api/service/uploadApi";

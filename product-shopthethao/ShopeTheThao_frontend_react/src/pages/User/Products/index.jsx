@@ -5,17 +5,15 @@ import {
   FiFilter,
   FiGrid,
   FiList,
-  FiChevronDown,
   FiX,
-  FiHome,
   FiChevronRight,
-  FiEye,
   FiRefreshCw,
 } from "react-icons/fi";
-import ProductCard from "../../../components/ProductCard";
-import QuickView from "../../../components/QuickView";
-import { mockProducts } from "../../../data/mockData";
+
 import "./Products.scss";
+import BreadcrumbUser from "layouts/User/BreadcrumbUser/BreadcrumbUser";
+import { mockProducts } from "data/mockData";
+import { ProductCard, QuickView } from "components/User";
 
 const Products = () => {
   const products = mockProducts || [];
@@ -235,8 +233,8 @@ const Products = () => {
     <div className="products-page">
       {/* Main Content */}
       <div className="container">
-        {/* BreadcrumbsUser */}
-
+        {/* Add BreadcrumbUser component */}
+        <BreadcrumbUser modern={true} />
         
         {/* Product Count Summary */}
         <div className="product-summary">

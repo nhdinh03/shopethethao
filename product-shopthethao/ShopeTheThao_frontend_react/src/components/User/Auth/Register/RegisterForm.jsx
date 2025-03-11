@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
-import authApi from '../../../api/Admin/Auth/Login';
 import { useNavigate } from 'react-router-dom';
+import authApi from 'api/Admin/Auth/Login';
 
 const RegisterForm = () => {
   const [loading, setLoading] = useState(false);

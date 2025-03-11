@@ -2,8 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { publicRoutes, privateRoutes } from "./router";
 import LayoutPageDefault from "./layouts/LayoutPageDefault";
-import PrivateRoute from "./components/Auth/PrivateRoute";
 import NotFound from "./pages/NotFound/notFound";
+import { PrivateRoute } from "components/User";
 
 const App = () => {
   const renderPublicRoutes = (routes) => {

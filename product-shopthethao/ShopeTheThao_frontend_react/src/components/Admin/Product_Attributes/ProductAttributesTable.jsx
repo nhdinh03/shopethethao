@@ -1,6 +1,6 @@
 import React from "react";
 import { Table, Select } from "antd";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 
 const ProductAttributesTable = ({
   columns,

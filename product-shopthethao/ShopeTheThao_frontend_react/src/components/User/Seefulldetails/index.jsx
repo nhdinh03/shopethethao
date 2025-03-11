@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -24,10 +24,9 @@ import {
   FiAlertCircle,
   FiBarChart,
 } from "react-icons/fi";
-import { mockProducts } from "../../data/mockData";
+import { mockProducts } from "../../../data/mockData";
 import ProductCard from "../ProductCard";
-import BreadcrumbUser from "../../layouts/User/BreadcrumbUser/BreadcrumbUser";
-import { generateProductDetailsBreadcrumb } from "../../layouts/User/BreadcrumbUser/BreadcrumbUserConfig";
+import BreadcrumbUser from "../../../layouts/User/BreadcrumbUser/BreadcrumbUser";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -94,16 +93,18 @@ const Seefulldetails = () => {
     1: 2
   };
 
+  // Single boolean flag to track if initialization is done
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Fetch product data
   useEffect(() => {
+    // Reset initialization when productId changes
+    setIsInitialized(false);
+
     // Simulate API fetch with timeout
     const fetchProduct = async () => {
       try {
         setLoading(true);
-
-        // In a real app, this would be an API call
-        // const response = await fetch(`/api/products/${productId}`);
-        // const data = await response.json();
 
         // Using mock data for now
         setTimeout(() => {
@@ -112,29 +113,34 @@ const Seefulldetails = () => {
           );
 
           if (foundProduct) {
-            setProduct(foundProduct);
+            // Instead of setting the found product directly, use the sample product for demo
+            // Create a complete product with all needed properties at once
+            const completeProduct = {
+              ...sampleProduct,
+              ...foundProduct, // Allow mock data to override sample data if needed
+              id: foundProduct.id || sampleProduct.id
+            };
 
-            // Set default selected options
-            if (foundProduct.colors && foundProduct.colors.length > 0) {
-              setSelectedColor(foundProduct.colors[0]);
+            setProduct(completeProduct);
+
+            // Set default selected options only once
+            if (completeProduct.colors && completeProduct.colors.length > 0) {
+              setSelectedColor(completeProduct.colors[0]);
             }
 
-            if (foundProduct.sizes && foundProduct.sizes.length > 0) {
-              setSelectedSize(foundProduct.sizes[0]);
+            if (completeProduct.sizes && completeProduct.sizes.length > 0) {
+              setSelectedSize(completeProduct.sizes[0]);
             }
 
             // Get related products (same category)
             const related = mockProducts
               .filter(
                 (p) =>
-                  p.category === foundProduct.category &&
-                  p.id !== foundProduct.id
+                  p.category === completeProduct.category &&
+                  p.id !== completeProduct.id
               )
               .slice(0, 4);
             setRelatedProducts(related);
-
-            // Set breadcrumb data using the utility function
-            setBreadcrumbData(generateProductDetailsBreadcrumb(foundProduct));
           } else {
             setError("Không tìm thấy sản phẩm");
           }
@@ -148,7 +154,33 @@ const Seefulldetails = () => {
     };
 
     fetchProduct();
-  }, [productId]);
+  }, [productId]); // Only re-run when productId changes
+
+  // Initialize additional data once the product is loaded
+  useEffect(() => {
+    if (!loading && product && !isInitialized) {
+      // Set additional states only once
+      setViewedCount(16);
+
+      // Calculate delivery date
+      const today = new Date();
+      const deliveryDate = new Date(today.setDate(today.getDate() + 3));
+      setEstimatedDelivery(
+        deliveryDate.toLocaleDateString("vi-VN", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      );
+
+      // Set stock
+      setCurrentStock(product.stock || 0);
+      
+      // Mark initialization as complete
+      setIsInitialized(true);
+    }
+  }, [loading, product, isInitialized]);
 
   // Create a sample product data for demonstration
   const sampleProduct = {
@@ -176,19 +208,11 @@ const Seefulldetails = () => {
     sku: "JG-KAZE-04"
   };
 
-  // Override the product data with our sample for demonstration
-  useEffect(() => {
-    if (!loading && product) {
-      // This is just for demonstration - in a real app you would use the actual API data
-      setProduct(sampleProduct);
-    }
-  }, [loading, product]);
-
-  // Format price
+  // Format price with VND
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
-      currency: "VND",
+      currency: "VND"
     }).format(price);
   };
 
@@ -197,7 +221,7 @@ const Seefulldetails = () => {
     return price * (1 - discount / 100);
   };
 
-  // Handle quantity changes
+  // Handle quantity change
   const handleQuantityChange = (change) => {
     const newQuantity = Math.max(1, quantity + change);
     setQuantity(newQuantity);
@@ -269,29 +293,6 @@ const Seefulldetails = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Giả lập người đang xem sản phẩm
-  useEffect(() => {
-    if (product) {
-      // Simulated fixed viewer count (16) instead of random
-      setViewedCount(16);
-
-      // Thời gian giao hàng dự kiến
-      const today = new Date();
-      const deliveryDate = new Date(today.setDate(today.getDate() + 3));
-      setEstimatedDelivery(
-        deliveryDate.toLocaleDateString("vi-VN", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-      );
-
-      // Cập nhật số lượng còn lại
-      setCurrentStock(product.stock);
-    }
-  }, [product]);
-
   // Optimize image handling states
   const handleImageSelect = (index) => {
     setSelectedImage(index);
@@ -329,9 +330,9 @@ const Seefulldetails = () => {
   return (
     <div className="product-details-page" ref={productRef}>
       <div className="container">
-        {/* Use centralized BreadcrumbUser component with modern style */}
+        {/* Pass the product object directly to the BreadcrumbUser component */}
         <BreadcrumbUser
-          extraData={{ product, breadcrumbs: breadcrumbData }}
+          extraData={{ product }}
           modern={true}
           withBackground={false}
         />
@@ -404,7 +405,6 @@ const Seefulldetails = () => {
                   {product.rating} ({product.reviews || 0} đánh giá)
                 </span>
               </div>
-
               <div className="product-sku">
                 Mã SP: <span>{product.sku || product.id}</span>
               </div>
@@ -576,7 +576,6 @@ const Seefulldetails = () => {
                 >
                   <FiShoppingCart /> THÊM VÀO GIỎ HÀNG
                 </button>
-
                 <button
                   className="buy-now-btn"
                   onClick={handleBuyNow}
@@ -584,7 +583,6 @@ const Seefulldetails = () => {
                 >
                   MUA NGAY
                 </button>
-
                 <button className="wishlist-btn" title="Yêu thích sản phẩm">
                   <FiHeart />
                 </button>

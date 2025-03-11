@@ -1,13 +1,26 @@
-import { AdminLayout, LayoutPageDefault, LayoutPageDefaultUser, UserLayout } from "layouts";
+import {
+  AdminLayout,
+  LayoutPageDefault,
+  LayoutPageDefaultUser,
+  UserLayout,
+} from "layouts";
 import * as PageAdmin from "../pages/Admin";
 import * as PageUser from "../pages/User";
 import NotFound from "../pages/NotFound/notFound";
 
 export const publicRoutes = [
   { path: "/", component: PageUser.HomeIndex, layout: UserLayout },
-  { path: "/products", component: PageUser.Products, layout: LayoutPageDefaultUser },
-  { path: "/seefulldetails/:productId", component: PageUser.Seefulldetails, layout: LayoutPageDefaultUser },
-  
+  {
+    path: "/products",
+    component: PageUser.Products,
+    layout: LayoutPageDefaultUser,
+  },
+  {
+    path: "/seefulldetails/:productId",
+    component: PageUser.Seefulldetails,
+    layout: LayoutPageDefaultUser,
+  },
+
   {
     path: "/login",
     component: PageUser.LoginForm,

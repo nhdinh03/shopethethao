@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Table, Typography, Tag, Select, message } from 'antd';
 import detailedInvoicesAPI from 'api/Admin/DetailedInvoices/detailedInvoicesAPI';
 import './detailedInvoices.scss';
-import PaginationComponent from 'components/PaginationComponent';
+import PaginationComponent from 'components/User/PaginationComponent';
 
 const { Title } = Typography;
 

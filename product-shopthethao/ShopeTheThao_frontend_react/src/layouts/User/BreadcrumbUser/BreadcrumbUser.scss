@@ -1,24 +1,30 @@
+$breadcrumb-bg: #f5f5f5;
+$link-color: #1890ff;
+$link-hover-color: darken($link-color, 10%);
+
 .breadcrumb-user-container {
-  padding: 12px 0;
-  background-color: #f5f5f5;
-  margin-bottom: 20px;
+  padding: 1rem;
 
-  .ant-breadcrumb {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
+  &.transparent-bg {
+    background-color: transparent;
+  }
 
-    .ant-breadcrumb-link {
-      color: #666;
-      font-size: 14px;
-
-      &:hover {
-        color: #1890ff;
-      }
+  &.modern {
+    .ant-breadcrumb-link,
+    .ant-breadcrumb-separator {
+      color: #333;
     }
+  }
 
-    .home-icon {
-      margin-right: 8px;
+  .ant-breadcrumb-link a {
+    color: $link-color;
+
+    &:hover {
+      color: $link-hover-color;
     }
+  }
+
+  .home-icon {
+    margin-right: 4px;
   }
 }

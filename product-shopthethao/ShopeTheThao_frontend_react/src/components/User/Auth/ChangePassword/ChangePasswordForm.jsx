@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
-import authApi from '../../../api/Admin/Auth/Login';
+
 import { useNavigate } from 'react-router-dom';
+import authApi from 'api/Admin/Auth/Login';
 
 const ChangePasswordForm = () => {
   const [loading, setLoading] = useState(false);

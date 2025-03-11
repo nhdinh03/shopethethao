@@ -21,7 +21,7 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 import { accountsUserApi, lockreasonsApi } from "api/Admin";
 import "../index.scss";
 import uploadApi from "api/service/uploadApi";

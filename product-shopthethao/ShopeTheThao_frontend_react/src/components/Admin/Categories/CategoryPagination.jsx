@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select } from 'antd';
-import PaginationComponent from 'components/PaginationComponent'; // Giả sử bạn đã có một component phân trang riêng
+import PaginationComponent from 'components/User/PaginationComponent'; // Giả sử bạn đã có một component phân trang riêng
 
 const CategoryPagination = ({ totalPages, currentPage, setCurrentPage, pageSize, handlePageSizeChange }) => {
   return (

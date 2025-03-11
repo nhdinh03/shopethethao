@@ -43,7 +43,7 @@ import {
 import moment from "moment";
 import { invoicesApi } from "api/Admin";
 import cancelReasonApi from "api/Admin/cancelReason/CancelReasonApi";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 const { Text } = Typography;
 
 

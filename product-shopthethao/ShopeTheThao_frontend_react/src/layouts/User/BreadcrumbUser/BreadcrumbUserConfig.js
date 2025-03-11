@@ -1,31 +1,15 @@
-// ...existing code...
-
-/**
- * Generates breadcrumb data for product detail pages
- * @param {Object} product - The product object
- * @returns {Array} Array of breadcrumb items
- */
-export const generateProductDetailsBreadcrumb = (product) => {
-  if (!product) return [];
-  
-  return [
-    {
-      title: 'Trang chủ',
-      path: '/'
-    },
-    {
-      title: 'Sản phẩm',
-      path: '/products'
-    },
-    {
-      title: product.category,
-      path: `/products?category=${encodeURIComponent(product.category)}`
-    },
-    {
-      title: product.name,
-      path: `/seefulldetails/${product.id}`
-    }
-  ];
-};
-
-// ...existing code...
+export const breadcrumbDataUser = [
+  { url: "/", title: "Trang chủ" },
+  { url: "/products", title: "Sản phẩm" },
+  { url: "/seefulldetails/id", title: "Chi tiết sản phẩm" },
+  { url: "/cart", title: "Giỏ hàng" },
+  { url: "/checkout", title: "Thanh toán" },
+  { url: "/profile", title: "Tài khoản" },
+  { url: "/orders", title: "Đơn hàng" },
+  { url: "/category", title: "Danh mục" },
+  { url: "/wishlist", title: "Yêu thích" },
+  { url: "/about", title: "Giới thiệu" },
+  { url: "/contact", title: "Liên hệ" },
+  { url: "/news", title: "Tin tức" },
+  { url: "/faqs", title: "FAQs" },
+];

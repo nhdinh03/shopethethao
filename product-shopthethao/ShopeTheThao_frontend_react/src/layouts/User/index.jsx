@@ -3,10 +3,9 @@ import { useLocation, Outlet } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
 import Snowfall from "./Snowfall/Snowfall";
-import BreadcrumbUser from "./BreadcrumbUser/BreadcrumbUser";
 import "./User.module.scss"; // Import as global stylesheet
 import { Products } from "pages/User";
-import Slideshow from "components/Slideshow";
+import { Slideshow } from "components/User";
 
 
 const UserLayout = () => {
@@ -23,7 +22,7 @@ const UserLayout = () => {
       <div className="layout-wrapper">
         <main className={`layout-main ${isProductsPage ? 'products-main' : ''} ${isProductDetailsPage ? 'product-details-main' : ''}`}>
           <div className="content-wrapper">
-            {!isLoginPage && !isHomePage && <BreadcrumbUser />}
+            {/* Remove BreadcrumbUser from here as we'll add it to each page */}
             {isHomePage && <Slideshow/>}
             {!isProductsPage && !isProductDetailsPage && isHomePage && <Products />}
             <Outlet />

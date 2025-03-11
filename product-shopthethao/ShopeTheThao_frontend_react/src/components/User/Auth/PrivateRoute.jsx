@@ -1,7 +1,8 @@
+import UserNotFound from 'pages/NotFound/UserNotFound';
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { hasPermission, isAdminRole } from '../../utils/roleManager';
-import UserNotFound from '../../pages/NotFound/UserNotFound';
+import { hasPermission, isAdminRole } from 'utils/roleManager';
+
 
 const PrivateRoute = ({ children, requiredPermission }) => {
   const userRoles = JSON.parse(localStorage.getItem('roles') || '[]');

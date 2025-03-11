@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message, Steps } from 'antd';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
-import authApi from '../../../api/Admin/Auth/Login';
 import { useNavigate } from 'react-router-dom';
+import authApi from 'api/Admin/Auth/Login';
 
 const { Step } = Steps;
 

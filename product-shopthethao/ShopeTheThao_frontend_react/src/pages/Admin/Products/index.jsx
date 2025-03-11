@@ -15,7 +15,7 @@ import {
 } from "@ant-design/icons";
 
 import uploadApi from "api/service/uploadApi";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 import { useCategories, useSizes } from "hooks";
 import { productsApi } from "api/Admin";
 import "../index.scss";
