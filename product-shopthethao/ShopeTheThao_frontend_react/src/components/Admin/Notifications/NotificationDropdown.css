@@ -95,11 +95,17 @@
 }
 
 .notification-badge-animated {
-  animation: pulse 1s infinite;
+  animation: pulse 2s infinite;
 }
 
 .notification-badge-animated .ant-badge-count {
-  /* animation: pulse 2s infinite; */
+  animation: badgePulse 2s infinite;
+  /* transform-origin: center; */
+}
+
+.ant-badge-count {
+  z-index: 10;
+  position: relative;
 }
 
 @keyframes pulse {

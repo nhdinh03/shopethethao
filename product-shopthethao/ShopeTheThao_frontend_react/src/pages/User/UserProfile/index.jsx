@@ -6,7 +6,7 @@ import {
 import { 
   UserOutlined, HomeOutlined, MailOutlined, PhoneOutlined, UploadOutlined, 
   LockOutlined, IdcardOutlined, SaveOutlined, EditOutlined, CameraOutlined,
-  SafetyCertificateOutlined, InfoCircleOutlined, CheckCircleOutlined
+  SafetyCertificateOutlined, InfoCircleOutlined, CheckCircleOutlined, ManOutlined, WomanOutlined
 } from "@ant-design/icons";
 import moment from "moment";
 import "./UserProfile.scss";
@@ -22,6 +22,7 @@ const UserProfile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [saveLoading, setSaveLoading] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [fieldLoading, setFieldLoading] = useState({});
     
     // Mock user data - in real application, fetch from API
     useEffect(() => {
@@ -120,6 +121,177 @@ const UserProfile = () => {
         setIsEditing(!isEditing);
     };
 
+    const showEditMessage = () => {
+        if (isEditing) {
+            message.info({
+                content: 'Bạn có thể chỉnh sửa thông tin. Nhớ nhấn Lưu khi hoàn tất!',
+                icon: <EditOutlined style={{ color: '#1890ff' }} />,
+                duration: 3,
+            });
+        }
+    };
+
+    useEffect(() => {
+        showEditMessage();
+    }, [isEditing]);
+
+    const handleFieldChange = (fieldName) => {
+        setFieldLoading(prev => ({ ...prev, [fieldName]: true }));
+        setTimeout(() => {
+            setFieldLoading(prev => ({ ...prev, [fieldName]: false }));
+        }, 500);
+    };
+
+    const renderLeftPanel = () => (
+        <div className="profile-panel left-panel">
+            <Card className="user-card">
+                <div className="avatar-section">
+                    <Avatar size={150} src={imageUrl} icon={!imageUrl && <UserOutlined />} />
+                    <Upload
+                        name="avatar"
+                        showUploadList={false}
+                        beforeUpload={beforeUpload}
+                        onChange={handleUpload}
+                    >
+                        <Button icon={<CameraOutlined />} className="change-avatar-btn">
+                            Thay đổi ảnh đại diện
+                        </Button>
+                    </Upload>
+                    <h2>{userData?.fullname}</h2>
+                    <p className="email">{userData?.email}</p>
+                </div>
+
+                <div className="quick-stats">
+                    <div className="stat-item">
+                        <PhoneOutlined className="stat-icon" />
+                        <div>
+                            <label>Điện thoại</label>
+                            <span>{userData?.phone}</span>
+                        </div>
+                    </div>
+                    <div className="stat-item">
+                        <HomeOutlined className="stat-icon" />
+                        <div>
+                            <label>Địa chỉ</label>
+                            <span>{userData?.address}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="profile-actions">
+                    {isEditing ? (
+                        <Button 
+                            type="primary"
+                            icon={<SaveOutlined />}
+                            block
+                            onClick={() => form.submit()}
+                            loading={saveLoading}
+                        >
+                            Lưu thay đổi
+                        </Button>
+                    ) : (
+                        <Button 
+                            type="default"
+                            icon={<EditOutlined />}
+                            block
+                            onClick={toggleEdit}
+                        >
+                            Chỉnh sửa thông tin
+                        </Button>
+                    )}
+                </div>
+            </Card>
+        </div>
+    );
+
+    const renderRightPanel = () => (
+        <div className="profile-panel right-panel">
+            <Card className="profile-details">
+                <Tabs defaultActiveKey="basic">
+                    <Tabs.TabPane 
+                        tab={<span><UserOutlined /> Thông tin cơ bản</span>} 
+                        key="basic"
+                    >
+                        <Row gutter={[24, 16]}>
+                            <Col span={12}>
+                                <Form.Item name="fullname" label="Họ và tên">
+                                    <Input 
+                                        prefix={<UserOutlined />}
+                                        readOnly={!isEditing}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="email" label="Email">
+                                    <Input 
+                                        prefix={<MailOutlined />}
+                                        readOnly
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="phone" label="Số điện thoại">
+                                    <Input 
+                                        prefix={<PhoneOutlined />}
+                                        readOnly={!isEditing}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="birthday" label="Ngày sinh">
+                                    <DatePicker 
+                                        style={{ width: '100%' }}
+                                        disabled={!isEditing}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Tabs.TabPane>
+                    <Tabs.TabPane 
+                        tab={<span><SafetyCertificateOutlined /> Thông tin chi tiết</span>} 
+                        key="details"
+                    >
+                        <Row gutter={[24, 16]}>
+                            <Col span={24}>
+                                <Form.Item name="address" label="Địa chỉ">
+                                    <Input.TextArea 
+                                        rows={3}
+                                        readOnly={!isEditing}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="gender" label="Giới tính">
+                                    <Radio.Group 
+                                        disabled={!isEditing}
+                                        buttonStyle="solid"
+                                    >
+                                        <Radio.Button value="M">Nam</Radio.Button>
+                                        <Radio.Button value="F">Nữ</Radio.Button>
+                                    </Radio.Group>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Tabs.TabPane>
+                    <Tabs.TabPane 
+                        tab={<span><LockOutlined /> Bảo mật</span>} 
+                        key="security"
+                    >
+                        <div className="security-section">
+                            <Button 
+                                danger
+                                icon={<LockOutlined />}
+                                onClick={() => setPasswordModalVisible(true)}
+                            >
+                                Đổi mật khẩu
+                            </Button>
+                        </div>
+                    </Tabs.TabPane>
+                </Tabs>
+            </Card>
+        </div>
+    );
+
     if (loading) {
         return (
             <div className="loading-container">
@@ -128,227 +300,20 @@ const UserProfile = () => {
         );
     }
 
-    const tooltips = {
-        email: "Email dùng để đăng nhập và nhận thông báo",
-        phone: "Số điện thoại dùng để liên hệ và xác thực",
-        address: "Địa chỉ dùng để giao hàng",
-    };
-
     return (
         <div className="user-profile-container">
-            <div className="profile-header-wrapper">
-                <div className="profile-header-content">
-                    <div className="profile-avatar">
-                        <div className="avatar-upload">
-                            <Avatar 
-                                size={100} 
-                                src={imageUrl} 
-                                icon={!imageUrl && <UserOutlined />}
-                            />
-                            <div className="upload-overlay">
-                                <Upload
-                                    name="avatar"
-                                    showUploadList={false}
-                                    beforeUpload={beforeUpload}
-                                    onChange={handleUpload}
-                                    customRequest={({ onSuccess }) => setTimeout(() => onSuccess("ok"), 0)}
-                                >
-                                    <Tooltip title="Thay đổi ảnh đại diện">
-                                        <Button shape="circle" icon={<CameraOutlined />} className="camera-button" />
-                                    </Tooltip>
-                                </Upload>
-                            </div>
-                        </div>
-                        <div className="user-brief-info">
-                            <h2>{userData?.fullname}</h2>
-                            <p>{userData?.email}</p>
-                        </div>
-                    </div>
-                    
-                    <div className="profile-actions">
-                        {isEditing ? (
-                            <Button 
-                                type="primary" 
-                                onClick={() => form.submit()} 
-                                icon={<SaveOutlined />}
-                                className="save-button"
-                                loading={saveLoading}
-                            >
-                                {saveLoading ? 'Đang lưu...' : 'Lưu thông tin'}
-                            </Button>
-                        ) : (
-                            <Button 
-                                onClick={toggleEdit} 
-                                icon={<EditOutlined />}
-                                className="edit-button"
-                            >
-                                Chỉnh sửa
-                            </Button>
-                        )}
-                    </div>
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleSubmit}
+                className={`profile-form ${isEditing ? 'editing' : ''}`}
+            >
+                <div className="profile-layout">
+                    {renderLeftPanel()}
+                    {renderRightPanel()}
                 </div>
-            </div>
-            
-            <div className={`profile-main ${submitSuccess ? 'submit-success' : ''}`}>
-                <Card bordered={false} className="profile-card">
-                    <Tabs defaultActiveKey="basic" className="profile-tabs">
-                        <TabPane 
-                            tab={<span><IdcardOutlined /> Thông tin cơ bản</span>}
-                            key="basic"
-                        >
-                            <Form
-                                form={form}
-                                layout="vertical"
-                                onFinish={handleSubmit}
-                                className={isEditing ? "editing-form" : "viewing-form"}
-                                initialValues={{
-                                    gender: "M",
-                                }}
-                                scrollToFirstError
-                            >
-                                <Row gutter={24}>
-                                    <Col xs={24} sm={12}>
-                                        <Form.Item
-                                            label={
-                                                <span className="form-label">
-                                                    <UserOutlined /> ID tài khoản
-                                                    <Tooltip title="ID tài khoản không thể thay đổi">
-                                                        <InfoCircleOutlined className="info-icon" />
-                                                    </Tooltip>
-                                                </span>
-                                            }
-                                            name="id"
-                                        >
-                                            <Input disabled className="disabled-input" />
-                                        </Form.Item>
-                                    </Col>
-                                    
-                                    <Col xs={24} sm={12}>
-                                        <Form.Item
-                                            label={<span className="form-label"><MailOutlined /> Email</span>}
-                                            name="email"
-                                            rules={[
-                                                { required: true, message: 'Vui lòng nhập email!' },
-                                                { type: 'email', message: 'Email không hợp lệ!' }
-                                            ]}
-                                            tooltip={isEditing ? tooltips.email : ""}
-                                        >
-                                            <Input readOnly={!isEditing} className={!isEditing ? "readonly-input" : ""} />
-                                        </Form.Item>
-                                    </Col>
-                                    
-                                    <Col xs={24} sm={12}>
-                                        <Form.Item
-                                            label={<span className="form-label"><UserOutlined /> Họ và tên</span>}
-                                            name="fullname"
-                                            rules={[{ required: true, message: 'Vui lòng nhập họ và tên!' }]}
-                                        >
-                                            <Input readOnly={!isEditing} className={!isEditing ? "readonly-input" : ""} />
-                                        </Form.Item>
-                                    </Col>
-                                    
-                                    <Col xs={24} sm={12}>
-                                        <Form.Item
-                                            label={<span className="form-label"><PhoneOutlined /> Số điện thoại</span>}
-                                            name="phone"
-                                            rules={[
-                                                { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                                                { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải có 10 chữ số!' }
-                                            ]}
-                                            tooltip={isEditing ? tooltips.phone : ""}
-                                        >
-                                            <Input readOnly={!isEditing} className={!isEditing ? "readonly-input" : ""} />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-                                
-                                <div className="form-section">
-                                    <h3 className="form-section-title">
-                                        <SafetyCertificateOutlined /> Thông tin chi tiết
-                                    </h3>
-                                    
-                                    <Row gutter={24}>
-                                        <Col span={24}>
-                                            <Form.Item
-                                                label={<span className="form-label"><HomeOutlined /> Địa chỉ</span>}
-                                                name="address"
-                                                rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
-                                                tooltip={isEditing ? tooltips.address : ""}
-                                            >
-                                                <Input.TextArea 
-                                                    autoSize={{ minRows: 2, maxRows: 4 }}
-                                                    readOnly={!isEditing}
-                                                    className={!isEditing ? "readonly-input" : ""}
-                                                />
-                                            </Form.Item>
-                                        </Col>
-                                        
-                                        <Col xs={24} sm={12}>
-                                            <Form.Item
-                                                label={<span className="form-label">Ngày sinh</span>}
-                                                name="birthday"
-                                                rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
-                                            >
-                                                <DatePicker 
-                                                    format="DD/MM/YYYY" 
-                                                    style={{ width: '100%' }} 
-                                                    disabled={!isEditing}
-                                                    className={!isEditing ? "readonly-input" : ""}
-                                                />
-                                            </Form.Item>
-                                        </Col>
-                                        
-                                        <Col xs={24} sm={12}>
-                                            <Form.Item
-                                                label={<span className="form-label">Giới tính</span>}
-                                                name="gender"
-                                                rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
-                                            >
-                                                <Radio.Group disabled={!isEditing} className="gender-radio-group">
-                                                    <Radio value="M">Nam</Radio>
-                                                    <Radio value="F">Nữ</Radio>
-                                                    <Radio value="O">Khác</Radio>
-                                                </Radio.Group>
-                                            </Form.Item>
-                                        </Col>
-                                    </Row>
-                                </div>
-                                
-                                {isEditing && (
-                                    <div className="form-actions">
-                                        <Button type="default" onClick={toggleEdit}>
-                                            Hủy
-                                        </Button>
-                                        <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saveLoading}>
-                                            {saveLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-                                        </Button>
-                                    </div>
-                                )}
-                            </Form>
-                            
-                            {!isEditing && (
-                                <div className="security-section">
-                                    <h3 className="form-section-title">
-                                        <LockOutlined /> Bảo mật
-                                    </h3>
-                                    <p className="password-status">
-                                        Mật khẩu được mã hóa an toàn
-                                    </p>
-                                    <Button
-                                        type="primary"
-                                        onClick={() => setPasswordModalVisible(true)}
-                                        icon={<LockOutlined />}
-                                        className="change-password-btn"
-                                    >
-                                        Đổi mật khẩu
-                                    </Button>
-                                </div>
-                            )}
-                        </TabPane>
-                    </Tabs>
-                </Card>
-            </div>
-            
+            </Form>
+
             <Modal
                 title={<div className="modal-title"><LockOutlined className="modal-icon" /> Đổi mật khẩu</div>}
                 open={passwordModalVisible}

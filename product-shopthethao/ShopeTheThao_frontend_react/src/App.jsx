@@ -1,9 +1,19 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { publicRoutes, privateRoutes } from "./router";
 import LayoutPageDefault from "./layouts/LayoutPageDefault";
 import NotFound from "./pages/NotFound/notFound";
 import { PrivateRoute } from "components/User";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 const App = () => {
   const renderPublicRoutes = (routes) => {
@@ -44,6 +54,7 @@ const App = () => {
 
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {renderPublicRoutes(publicRoutes)}
         {renderPrivateRoutes(privateRoutes)}

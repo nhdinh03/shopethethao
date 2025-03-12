@@ -1,9 +1,78 @@
 .user-profile-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 20px;
   background-color: #f5f8fa;
   border-radius: 8px;
+
+  .profile-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .profile-section {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+
+      h2 {
+        margin: 0;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #262626;
+
+        .anticon {
+          color: #1890ff;
+        }
+      }
+    }
+
+    .user-avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+
+      .ant-avatar {
+        border: 4px solid rgba(24, 144, 255, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .ant-form-item {
+      margin-bottom: 24px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .ant-input-prefix {
+        color: #bfbfbf;
+      }
+    }
+
+    .security-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #52c41a;
+      margin: 0;
+      
+      .anticon {
+        font-size: 16px;
+      }
+    }
+  }
 
   .profile-header-wrapper {
     background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
@@ -381,6 +450,34 @@
         }
       }
     }
+
+    &.editing {
+      .ant-input:not([disabled]),
+      .ant-picker:not([disabled]) {
+        background-color: #fff;
+        border-color: #d9d9d9;
+        
+        &:hover {
+          border-color: #40a9ff;
+        }
+        
+        &:focus {
+          border-color: #1890ff;
+          box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+      }
+    }
+
+    .ant-input[readonly],
+    .ant-picker-disabled {
+      background-color: #fafafa;
+      border-color: transparent;
+      cursor: default;
+
+      &:hover {
+        border-color: transparent;
+      }
+    }
   }
 
   .profile-main {
@@ -517,6 +614,323 @@
       }
     }
   }
+
+  // Enhanced profile card
+  .profile-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    background: linear-gradient(to bottom, #ffffff, #f9fafc);
+
+    &:hover {
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  // Improved form fields
+  .ant-form-item {
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      
+      .ant-form-item-label > label {
+        color: #1890ff;
+        transform: translateX(5px);
+      }
+    }
+
+    .ant-input,
+    .ant-picker,
+    .ant-select-selector {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+      }
+      
+      &:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 12px rgba(24, 144, 255, 0.15);
+      }
+    }
+  }
+
+  // Enhanced buttons
+  .edit-button, .save-button {
+    height: 44px;
+    padding: 0 24px;
+    border-radius: 22px;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    .anticon {
+      font-size: 18px;
+    }
+  }
+
+  // Better section titles
+  .form-section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #262626;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    
+    .anticon {
+      margin-right: 12px;
+      font-size: 22px;
+      color: #1890ff;
+    }
+  }
+
+  // Enhanced mobile view
+  @media (max-width: 576px) {
+    padding: 12px;
+
+    .profile-card {
+      border-radius: 8px;
+    }
+
+    .form-section-title {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+  }
+
+  .profile-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-sidebar {
+      width: 300px;
+      flex-shrink: 0;
+
+      .sidebar-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        padding: 24px;
+
+        .user-avatar-section {
+          text-align: center;
+          margin-bottom: 24px;
+          padding-bottom: 24px;
+          border-bottom: 1px dashed #f0f0f0;
+
+          .ant-avatar {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 16px;
+            border: 4px solid rgba(24, 144, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          }
+
+          .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 4px;
+          }
+
+          .user-email {
+            color: #666;
+            font-size: 14px;
+          }
+        }
+
+        .user-stats {
+          .stat-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .stat-icon {
+              width: 36px;
+              height: 36px;
+              border-radius: 8px;
+              background: #f5f8ff;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 12px;
+              color: #1890ff;
+            }
+
+            .stat-content {
+              flex: 1;
+
+              .stat-label {
+                font-size: 13px;
+                color: #666;
+                margin-bottom: 2px;
+              }
+
+              .stat-value {
+                font-size: 15px;
+                color: #262626;
+                font-weight: 500;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .profile-content {
+      flex: 1;
+      min-width: 0;
+
+      .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      }
+    }
+
+    @media (max-width: 992px) {
+      flex-direction: column;
+
+      .profile-sidebar {
+        width: 100%;
+      }
+    }
+  }
+
+  .left-panel {
+    .user-card {
+      position: sticky;
+      top: 24px;
+
+      .avatar-section {
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        .ant-avatar {
+          margin-bottom: 16px;
+          border: 4px solid rgba(24, 144, 255, 0.1);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+          margin: 12px 0 4px;
+          color: #262626;
+        }
+
+        .email {
+          color: #666;
+          font-size: 14px;
+        }
+
+        .change-avatar-btn {
+          margin-top: 12px;
+        }
+      }
+
+      .quick-stats {
+        padding: 16px 0;
+
+        .stat-item {
+          display: flex;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .stat-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #f5f8ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1890ff;
+            margin-right: 12px;
+          }
+
+          div {
+            display: flex;
+            flex-direction: column;
+            
+            label {
+              font-size: 12px;
+              color: #666;
+            }
+
+            span {
+              color: #262626;
+              font-size: 14px;
+            }
+          }
+        }
+      }
+
+      .profile-actions {
+        padding-top: 16px;
+        border-top: 1px solid #f0f0f0;
+      }
+    }
+  }
+
+  .right-panel {
+    .profile-details {
+      .ant-tabs-nav {
+        margin-bottom: 24px;
+      }
+
+      .ant-form-item {
+        margin-bottom: 24px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      .security-section {
+        padding: 24px;
+        text-align: center;
+        background: #fafafa;
+        border-radius: 8px;
+      }
+    }
+  }
+
+  // ...existing animations and responsive styles...
 }
 
 .loading-container {

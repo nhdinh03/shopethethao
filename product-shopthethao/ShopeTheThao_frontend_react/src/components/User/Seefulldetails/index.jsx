@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,24 +13,20 @@ import {
   FiShield,
   FiStar,
   FiEye,
-  FiPlay,
-  FiCompare,
-  FiRotateCw,
   FiLayers,
   FiClock,
   FiGift,
   FiCheckCircle,
-  FiMapPin,
   FiAlertCircle,
-  FiBarChart,
 } from "react-icons/fi";
-import { mockProducts } from "../../../data/mockData";
-import ProductCard from "../ProductCard";
-import BreadcrumbUser from "../../../layouts/User/BreadcrumbUser/BreadcrumbUser";
+
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./Seefulldetails.scss";
+import BreadcrumbUser from "layouts/User/BreadcrumbUser/BreadcrumbUser";
+import { mockProducts } from "data/mockData";
+import { ProductCard } from "..";
 
 const Seefulldetails = () => {
   const { productId } = useParams();
@@ -45,9 +41,6 @@ const Seefulldetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [activeTab, setActiveTab] = useState("description");
   const [zoomActive, setZoomActive] = useState(false);
-  const [breadcrumbData, setBreadcrumbData] = useState([]);
-  const [showARPreview, setShowARPreview] = useState(false);
-  const [show360View, setShow360View] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
@@ -55,9 +48,10 @@ const Seefulldetails = () => {
   const [estimatedDelivery, setEstimatedDelivery] = useState("");
   const [currentStock, setCurrentStock] = useState(0);
   const [viewedCount, setViewedCount] = useState(0);
-  const [storePickupAvailable, setStorePickupAvailable] = useState(true);
   const [isStickyAddToCart, setIsStickyAddToCart] = useState(false);
   const productRef = useRef(null);
+    // Single boolean flag to track if initialization is done
+    const [isInitialized, setIsInitialized] = useState(false);
 
   // Mock FAQ data
   const faqs = [
@@ -93,8 +87,7 @@ const Seefulldetails = () => {
     1: 2
   };
 
-  // Single boolean flag to track if initialization is done
-  const [isInitialized, setIsInitialized] = useState(false);
+
 
   // Fetch product data
   useEffect(() => {
