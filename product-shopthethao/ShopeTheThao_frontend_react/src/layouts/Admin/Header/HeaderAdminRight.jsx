@@ -42,7 +42,7 @@ function HeaderAdminRight() {
   const handleLogout = async () => {
     try {
       authApi.logout();
-      navigate('/login');
+      navigate('/v1/auth/login');
       message.success("Đăng xuất thành công!");
     } catch (error) {
       message.error("Đăng xuất thất bại!");

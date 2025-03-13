@@ -36,13 +36,15 @@ const Header = () => {
   ]);
 
   // Add these states and constants near the top with other states
-  const [rotatingText, setRotatingText] = useState("GIAO HÀNG MIỄN PHÍ CHO THÀNH VIÊN , TRẢ HÀNG DỄ DÀNG");
-  
+  const [rotatingText, setRotatingText] = useState(
+    "GIAO HÀNG MIỄN PHÍ CHO THÀNH VIÊN , TRẢ HÀNG DỄ DÀNG"
+  );
+
   // Add this useEffect for text rotation
   useEffect(() => {
     const messages = ["GIAO HÀNG MIỄN PHÍ CHO THÀNH VIÊN", "TRẢ HÀNG DỄ DÀNG"];
     let index = 0;
-    
+
     const interval = setInterval(() => {
       index = (index + 1) % messages.length;
       setRotatingText(messages[index]);
@@ -578,7 +580,7 @@ const Header = () => {
       // Add a threshold to prevent flickering
       setIsScrolled(window.scrollY > 10);
     };
-    
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -679,10 +681,10 @@ const Header = () => {
   // Add this useEffect to check authentication status
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem('token'); // or however you store your auth token
+      const token = localStorage.getItem("token"); // or however you store your auth token
       setIsAuthenticated(!!token);
     };
-    
+
     checkAuth();
   }, []);
 
@@ -691,14 +693,14 @@ const Header = () => {
     if (isAuthenticated) {
       return null; // Don't render anything if authenticated
     }
-    
+
     return (
       <div className="auth-buttons">
-        <Link to="/login" className="btn-login">
+        <Link to="/v1/auth/login" className="btn-login">
           Đăng nhập
         </Link>
-        <Link 
-          to="/login" 
+        <Link
+          to="/v1/auth/login"
           className="btn-register"
           state={{ activeTab: "register" }} // Add state to set active tab
         >
@@ -738,9 +740,7 @@ const Header = () => {
         </div>
 
         {/* Add empty div to maintain layout when auth buttons are hidden */}
-        <div className="auth-buttons-wrapper">
-          {renderAuthButtons()}
-        </div>
+        <div className="auth-buttons-wrapper">{renderAuthButtons()}</div>
       </div>
 
       {/* Main Navigation */}
@@ -749,7 +749,7 @@ const Header = () => {
           <div className="nav-wrapper">
             {/* Logo */}
             <Link to="/" className="logo">
-              <h1 style={{fontSize: "3.5rem"}}>
+              <h1 style={{ fontSize: "3.5rem" }}>
                 Shope<span>Nhdinh</span>
               </h1>
             </Link>
@@ -875,21 +875,24 @@ const Header = () => {
               >
                 {searchOpen ? <FiX /> : <FiSearch />}
               </button>
-              <Link to="/products-wishlist" className="action-icon wishlist-icon">
+              <Link
+                to="/v1/user/wishlist"
+                className="action-icon wishlist-icon"
+              >
                 <AiOutlineHeart />
                 {wishlistCount > 0 && (
                   <span className="count-badge">{wishlistCount}</span>
                 )}
               </Link>
 
-              <Link to="/products-cart" className="action-icon cart-icon">
+              <Link to="/v1/user/cart" className="action-icon cart-icon">
                 <FiShoppingBag />
                 {cartCount > 0 && (
                   <span className="count-badge">{cartCount}</span>
                 )}
               </Link>
 
-              <Link to="/accounts-profile" className="action-icon">
+              <Link to="/v1/user/profile" className="action-icon">
                 <FiUser />
               </Link>
               <button
@@ -1099,7 +1102,7 @@ const Header = () => {
             <div className="mobile-menu-footer">
               <div className="user-actions-mobile compact-actions">
                 <Link
-                  to="/accounts-profile"
+                  to="/v1/user/profile"
                   className="action-btn"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -1107,31 +1110,35 @@ const Header = () => {
                   <span>Tài khoản</span>
                 </Link>
                 <Link
-                  to="/products-wishlist"
+                  to="/v1/user/wishlist"
                   className="action-btn"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <AiOutlineHeart />
                   <span>Yêu thích</span>
-                  {wishlistCount > 0 && <div className="count-indicator">{wishlistCount}</div>}
+                  {wishlistCount > 0 && (
+                    <div className="count-indicator">{wishlistCount}</div>
+                  )}
                 </Link>
                 <Link
-                  to="/products-cart"
+                  to="/v1/user/cart"
                   className="action-btn"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <FiShoppingBag />
                   <span>Giỏ hàng</span>
-                  {cartCount > 0 && <div className="count-indicator">{cartCount}</div>}
+                  {cartCount > 0 && (
+                    <div className="count-indicator">{cartCount}</div>
+                  )}
                 </Link>
-                <Link
+                {/* <Link
                   to="/orders-history"
                   className="action-btn"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <FiShoppingBag />
                   <span>Đơn hàng</span>
-                </Link>
+                </Link> */}
               </div>
 
               {isAuthenticated ? (
@@ -1145,14 +1152,14 @@ const Header = () => {
               ) : (
                 <div className="mobile-auth-buttons">
                   <Link
-                    to="/login"
+                    to="/v1/auth/login"
                     className="mobile-btn"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Đăng nhập
                   </Link>
                   <Link
-                    to="/login"
+                    to="/v1/auth/login"
                     className="mobile-btn accent"
                     state={{ activeTab: "register" }}
                     onClick={() => setMobileMenuOpen(false)}

@@ -289,7 +289,7 @@ function Cart() {
                             
                             <div className="checkout-actions">
                                 <Link 
-                                    to={selectedCartItems.length > 0 ? "/products-checkout" : "#"}
+                                    to={selectedCartItems.length > 0 ? "/v1/user/checkout" : "#"}
                                     className={`checkout-btn ${selectedCartItems.length === 0 ? 'disabled' : ''}`}
                                     onClick={(e) => {
                                         if (selectedCartItems.length === 0) {
@@ -300,7 +300,7 @@ function Cart() {
                                 >
                                     Tiến hành thanh toán
                                 </Link>
-                                <Link to="/products" className="continue-shopping">Tiếp tục mua sắm</Link>
+                                <Link to="/v1/shop/products" className="continue-shopping">Tiếp tục mua sắm</Link>
                             </div>
                         </div>
                     </div>

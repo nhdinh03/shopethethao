@@ -7,10 +7,10 @@ export const ROLES = {
 };
 
 export const ROLE_ROUTES = {
-  [ROLES.ADMIN]: '/admin/index',
-  [ROLES.MANAGER]: '/admin/index',
-  [ROLES.SUPPLIER]: '/admin/index',
-  [ROLES.STAFF]: '/admin/index',
+  [ROLES.ADMIN]: '/dashboard-management-sys/portal',
+  [ROLES.MANAGER]: '/dashboard-management-sys/portal',
+  [ROLES.SUPPLIER]: '/dashboard-management-sys/portal',
+  [ROLES.STAFF]: '/dashboard-management-sys/portal',
   [ROLES.USER]: '/'
 };
 

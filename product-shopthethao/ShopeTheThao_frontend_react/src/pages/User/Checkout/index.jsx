@@ -393,7 +393,7 @@ const Checkout = () => {
           </div>
           
           <div className="checkout-actions">
-            <Link to="/cart" className="back-to-cart">
+            <Link to="/v1/user/cart" className="back-to-cart">
               <FaAngleLeft /> Quay lại giỏ hàng
             </Link>
             <button type="submit" onClick={handleSubmit} className="place-order-btn">

@@ -746,7 +746,7 @@ const NotificationDropdown = () => {
           type="link"
           onClick={() => {
             setDropdownOpen(false);
-            navigate("/admin/userhistory");
+            navigate("/dashboard-management-sys/users/history");
           }}
         >
           Xem tất cả

@@ -245,7 +245,7 @@ const QuickView = ({ product, onClose }) => {
               </div>
               
               <Link 
-                to={`/seefulldetails/${product.id}`} 
+                to={`/v1/shop/seefulldetails/${product.id}`} 
                 className="view-full-details"
                 onClick={() => {
                   onClose();

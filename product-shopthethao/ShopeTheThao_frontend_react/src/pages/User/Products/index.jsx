@@ -197,7 +197,7 @@ const Products = () => {
   // Handle view product detail
   const handleViewProductDetail = (productId) => {
     window.scrollTo(0, 0);
-    navigate(`/seefulldetails/${productId}`, { 
+    navigate(`/v1/shop/seefulldetails/${productId}`, { 
       replace: true,
       state: { scrollTop: true }
     });

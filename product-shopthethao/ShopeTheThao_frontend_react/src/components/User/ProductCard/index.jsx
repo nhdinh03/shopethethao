@@ -29,7 +29,7 @@ const ProductCard = ({ product, index, onQuickView, quickViewButton, showAlterna
       return;
     }
     window.scrollTo(0, 0);
-    navigate(`/seefulldetails/${product.id}`, { replace: true });
+    navigate(`/v1/shop/seefulldetails/${product.id}`, { replace: true });
   };
 
   // Handle quick view button click

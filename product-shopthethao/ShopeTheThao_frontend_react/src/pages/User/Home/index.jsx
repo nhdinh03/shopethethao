@@ -405,7 +405,7 @@ const HomeIndex = () => {
 
           {/* All Products Link */}
           <div className="view-all-container">
-            <Link to="/products" className="view-all-link">
+            <Link to="/v1/shop/products" className="view-all-link">
               Xem tất cả sản phẩm <FiArrowRight />
             </Link>
           </div>
@@ -447,7 +447,7 @@ const HomeIndex = () => {
           )}
 
           <div className="view-all-container">
-            <Link to="/products" className="view-all-link">
+            <Link to="/v1/shop/products" className="view-all-link">
               Xem tất cả sản phẩm <FiArrowRight />
             </Link>
           </div>

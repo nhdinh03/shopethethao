@@ -8,7 +8,7 @@ export { default as ProductCard } from "./ProductCard";
 export { default as ProductFrame } from "./ProductFrame";
 export { default as QuickView } from "./QuickView";
 
-export { default as Seefulldetails } from "./Seefulldetails";
+export { default as Seefulldetails } from "../../pages/User/Seefulldetails";
 
 export { default as Slideshow } from "./Slideshow";
 

@@ -129,7 +129,6 @@ const LoginForm = () => {
       return;
     }
 
-    // Here you would normally call an API to handle password reset
     try {
       // const response = await authApi.forgotPassword({ email: forgotPasswordEmail });
       message.success("Link đặt lại mật khẩu đã được gửi đến email của bạn!");
@@ -137,7 +136,7 @@ const LoginForm = () => {
     } catch (error) {
       message.error(
         "Không thể gửi email đặt lại mật khẩu: " +
-          (error.response?.data?.message || "Có lỗi xảy ra")
+        (error.response?.data?.message || "Có lỗi xảy ra")
       );
     }
   };
@@ -170,21 +169,37 @@ const LoginForm = () => {
     }
   }, [location.state]);
 
-  // Update URL when tab changes
+  // Update handleTabChange to be more explicit about tab switching
   const handleTabChange = (key) => {
     setActiveTab(key);
+    if (key === "register") {
+      // Reset any login form data when switching to register
+      setFormData({
+        id: "",
+        password: "",
+        remember: false,
+      });
+      setErrors({
+        id: "",
+        password: "",
+      });
+    }
   };
 
   const renderFormFooter = () => (
     <div className="form-footer">
       <p>{activeTab === "login" ? "Không có tài khoản?" : "Đã có tài khoản?"}</p>
-      <button
+      <Link
+        to="#"
         className="switch-auth-mode"
-        onClick={() => handleTabChange(activeTab === "login" ? "register" : "login")}
+        onClick={(e) => {
+          e.preventDefault();
+          handleTabChange(activeTab === "login" ? "register" : "login");
+        }}
       >
         {activeTab === "login" ? "Đăng ký ngay" : "Đăng nhập ngay"}
         <FiArrowRight className="arrow-icon" />
-      </button>
+      </Link>
     </div>
   );
 
@@ -269,7 +284,6 @@ const LoginForm = () => {
                             onChange={handleChange}
                             error={errors.id}
                           />
-
                           <InputField
                             icon={<FiLock />}
                             type={showPassword ? "text" : "password"}
@@ -288,7 +302,6 @@ const LoginForm = () => {
                               </button>
                             }
                           />
-
                           <div className="form-options">
                             <CustomCheckbox
                               checked={formData.remember}
@@ -304,7 +317,6 @@ const LoginForm = () => {
                               Quên mật khẩu?
                             </Link>
                           </div>
-
                           <motion.button
                             type="submit"
                             className="submit-button"
@@ -313,7 +325,6 @@ const LoginForm = () => {
                           >
                             {loading ? "ĐANG ĐĂNG NHẬP..." : "ĐĂNG NHẬP"}
                           </motion.button>
-
                           <div className="social-login">
                             <Divider className="social-divider">
                               <span>Hoặc đăng nhập với</span>
@@ -345,7 +356,6 @@ const LoginForm = () => {
                               />
                             </div>
                           </div>
-
                           {renderFormFooter()}
                         </form>
                       </motion.div>
@@ -390,7 +400,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
     gender: "M", // M: Male, F: Female, O: Other
     role: ["USER"],
   });
-
   const [errors, setErrors] = useState({
     id: "",
     phone: "",
@@ -399,7 +408,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
     password: "",
     confirmPassword: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -419,36 +427,30 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
         if (!/^[a-zA-Z0-9_]+$/.test(value))
           return "Tên tài khoản chỉ chứa chữ cái, số và dấu gạch dưới";
         return "";
-
       case "phone":
         if (!value.trim()) return "Số điện thoại không được để trống";
         if (!/^[0-9]{10}$/.test(value.replace(/\s/g, "")))
           return "Số điện thoại phải có 10 chữ số";
         return "";
-
       case "fullname":
         if (!value.trim()) return "Họ và tên không được để trống";
         if (value.trim().length < 2) return "Họ và tên quá ngắn";
         return "";
-
       case "email":
         if (!value.trim()) return "Email không được để trống";
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
           return "Email không hợp lệ";
         return "";
-
       case "password":
         if (!value) return "Mật khẩu không được để trống";
         if (value.length < 6) return "Mật khẩu phải có ít nhất 6 ký tự";
         if (!/[A-Za-z]/.test(value) || !/[0-9]/.test(value))
           return "Mật khẩu phải chứa cả chữ và số";
         return "";
-
       case "confirmPassword":
         if (!value) return "Vui lòng xác nhận mật khẩu";
         if (value !== formData.password) return "Mật khẩu xác nhận không khớp";
         return "";
-
       default:
         return "";
     }
@@ -480,6 +482,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
     }
 
     let score = 0;
+
     // Length check
     if (password.length >= 6) score += 1;
     if (password.length >= 10) score += 1;
@@ -557,7 +560,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateStep(step)) {
       message.error("Vui lòng điền đầy đủ thông tin!");
       return;
@@ -581,7 +583,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 
       // Call the API
       await authApi.signup(registrationData);
-
       message.success(
         "Đăng ký thành công! Kiểm tra email nhập mã để xác nhận tài khoản."
       );
@@ -713,7 +714,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
       transition={{ duration: 0.3 }}
     >
       {renderStepIndicator()}
-
       <AnimatePresence mode="wait">
         {step === 1 ? (
           <motion.div
@@ -737,7 +737,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 toolTip="Tên tài khoản dùng để đăng nhập (ví dụ: johndoe123)"
               />
             </div>
-
             <div className="form-group-wrapper">
               <InputField
                 icon={<FiPhone />}
@@ -750,7 +749,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 maxLength={10}
               />
             </div>
-
             <div className="form-group-wrapper">
               <InputField
                 icon={<FiUser />}
@@ -762,7 +760,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 error={errors.fullname}
               />
             </div>
-
             <div className="form-group">
               <label className="input-label">Giới tính</label>
               <div className="gender-select">
@@ -782,7 +779,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 </Radio.Group>
               </div>
             </div>
-
             <motion.button
               type="button"
               className="submit-button"
@@ -813,7 +809,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 error={errors.email}
               />
             </div>
-
             <div className="form-group-wrapper">
               <InputField
                 icon={<FiLock />}
@@ -835,9 +830,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 requirements="Tối thiểu 6 ký tự, bao gồm chữ và số"
               />
             </div>
-
             {formData.password && renderPasswordStrength()}
-
             <div className="form-group-wrapper">
               <InputField
                 icon={<FiLock />}
@@ -858,7 +851,6 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 }
               />
             </div>
-
             <div className="button-group">
               <motion.button
                 type="button"
@@ -882,13 +874,16 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
           </motion.div>
         )}
       </AnimatePresence>
-
       <div className="form-footer">
         <p>Đã có tài khoản?</p>
-        <Link to="/login" className="login-link" onClick={onLoginClick}>
+        <button 
+          type="button"
+          className="switch-auth-mode"
+          onClick={onLoginClick}
+        >
           Đăng nhập ngay
           <FiArrowRight className="arrow-icon" />
-        </Link>
+        </button>
       </div>
     </motion.form>
   );
@@ -918,7 +913,6 @@ const InputField = ({
         )}
       </div>
     )}
-
     <div className={`input-field ${error ? "error" : ""}`}>
       <motion.span
         className="field-icon"
@@ -930,11 +924,9 @@ const InputField = ({
       <input {...props} />
       {endIcon}
     </div>
-
     {requirements && !error && (
       <div className="field-requirements">{requirements}</div>
     )}
-
     {error && (
       <motion.div
         className="error-message"
@@ -965,7 +957,6 @@ const ForgotPasswordForm = ({
   >
     <h3>Quên mật khẩu</h3>
     <p>Vui lòng nhập email của bạn để nhận link đặt lại mật khẩu.</p>
-
     <form onSubmit={handleForgotPassword}>
       <InputField
         icon={<FiMail />}
@@ -974,7 +965,6 @@ const ForgotPasswordForm = ({
         value={forgotPasswordEmail}
         onChange={(e) => setForgotPasswordEmail(e.target.value)}
       />
-
       <div className="button-group">
         <motion.button
           type="button"

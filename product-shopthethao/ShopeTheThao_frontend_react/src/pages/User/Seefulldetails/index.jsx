@@ -26,7 +26,7 @@ import "slick-carousel/slick/slick-theme.css";
 import "./Seefulldetails.scss";
 import BreadcrumbUser from "layouts/User/BreadcrumbUser/BreadcrumbUser";
 import { mockProducts } from "data/mockData";
-import { ProductCard } from "..";
+import { ProductCard } from "../../../components/User";
 
 const Seefulldetails = () => {
   const { productId } = useParams();
@@ -250,7 +250,7 @@ const Seefulldetails = () => {
   // Handle buy now
   const handleBuyNow = () => {
     handleAddToCart();
-    navigate("/checkout");
+    navigate("/v1/user/cart");
   };
 
   // Handle image zoom
@@ -260,7 +260,7 @@ const Seefulldetails = () => {
 
   // Handle product view
   const handleViewProduct = (id) => {
-    navigate(`/seefulldetails/${id}`);
+    navigate(`/v1/shop/seefulldetails/${id}`);
     window.scrollTo(0, 0);
   };
 
@@ -1022,7 +1022,7 @@ const Seefulldetails = () => {
                   <button onClick={() => setShowNotification(false)}>
                     Tiếp tục mua sắm
                   </button>
-                  <button onClick={() => navigate("/products-cart")}>
+                  <button onClick={() => navigate("/v1/user/cart")}>
                     Xem giỏ hàng
                   </button>
                 </div>

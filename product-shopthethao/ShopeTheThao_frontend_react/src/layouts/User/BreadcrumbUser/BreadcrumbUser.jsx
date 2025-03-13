@@ -27,7 +27,7 @@ const BreadcrumbUser = ({ extraData, modern, withBackground = true }) => {
 
     if (pathParts.length > 0) {
       // Handle seefulldetails specially for product name
-      if (pathParts[0] === 'seefulldetails') {
+      if (pathParts[0] === 'v1/shop/seefulldetails') {
         // Add Products link
         items.push({
           title: <Link to="/products">{breadcrumbDataUser[1].title}</Link>

@@ -237,10 +237,7 @@ $border-color: #E2E8F0;
         &:hover:not(:disabled) {
           background: #4338CA;
         }
-        &:active {
-          transform: none;
-          box-shadow: none;
-        }
+
         &:disabled {
           opacity: 0.7;
           cursor: not-allowed;
@@ -803,7 +800,45 @@ $border-color: #E2E8F0;
         transform: none;
       }
     }
- 
+    
+    .submit-button {
+      flex: 2;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover:not(:disabled) {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      &.loading {
+        position: relative;
+        padding-left: 2rem;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 16px;
+          height: 16px;
+          border: 2px solid rgba(255,255,255,0.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+      }
+    }
   }
   
   .gender-select {
