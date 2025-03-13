@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import img from "assets/Img";
@@ -11,9 +11,13 @@ import {
   FiMail,
   FiUser,
   FiShoppingBag,
+  FiLogOut,
 } from "react-icons/fi";
 import { AiOutlineHeart } from "react-icons/ai";
+import { message } from "antd";
+
 import "./header.scss";
+import authApi from "api/Admin/Auth/auth";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -710,6 +714,36 @@ const Header = () => {
     );
   };
 
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef(null);
+
+  // Handle logout functionality
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      localStorage.removeItem("token"); // Clean up token storage
+      setIsAuthenticated(false);
+      navigate('/v1/auth/login');
+      message.success("Đăng xuất thành công!");
+    } catch (error) {
+      message.error("Đăng xuất thất bại!");
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <header className={`header ${isScrolled ? "scrolled" : ""}`}>
       {/* Top Bar */}
@@ -892,9 +926,41 @@ const Header = () => {
                 )}
               </Link>
 
-              <Link to="/v1/user/profile" className="action-icon">
-                <FiUser />
-              </Link>
+              <div className="profile-dropdown-container" ref={profileDropdownRef}>
+                <div 
+                  className="action-icon profile-icon"
+                  onClick={() => isAuthenticated && setShowProfileDropdown(!showProfileDropdown)}
+                >
+                  <FiUser />
+                </div>
+                
+                {isAuthenticated && showProfileDropdown && (
+                  <div className="profile-dropdown">
+                    <Link to="/v1/user/profile" className="dropdown-item">
+                      <FiUser /> Tài khoản của tôi
+                    </Link>
+                    <div className="dropdown-item logout-item" onClick={handleLogout}>
+                      <FiLogOut /> Đăng xuất
+                    </div>
+                  </div>
+                )}
+                
+                {!isAuthenticated && showProfileDropdown && (
+                  <div className="profile-dropdown">
+                    <Link to="/v1/auth/login" className="dropdown-item">
+                      Đăng nhập
+                    </Link>
+                    <Link 
+                      to="/v1/auth/login" 
+                      className="dropdown-item"
+                      state={{ activeTab: "register" }}
+                    >
+                      Đăng ký
+                    </Link>
+                  </div>
+                )}
+              </div>
+              
               <button
                 className="mobile-menu-toggle"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -1142,13 +1208,24 @@ const Header = () => {
               </div>
 
               {isAuthenticated ? (
-                <Link
-                  to="/account"
-                  className="mobile-btn"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <FiUser /> Tài khoản
-                </Link>
+                <div className="mobile-auth-buttons">
+                  <Link
+                    to="/v1/user/profile"
+                    className="mobile-btn"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FiUser /> Tài khoản
+                  </Link>
+                  <button
+                    className="mobile-btn accent"
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <FiLogOut /> Đăng xuất
+                  </button>
+                </div>
               ) : (
                 <div className="mobile-auth-buttons">
                   <Link
