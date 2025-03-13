@@ -455,6 +455,57 @@ $border-color: #E2E8F0;
   padding-left: 8px;
 }
 
+// Custom email input with fixed domain
+.email-field {
+  .email-input-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    
+    .email-prefix {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      padding: 0;
+      padding-right: 2px;
+      
+      &:focus {
+        box-shadow: none !important;
+        border: none !important;
+      }
+    }
+    
+    .email-domain {
+      color: $text-secondary;
+      white-space: nowrap;
+      font-size: 10px; // Match input font size
+      user-select: none; // Prevent selecting @gmail.com text
+      padding-right: 0.5rem;
+      background: transparent;
+    }
+  }
+  
+  // Make sure the fixed part maintains the style when field is focused
+  &:focus-within .email-domain {
+    color: $text-primary;
+  }
+}
+
+// Make sure the input field container still has the proper styling
+.input-field.email-field {
+  input.email-prefix {
+    width: auto;
+    padding: 1rem 0.25rem 1rem 3.5rem;
+    
+    &:focus {
+      background: transparent;
+    }
+  }
+}
+
 @media (max-width: 1024px) {
   .login-wrapper {
     grid-template-columns: 1fr;
