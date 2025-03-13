@@ -28,7 +28,6 @@ import { getRedirectPath, getLoginMessage } from "utils/roleManager";
 import { validateId, validatePassword } from "../Custom";
 import authApi from "api/Admin/Auth/auth";
 
-
 const LoginForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -580,23 +579,25 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
         fullname: formData.fullname,
         email: formData.email,
         password: formData.password,
-        gender: formData.gender,  // Send M/F/O directly
-        role: ["USER"]
+        gender: formData.gender, // Send M/F/O directly
+        role: ["USER"],
       };
-      
+
       // Remove confirmPassword as it's not needed in the API
       delete registrationData.confirmPassword;
-      
+
       // Call the API
       await authApi.signup(registrationData);
-      
-      message.success('Đăng ký thành công! Kiểm tra email nhập mã để xác nhận tài khoản.');
-      navigate('/otp', { state: { id: formData.id } });
-      
+
+      message.success(
+        "Đăng ký thành công! Kiểm tra email nhập mã để xác nhận tài khoản."
+      );
+      navigate("/otp", { state: { id: formData.id } });
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại!";
+      const errorMessage =
+        error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại!";
       message.error(errorMessage);
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
     } finally {
       setLoading(false);
     }
@@ -870,7 +871,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 type="button"
                 className="back-button"
                 onClick={prevStep}
-                whileTap={{ scale: 0.98 }}
+                // whileTap={{ scale: 0.98 }}
                 disabled={loading}
               >
                 Quay lại
@@ -882,14 +883,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                 whileTap={{ scale: 0.98 }}
                 whileHover={{ boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)" }}
               >
-                {loading ? (
-                  <>
-                    <span className="loading-spinner"></span>
-                    ĐANG XỬ LÝ...
-                  </>
-                ) : (
-                  "ĐĂNG KÝ"
-                )}
+                {loading ? <>ĐANG XỬ LÝ...</> : "ĐĂNG KÝ"}
               </motion.button>
             </div>
           </motion.div>
@@ -898,11 +892,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 
       <div className="form-footer">
         <p>Đã có tài khoản?</p>
-        <Link 
-          to="/login" 
-          className="login-link" 
-          onClick={onLoginClick}
-        >
+        <Link to="/login" className="login-link" onClick={onLoginClick}>
           Đăng nhập ngay
           <FiArrowRight className="arrow-icon" />
         </Link>

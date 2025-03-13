@@ -121,14 +121,22 @@ const OtpForm = () => {
     <div className="otp-container">
       <motion.div 
         className="otp-form-wrapper"
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ 
+          duration: 0.6,
+          ease: "easeOut"
+        }}
       >
-        <div className="form-header">
+        <motion.div 
+          className="form-header"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           <h2>Xác thực tài khoản</h2>
           <p>Vui lòng nhập mã OTP đã được gửi đến email của bạn</p>
-        </div>
+        </motion.div>
 
         <Form
           form={form}
@@ -137,25 +145,36 @@ const OtpForm = () => {
           className="otp-form"
         >
           {userId && (
-            <div className="user-info">
+            <motion.div 
+              className="user-info"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
               <FiUser className="icon" />
               <span>Tài khoản: {userId}</span>
-            </div>
+            </motion.div>
           )}
 
-          <Form.Item
-            name="otp"
-            rules={[
-              { required: true, message: 'Vui lòng nhập mã OTP!' },
-              { len: 6, message: 'Mã OTP phải có 6 ký tự!' }
-            ]}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
           >
-            <Input
-              prefix={<FiLock className="input-icon" />}
-              placeholder="Nhập mã OTP"
-              maxLength={6}
-            />
-          </Form.Item>
+            <Form.Item
+              name="otp"
+              rules={[
+                { required: true, message: 'Vui lòng nhập mã OTP!' },
+                { len: 6, message: 'Mã OTP phải có 6 ký tự!' }
+              ]}
+            >
+              <Input
+                prefix={<FiLock className="input-icon" />}
+                placeholder="Nhập mã OTP"
+                maxLength={6}
+              />
+            </Form.Item>
+          </motion.div>
 
           <div className="resend-container">
             <Input
