@@ -1,1772 +1,318 @@
 .user-profile-container {
-  max-width: 1200px;
-  margin: 24px auto;
+  max-width: 900px;
+  margin: 30px auto;
   padding: 0 20px;
-  background-color: #f5f8fa;
-  border-radius: 8px;
-
+  
   @media (max-width: 768px) {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    background-color: #f8f9fc;
+    margin: 15px auto;
+    padding: 0 15px;
   }
 
   @media (max-width: 576px) {
-    background-color: #f9fafc;
+    padding: 0 10px;
   }
 
-  .profile-sections {
+  // Profile loading state
+  .profile-loading-container {
     display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .profile-section {
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #f0f0f0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.5s ease;
 
-      h2 {
-        margin: 0;
-        font-size: 18px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #262626;
+    .loading-content {
+      text-align: center;
 
-        .anticon {
-          color: #1890ff;
-        }
-      }
-    }
-
-    .user-avatar-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-
-      .ant-avatar {
-        border: 4px solid rgba(24, 144, 255, 0.1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-    }
-
-    .ant-form-item {
-      margin-bottom: 24px;
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-
-      .ant-input-prefix {
-        color: #bfbfbf;
-      }
-    }
-
-    .security-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #52c41a;
-      margin: 0;
-      
-      .anticon {
-        font-size: 16px;
+      p {
+        margin-top: 15px;
+        color: #666;
       }
     }
   }
 
-  .profile-header-wrapper {
+  // Profile Header
+  .profile-header {
     background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    color: white;
-    position: relative;
-    overflow: hidden;
+    padding: 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    animation: fadeInDown 0.5s ease;
 
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-      opacity: 0.5;
+    @media (max-width: 576px) {
+      padding: 20px;
+      border-radius: 10px;
     }
 
-    .profile-header-content {
-      position: relative;
-      z-index: 1;
+    .profile-avatar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-
+      
       @media (max-width: 576px) {
         flex-direction: column;
-        align-items: center;
-        padding: 15px;
+        text-align: center;
       }
 
-      .profile-avatar {
-        display: flex;
-        align-items: center;
-
+      .avatar-container {
+        position: relative;
+        margin-right: 30px;
+        
         @media (max-width: 576px) {
-          flex-direction: column;
-          margin-bottom: 16px;
+          margin-right: 0;
+          margin-bottom: 15px;
+        }
+
+        .user-avatar {
+          border: 4px solid rgba(255, 255, 255, 0.3);
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
         .avatar-upload {
-          position: relative;
-          margin-right: 20px;
-
-          @media (max-width: 576px) {
-            margin-right: 0;
-            margin-bottom: 16px;
-          }
-
-          .ant-avatar {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-          }
-
-          .upload-overlay {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-
-            .camera-button {
-              background-color: white;
-              color: #1890ff;
-              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-              border: none;
-              transition: all 0.3s;
-
-              &:hover {
-                transform: scale(1.1);
-                background-color: #f0f0f0;
-              }
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          
+          .camera-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            color: #1890ff;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+            
+            &:hover {
+              transform: scale(1.1);
+              background-color: #f0f0f0;
             }
-          }
-        }
-
-        .user-brief-info {
-          h2 {
-            margin: 0;
-            color: white;
-            font-size: 24px;
-            font-weight: 600;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-          }
-
-          p {
-            margin: 5px 0 0;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 16px;
           }
         }
       }
 
-      .profile-actions {
-        .edit-button, .save-button {
-          height: 40px;
-          padding: 0 20px;
+      .profile-info {
+        color: white;
+        
+        .user-name {
+          font-size: 24px;
+          margin: 0 0 5px;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+          
+          @media (max-width: 576px) {
+            font-size: 20px;
+          }
+        }
+        
+        .user-email {
+          opacity: 0.8;
+          margin: 0 0 15px;
+        }
+        
+        .edit-button {
           border-radius: 20px;
-          font-weight: 500;
+          height: 36px;
           display: flex;
           align-items: center;
-
-          .anticon {
-            margin-right: 8px;
-          }
-        }
-
-        .edit-button {
-          color: #1890ff;
-          background-color: white;
-          border: none;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-
+          padding: 0 20px;
+          transition: all 0.3s;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+          
           &:hover {
-            background-color: #f8f8f8;
-            color: #0076e4;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
           }
-
-          &:active {
-            transform: translateY(0);
-          }
-        }
-
-        .save-button {
-          background-color: #52c41a;
-          border-color: #52c41a;
-
-          &:hover {
-            background-color: #49ad17;
-            border-color: #49ad17;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          }
-
-          &:active {
-            transform: translateY(0);
-          }
-        }
-      }
-    }
-
-    @media (max-width: 768px) {
-      padding: 15px;
-      margin: 10px;
-      
-      .profile-header-content {
-        padding: 0;
-        gap: 20px;
-        
-        .profile-avatar {
-          width: 100%;
-          justify-content: center;
-          margin-bottom: 0;
-          
-          .avatar-upload {
-            margin: 0;
-          }
-          
-          .user-brief-info {
-            text-align: center;
-            width: 100%;
-            
-            h2 {
-              justify-content: center;
-              font-size: 20px;
-            }
-            
-            p {
-              font-size: 14px;
-            }
-          }
-        }
-        
-        .profile-actions {
-          width: 100%;
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          
-          button {
-            flex: 1;
-            max-width: 160px;
-          }
-        }
-      }
-    }
-    
-    @media (max-width: 576px) {
-      margin: 5px;
-      border-radius: 8px;
-      
-      .profile-header-content {
-        .profile-actions button {
-          max-width: none;
         }
       }
     }
   }
 
-  .profile-header {
-    text-align: center;
-    margin-bottom: 24px;
-
-    h1 {
-      margin-bottom: 10px;
-      color: #333;
-      font-size: 28px;
-      font-weight: 600;
-      position: relative;
-
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -8px;
-        left: 50%;
-        width: 80px;
-        height: 3px;
-        background-color: #1890ff;
-        transform: translateX(-50%);
-      }
-    }
-
-    .profile-subtitle {
-      color: #666;
-      font-size: 16px;
-      margin-top: 15px;
-    }
-  }
-
-  .main-card {
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-
-    .ant-card-body {
-      padding: 0;
-    }
-  }
-
+  // Profile Content Area
   .profile-content {
     display: flex;
-    flex-direction: row;
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-    }
-  }
-
-  .profile-image {
-    flex: 0 0 280px;
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 30px 20px;
-    background-color: #f9fafc;
-    border-right: 1px solid #eee;
+    gap: 20px;
+    animation: fadeInUp 0.5s ease;
 
-    @media (max-width: 768px) {
-      border-right: none;
-      border-bottom: 1px solid #eee;
-      flex: auto;
-      padding-bottom: 20px;
-    }
-
-    .avatar-wrapper {
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
+    .profile-card {
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s;
       overflow: hidden;
-      margin-bottom: 20px;
-      border: 4px solid #f0f0f0;
-      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: white;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        background-color: #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #bbb;
-        font-size: 64px;
-      }
-    }
-
-    .upload-button {
-      margin: 10px 0 25px;
-      border-radius: 20px;
-      height: 36px;
-
+      
       &:hover {
-        color: #1890ff;
-        border-color: #1890ff;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
       }
-    }
-
-    .user-info-summary {
-      text-align: center;
-      margin-top: 10px;
-      width: 100%;
-      padding: 15px;
-      border-radius: 8px;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-
-      h3 {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 5px;
-        color: #333;
+      
+      .ant-card-head {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 0 20px;
+        
+        .ant-card-head-title {
+          font-size: 16px;
+          font-weight: 500;
+        }
       }
-
-      .user-id-display {
-        color: #888;
-        margin: 0;
-        font-size: 14px;
+      
+      .ant-card-body {
+        padding: 20px;
       }
     }
   }
 
-  .divider-vertical {
-    height: auto;
-    margin: 0;
-
-    @media (max-width: 768px) {
-      display: none;
-    }
-  }
-
+  // Form Styling
   .profile-form {
-    flex: 1;
-    padding: 30px;
-
-    .section-title {
-      color: #333;
-      font-size: 18px;
-      font-weight: 500;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-
-      .anticon {
-        margin-right: 10px;
-        color: #1890ff;
-        font-size: 20px;
-      }
-    }
-
-    .form-section {
-      margin-bottom: 20px;
-    }
-
-    .section-divider {
-      margin: 20px 0;
-      background-color: #f0f0f0;
-    }
-
-    .ant-form-item-label {
-      font-weight: 500;
-
-      label {
-        color: #555;
-        font-size: 15px;
-      }
-    }
-
-    .ant-form-item {
-      margin-bottom: 20px;
-
-      &:hover {
-        .ant-form-item-label > label {
-          color: #1890ff;
-          transform: translateX(5px);
-          transition: all 0.3s ease;
-        }
-      }
-    }
-
-    .read-only-input {
-      background-color: #f9f9f9;
-      cursor: not-allowed;
-    }
-
-    .gender-group {
-      display: flex;
-      gap: 20px;
-    }
-
-    .action-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-
-      button {
-        min-width: 160px;
-        height: 42px;
-        font-weight: 500;
-        border-radius: 4px;
-      }
-
-      .password-button {
-        background: #f9f9f9;
-
-        &:hover {
-          color: #1890ff;
-          border-color: #1890ff;
-          background: #f0f7ff;
-        }
-      }
-
-      @media (max-width: 576px) {
-        flex-direction: column;
-        gap: 15px;
-
-        button {
-          width: 100%;
-          margin: 0;
-        }
-      }
-    }
-
     &.editing {
-      .ant-input:not([disabled]),
-      .ant-picker:not([disabled]) {
+      .ant-input:not(.readonly-input),
+      .ant-picker:not(.readonly-input) {
         background-color: #fff;
         border-color: #d9d9d9;
         
-        &:hover {
-          border-color: #40a9ff;
-        }
-        
-        &:focus {
+        &:hover, &:focus {
           border-color: #1890ff;
           box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
         }
       }
     }
+    
+    .ant-form-item {
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
 
-    .ant-input[readonly],
-    .ant-picker-disabled {
-      background-color: #fafafa;
-      border-color: transparent;
-      cursor: default;
-
-      &:hover {
-        border-color: transparent;
+      .ant-form-item-label > label {
+        color: #333;
+        font-weight: 500;
       }
     }
-  }
-
-  .profile-main {
-    .profile-card {
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-      animation: fadeInUp 0.3s ease;
-
-      .profile-tabs {
-        .ant-tabs-nav {
-          margin-bottom: 24px;
-
-          .ant-tabs-tab {
-            padding: 12px 0;
-            transition: all 0.3s ease;
-
-            &:hover {
-              transform: translateY(-2px);
-              color: #1890ff;
-            }
-
-            .anticon {
-              margin-right: 8px;
-            }
-          }
-
-          .ant-tabs-ink-bar {
-            background-color: #1890ff;
-            height: 3px;
-            border-radius: 3px;
-          }
-
-          .ant-tabs-tab-active {
-            .ant-tabs-tab-btn {
-              text-shadow: 0 0 0.25px currentColor;
-              transform: scale(1.05);
-            }
-          }
-        }
+    
+    .readonly-input {
+      background-color: #f9f9f9;
+      border-color: #f0f0f0;
+      cursor: default;
+      
+      &:hover, &:focus {
+        border-color: #f0f0f0 !important;
+        box-shadow: none !important;
       }
-
-      .form-label {
+    }
+    
+    .gender-group {
+      display: flex;
+      gap: 20px;
+      
+      .gender-label {
         display: flex;
         align-items: center;
-        color: #555;
-
+        
         .anticon {
-          margin-right: 8px;
-          color: #1890ff;
-        }
-
-        .info-icon {
-          margin-left: 8px;
-          color: #bbb;
-          font-size: 14px;
-          cursor: help;
+          margin-right: 5px;
         }
       }
+    }
+  }
 
-      .form-section {
-        margin-top: 30px;
-
-        .form-section-title {
-          font-size: 18px;
-          color: #333;
-          margin-bottom: 20px;
-          padding-bottom: 10px;
-          border-bottom: 1px dashed #f0f0f0;
+  // Security Card
+  .security-info {
+    .security-content {
+      .password-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        @media (max-width: 576px) {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 15px;
+        }
+        
+        .password-info {
           display: flex;
           align-items: center;
-
-          .anticon {
-            margin-right: 10px;
-            color: #1890ff;
-            font-size: 18px;
-          }
-        }
-      }
-
-      .disabled-input {
-        background-color: #f9f9f9;
-        cursor: not-allowed;
-        color: #666;
-      }
-
-      .readonly-input {
-        background-color: #fafafa;
-        border-color: transparent;
-        color: #333;
-
-        &:hover, &:focus {
-          border-color: transparent;
-          box-shadow: none;
-        }
-
-        &.ant-picker {
-          &:hover, &:focus {
-            border-color: #d9d9d9;
-          }
-        }
-      }
-
-      .gender-radio-group {
-        display: flex;
-        gap: 16px;
-      }
-
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 30px;
-        gap: 12px;
-
-        button {
-          min-width: 120px;
-        }
-      }
-
-      .security-section {
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px dashed #f0f0f0;
-
-        .password-status {
-          display: flex;
-          align-items: center;
-          margin-bottom: 16px;
-          color: #666;
-
-          &:before {
-            content: '•';
+          
+          .security-icon {
             font-size: 24px;
-            margin-right: 8px;
-            color: #52c41a;
-          }
-        }
-
-        .change-password-btn {
-          background-color: #faad14;
-          border-color: #faad14;
-
-          &:hover {
-            background-color: #e8a612;
-            border-color: #e8a612;
-          }
-        }
-      }
-    }
-  }
-
-  // Enhanced profile card
-  .profile-card {
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    background: linear-gradient(to bottom, #ffffff, #f9fafc);
-
-    &:hover {
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
-    }
-  }
-
-  // Improved form fields
-  .ant-form-item {
-    margin-bottom: 24px;
-    transition: all 0.3s ease;
-
-    &:hover {
-      transform: translateY(-2px);
-      
-      .ant-form-item-label > label {
-        color: #1890ff;
-        transform: translateX(5px);
-      }
-    }
-
-    .ant-input,
-    .ant-picker,
-    .ant-select-selector {
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      
-      &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
-      }
-      
-      &:focus {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 12px rgba(24, 144, 255, 0.15);
-      }
-    }
-  }
-
-  // Enhanced buttons
-  .edit-button, .save-button {
-    height: 44px;
-    padding: 0 24px;
-    border-radius: 22px;
-    font-size: 15px;
-    font-weight: 500;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    &:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.1);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-
-    .anticon {
-      font-size: 18px;
-    }
-  }
-
-  // Better section titles
-  .form-section-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #262626;
-    margin-bottom: 24px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #f0f0f0;
-    display: flex;
-    align-items: center;
-    
-    .anticon {
-      margin-right: 12px;
-      font-size: 22px;
-      color: #1890ff;
-    }
-  }
-
-  // Enhanced mobile view
-  @media (max-width: 576px) {
-    padding: 12px;
-
-    .profile-card {
-      border-radius: 8px;
-    }
-
-    .form-section-title {
-      font-size: 18px;
-      margin-bottom: 20px;
-    }
-
-    .ant-form-item {
-      margin-bottom: 16px;
-    }
-  }
-
-  .profile-layout {
-    display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 24px;
-
-    @media (max-width: 992px) {
-      grid-template-columns: 1fr;
-    }
-
-    @media (max-width: 768px) {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      padding: 12px;
-      width: 100%;
-      box-sizing: border-box;
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    @media (max-width: 576px) {
-      padding: 8px;
-    }
-
-    .profile-sidebar {
-      width: 300px;
-      flex-shrink: 0;
-
-      .sidebar-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        padding: 24px;
-
-        .user-avatar-section {
-          text-align: center;
-          margin-bottom: 24px;
-          padding-bottom: 24px;
-          border-bottom: 1px dashed #f0f0f0;
-
-          .ant-avatar {
-            width: 120px;
-            height: 120px;
-            margin-bottom: 16px;
-            border: 4px solid rgba(24, 144, 255, 0.1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-          }
-
-          .user-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #262626;
-            margin-bottom: 4px;
-          }
-
-          .user-email {
-            color: #666;
-            font-size: 14px;
-          }
-        }
-
-        .user-stats {
-          .stat-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
-
-            &:last-child {
-              border-bottom: none;
-            }
-
-            .stat-icon {
-              width: 36px;
-              height: 36px;
-              border-radius: 8px;
-              background: #f5f8ff;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin-right: 12px;
-              color: #1890ff;
-            }
-
-            .stat-content {
-              flex: 1;
-
-              .stat-label {
-                font-size: 13px;
-                color: #666;
-                margin-bottom: 2px;
-              }
-
-              .stat-value {
-                font-size: 15px;
-                color: #262626;
-                font-weight: 500;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    .profile-content {
-      flex: 1;
-      min-width: 0;
-
-      .content-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-      }
-    }
-
-    @media (max-width: 992px) {
-      flex-direction: column;
-
-      .profile-sidebar {
-        width: 100%;
-      }
-    }
-  }
-
-  .left-panel {
-    .user-card {
-      position: sticky;
-      top: 24px;
-
-      .avatar-section {
-        text-align: center;
-        padding: 20px 0;
-        border-bottom: 1px solid #f0f0f0;
-
-        .ant-avatar {
-          margin-bottom: 16px;
-          border: 4px solid rgba(24, 144, 255, 0.1);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          
-          &:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-          }
-        }
-
-        h2 {
-          margin: 12px 0 4px;
-          color: #262626;
-        }
-
-        .email {
-          color: #666;
-          font-size: 14px;
-        }
-
-        .change-avatar-btn {
-          margin-top: 12px;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          
-          &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
-          }
-          
-          &:active {
-            transform: translateY(0);
-          }
-        }
-      }
-
-      .quick-stats {
-        padding: 16px 0;
-
-        .stat-item {
-          display: flex;
-          align-items: center;
-          padding: 12px 0;
-          border-bottom: 1px solid #f0f0f0;
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          .stat-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: #f5f8ff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             color: #1890ff;
-            margin-right: 12px;
+            margin-right: 15px;
+            padding: 10px;
+            background-color: #e6f7ff;
+            border-radius: 50%;
           }
-
-          div {
-            display: flex;
-            flex-direction: column;
-            
-            label {
-              font-size: 12px;
-              color: #666;
+          
+          .security-text {
+            h3 {
+              margin: 0 0 5px;
+              font-size: 16px;
             }
-
-            span {
-              color: #262626;
+            
+            p {
+              margin: 0;
+              color: #666;
               font-size: 14px;
             }
           }
         }
-      }
-
-      .profile-actions {
-        padding-top: 16px;
-        border-top: 1px solid #f0f0f0;
-      }
-    }
-
-    @media (max-width: 768px) {
-      order: 1;
-      width: 100%;
-      
-      .user-card {
-        width: 100%;
-        margin: 0;
-        border-radius: 16px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
         
-        .ant-card-body {
-          padding: 16px;
+        .change-password-btn {
+          border-radius: 20px;
+          height: 36px;
         }
       }
+    }
+  }
+
+  // Password Modal
+  .password-modal {
+    .ant-modal-title {
+      font-size: 18px;
+      color: #333;
     }
     
-    @media (max-width: 576px) {
-      .user-card {
-        .quick-stats {
-          padding: 8px;
-          
-          .stat-item {
-            flex-wrap: wrap;
-          }
-        }
-      }
-    }
-  }
-
-  .right-panel {
-    .profile-details {
-      .ant-tabs-nav {
-        margin-bottom: 24px;
-      }
-
-      .ant-form-item {
-        margin-bottom: 24px;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-
-      .security-section {
-        padding: 24px;
-        text-align: center;
-        background: #fafafa;
-        border-radius: 8px;
-      }
-    }
-
-    @media (max-width: 768px) {
-      order: 2;
-      width: 100%;
-      
-      .profile-details {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        
-        .ant-card-body {
-          padding: 12px;
-        }
-        
-        .ant-tabs-content-holder {
-          padding: 16px 0;
-        }
-        
-        .ant-row {
-          margin: 0 !important;
-          width: 100%;
-        }
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .profile-details {
-        .ant-card-body {
-          padding: 8px;
-        }
-        
-        .ant-form-item {
-          margin-bottom: 12px;
-        }
-        
-        .ant-row {
-          margin-left: 0 !important;
-          margin-right: 0 !important;
-        }
-        
-        .ant-col {
-          padding-left: 4px !important;
-          padding-right: 4px !important;
-        }
-      }
-    }
-  }
-
-  // ...existing animations and responsive styles...
-  // Enhanced card animations
-  .profile-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    
-    &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    }
-  }
-
-  // Improved form field animations
-  .ant-form-item {
-    &:hover {
-      .ant-input, .ant-picker, .ant-radio-group {
-        border-color: #40a9ff;
-        box-shadow: 0 0 8px rgba(24, 144, 255, 0.2);
-      }
-    }
-  }
-
-  // Enhanced avatar section
-  .avatar-section {
-    .ant-avatar {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      
-      &:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-      }
-    }
-  }
-
-  // Add gradient backgrounds
-  .profile-header-wrapper {
-    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-    
-    &::before {
-      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-    }
-  }
-
-  // Enhanced tabs
-  .ant-tabs-tab {
-    transition: all 0.3s ease;
-    
-    &:hover {
-      transform: translateY(-2px);
-      color: #1890ff;
-    }
-
-    &.ant-tabs-tab-active {
-      .ant-tabs-tab-btn {
-        text-shadow: 0 0 0.25px currentColor;
-        transform: scale(1.05);
-      }
-    }
-  }
-
-  // Add loading shimmer effect
-  @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-  }
-
-  .loading-container {
-    background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
-    background-size: 1000px 100%;
-    animation: shimmer 2s infinite linear;
-  }
-
-  // Add hover effects for buttons
-  .edit-button, .save-button, .change-avatar-btn {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
-    }
-    
-    &:active {
-      transform: translateY(0);
-    }
-  }
-
-  // Enhanced footer section
-  .profile-footer {
-    margin-top: 40px;
-    padding-top: 24px;
-    border-top: 1px solid #f0f0f0;
-    
-    .footer-actions {
+    .modal-buttons {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-
-      @media (max-width: 576px) {
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .action-buttons {
-        display: flex;
-        gap: 12px;
-        
-        @media (max-width: 576px) {
-          width: 100%;
-          flex-direction: column;
-          
-          button {
-            width: 100%;
-            height: 44px;
-            font-size: 15px;
-            
-            &.ant-btn-primary {
-              background: linear-gradient(45deg, #1890ff, #40a9ff);
-              border: none;
-              box-shadow: 0 4px 12px rgba(24, 144, 255, 0.25);
-              
-              &:hover {
-                background: linear-gradient(45deg, #40a9ff, #69c0ff);
-                transform: translateY(-2px);
-              }
-              
-              &:active {
-                transform: translateY(0);
-              }
-            }
-          }
-        }
-      }
-
-      .extra-actions {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        
-        @media (max-width: 576px) {
-          width: 100%;
-          justify-content: center;
-          padding-top: 8px;
-          border-top: 1px dashed #f0f0f0;
-        }
-
-        .action-link {
-          color: #666;
-          font-size: 14px;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          transition: all 0.3s ease;
-          
-          &:hover {
-            color: #1890ff;
-            transform: translateY(-2px);
-          }
-          
-          .anticon {
-            font-size: 16px;
-          }
-        }
-      }
-    }
-
-    .footer-info {
-      margin-top: 24px;
-      padding: 16px;
-      background: #f8f9fa;
-      border-radius: 8px;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
       
       @media (max-width: 576px) {
-        margin-top: 20px;
-        padding: 12px;
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        
-        .info-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          
-          .anticon {
-            color: #1890ff;
-            font-size: 16px;
-          }
-          
-          span {
-            color: #666;
-            font-size: 13px;
-          }
+        button {
+          flex: 1;
         }
-      }
-    }
-
-    // Enhanced mobile animations
-    @media (max-width: 576px) {
-      .animate-in {
-        animation: slideUpFadeIn 0.4s ease-out;
-      }
-
-      .button-press {
-        animation: pressEffect 0.2s ease-out;
       }
     }
   }
 
-  @keyframes slideUpFadeIn {
+  // Animations
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeInDown {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(-20px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-
-  @keyframes pressEffect {
-    0% { transform: scale(1); }
-    50% { transform: scale(0.95); }
-    100% { transform: scale(1); }
-  }
-
-  // Điều chỉnh container chính cho mobile
-  @media (max-width: 768px) {
-    margin: 0;
-    padding: 0;
-    background-color: transparent;
-    
-    .profile-sections {
-      gap: 15px;
-    }
-    
-    .profile-section {
-      margin: 0 10px;
-      border-radius: 8px;
-    }
-  }
   
-  @media (max-width: 576px) {
-    .profile-section {
-      margin: 0 5px;
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
-
-  @media (max-width: 992px) {
-    margin: 16px auto;
-  }
-
-  @media (max-width: 768px) {
-    margin: 10px auto;
-    padding: 0;
-    background-color: transparent;
-    
-    .profile-sections {
-      gap: 15px;
-    }
-    
-    .profile-section {
-      margin: 0 10px;
-      border-radius: 12px;
-    }
-  }
-  
-  // Cải thiện hiển thị profile layout trên mobile
-  .profile-layout {
-    // ...existing code...
-    
-    @media (max-width: 768px) {
-      gap: 16px;
-      
-      .left-panel {
-        order: 1; // Di chuyển user card lên trên
-        
-        .user-card {
-          position: static;
-          margin-bottom: 16px;
-          animation: fadeIn 0.5s ease-out;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-          border-radius: 16px;
-          overflow: hidden;
-          background: linear-gradient(to bottom, #ffffff, #f9fafc);
-          
-          .avatar-section {
-            padding: 24px 0 16px;
-            
-            .ant-avatar {
-              width: 100px !important;
-              height: 100px !important;
-            }
-            
-            h2 {
-              font-size: 18px;
-            }
-            
-            .email {
-              font-size: 13px;
-            }
-            
-            .change-avatar-btn {
-              margin: 10px auto 0;
-              padding: 0 16px;
-              height: 36px;
-            }
-          }
-          
-          .quick-stats {
-            padding: 12px 16px;
-            
-            .stat-item {
-              padding: 8px 0;
-            }
-          }
-          
-          .profile-actions {
-            padding: 16px;
-          }
-        }
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .left-panel .user-card {
-        margin: 0 8px 12px;
-      }
-    }
-  }
-
-  .right-panel {
-    // ...existing code...
-    
-    @media (max-width: 768px) {
-      order: 2;
-      
-      .profile-details {
-        border-radius: 16px;
-        animation: fadeInUp 0.5s ease-out;
-        margin: 0 8px;
-        
-        .ant-tabs-nav {
-          padding: 0 16px;
-          
-          .ant-tabs-tab {
-            padding: 8px 12px;
-            margin: 0 8px 0 0;
-          }
-        }
-        
-        .ant-tabs-content-holder {
-          padding: 16px;
-        }
-        
-        .ant-row {
-          margin: 0 !important;
-        }
-        
-        .ant-form-item-label > label {
-          font-size: 14px;
-        }
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .profile-details {
-        margin: 0 8px;
-        
-        .ant-col-12 {
-          flex: 0 0 100%;
-          max-width: 100%;
-          
-          &:nth-child(odd) {
-            padding-right: 0 !important;
-          }
-          
-          &:nth-child(even) {
-            padding-left: 0 !important;
-          }
-        }
-      }
-    }
-  }
-  
-  // Cập nhật mobile-specific animations và transitions
-  @media (max-width: 576px) {
-    .animate-element {
-      animation: fadeInUp 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-      will-change: opacity, transform;
-    }
-    
-    .profile-section {
-      margin: 0 5px 10px;
-      transform: translateZ(0);
-    }
-    
-    .profile-card {
-      border-radius: 12px;
-    }
-    
-    .form-section-title {
-      font-size: 16px;
-      margin-bottom: 16px;
-    }
-    
-    .ant-form-item {
-      margin-bottom: 12px;
-      
-      .ant-form-item-control-input {
-        min-height: auto;
-      }
-    }
-    
-    .ant-radio-button-wrapper {
-      padding: 0 16px;
-      height: 32px;
-      line-height: 30px;
-    }
-    
-    .touch-feedback {
-      position: relative;
-      overflow: hidden;
-      
-      &:active:after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.05);
-        animation: touchFeedback 0.4s ease-out;
-      }
-    }
-  }
-  
-  @keyframes touchFeedback {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-}
-
-// Tối ưu loading container cho mobile
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 400px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(90deg, #f5f5f5 25%, #e8e8e8 50%, #f5f5f5 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-
-  .ant-spin {
-    .ant-spin-dot-item {
-      background-color: #1890ff;
-    }
-  }
-
-  @media (max-width: 768px) {
-    height: 300px;
-    margin: 10px;
-    border-radius: 12px;
-    
-    .ant-spin {
-      transform: scale(0.9);
-      
-      &-text {
-        margin-top: 8px;
-        font-size: 14px;
-      }
-    }
-  }
-}
-
-// Tối ưu modal cho mobile
-.password-modal {
-  .modal-title {
-    display: flex;
-    align-items: center;
-    font-size: 18px;
-
-    .modal-icon {
-      margin-right: 10px;
-      color: #faad14;
-    }
-  }
-
-  .field-icon {
-    color: #bfbfbf;
-  }
-
-  .ant-form-item-extra {
-    font-size: 12px;
-    color: #999;
-  }
-
-  .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
-
-    button {
-      min-width: 100px;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .ant-modal-content {
-      padding: 16px !important;
-      border-radius: 16px;
-    }
-    
-    .ant-modal-body {
-      padding: 16px 0 0;
-    }
-    
-    .modal-title {
-      font-size: 16px;
-    }
-    
-    .ant-form-item {
-      margin-bottom: 16px;
-    }
-    
-    .ant-form-item-label > label {
-      font-size: 14px;
-    }
-    
-    .modal-footer {
-      margin-top: 16px;
-      
-      button {
-        height: 36px;
-        padding: 0 15px;
-      }
-    }
-  }
-}
-
-// Animations
-.ant-form {
-  &.editing-form {
-    .ant-input,
-    .ant-picker,
-    .ant-radio-group {
-      transition: all 0.3s ease;
-      animation: highlight 1s ease;
-    }
-  }
-}
-
-@keyframes highlight {
-  0% {
-    background-color: #e6f7ff;
-    border-color: #91d5ff;
-  }
-  100% {
-    background-color: white;
-    border-color: #d9d9d9;
-  }
-}
-
-// Add new animations and transitions
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.submit-success {
-  animation: pulse 0.5s ease;
-}
-
-// Enhance form interactions
-.ant-form-item {
-  &:hover {
-    .ant-form-item-label > label {
-      color: #1890ff;
-      transform: translateX(5px);
-      transition: all 0.3s ease;
-    }
-  }
-}
-
-// Improve button interactions
-.edit-button, .save-button {
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-// Add hover effects for inputs
-.ant-input:not(.readonly-input):hover,
-.ant-picker:not(.readonly-input):hover {
-  border-color: #40a9ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
-}
-
-// Enhanced mobile responsiveness
-@media (max-width: 576px) {
-  .profile-header-content {
-    padding: 15px;
-  }
-  
-  .form-actions {
-    flex-direction: column;
-    
-    button {
-      width: 100%;
-      margin: 5px 0;
-    }
-  }
-  
-  .ant-form-item {
-    margin-bottom: 15px;
-  }
-}
-
-// Add loading state animation
-@keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
 }

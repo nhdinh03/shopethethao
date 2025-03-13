@@ -7,8 +7,8 @@ const endpoints = {
   regenerateOtp: "auth/regenerate-otp",
   verifyAccount: "auth/verify-account",
   changePassword: "auth/change-password",
-  SendOtpEmail: "auth/forgot-password",
-  ResetPassword: "auth/reset-password",
+  forgotPassword: "auth/forgot-password",
+  resetPassword: "auth/reset-password",
 };
 
 const authApi = {
@@ -86,6 +86,26 @@ const authApi = {
     }
   },
 
+  changePassword: async (values) => {
+    try {
+      console.log("Sending password change request with payload:", JSON.stringify(values));
+      const response = await axiosClient.put(endpoints.changePassword, {
+        id: values.id,
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+        confirmNewPassword: values.confirmNewPassword
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Password change API error:", error);
+      if (error.response) {
+        console.error("Response status:", error.response.status);
+        console.error("Response data:", error.response.data);
+      }
+      throw error;
+    }
+  },
+
   regenerateOtp: async (email) => {
     try {
       // Handle both direct email input and object format
@@ -100,32 +120,22 @@ const authApi = {
     }
   },
 
-  changePasswordNew: async (values) => {
+  sendOtpEmail: async (values) => {
     try {
-      const response = await axiosClient.put(endpoints.changePassword, values);
-      return response.data;
-    } catch (error) {
-      console.error("Lỗi Đổi mật khẩu:", error);
-      throw error;
-    }
-  },
-
-  ResetPasswordNew: async (values) => {
-    try {
-      const response = await axiosClient.put(endpoints.ResetPassword, values);
-      return response.data;
-    } catch (error) {
-      console.error("Lỗi Đổi mật khẩu:", error);
-      throw error;
-    }
-  },
-
-  sendOtpEmailNew: async (values) => {
-    try {
-      const response = await axiosClient.put(endpoints.SendOtpEmail, values);
+      const response = await axiosClient.put(endpoints.forgotPassword, values);
       return response.data;
     } catch (error) {
       console.error("Lỗi gửi email:", error);
+      throw error;
+    }
+  },
+
+  resetPassword: async (values) => {
+    try {
+      const response = await axiosClient.put(endpoints.resetPassword, values);
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi đặt lại mật khẩu:", error);
       throw error;
     }
   },

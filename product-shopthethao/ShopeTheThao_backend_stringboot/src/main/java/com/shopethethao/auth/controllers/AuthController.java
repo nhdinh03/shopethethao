@@ -349,27 +349,81 @@ public class AuthController {
 
     @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
-        Account securityAccount = accountDAO.findById(changePasswordRequest.getId())
-                .orElseThrow(
-                        () -> new UsernameNotFoundException("Không tìm thấy người dùng "
-                                + changePasswordRequest.getId()));
-        if (!encoder.matches(changePasswordRequest.getOldPassword(),
-                securityAccount.getPassword())) {
+        try {
+            logger.info("Change password request received: {}", changePasswordRequest.getId());
+            logger.debug("Request details - oldPassword length: {}, newPassword length: {}, confirmNewPassword length: {}", 
+                    changePasswordRequest.getOldPassword() != null ? changePasswordRequest.getOldPassword().length() : 0,
+                    changePasswordRequest.getNewPassword() != null ? changePasswordRequest.getNewPassword().length() : 0,
+                    changePasswordRequest.getConfirmNewPassword() != null ? changePasswordRequest.getConfirmNewPassword().length() : 0);
+            
+            if (changePasswordRequest.getId() == null || changePasswordRequest.getId().trim().isEmpty()) {
+                logger.error("User ID is missing or empty");
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("ID người dùng không được để trống"));
+            }
+            
+            Account securityAccount = accountDAO.findById(changePasswordRequest.getId())
+                    .orElseThrow(() -> {
+                        logger.error("User not found with ID: {}", changePasswordRequest.getId());
+                        return new UsernameNotFoundException("Không tìm thấy người dùng " + changePasswordRequest.getId());
+                    });
+            
+            logger.info("User found: {}", securityAccount.getId());
+            
+            if (changePasswordRequest.getOldPassword() == null || changePasswordRequest.getOldPassword().trim().isEmpty()) {
+                logger.error("Old password is missing or empty for user: {}", securityAccount.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu cũ không được để trống"));
+            }
+            
+            if (!encoder.matches(changePasswordRequest.getOldPassword(), securityAccount.getPassword())) {
+                logger.warn("Invalid old password for user ID: {}", changePasswordRequest.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu cũ không đúng"));
+            }
+            
+            if (changePasswordRequest.getNewPassword() == null || changePasswordRequest.getNewPassword().trim().isEmpty()) {
+                logger.error("New password is missing or empty for user: {}", securityAccount.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu mới không được để trống"));
+            }
+            
+            if (changePasswordRequest.getNewPassword().length() < 8) {
+                logger.error("New password too short for user: {}", securityAccount.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu mới phải có ít nhất 8 ký tự"));
+            }
+            
+            if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword())) {
+                logger.warn("New password and confirmation don't match for user ID: {}", changePasswordRequest.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu mới và mật khẩu xác nhận không khớp"));
+            }
+            
+            securityAccount.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
+            accountDAO.save(securityAccount);
+            
+            logger.info("Password successfully changed for user ID: {}", changePasswordRequest.getId());
             return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Mật khẩu cũ không đúng!"));
-        }
-        if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword())) {
+                    .ok()
+                    .body(new MessageResponse("Đổi mật khẩu thành công"));
+        } catch (UsernameNotFoundException e) {
+            logger.error("User not found during password change: {}", e.getMessage());
             return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Mật khẩu mới và mật khẩu xác nhận không khớp"));
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error changing password: ", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Có lỗi xảy ra trong quá trình đổi mật khẩu: " + e.getMessage()));
         }
-        securityAccount.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
-        accountDAO.save(securityAccount);
-        return ResponseEntity
-                .badRequest()
-                .body(new MessageResponse("Đổi Mật khẩu thành công"));
-
     }
 
     @PostMapping("/verify-account")

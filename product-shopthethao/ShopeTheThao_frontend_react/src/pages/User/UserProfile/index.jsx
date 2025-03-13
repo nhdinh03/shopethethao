@@ -1,393 +1,466 @@
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  Form, Input, DatePicker, Radio, Button, Upload, message, Spin, Modal, 
-  Card, Divider, Row, Col, Tabs, Avatar, Tooltip, notification
+import {
+  Form,
+  Input,
+  DatePicker,
+  Radio,
+  Button,
+  Upload,
+  message,
+  Spin,
+  Modal,
+  Card,
+  Divider,
+  Row,
+  Col,
+  Avatar,
+  Tooltip,
+  notification,
 } from "antd";
-import { 
-  UserOutlined, HomeOutlined, MailOutlined, PhoneOutlined, UploadOutlined, 
-  LockOutlined, IdcardOutlined, SaveOutlined, EditOutlined, CameraOutlined,
-  SafetyCertificateOutlined, InfoCircleOutlined, CheckCircleOutlined, ManOutlined, WomanOutlined
+import {
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  LockOutlined,
+  SaveOutlined,
+  EditOutlined,
+  CameraOutlined,
+  CheckCircleOutlined,
+  CalendarOutlined,
+  IdcardOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
 import "./UserProfile.scss";
+import authApi from "api/Admin/Auth/auth";
 
-const { TabPane } = Tabs;
 
 const UserProfile = () => {
-    const [form] = Form.useForm();
-    const [loading, setLoading] = useState(true);
-    const [userData, setUserData] = useState(null);
-    const [imageUrl, setImageUrl] = useState("");
-    const [passwordModalVisible, setPasswordModalVisible] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
-    const [saveLoading, setSaveLoading] = useState(false);
-    const [submitSuccess, setSubmitSuccess] = useState(false);
-    const [fieldLoading, setFieldLoading] = useState({});
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-    const profileRef = useRef(null);
-    
-    // Mock user data - in real application, fetch from API
-    useEffect(() => {
-        // Simulate API call
-        setTimeout(() => {
-            const mockUserData = {
-                id: "123123",
-                phone: "0928372811",
-                fullname: "21323",
-                address: "Phú Thứ, Cái Răng, Cần Thơ",
-                email: "dinhn1hpc03073@gmail.com",
-                password: "$2a$10$JUBG78WGAzoslnq0l/7mj.1Z5Qos7WxBvuMX18n25qzuoTqZPuWI2",
-                birthday: "2025-02-02",
-                gender: "M",
-                image: "4056086a-8bcc-4718-b79d-06877280d582_Áo bóng đá chính hãng Liverpool thứ 3 1.jpg",
-            };
-            
-            setUserData(mockUserData);
-            setImageUrl(`/uploads/${mockUserData.image}`);
-            form.setFieldsValue({
-                ...mockUserData,
-                birthday: moment(mockUserData.birthday),
-            });
-            setLoading(false);
-        }, 100);
-    }, [form]);
+  const [form] = Form.useForm();
+  const [passwordForm] = Form.useForm(); // Add form for password
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false); // Add this state
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    const handleSubmit = (values) => {
-        setSaveLoading(true);
+  // Replace the mock data loading with actual user data from localStorage
+  useEffect(() => {
+    try {
+      const storedUser = authApi.getUser();
+      if (storedUser) {
+        setUserData(storedUser);
         
-        const updatedUser = {
-            ...values,
-            birthday: values.birthday.format("YYYY-MM-DD"),
-            id: userData.id,
-            password: userData.password,
-        };
-        
-        // Simulate API call
-        setTimeout(() => {
-            setSaveLoading(false);
-            setSubmitSuccess(true);
-            
-            notification.success({
-                message: 'Cập nhật thành công',
-                description: 'Thông tin cá nhân của bạn đã được cập nhật',
-                placement: 'bottomRight'
-            });
-            
-            setIsEditing(false);
-            
-            // Reset success state after animation
-            setTimeout(() => setSubmitSuccess(false), 2000);
-        }, 800);
-    };
-
-    const handlePasswordChange = (values) => {
-        if (values.newPassword !== values.confirmPassword) {
-            message.error("Mật khẩu xác nhận không khớp!");
-            return;
-        }
-        
-        console.log("Password changed:", values);
-        
-        notification.success({
-            message: 'Đổi mật khẩu thành công',
-            description: 'Mật khẩu của bạn đã được cập nhật',
-            icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />
+        // Set form values from user data
+        form.setFieldsValue({
+          ...storedUser,
+          birthday: storedUser.birthday ? moment(storedUser.birthday) : null,
         });
         
-        setPasswordModalVisible(false);
-    };
-
-    const beforeUpload = (file) => {
-        const isImage = file.type.startsWith('image/');
-        if (!isImage) {
-            message.error('Bạn chỉ có thể tải lên file hình ảnh!');
+        // Set image URL if available
+        if (storedUser.image) {
+          setImageUrl(`/uploads/${storedUser.image}`);
         }
-        const isLt2M = file.size / 1024 / 1024 < 2;
-        if (!isLt2M) {
-            message.error('Hình ảnh phải nhỏ hơn 2MB!');
-        }
-        return isImage && isLt2M;
-    };
-
-    const handleUpload = (info) => {
-        if (info.file.status === 'done') {
-            // In real app, this would come from server response
-            setImageUrl(URL.createObjectURL(info.file.originFileObj));
-            message.success(`${info.file.name} đã được tải lên thành công`);
-        } else if (info.file.status === 'error') {
-            message.error(`${info.file.name} tải lên thất bại.`);
-        }
-    };
-    
-    const toggleEdit = () => {
-        setIsEditing(!isEditing);
-    };
-
-    const showEditMessage = () => {
-        if (isEditing) {
-            message.info({
-                content: 'Bạn có thể chỉnh sửa thông tin. Nhớ nhấn Lưu khi hoàn tất!',
-                icon: <EditOutlined style={{ color: '#1890ff' }} />,
-                duration: 3,
-            });
-        }
-    };
-
-    useEffect(() => {
-        showEditMessage();
-    }, [isEditing]);
-
-    const handleFieldChange = (fieldName) => {
-        setFieldLoading(prev => ({ ...prev, [fieldName]: true }));
-        setTimeout(() => {
-            setFieldLoading(prev => ({ ...prev, [fieldName]: false }));
-        }, 500);
-    };
-
-    const renderLeftPanel = () => (
-        <div className="profile-panel left-panel">
-            <Card className={`user-card ${isMobile ? 'touch-feedback' : ''}`}>
-                <div className="avatar-section animate-element">
-                    <Avatar size={isMobile ? 100 : 150} src={imageUrl} icon={!imageUrl && <UserOutlined />} />
-                    <Upload
-                        name="avatar"
-                        showUploadList={false}
-                        beforeUpload={beforeUpload}
-                        onChange={handleUpload}
-                    >
-                        <Button icon={<CameraOutlined />} className="change-avatar-btn">
-                            {isMobile ? "Đổi ảnh" : "Thay đổi ảnh đại diện"}
-                        </Button>
-                    </Upload>
-                    <h2>{userData?.fullname}</h2>
-                    <p className="email">{userData?.email}</p>
-                </div>
-
-                <div className="quick-stats">
-                    <div className="stat-item">
-                        <PhoneOutlined className="stat-icon" />
-                        <div>
-                            <label>Điện thoại</label>
-                            <span>{userData?.phone}</span>
-                        </div>
-                    </div>
-                    <div className="stat-item">
-                        <HomeOutlined className="stat-icon" />
-                        <div>
-                            <label>Địa chỉ</label>
-                            <span>{userData?.address}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="profile-actions">
-                    {isEditing ? (
-                        <Button 
-                            type="primary"
-                            icon={<SaveOutlined />}
-                            block
-                            onClick={() => form.submit()}
-                            loading={saveLoading}
-                        >
-                            Lưu thay đổi
-                        </Button>
-                    ) : (
-                        <Button 
-                            type="default"
-                            icon={<EditOutlined />}
-                            block
-                            onClick={toggleEdit}
-                        >
-                            Chỉnh sửa thông tin
-                        </Button>
-                    )}
-                </div>
-            </Card>
-        </div>
-    );
-
-    const renderRightPanel = () => (
-        <div className="profile-panel right-panel">
-            <Card className="profile-details">
-                <Tabs defaultActiveKey="basic" size={isMobile ? "small" : "middle"}>
-                    <Tabs.TabPane 
-                        tab={<span><UserOutlined /> {isMobile ? "Cơ bản" : "Thông tin cơ bản"}</span>} 
-                        key="basic"
-                    >
-                        <Row gutter={isMobile ? [8, 16] : [24, 16]}>
-                            {/* Sửa lại để cột chiếm toàn bộ chiều rộng trên mobile */}
-                            <Col xs={24} sm={24} md={12}>
-                                <Form.Item name="fullname" label="Họ và tên">
-                                    <Input 
-                                        prefix={<UserOutlined />}
-                                        readOnly={!isEditing}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={24} md={12}>
-                                <Form.Item name="email" label="Email">
-                                    <Input 
-                                        prefix={<MailOutlined />}
-                                        readOnly
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={24} md={12}>
-                                <Form.Item name="phone" label="Số điện thoại">
-                                    <Input 
-                                        prefix={<PhoneOutlined />}
-                                        readOnly={!isEditing}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={24} md={12}>
-                                <Form.Item name="birthday" label="Ngày sinh">
-                                    <DatePicker 
-                                        style={{ width: '100%' }}
-                                        disabled={!isEditing}
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Tabs.TabPane>
-                    
-                    <Tabs.TabPane 
-                        tab={<span><SafetyCertificateOutlined /> {isMobile ? "Chi tiết" : "Thông tin chi tiết"}</span>} 
-                        key="details"
-                    >
-                        <Row gutter={isMobile ? [8, 16] : [24, 16]}>
-                            <Col span={24}>
-                                <Form.Item name="address" label="Địa chỉ">
-                                    <Input.TextArea 
-                                        rows={isMobile ? 2 : 3}
-                                        readOnly={!isEditing}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                                <Form.Item name="gender" label="Giới tính">
-                                    <Radio.Group 
-                                        disabled={!isEditing}
-                                        buttonStyle="solid"
-                                        className="mobile-radio-group"
-                                    >
-                                        <Radio.Button value="M">Nam</Radio.Button>
-                                        <Radio.Button value="F">Nữ</Radio.Button>
-                                    </Radio.Group>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Tabs.TabPane>
-                    
-                    {/* ...existing code for security tab... */}
-                </Tabs>
-            </Card>
-        </div>
-    );
-
-    if (loading) {
-        return (
-            <div className="loading-container">
-                <Spin size={isMobile ? "default" : "large"} tip="Đang tải thông tin người dùng..." />
-            </div>
-        );
+      } else {
+        message.error("Không thể tải thông tin người dùng");
+      }
+    } catch (error) {
+      console.error("Error loading user data:", error);
+      message.error("Đã xảy ra lỗi khi tải thông tin người dùng");
+    } finally {
+      setLoading(false);
     }
+  }, [form]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleSubmit = (values) => {
+    setSaveLoading(true);
+
+    const updatedUser = {
+      ...values,
+      birthday: values.birthday.format("YYYY-MM-DD"),
+      id: userData.id,
+      password: userData.password,
+    };
+
+    // Simulate API call
+    setTimeout(() => {
+      setSaveLoading(false);
+
+      notification.success({
+        message: "Cập nhật thành công",
+        description: "Thông tin cá nhân của bạn đã được cập nhật",
+        placement: "bottomRight",
+      });
+
+      setIsEditing(false);
+    }, 800);
+  };
+
+  const handlePasswordChange = async (values) => {
+    try {
+      setChangePasswordLoading(true);
+
+      if (values.newPassword !== values.confirmPassword) {
+        message.error("Mật khẩu xác nhận không khớp!");
+        setChangePasswordLoading(false);
+        return;
+      }
+
+      // Log the request payload for debugging
+      const requestPayload = {
+        id: userData.id, // Make sure we're using the correct user ID
+        oldPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        confirmNewPassword: values.confirmPassword
+      };
+      
+      console.log("Password change request payload:", requestPayload);
+
+      // Send the password change request
+      const response = await authApi.changePassword(requestPayload);
+
+      notification.success({
+        message: "Đổi mật khẩu thành công",
+        description: "Mật khẩu của bạn đã được cập nhật",
+        icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+      });
+
+      setPasswordModalVisible(false);
+      passwordForm.resetFields();
+    } catch (error) {
+      console.error("Password change error:", error);
+      // Log the error response data for debugging
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+      }
+      
+      // Display appropriate error message
+      const errorMessage = error.response?.data?.message || "Đổi mật khẩu không thành công";
+      notification.error({
+        message: "Lỗi",
+        description: errorMessage,
+      });
+    } finally {
+      setChangePasswordLoading(false);
+    }
+  };
+
+  const beforeUpload = (file) => {
+    const isImage = file.type.startsWith("image/");
+    if (!isImage) {
+      message.error("Bạn chỉ có thể tải lên file hình ảnh!");
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error("Hình ảnh phải nhỏ hơn 2MB!");
+    }
+    return isImage && isLt2M;
+  };
+
+  const handleUpload = (info) => {
+    if (info.file.status === "done") {
+      // In real app, this would come from server response
+      setImageUrl(URL.createObjectURL(info.file.originFileObj));
+      message.success(`${info.file.name} đã được tải lên thành công`);
+    } else if (info.file.status === "error") {
+      message.error(`${info.file.name} tải lên thất bại.`);
+    }
+  };
+
+  const toggleEdit = () => {
+    if (isEditing) {
+      form.submit();
+    } else {
+      setIsEditing(true);
+      message.info({
+        content: "Bạn có thể chỉnh sửa thông tin của mình",
+        duration: 2,
+      });
+    }
+  };
+
+  if (loading) {
     return (
-        <div className="user-profile-container" ref={profileRef}>
-            <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSubmit}
-                className={`profile-form ${isEditing ? 'editing' : ''}`}
-                size={isMobile ? "middle" : "large"}
-            >
-                <div className="profile-layout">
-                    {renderLeftPanel()}
-                    {renderRightPanel()}
-                </div>
-            </Form>
-
-            <Modal
-                title={<div className="modal-title"><LockOutlined className="modal-icon" /> Đổi mật khẩu</div>}
-                open={passwordModalVisible}
-                onCancel={() => setPasswordModalVisible(false)}
-                footer={null}
-                centered
-                className="password-modal"
-                width={isMobile ? "95%" : 520}
-            >
-                <Form layout="vertical" onFinish={handlePasswordChange}>
-                    <Form.Item
-                        label="Mật khẩu hiện tại"
-                        name="currentPassword"
-                        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
-                    >
-                        <Input.Password 
-                            prefix={<LockOutlined className="field-icon" />} 
-                            placeholder="Nhập mật khẩu hiện tại"
-                        />
-                    </Form.Item>
-                    
-                    <Divider />
-                    
-                    <Form.Item
-                        label="Mật khẩu mới"
-                        name="newPassword"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập mật khẩu mới!' },
-                            { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' }
-                        ]}
-                        extra="Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ và số"
-                    >
-                        <Input.Password 
-                            prefix={<LockOutlined className="field-icon" />} 
-                            placeholder="Nhập mật khẩu mới"
-                        />
-                    </Form.Item>
-                    
-                    <Form.Item
-                        label="Xác nhận mật khẩu mới"
-                        name="confirmPassword"
-                        rules={[
-                            { required: true, message: 'Vui lòng xác nhận mật khẩu mới!' },
-                            ({ getFieldValue }) => ({
-                                validator(_, value) {
-                                    if (!value || getFieldValue('newPassword') === value) {
-                                        return Promise.resolve();
-                                    }
-                                    return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
-                                },
-                            }),
-                        ]}
-                    >
-                        <Input.Password 
-                            prefix={<LockOutlined className="field-icon" />}
-                            placeholder="Xác nhận mật khẩu mới"
-                        />
-                    </Form.Item>
-                    
-                    <div className="modal-footer">
-                        <Button key="cancel" onClick={() => setPasswordModalVisible(false)}>
-                            Hủy
-                        </Button>
-                        <Button key="submit" type="primary" htmlType="submit">
-                            Cập nhật mật khẩu
-                        </Button>
-                    </div>
-                </Form>
-            </Modal>
+      <div className="profile-loading-container">
+        <div className="loading-content">
+          <Spin size="large" />
+          <p>Đang tải thông tin...</p>
         </div>
+      </div>
     );
+  }
+
+  return (
+    <div className="user-profile-container">
+      <div className="profile-header">
+        <div className="profile-avatar">
+          <div className="avatar-container">
+            <Avatar
+              size={100}
+              src={imageUrl}
+              icon={!imageUrl && <UserOutlined />}
+              className="user-avatar"
+            />
+            {isEditing && (
+              <Upload
+                name="avatar"
+                showUploadList={false}
+                beforeUpload={beforeUpload}
+                onChange={handleUpload}
+                className="avatar-upload"
+              >
+                <button className="camera-button">
+                  <CameraOutlined />
+                </button>
+              </Upload>
+            )}
+          </div>
+
+          <div className="profile-info">
+            <h2 className="user-name">{userData.fullname}</h2>
+            <p className="user-email">{userData.email}</p>
+
+            <Button
+              type={isEditing ? "primary" : "default"}
+              icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
+              onClick={toggleEdit}
+              loading={saveLoading}
+              className="edit-button"
+            >
+              {isEditing ? "Lưu thông tin" : "Chỉnh sửa"}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        className={`profile-form ${isEditing ? "editing" : ""}`}
+      >
+        <div className="profile-content">
+          <Card className="profile-card basic-info" title="Thông tin cơ bản">
+            <Row gutter={[24, 16]}>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="fullname"
+                  label="Họ và tên"
+                  rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+                >
+                  <Input
+                    prefix={<UserOutlined />}
+                    readOnly={!isEditing}
+                    className={!isEditing ? "readonly-input" : ""}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="phone"
+                  label="Số điện thoại"
+                  rules={[
+                    { required: true, message: "Vui lòng nhập số điện thoại!" },
+                  ]}
+                >
+                  <Input
+                    prefix={<PhoneOutlined />}
+                    readOnly={!isEditing}
+                    className={!isEditing ? "readonly-input" : ""}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item name="email" label="Email">
+                  <Input
+                    prefix={<MailOutlined />}
+                    readOnly
+                    className="readonly-input"
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="birthday"
+                  label="Ngày sinh"
+                  rules={[
+                    { required: true, message: "Vui lòng chọn ngày sinh!" },
+                  ]}
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    format="DD/MM/YYYY"
+                    disabled={!isEditing}
+                    className={!isEditing ? "readonly-input" : ""}
+                    suffixIcon={<CalendarOutlined />}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24}>
+                <Form.Item
+                  name="gender"
+                  label="Giới tính"
+                  rules={[
+                    { required: true, message: "Vui lòng chọn giới tính!" },
+                  ]}
+                >
+                  <Radio.Group disabled={!isEditing} className="gender-group">
+                    <Radio value="M">
+                      <span className="gender-label">
+                        <IdcardOutlined /> Nam
+                      </span>
+                    </Radio>
+                    <Radio value="F">
+                      <span className="gender-label">
+                        <IdcardOutlined /> Nữ
+                      </span>
+                    </Radio>
+                  </Radio.Group>
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+
+          <Card className="profile-card address-info" title="Địa chỉ">
+            <Form.Item
+              name="address"
+              label="Địa chỉ liên hệ"
+              rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
+            >
+              <Input.TextArea
+                rows={3}
+                readOnly={!isEditing}
+                className={!isEditing ? "readonly-input" : ""}
+                placeholder="Nhập địa chỉ của bạn"
+              />
+            </Form.Item>
+          </Card>
+
+          <Card className="profile-card security-info" title="Bảo mật">
+            <div className="security-content">
+              <div className="password-section">
+                <div className="password-info">
+                  <LockOutlined className="security-icon" />
+                  <div className="security-text">
+                    <h3>Mật khẩu</h3>
+                    <p>Cập nhật mật khẩu để bảo vệ tài khoản của bạn</p>
+                  </div>
+                </div>
+                <Button
+                  type="primary"
+                  onClick={() => setPasswordModalVisible(true)}
+                  className="change-password-btn"
+                >
+                  Đổi mật khẩu
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </Form>
+
+      <Modal
+        title="Đổi mật khẩu"
+        open={passwordModalVisible}
+        onCancel={() => setPasswordModalVisible(false)}
+        footer={null}
+        centered
+        className="password-modal"
+      >
+        <Form
+          layout="vertical"
+          onFinish={handlePasswordChange}
+          form={passwordForm}
+        >
+          <Form.Item
+            label="Mật khẩu hiện tại"
+            name="currentPassword"
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu hiện tại!" },
+              { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Nhập mật khẩu hiện tại"
+            />
+          </Form.Item>
+
+          <Divider />
+
+          <Form.Item
+            label="Mật khẩu mới"
+            name="newPassword"
+            rules={[
+              { required: true, message: "Vui lòng nhập mật khẩu mới!" },
+              { min: 8, message: "Mật khẩu phải có ít nhất 8 ký tự!" },
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Nhập mật khẩu mới"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Xác nhận mật khẩu mới"
+            name="confirmPassword"
+            dependencies={["newPassword"]}
+            rules={[
+              { required: true, message: "Vui lòng xác nhận mật khẩu mới!" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("newPassword") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Mật khẩu xác nhận không khớp!")
+                  );
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Xác nhận mật khẩu mới"
+            />
+          </Form.Item>
+
+          <div className="modal-buttons">
+            <Button
+              key="cancel"
+              onClick={() => {
+                setPasswordModalVisible(false);
+                passwordForm.resetFields();
+              }}
+            >
+              Hủy
+            </Button>
+            <Button
+              style={{ left: 20 }}
+              key="submit"
+              type="primary"
+              htmlType="submit"
+              loading={changePasswordLoading}
+            >
+              Xác nhận
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+    </div>
+  );
 };
 
 export default UserProfile;
