@@ -1,5 +1,5 @@
 import axios from 'axios';
-import authApi from 'api/Admin/Auth/Login';
+import authApi from 'api/Admin/Auth/auth';
 
 
 const baseUrl = process.env.REACT_APP_ShopeTheThao_PRODUCTION_REST_API;

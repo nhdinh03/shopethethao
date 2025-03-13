@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Form, Input, DatePicker, Radio, Button, Upload, message, Spin, Modal, 
   Card, Divider, Row, Col, Tabs, Avatar, Tooltip, notification
@@ -23,6 +23,8 @@ const UserProfile = () => {
     const [saveLoading, setSaveLoading] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
     const [fieldLoading, setFieldLoading] = useState({});
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const profileRef = useRef(null);
     
     // Mock user data - in real application, fetch from API
     useEffect(() => {
@@ -49,6 +51,15 @@ const UserProfile = () => {
             setLoading(false);
         }, 100);
     }, [form]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleSubmit = (values) => {
         setSaveLoading(true);
@@ -144,9 +155,9 @@ const UserProfile = () => {
 
     const renderLeftPanel = () => (
         <div className="profile-panel left-panel">
-            <Card className="user-card">
-                <div className="avatar-section">
-                    <Avatar size={150} src={imageUrl} icon={!imageUrl && <UserOutlined />} />
+            <Card className={`user-card ${isMobile ? 'touch-feedback' : ''}`}>
+                <div className="avatar-section animate-element">
+                    <Avatar size={isMobile ? 100 : 150} src={imageUrl} icon={!imageUrl && <UserOutlined />} />
                     <Upload
                         name="avatar"
                         showUploadList={false}
@@ -154,7 +165,7 @@ const UserProfile = () => {
                         onChange={handleUpload}
                     >
                         <Button icon={<CameraOutlined />} className="change-avatar-btn">
-                            Thay đổi ảnh đại diện
+                            {isMobile ? "Đổi ảnh" : "Thay đổi ảnh đại diện"}
                         </Button>
                     </Upload>
                     <h2>{userData?.fullname}</h2>
@@ -207,13 +218,14 @@ const UserProfile = () => {
     const renderRightPanel = () => (
         <div className="profile-panel right-panel">
             <Card className="profile-details">
-                <Tabs defaultActiveKey="basic">
+                <Tabs defaultActiveKey="basic" size={isMobile ? "small" : "middle"}>
                     <Tabs.TabPane 
-                        tab={<span><UserOutlined /> Thông tin cơ bản</span>} 
+                        tab={<span><UserOutlined /> {isMobile ? "Cơ bản" : "Thông tin cơ bản"}</span>} 
                         key="basic"
                     >
-                        <Row gutter={[24, 16]}>
-                            <Col span={12}>
+                        <Row gutter={isMobile ? [8, 16] : [24, 16]}>
+                            {/* Sửa lại để cột chiếm toàn bộ chiều rộng trên mobile */}
+                            <Col xs={24} sm={24} md={12}>
                                 <Form.Item name="fullname" label="Họ và tên">
                                     <Input 
                                         prefix={<UserOutlined />}
@@ -221,7 +233,7 @@ const UserProfile = () => {
                                     />
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
+                            <Col xs={24} sm={24} md={12}>
                                 <Form.Item name="email" label="Email">
                                     <Input 
                                         prefix={<MailOutlined />}
@@ -229,7 +241,7 @@ const UserProfile = () => {
                                     />
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
+                            <Col xs={24} sm={24} md={12}>
                                 <Form.Item name="phone" label="Số điện thoại">
                                     <Input 
                                         prefix={<PhoneOutlined />}
@@ -237,7 +249,7 @@ const UserProfile = () => {
                                     />
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
+                            <Col xs={24} sm={24} md={12}>
                                 <Form.Item name="birthday" label="Ngày sinh">
                                     <DatePicker 
                                         style={{ width: '100%' }}
@@ -247,24 +259,26 @@ const UserProfile = () => {
                             </Col>
                         </Row>
                     </Tabs.TabPane>
+                    
                     <Tabs.TabPane 
-                        tab={<span><SafetyCertificateOutlined /> Thông tin chi tiết</span>} 
+                        tab={<span><SafetyCertificateOutlined /> {isMobile ? "Chi tiết" : "Thông tin chi tiết"}</span>} 
                         key="details"
                     >
-                        <Row gutter={[24, 16]}>
+                        <Row gutter={isMobile ? [8, 16] : [24, 16]}>
                             <Col span={24}>
                                 <Form.Item name="address" label="Địa chỉ">
                                     <Input.TextArea 
-                                        rows={3}
+                                        rows={isMobile ? 2 : 3}
                                         readOnly={!isEditing}
                                     />
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
+                            <Col span={24}>
                                 <Form.Item name="gender" label="Giới tính">
                                     <Radio.Group 
                                         disabled={!isEditing}
                                         buttonStyle="solid"
+                                        className="mobile-radio-group"
                                     >
                                         <Radio.Button value="M">Nam</Radio.Button>
                                         <Radio.Button value="F">Nữ</Radio.Button>
@@ -273,20 +287,8 @@ const UserProfile = () => {
                             </Col>
                         </Row>
                     </Tabs.TabPane>
-                    <Tabs.TabPane 
-                        tab={<span><LockOutlined /> Bảo mật</span>} 
-                        key="security"
-                    >
-                        <div className="security-section">
-                            <Button 
-                                danger
-                                icon={<LockOutlined />}
-                                onClick={() => setPasswordModalVisible(true)}
-                            >
-                                Đổi mật khẩu
-                            </Button>
-                        </div>
-                    </Tabs.TabPane>
+                    
+                    {/* ...existing code for security tab... */}
                 </Tabs>
             </Card>
         </div>
@@ -295,18 +297,19 @@ const UserProfile = () => {
     if (loading) {
         return (
             <div className="loading-container">
-                <Spin size="large" tip="Đang tải thông tin người dùng..." />
+                <Spin size={isMobile ? "default" : "large"} tip="Đang tải thông tin người dùng..." />
             </div>
         );
     }
 
     return (
-        <div className="user-profile-container">
+        <div className="user-profile-container" ref={profileRef}>
             <Form
                 form={form}
                 layout="vertical"
                 onFinish={handleSubmit}
                 className={`profile-form ${isEditing ? 'editing' : ''}`}
+                size={isMobile ? "middle" : "large"}
             >
                 <div className="profile-layout">
                     {renderLeftPanel()}
@@ -321,6 +324,7 @@ const UserProfile = () => {
                 footer={null}
                 centered
                 className="password-modal"
+                width={isMobile ? "95%" : 520}
             >
                 <Form layout="vertical" onFinish={handlePasswordChange}>
                     <Form.Item

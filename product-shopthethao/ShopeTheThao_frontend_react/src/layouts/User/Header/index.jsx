@@ -575,8 +575,10 @@ const Header = () => {
   // Handle scroll event
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      // Add a threshold to prevent flickering
+      setIsScrolled(window.scrollY > 10);
     };
+    
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -695,7 +697,10 @@ const Header = () => {
         <Link to="/login" className="btn-login">
           Đăng nhập
         </Link>
-        <Link to="/register" className="btn-register">
+        <Link 
+          to="/register" 
+          className="btn-register"
+        >
           Đăng ký
         </Link>
       </div>
@@ -717,16 +722,18 @@ const Header = () => {
         </div>
 
         <div className="brand-desc-wrapper">
-          <motion.p
-            key={rotatingText}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}
-            className="brand-desc"
-          >
-            {rotatingText}
-          </motion.p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={rotatingText}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="brand-desc"
+            >
+              {rotatingText}
+            </motion.p>
+          </AnimatePresence>
         </div>
 
         {/* Add empty div to maintain layout when auth buttons are hidden */}
@@ -1089,6 +1096,43 @@ const Header = () => {
             </nav>
 
             <div className="mobile-menu-footer">
+              <div className="user-actions-mobile compact-actions">
+                <Link
+                  to="/accounts-profile"
+                  className="action-btn"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <FiUser />
+                  <span>Tài khoản</span>
+                </Link>
+                <Link
+                  to="/products-wishlist"
+                  className="action-btn"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <AiOutlineHeart />
+                  <span>Yêu thích</span>
+                  {wishlistCount > 0 && <div className="count-indicator">{wishlistCount}</div>}
+                </Link>
+                <Link
+                  to="/products-cart"
+                  className="action-btn"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <FiShoppingBag />
+                  <span>Giỏ hàng</span>
+                  {cartCount > 0 && <div className="count-indicator">{cartCount}</div>}
+                </Link>
+                <Link
+                  to="/orders-history"
+                  className="action-btn"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <FiShoppingBag />
+                  <span>Đơn hàng</span>
+                </Link>
+              </div>
+
               {isAuthenticated ? (
                 <Link
                   to="/account"

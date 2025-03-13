@@ -88,9 +88,11 @@ const authApi = {
 
   regenerateOtp: async (email) => {
     try {
-      const response = await axiosClient.put(
-        `${endpoints.regenerateOtp}?email=${email}`
-      );
+      // Handle both direct email input and object format
+      const emailValue = typeof email === 'object' ? email.email : email;
+      const payload = { email: emailValue };
+      
+      const response = await axiosClient.put(endpoints.regenerateOtp, payload);
       return response.data;
     } catch (error) {
       console.error("Lỗi trong quá trình tái tạo OTP:", error);

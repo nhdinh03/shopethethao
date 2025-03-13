@@ -3,7 +3,7 @@ import { Form, Input, Button, message } from 'antd';
 import { LockOutlined } from '@ant-design/icons';
 
 import { useNavigate } from 'react-router-dom';
-import authApi from 'api/Admin/Auth/Login';
+import authApi from 'api/Admin/Auth/auth';
 
 const ChangePasswordForm = () => {
   const [loading, setLoading] = useState(false);

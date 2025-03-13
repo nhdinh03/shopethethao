@@ -289,7 +289,7 @@ function Cart() {
                             
                             <div className="checkout-actions">
                                 <Link 
-                                    to={selectedCartItems.length > 0 ? "/checkout" : "#"}
+                                    to={selectedCartItems.length > 0 ? "/products-checkout" : "#"}
                                     className={`checkout-btn ${selectedCartItems.length === 0 ? 'disabled' : ''}`}
                                     onClick={(e) => {
                                         if (selectedCartItems.length === 0) {

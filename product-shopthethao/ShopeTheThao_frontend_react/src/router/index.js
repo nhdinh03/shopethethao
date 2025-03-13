@@ -26,6 +26,11 @@ export const publicRoutes = [
     layout: LayoutPageDefaultUser,
   },
   {
+    path: "/products-checkout",
+    component: PageUser.Checkout,
+    layout: LayoutPageDefaultUser,
+  },
+  {
     path: "/products-cart",
     component: PageUser.Cart,
     layout: LayoutPageDefaultUser,
@@ -42,10 +47,15 @@ export const publicRoutes = [
   },
   {
     path: "/register",
-    component: PageUser.RegisterForm,
+    component: PageUser.LoginForm,
     layout: LayoutPageDefault,
   },
-  { path: "/otp", component: PageUser.OtpForm, layout: LayoutPageDefault },
+  { 
+    path: "/otp", 
+    component: PageUser.OtpForm, 
+    layout: LayoutPageDefault,
+    requiresUnverified: true  // Add this flag to check auth status
+  },
   {
     path: "/changepassword",
     component: PageUser.ChangePasswordForm,

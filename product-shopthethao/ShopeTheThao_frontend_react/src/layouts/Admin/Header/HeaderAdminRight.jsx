@@ -16,7 +16,7 @@ import img from "assets/Img";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NotificationDropdown from "components/Admin/Notifications/NotificationDropdown";
-import authApi from "api/Admin/Auth/Login";
+import authApi from "api/Admin/Auth/auth";
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);

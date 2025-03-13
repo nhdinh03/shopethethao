@@ -55,24 +55,322 @@
     &.product-detail-page {
       padding: 0;
     }
+    
+    &.animate-in {
+      animation: slideUpFade 0.5s ease-out;
+    }
   }
   
   .card-content-page {
     padding: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     
     &.product-detail-card {
       padding: 0;
     }
+    
+    &:active {
+      transform: scale(0.98);
+    }
   }
 }
 
+/* Mobile Animations */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseButton {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* Mobile Touch Interactions */
 @media (max-width: 576px) {
+  .layout-wrapper {
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .main-content {
     padding: 10px;
     
     &.with-header-footer {
       margin-top: 45px;
       margin-bottom: 20px;
+      transition: padding 0.3s ease;
     }
+
+    .interactive-element {
+      position: relative;
+      overflow: hidden;
+
+      &:active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.05);
+        animation: rippleEffect 0.4s ease-out;
+      }
+    }
+  }
+
+  .card-content-page {
+    margin: 8px;
+    border-radius: 12px;
+    background: linear-gradient(to bottom, #fff, #f8f9fa);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 
+      0 4px 15px rgba(0, 0, 0, 0.05),
+      0 1px 2px rgba(0, 0, 0, 0.1);
+    
+    &.has-interaction {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+
+/* Enhanced Mobile Animations */
+@keyframes rippleEffect {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes smoothFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading State Animation */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+@keyframes loadingShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Enhanced Mobile Optimizations */
+@media (max-width: 768px) {
+  .layout-wrapper {
+    background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+  }
+
+  .main-content {
+    padding: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &.with-header-footer {
+      margin: 60px 0 20px;
+    }
+    
+    &.animate-in {
+      animation: slideUpFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card-content-page {
+      margin: 8px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.05),
+        0 1px 2px rgba(0, 0, 0, 0.1);
+      
+      &.has-interaction {
+        transform-origin: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        
+        &:active {
+          transform: scale(0.98);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+}
+
+/* Mobile Touch Interactions */
+@media (max-width: 576px) {
+  .layout-wrapper {
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .main-content {
+    padding: 8px;
+    
+    .interactive-element {
+      position: relative;
+      overflow: hidden;
+      transform: translateZ(0);
+      
+      &:active::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+        transform: translate(-50%, -50%) scale(3);
+        opacity: 0;
+        animation: rippleEffect 0.6s ease-out;
+      }
+    }
+
+    .card-content-page {
+      margin: 6px;
+      border-radius: 12px;
+      
+      &.has-interaction {
+        &:active {
+          transform: scale(0.97);
+        }
+      }
+    }
+  }
+}
+
+/* Enhanced Animations */
+@keyframes slideUpFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rippleEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}
+
+@keyframes floatAnimation {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Loading State Enhancement */
+.loading-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #f8f8f8 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: shimmerHighlight 1.5s infinite linear;
+  }
+}
+
+@keyframes shimmerHighlight {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Enhanced Motion Effects */
+.motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    .card-hover {
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      
+      &:hover {
+        transform: translateY(-4px) scale(1.01);
+      }
+    }
+
+    .btn-hover {
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+/* Device-Specific Optimizations */
+@supports (-webkit-touch-callout: none) {
+  /* iOS-specific styles */
+  .layout-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .card-content-page {
+    transform: translateZ(0);
+  }
+}
+
+@supports not (-webkit-touch-callout: none) {
+  /* Non-iOS devices */
+  .layout-wrapper {
+    scroll-behavior: smooth;
   }
 }

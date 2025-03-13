@@ -5,6 +5,19 @@
   background-color: #f5f8fa;
   border-radius: 8px;
 
+  @media (max-width: 768px) {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    background-color: #f8f9fc;
+  }
+
+  @media (max-width: 576px) {
+    background-color: #f9fafc;
+  }
+
   .profile-sections {
     display: flex;
     flex-direction: column;
@@ -91,7 +104,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
       opacity: 0.5;
     }
 
@@ -214,6 +227,63 @@
           &:active {
             transform: translateY(0);
           }
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      padding: 15px;
+      margin: 10px;
+      
+      .profile-header-content {
+        padding: 0;
+        gap: 20px;
+        
+        .profile-avatar {
+          width: 100%;
+          justify-content: center;
+          margin-bottom: 0;
+          
+          .avatar-upload {
+            margin: 0;
+          }
+          
+          .user-brief-info {
+            text-align: center;
+            width: 100%;
+            
+            h2 {
+              justify-content: center;
+              font-size: 20px;
+            }
+            
+            p {
+              font-size: 14px;
+            }
+          }
+        }
+        
+        .profile-actions {
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          gap: 10px;
+          
+          button {
+            flex: 1;
+            max-width: 160px;
+          }
+        }
+      }
+    }
+    
+    @media (max-width: 576px) {
+      margin: 5px;
+      border-radius: 8px;
+      
+      .profile-header-content {
+        .profile-actions button {
+          max-width: none;
         }
       }
     }
@@ -492,6 +562,12 @@
 
           .ant-tabs-tab {
             padding: 12px 0;
+            transition: all 0.3s ease;
+
+            &:hover {
+              transform: translateY(-2px);
+              color: #1890ff;
+            }
 
             .anticon {
               margin-right: 8px;
@@ -502,6 +578,13 @@
             background-color: #1890ff;
             height: 3px;
             border-radius: 3px;
+          }
+
+          .ant-tabs-tab-active {
+            .ant-tabs-tab-btn {
+              text-shadow: 0 0 0.25px currentColor;
+              transform: scale(1.05);
+            }
           }
         }
       }
@@ -727,6 +810,21 @@
       grid-template-columns: 1fr;
     }
 
+    @media (max-width: 768px) {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    @media (max-width: 576px) {
+      padding: 8px;
+    }
+
     .profile-sidebar {
       width: 300px;
       flex-shrink: 0;
@@ -841,6 +939,12 @@
           margin-bottom: 16px;
           border: 4px solid rgba(24, 144, 255, 0.1);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          
+          &:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+          }
         }
 
         h2 {
@@ -855,6 +959,16 @@
 
         .change-avatar-btn {
           margin-top: 12px;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+          }
+          
+          &:active {
+            transform: translateY(0);
+          }
         }
       }
 
@@ -905,6 +1019,35 @@
         border-top: 1px solid #f0f0f0;
       }
     }
+
+    @media (max-width: 768px) {
+      order: 1;
+      width: 100%;
+      
+      .user-card {
+        width: 100%;
+        margin: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        
+        .ant-card-body {
+          padding: 16px;
+        }
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .user-card {
+        .quick-stats {
+          padding: 8px;
+          
+          .stat-item {
+            flex-wrap: wrap;
+          }
+        }
+      }
+    }
   }
 
   .right-panel {
@@ -928,11 +1071,505 @@
         border-radius: 8px;
       }
     }
+
+    @media (max-width: 768px) {
+      order: 2;
+      width: 100%;
+      
+      .profile-details {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        
+        .ant-card-body {
+          padding: 12px;
+        }
+        
+        .ant-tabs-content-holder {
+          padding: 16px 0;
+        }
+        
+        .ant-row {
+          margin: 0 !important;
+          width: 100%;
+        }
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .profile-details {
+        .ant-card-body {
+          padding: 8px;
+        }
+        
+        .ant-form-item {
+          margin-bottom: 12px;
+        }
+        
+        .ant-row {
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+        }
+        
+        .ant-col {
+          padding-left: 4px !important;
+          padding-right: 4px !important;
+        }
+      }
+    }
   }
 
   // ...existing animations and responsive styles...
+  // Enhanced card animations
+  .profile-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  // Improved form field animations
+  .ant-form-item {
+    &:hover {
+      .ant-input, .ant-picker, .ant-radio-group {
+        border-color: #40a9ff;
+        box-shadow: 0 0 8px rgba(24, 144, 255, 0.2);
+      }
+    }
+  }
+
+  // Enhanced avatar section
+  .avatar-section {
+    .ant-avatar {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+
+  // Add gradient backgrounds
+  .profile-header-wrapper {
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    
+    &::before {
+      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    }
+  }
+
+  // Enhanced tabs
+  .ant-tabs-tab {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      color: #1890ff;
+    }
+
+    &.ant-tabs-tab-active {
+      .ant-tabs-tab-btn {
+        text-shadow: 0 0 0.25px currentColor;
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  // Add loading shimmer effect
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+
+  .loading-container {
+    background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  // Add hover effects for buttons
+  .edit-button, .save-button, .change-avatar-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // Enhanced footer section
+  .profile-footer {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid #f0f0f0;
+    
+    .footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+
+      @media (max-width: 576px) {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 12px;
+        
+        @media (max-width: 576px) {
+          width: 100%;
+          flex-direction: column;
+          
+          button {
+            width: 100%;
+            height: 44px;
+            font-size: 15px;
+            
+            &.ant-btn-primary {
+              background: linear-gradient(45deg, #1890ff, #40a9ff);
+              border: none;
+              box-shadow: 0 4px 12px rgba(24, 144, 255, 0.25);
+              
+              &:hover {
+                background: linear-gradient(45deg, #40a9ff, #69c0ff);
+                transform: translateY(-2px);
+              }
+              
+              &:active {
+                transform: translateY(0);
+              }
+            }
+          }
+        }
+      }
+
+      .extra-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        
+        @media (max-width: 576px) {
+          width: 100%;
+          justify-content: center;
+          padding-top: 8px;
+          border-top: 1px dashed #f0f0f0;
+        }
+
+        .action-link {
+          color: #666;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            color: #1890ff;
+            transform: translateY(-2px);
+          }
+          
+          .anticon {
+            font-size: 16px;
+          }
+        }
+      }
+    }
+
+    .footer-info {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      
+      @media (max-width: 576px) {
+        margin-top: 20px;
+        padding: 12px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        
+        .info-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          
+          .anticon {
+            color: #1890ff;
+            font-size: 16px;
+          }
+          
+          span {
+            color: #666;
+            font-size: 13px;
+          }
+        }
+      }
+    }
+
+    // Enhanced mobile animations
+    @media (max-width: 576px) {
+      .animate-in {
+        animation: slideUpFadeIn 0.4s ease-out;
+      }
+
+      .button-press {
+        animation: pressEffect 0.2s ease-out;
+      }
+    }
+  }
+
+  @keyframes slideUpFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pressEffect {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+
+  // Điều chỉnh container chính cho mobile
+  @media (max-width: 768px) {
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    
+    .profile-sections {
+      gap: 15px;
+    }
+    
+    .profile-section {
+      margin: 0 10px;
+      border-radius: 8px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .profile-section {
+      margin: 0 5px;
+    }
+  }
+
+  @media (max-width: 992px) {
+    margin: 16px auto;
+  }
+
+  @media (max-width: 768px) {
+    margin: 10px auto;
+    padding: 0;
+    background-color: transparent;
+    
+    .profile-sections {
+      gap: 15px;
+    }
+    
+    .profile-section {
+      margin: 0 10px;
+      border-radius: 12px;
+    }
+  }
+  
+  // Cải thiện hiển thị profile layout trên mobile
+  .profile-layout {
+    // ...existing code...
+    
+    @media (max-width: 768px) {
+      gap: 16px;
+      
+      .left-panel {
+        order: 1; // Di chuyển user card lên trên
+        
+        .user-card {
+          position: static;
+          margin-bottom: 16px;
+          animation: fadeIn 0.5s ease-out;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+          border-radius: 16px;
+          overflow: hidden;
+          background: linear-gradient(to bottom, #ffffff, #f9fafc);
+          
+          .avatar-section {
+            padding: 24px 0 16px;
+            
+            .ant-avatar {
+              width: 100px !important;
+              height: 100px !important;
+            }
+            
+            h2 {
+              font-size: 18px;
+            }
+            
+            .email {
+              font-size: 13px;
+            }
+            
+            .change-avatar-btn {
+              margin: 10px auto 0;
+              padding: 0 16px;
+              height: 36px;
+            }
+          }
+          
+          .quick-stats {
+            padding: 12px 16px;
+            
+            .stat-item {
+              padding: 8px 0;
+            }
+          }
+          
+          .profile-actions {
+            padding: 16px;
+          }
+        }
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .left-panel .user-card {
+        margin: 0 8px 12px;
+      }
+    }
+  }
+
+  .right-panel {
+    // ...existing code...
+    
+    @media (max-width: 768px) {
+      order: 2;
+      
+      .profile-details {
+        border-radius: 16px;
+        animation: fadeInUp 0.5s ease-out;
+        margin: 0 8px;
+        
+        .ant-tabs-nav {
+          padding: 0 16px;
+          
+          .ant-tabs-tab {
+            padding: 8px 12px;
+            margin: 0 8px 0 0;
+          }
+        }
+        
+        .ant-tabs-content-holder {
+          padding: 16px;
+        }
+        
+        .ant-row {
+          margin: 0 !important;
+        }
+        
+        .ant-form-item-label > label {
+          font-size: 14px;
+        }
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .profile-details {
+        margin: 0 8px;
+        
+        .ant-col-12 {
+          flex: 0 0 100%;
+          max-width: 100%;
+          
+          &:nth-child(odd) {
+            padding-right: 0 !important;
+          }
+          
+          &:nth-child(even) {
+            padding-left: 0 !important;
+          }
+        }
+      }
+    }
+  }
+  
+  // Cập nhật mobile-specific animations và transitions
+  @media (max-width: 576px) {
+    .animate-element {
+      animation: fadeInUp 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      will-change: opacity, transform;
+    }
+    
+    .profile-section {
+      margin: 0 5px 10px;
+      transform: translateZ(0);
+    }
+    
+    .profile-card {
+      border-radius: 12px;
+    }
+    
+    .form-section-title {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .ant-form-item {
+      margin-bottom: 12px;
+      
+      .ant-form-item-control-input {
+        min-height: auto;
+      }
+    }
+    
+    .ant-radio-button-wrapper {
+      padding: 0 16px;
+      height: 32px;
+      line-height: 30px;
+    }
+    
+    .touch-feedback {
+      position: relative;
+      overflow: hidden;
+      
+      &:active:after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.05);
+        animation: touchFeedback 0.4s ease-out;
+      }
+    }
+  }
+  
+  @keyframes touchFeedback {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
 
+// Tối ưu loading container cho mobile
 .loading-container {
   display: flex;
   justify-content: center;
@@ -950,8 +1587,24 @@
       background-color: #1890ff;
     }
   }
+
+  @media (max-width: 768px) {
+    height: 300px;
+    margin: 10px;
+    border-radius: 12px;
+    
+    .ant-spin {
+      transform: scale(0.9);
+      
+      &-text {
+        margin-top: 8px;
+        font-size: 14px;
+      }
+    }
+  }
 }
 
+// Tối ưu modal cho mobile
 .password-modal {
   .modal-title {
     display: flex;
@@ -981,6 +1634,38 @@
 
     button {
       min-width: 100px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .ant-modal-content {
+      padding: 16px !important;
+      border-radius: 16px;
+    }
+    
+    .ant-modal-body {
+      padding: 16px 0 0;
+    }
+    
+    .modal-title {
+      font-size: 16px;
+    }
+    
+    .ant-form-item {
+      margin-bottom: 16px;
+    }
+    
+    .ant-form-item-label > label {
+      font-size: 14px;
+    }
+    
+    .modal-footer {
+      margin-top: 16px;
+      
+      button {
+        height: 36px;
+        padding: 0 15px;
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-import authApi from 'api/Admin/Auth/Login';
+import authApi from 'api/Admin/Auth/auth';
 import { useState, useCallback } from 'react';
 
 export const useAuth = () => {

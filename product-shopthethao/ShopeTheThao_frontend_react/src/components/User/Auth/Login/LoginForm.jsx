@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   FiLock,
   FiEye,
@@ -26,17 +26,21 @@ import img from "assets/Img";
 import { useAuth } from "hooks/useAuth";
 import { getRedirectPath, getLoginMessage } from "utils/roleManager";
 import { validateId, validatePassword } from "../Custom";
+import authApi from "api/Admin/Auth/auth";
 
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, loading, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({
     id: "",
     password: "",
   });
-  const [activeTab, setActiveTab] = useState("login");
+  const [activeTab, setActiveTab] = useState(
+    location.pathname === "/register" ? "register" : "login"
+  );
   const [formData, setFormData] = useState({
     id: "",
     password: "",
@@ -158,6 +162,30 @@ const LoginForm = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  // Add this useEffect to handle tab changes from route state
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  // Update tab when URL changes
+  useEffect(() => {
+    if (location.pathname === "/register") {
+      setActiveTab("register");
+    } else if (location.pathname === "/login") {
+      setActiveTab("login");
+    }
+  }, [location.pathname]);
+
+  // Update URL when tab changes
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    navigate(key === "register" ? "/register" : "/login", { replace: true });
+  };
+
   return (
     <div className="login-wrapper">
       {/* Left Side with Welcome Content */}
@@ -205,7 +233,7 @@ const LoginForm = () => {
 
           <Tabs
             activeKey={activeTab}
-            onChange={setActiveTab}
+            onChange={handleTabChange}
             centered
             className="auth-tabs"
             items={[
@@ -319,9 +347,9 @@ const LoginForm = () => {
                           <div className="form-footer">
                             <p>Không có tài khoản?</p>
                             <Link
-                              to="#"
+                              to="/register"
                               className="register-link"
-                              onClick={() => setActiveTab("register")}
+                              onClick={() => handleTabChange("register")}
                             >
                               Đăng ký ngay
                               <FiArrowRight className="arrow-icon" />
@@ -345,7 +373,7 @@ const LoginForm = () => {
                     transition={{ duration: 0.3 }}
                   >
                     <EnhancedRegisterForm
-                      onLoginClick={() => setActiveTab("login")}
+                      onLoginClick={() => handleTabChange("login")}
                     />
                   </motion.div>
                 ),
@@ -367,7 +395,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
     email: "",
     password: "",
     confirmPassword: "",
-    gender: "M",
+    gender: "M", // M: Male, F: Female, O: Other
     role: ["USER"],
   });
 
@@ -545,19 +573,30 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      console.log("Registering with data:", formData);
-
-      // Normally here you would call your API
-      // const response = await authApi.register(formData);
-
-      setRegistrationComplete(true);
+      // Create the registration data in the correct format
+      const registrationData = {
+        id: formData.id,
+        phone: formData.phone,
+        fullname: formData.fullname,
+        email: formData.email,
+        password: formData.password,
+        gender: formData.gender,  // Send M/F/O directly
+        role: ["USER"]
+      };
+      
+      // Remove confirmPassword as it's not needed in the API
+      delete registrationData.confirmPassword;
+      
+      // Call the API
+      await authApi.signup(registrationData);
+      
+      message.success('Đăng ký thành công! Kiểm tra email nhập mã để xác nhận tài khoản.');
+      navigate('/otp', { state: { id: formData.id } });
+      
     } catch (error) {
-      message.error(
-        error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại!"
-      );
+      const errorMessage = error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại!";
+      message.error(errorMessage);
+      console.error('Registration error:', error);
     } finally {
       setLoading(false);
     }
@@ -743,6 +782,9 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
                   <Radio value="F" className="gender-option">
                     <FaVenus className="gender-icon female" /> Nữ
                   </Radio>
+                  <Radio value="O" className="gender-option">
+                    <FiUser className="gender-icon other" /> Khác
+                  </Radio>
                 </Radio.Group>
               </div>
             </div>
@@ -856,7 +898,11 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
 
       <div className="form-footer">
         <p>Đã có tài khoản?</p>
-        <Link to="#" className="login-link" onClick={onLoginClick}>
+        <Link 
+          to="/login" 
+          className="login-link" 
+          onClick={onLoginClick}
+        >
           Đăng nhập ngay
           <FiArrowRight className="arrow-icon" />
         </Link>

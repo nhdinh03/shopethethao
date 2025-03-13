@@ -66,8 +66,8 @@
       height: 100%;
       
       &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
       }
       
       .image-container {
@@ -83,11 +83,13 @@
           max-height: 100%;
           max-width: 100%;
           object-fit: contain;
-          transition: transform 0.3s;
+          transition: all 0.5s ease;
+          filter: brightness(0.97);
         }
         
         &:hover img {
-          transform: scale(1.05);
+          transform: scale(1.08);
+          filter: brightness(1.05);
         }
         
         .discount-label {
@@ -121,10 +123,16 @@
             justify-content: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             opacity: 0.9;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
             
             &:hover {
               opacity: 1;
-              transform: scale(1.05);
+              transform: translateY(-2px) scale(1.1);
+              background: white;
             }
             
             .anticon {
@@ -189,9 +197,29 @@
         
         button {
           transition: all 0.2s;
+          position: relative;
+          overflow: hidden;
           
           &:hover {
             transform: translateY(-2px);
+          }
+          
+          &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+          }
+          
+          &:hover::before {
+            width: 300px;
+            height: 300px;
           }
         }
       }
@@ -206,8 +234,8 @@
       cursor: pointer;
       
       &:hover {
-        transform: translateX(5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        transform: translateX(8px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
       }
       
       .list-image-container {
@@ -224,6 +252,7 @@
           max-height: 100%;
           max-width: 100%;
           object-fit: contain;
+          transition: all 0.4s ease;
         }
         
         .discount-label {
@@ -237,6 +266,22 @@
           font-weight: bold;
           font-size: 12px;
           box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(45deg, rgba(0,0,0,0.05) 0%, rgba(255,255,255,0) 100%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        
+        &:hover::after {
+          opacity: 1;
         }
       }
       
@@ -422,10 +467,17 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            &:hover {
+              transform: translateY(-3px);
+              box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
             
             &.selected {
               background-color: #1890ff;
               color: white;
+              animation: selectSize 0.3s ease;
             }
           }
         }
@@ -461,8 +513,29 @@
     to { opacity: 1; }
   }
   
+  @keyframes selectSize {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .wishlist-items {
-    animation: fadeIn 0.3s ease-in-out;
+    animation: fadeInUp 0.5s ease-out;
+  }
+
+  .empty-wishlist {
+    animation: fadeInUp 0.6s ease-out;
   }
   
   // Responsive styles
