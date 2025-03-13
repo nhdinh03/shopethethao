@@ -59,16 +59,6 @@ const authApi = {
     }
   },
 
-  getVerifyAccount: async (values) => {
-    try {
-      const response = await axiosClient.post(endpoints.verifyAccount, values);
-
-      return response;
-    } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
-      throw error;
-    }
-  },
 
   signup: async (values) => {
     try {
@@ -85,6 +75,19 @@ const authApi = {
       throw error;
     }
   },
+
+  getVerifyAccount: async (values) => {
+    try {
+      const response = await axiosClient.post(endpoints.verifyAccount, values);
+
+      return response;
+    } catch (error) {
+      console.error("Lỗi đăng nhập:", error);
+      throw error;
+    }
+  },
+
+
 
   changePassword: async (values) => {
     try {

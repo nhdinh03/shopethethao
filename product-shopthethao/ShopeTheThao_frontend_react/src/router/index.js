@@ -56,11 +56,6 @@ export const publicRoutes = [
     layout: LayoutPageDefault,
   },
   {
-    path: `/${API_VERSION}/auth/forgotpassword`,
-    component: PageUser.ResetPasswordForm,
-    layout: LayoutPageDefault,
-  },
-  {
     path: `/${API_VERSION}/404`,
     component: NotFound,
     layout: LayoutPageDefault,

@@ -1,7 +1,6 @@
 export { default as ChangePasswordForm } from "./Auth/ChangePassword/ChangePasswordForm";
 export { default as LoginForm } from "./Auth/Login/LoginForm";
 export { default as OtpForm } from "./Auth/Otp/OtpForm";
-export { default as ResetPasswordForm } from "./Auth/ResetPassword/ResetPasswordForm";
 export { default as PrivateRoute } from "./Auth/PrivateRoute";
 
 export { default as ProductCard } from "./ProductCard";

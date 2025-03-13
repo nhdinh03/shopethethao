@@ -124,21 +124,8 @@ const LoginForm = () => {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-    if (!forgotPasswordEmail.trim()) {
-      message.error("Vui lòng nhập email của bạn!");
-      return;
-    }
-
-    try {
-      // const response = await authApi.forgotPassword({ email: forgotPasswordEmail });
-      message.success("Link đặt lại mật khẩu đã được gửi đến email của bạn!");
-      setShowForgotPassword(false);
-    } catch (error) {
-      message.error(
-        "Không thể gửi email đặt lại mật khẩu: " +
-        (error.response?.data?.message || "Có lỗi xảy ra")
-      );
-    }
+    setShowForgotPassword(true);
+    // Now the rest of the functionality is handled within the ForgotPasswordForm component
   };
 
   const handleSocialLogin = (provider) => {
@@ -186,6 +173,11 @@ const LoginForm = () => {
     }
   };
 
+  // Add this function to get the proper tab label
+  const getLoginTabLabel = () => {
+    return showForgotPassword ? "QUÊN MẬT KHẨU" : "ĐĂNG NHẬP"   ;
+  };
+
   const renderFormFooter = () => (
     <div className="form-footer">
       <p>{activeTab === "login" ? "Không có tài khoản?" : "Đã có tài khoản?"}</p>
@@ -202,6 +194,152 @@ const LoginForm = () => {
       </Link>
     </div>
   );
+
+  // Dynamically generate the tabs based on whether we're showing the forgot password form
+  const generateTabItems = () => {
+    // Only show the login tab when forgot password is active
+    if (showForgotPassword) {
+      return [
+        {
+          key: "login",
+          label: getLoginTabLabel(),
+          children: (
+            <AnimatePresence mode="wait">
+              <ForgotPasswordForm
+                forgotPasswordEmail={forgotPasswordEmail}
+                setForgotPasswordEmail={setForgotPasswordEmail}
+                handleForgotPassword={handleForgotPassword}
+                onCancel={() => setShowForgotPassword(false)}
+              />
+            </AnimatePresence>
+          ),
+        }
+      ];
+    }
+    
+    // Otherwise show both tabs
+    return [
+      {
+        key: "login",
+        label: getLoginTabLabel(),
+        children: (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="login-form"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* ...existing login form... */}
+              <form onSubmit={handleSubmit} className="login-form">
+                {/* ...existing login form fields... */}
+                <InputField
+                  icon={<FiUser />}
+                  type="text"
+                  name="id"
+                  placeholder="Email hoặc ID đăng nhập"
+                  value={formData.id}
+                  onChange={handleChange}
+                  error={errors.id}
+                />
+                <InputField
+                  icon={<FiLock />}
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Mật khẩu"
+                  value={formData.password}
+                  onChange={handleChange}
+                  error={errors.password}
+                  endIcon={
+                    <button
+                      type="button"
+                      className="visibility-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  }
+                />
+                <div className="form-options">
+                  <CustomCheckbox
+                    checked={formData.remember}
+                    onChange={(e) => handleChange(e)}
+                    name="remember"
+                    label="Ghi nhớ đăng nhập"
+                  />
+                  <Link
+                    to="#"
+                    className="forgot-link"
+                    onClick={() => setShowForgotPassword(true)}
+                  >
+                    Quên mật khẩu?
+                  </Link>
+                </div>
+                <motion.button
+                  type="submit"
+                  className="submit-button"
+                  disabled={loading}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {loading ? "ĐANG ĐĂNG NHẬP..." : "ĐĂNG NHẬP"}
+                </motion.button>
+                <div className="social-login">
+                  <Divider className="social-divider">
+                    <span>Hoặc đăng nhập với</span>
+                  </Divider>
+                  <div className="social-buttons-grid">
+                    <SocialButton
+                      icon={<FaFacebookF />}
+                      label="Facebook"
+                      color="#1877F2"
+                      onClick={() => handleSocialLogin("Facebook")}
+                    />
+                    <SocialButton
+                      icon={<FaGoogle />}
+                      label="Google"
+                      color="#EA4335"
+                      onClick={() => handleSocialLogin("Google")}
+                    />
+                    <SocialButton
+                      icon={<FaTwitter />}
+                      label="Twitter"
+                      color="#1DA1F2"
+                      onClick={() => handleSocialLogin("Twitter")}
+                    />
+                    <SocialButton
+                      icon={<FaGithub />}
+                      label="Github"
+                      color="#333333"
+                      onClick={() => handleSocialLogin("Github")}
+                    />
+                  </div>
+                </div>
+                {renderFormFooter()}
+              </form>
+            </motion.div>
+          </AnimatePresence>
+        ),
+      },
+      {
+        key: "register",
+        label: "ĐĂNG KÝ",
+        children: (
+          <motion.div
+            key="register-form"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <EnhancedRegisterForm
+              onLoginClick={() => handleTabChange("login")}
+            />
+          </motion.div>
+        ),
+      },
+    ];
+  };
 
   return (
     <div className="login-wrapper">
@@ -252,135 +390,8 @@ const LoginForm = () => {
             activeKey={activeTab}
             onChange={handleTabChange}
             centered
-            className="auth-tabs"
-            items={[
-              {
-                key: "login",
-                label: "ĐĂNG NHẬP",
-                children: (
-                  <AnimatePresence mode="wait">
-                    {showForgotPassword ? (
-                      <ForgotPasswordForm
-                        forgotPasswordEmail={forgotPasswordEmail}
-                        setForgotPasswordEmail={setForgotPasswordEmail}
-                        handleForgotPassword={handleForgotPassword}
-                        onCancel={() => setShowForgotPassword(false)}
-                      />
-                    ) : (
-                      <motion.div
-                        key="login-form"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <form onSubmit={handleSubmit} className="login-form">
-                          <InputField
-                            icon={<FiUser />}
-                            type="text"
-                            name="id"
-                            placeholder="Email hoặc ID đăng nhập"
-                            value={formData.id}
-                            onChange={handleChange}
-                            error={errors.id}
-                          />
-                          <InputField
-                            icon={<FiLock />}
-                            type={showPassword ? "text" : "password"}
-                            name="password"
-                            placeholder="Mật khẩu"
-                            value={formData.password}
-                            onChange={handleChange}
-                            error={errors.password}
-                            endIcon={
-                              <button
-                                type="button"
-                                className="visibility-toggle"
-                                onClick={() => setShowPassword(!showPassword)}
-                              >
-                                {showPassword ? <FiEyeOff /> : <FiEye />}
-                              </button>
-                            }
-                          />
-                          <div className="form-options">
-                            <CustomCheckbox
-                              checked={formData.remember}
-                              onChange={(e) => handleChange(e)}
-                              name="remember"
-                              label="Ghi nhớ đăng nhập"
-                            />
-                            <Link
-                              to="#"
-                              className="forgot-link"
-                              onClick={() => setShowForgotPassword(true)}
-                            >
-                              Quên mật khẩu?
-                            </Link>
-                          </div>
-                          <motion.button
-                            type="submit"
-                            className="submit-button"
-                            disabled={loading}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            {loading ? "ĐANG ĐĂNG NHẬP..." : "ĐĂNG NHẬP"}
-                          </motion.button>
-                          <div className="social-login">
-                            <Divider className="social-divider">
-                              <span>Hoặc đăng nhập với</span>
-                            </Divider>
-                            <div className="social-buttons-grid">
-                              <SocialButton
-                                icon={<FaFacebookF />}
-                                label="Facebook"
-                                color="#1877F2"
-                                onClick={() => handleSocialLogin("Facebook")}
-                              />
-                              <SocialButton
-                                icon={<FaGoogle />}
-                                label="Google"
-                                color="#EA4335"
-                                onClick={() => handleSocialLogin("Google")}
-                              />
-                              <SocialButton
-                                icon={<FaTwitter />}
-                                label="Twitter"
-                                color="#1DA1F2"
-                                onClick={() => handleSocialLogin("Twitter")}
-                              />
-                              <SocialButton
-                                icon={<FaGithub />}
-                                label="Github"
-                                color="#333333"
-                                onClick={() => handleSocialLogin("Github")}
-                              />
-                            </div>
-                          </div>
-                          {renderFormFooter()}
-                        </form>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                ),
-              },
-              {
-                key: "register",
-                label: "ĐĂNG KÝ",
-                children: (
-                  <motion.div
-                    key="register-form"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <EnhancedRegisterForm
-                      onLoginClick={() => handleTabChange("login")}
-                    />
-                  </motion.div>
-                ),
-              },
-            ]}
+            className={`auth-tabs ${showForgotPassword ? 'forgot-password-mode' : ''}`}
+            items={generateTabItems()}
           />
         </motion.div>
       </motion.div>
@@ -946,45 +957,161 @@ const ForgotPasswordForm = ({
   setForgotPasswordEmail,
   handleForgotPassword,
   onCancel,
-}) => (
-  <motion.div
-    key="forgot-password"
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -10 }}
-    transition={{ duration: 0.3 }}
-    className="forgot-password-form"
-  >
-    <h3>Quên mật khẩu</h3>
-    <p>Vui lòng nhập email của bạn để nhận link đặt lại mật khẩu.</p>
-    <form onSubmit={handleForgotPassword}>
-      <InputField
-        icon={<FiMail />}
-        type="email"
-        placeholder="Email của bạn"
-        value={forgotPasswordEmail}
-        onChange={(e) => setForgotPasswordEmail(e.target.value)}
-      />
-      <div className="button-group">
-        <motion.button
-          type="button"
-          className="cancel-button"
-          onClick={onCancel}
-          whileTap={{ scale: 0.98 }}
-        >
-          Hủy
-        </motion.button>
-        <motion.button
-          type="submit"
-          className="submit-button"
-          whileTap={{ scale: 0.98 }}
-        >
-          Gửi
-        </motion.button>
-      </div>
-    </form>
-  </motion.div>
-);
+}) => {
+  const [otpSent, setOtpSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!forgotPasswordEmail || !forgotPasswordEmail.trim()) {
+      message.error("Vui lòng nhập email của bạn!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authApi.sendOtpEmail({ email: forgotPasswordEmail.trim() });
+      message.success("Mã OTP đã được gửi đến email của bạn!");
+      setOtpSent(true);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Không thể gửi OTP. Vui lòng thử lại sau.";
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    
+    if (!otp || !otp.trim()) {
+      message.error("Vui lòng nhập mã OTP!");
+      return;
+    }
+    
+    if (!newPassword || newPassword.length < 6) {
+      message.error("Mật khẩu mới phải có ít nhất 6 ký tự!");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      message.error("Mật khẩu xác nhận không khớp!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authApi.resetPassword({
+        code: otp.trim(),
+        newPassword: newPassword
+      });
+      message.success("Đặt lại mật khẩu thành công! Bạn có thể đăng nhập với mật khẩu mới.");
+      onCancel(); // Return to login form
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Đặt lại mật khẩu thất bại. Vui lòng thử lại!";
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      key="forgot-password"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3 }}
+      className="forgot-password-form"
+    >
+      {!otpSent ? (
+        <>
+          <p className="form-description">Vui lòng nhập email của bạn để nhận mã OTP đặt lại mật khẩu.</p>
+          <form onSubmit={handleSendOtp} className="password-reset-form">
+            <InputField
+              icon={<FiMail />}
+              type="email"
+              placeholder="Email của bạn"
+              value={forgotPasswordEmail}
+              onChange={(e) => setForgotPasswordEmail(e.target.value)}
+            />
+            <div className="button-group">
+              <motion.button
+                type="button"
+                className="cancel-button"
+                onClick={onCancel}
+                whileTap={{ scale: 0.98 }}
+              >
+                Hủy
+              </motion.button>
+              <motion.button
+                type="submit"
+                className={`submit-button ${loading ? 'loading' : ''}`}
+                whileTap={{ scale: 0.98 }}
+                disabled={loading}
+              >
+                {loading && <span className="button-spinner"></span>}
+                {loading ? "Đang gửi..." : "Gửi OTP"}
+              </motion.button>
+            </div>
+          </form>
+        </>
+      ) : (
+        <>
+          <p className="form-description">Vui lòng nhập mã OTP đã được gửi đến email của bạn và tạo mật khẩu mới.</p>
+          <form onSubmit={handleResetPassword} className="password-reset-form">
+            <InputField
+              icon={<FiInfo />}
+              type="text"
+              placeholder="Nhập mã OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              maxLength={6}
+            />
+            <InputField
+              icon={<FiLock />}
+              type="password"
+              placeholder="Mật khẩu mới"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <InputField
+              icon={<FiLock />}
+              type="password"
+              placeholder="Xác nhận mật khẩu mới"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <div className="button-group">
+              <motion.button
+                type="button"
+                className="back-button"
+                onClick={() => setOtpSent(false)}
+                whileTap={{ scale: 0.98 }}
+                disabled={loading}
+              >
+                Quay lại
+              </motion.button>
+              <motion.button
+                type="submit"
+                className={`submit-button ${loading ? 'loading' : ''}`}
+                whileTap={{ scale: 0.98 }}
+                disabled={loading}
+              >
+                {loading && <span className="button-spinner"></span>}
+                {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
+              </motion.button>
+            </div>
+          </form>
+        </>
+      )}
+    </motion.div>
+  );
+};
 
 const CustomCheckbox = ({ label, ...props }) => (
   <label className="custom-checkbox">

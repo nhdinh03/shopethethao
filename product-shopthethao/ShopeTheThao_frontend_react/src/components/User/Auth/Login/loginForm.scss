@@ -852,15 +852,15 @@ $border-color: #E2E8F0;
     margin: 1.5rem 0;
     
     .back-button {
-      flex: 1;
       padding: 1rem;
-      background: #F1F5F9;
-      color: $text-primary;
-      border: 1px solid $border-color;
+      background: #0080ff;
+      color: white;
+      border: none;
       border-radius: 0.5rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: background-color 0.2s;
+      margin: 1.5rem 0;
       
       &:hover {
         background: #E2E8F0;
@@ -924,7 +924,8 @@ $border-color: #E2E8F0;
     
     .ant-radio-group {
       display: flex;
-      gap: 1.5rem;
+      flex-direction: row; // Explicitly set to row to ensure horizontal layout
+      justify-content: space-between; // Distribute space evenly
       width: 100%;
       margin-top: 0.5rem;
     }
@@ -934,12 +935,29 @@ $border-color: #E2E8F0;
       align-items: center;
       gap: 0.5rem;
       font-size: 0.9rem;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1rem;
       border: 1px solid $border-color;
       border-radius: 0.5rem;
       transition: all 0.2s ease;
+      flex: 1; // Make each option take equal space
+      justify-content: center; // Center content horizontally
+      margin: 0 0.25rem; // Add some spacing between options
+      
+      &:first-child {
+        margin-left: 0;
+      }
+      
+      &:last-child {
+        margin-right: 0;
+      }
       
       &:hover {
+        border-color: $primary-color;
+        background-color: rgba($primary-color, 0.02);
+      }
+      
+      &.ant-radio-wrapper-checked {
+        background: rgba($primary-color, 0.05);
         border-color: $primary-color;
       }
       
@@ -957,6 +975,10 @@ $border-color: #E2E8F0;
         
         &.female {
           color: #EC4899;
+        }
+        
+        &.other {
+          color: #8B5CF6;
         }
       }
     }
@@ -1185,11 +1207,170 @@ $border-color: #E2E8F0;
       }
     }
     
+    // Modify gender select for mobile to maintain horizontal layout
     .gender-select {
       .ant-radio-group {
-        flex-direction: column;
-        gap: 0.75rem;
+        flex-direction: row; // Keep row direction for mobile
+        flex-wrap: wrap; // Allow wrapping if needed on very small screens
+        gap: 0.5rem; // Smaller gap for mobile
+      }
+      
+      .gender-option {
+        padding: 0.5rem; // Smaller padding on mobile
+        font-size: 0.8rem; // Smaller font on mobile
+        
+        .gender-icon {
+          font-size: 1rem; // Smaller icons on mobile
+        }
       }
     }
   }
+}
+
+// Forgot Password Styles - Enhanced
+.forgot-password-form {
+  padding: 0.5rem 0 1.5rem;
+  
+  .form-description {
+    font-size: 0.95rem;
+    color: $text-secondary;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    line-height: 1.5;
+  }
+  
+  .password-reset-form {
+    .form-group {
+      margin-bottom: 1.5rem;
+      
+      &:last-of-type {
+        margin-bottom: 2rem;
+      }
+    }
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    
+    .cancel-button, .back-button {
+     
+
+      padding: 1rem;
+      background: #0080ff;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin: 1.5rem 0;
+      
+      &:hover:not(:disabled) {
+        background: #E2E8F0;
+        border-color: #CBD5E1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      }
+      
+      &:active:not(:disabled) {
+        transform: translateY(1px);
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+    
+    .submit-button {
+      flex: 2;
+      position: relative;
+      
+      &.loading {
+        padding-left: 2.5rem;
+        
+        .button-spinner {
+          position: absolute;
+          left: calc(50% - 3.5rem);
+          top: 50%;
+          transform: translateY(-50%);
+          width: 1.2rem;
+          height: 1.2rem;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          border-top-color: #ffffff;
+          animation: spin 0.8s linear infinite;
+          display: inline-block;
+        }
+      }
+    }
+  }
+  
+  // Add subtle animation for form transitions
+  &.fade-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  &.fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  &.fade-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  &.fade-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+}
+
+// Hide register tab when in forgot password mode
+.auth-tabs.forgot-password-mode {
+  .ant-tabs-nav::before {
+    display: none;
+  }
+  
+  .ant-tabs-tab:nth-child(2) {
+    display: none;
+  }
+  
+  .ant-tabs-nav {
+    .ant-tabs-tab {
+      padding: 12px 0;
+      
+      .ant-tabs-tab-btn {
+        color: #1677ff;
+        text-shadow: 0 0 0.25px currentcolor;
+      }
+    }
+  }
+  
+  .forgot-password-form {
+    animation: fadeIn 0.5s ease;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Add loading spinner animation
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
