@@ -60,7 +60,11 @@ const Footer = () => {
       <div className="membership-banner">
         <h2>
           TRỞ THÀNH HỘI VIÊN & HƯỞNG ƯU ĐÃI 15%{" "}
-          <Link to="/register" className="register-btn">
+          <Link
+            to="/v1/auth/login"
+            className="register-btn"
+            state={{ activeTab: "register" }} // Add state to set active tab
+          >
             ĐĂNG KÝ MIỄN PHÍ
           </Link>
         </h2>

@@ -98,7 +98,7 @@ const LoginForm = () => {
 
       if (errorMessage.startsWith("Tài khoản chưa được xác thực:")) {
         message.info(errorMessage.split(":")[1]);
-        navigate("/otp", { state: { id: formData.id.trim() } });
+        navigate("/v1/auth/otp", { state: { id: formData.id.trim() } });
         return;
       }
 
@@ -586,7 +586,7 @@ const EnhancedRegisterForm = ({ onLoginClick }) => {
       message.success(
         "Đăng ký thành công! Kiểm tra email nhập mã để xác nhận tài khoản."
       );
-      navigate("/otp", { state: { id: formData.id } });
+      navigate("/v1/auth/otp", { state: { id: formData.id } });
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại!";

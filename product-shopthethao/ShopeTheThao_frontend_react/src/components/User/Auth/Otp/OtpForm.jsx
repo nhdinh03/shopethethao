@@ -72,7 +72,7 @@ const OtpForm = () => {
       
       localStorage.removeItem('pendingVerification');
       message.success('Xác thực tài khoản thành công!');
-      navigate('/login');
+      navigate('/v1/auth/login');
     } catch (error) {
       message.error(error.response?.data?.message || 'Xác thực thất bại. Vui lòng thử lại!');
     } finally {

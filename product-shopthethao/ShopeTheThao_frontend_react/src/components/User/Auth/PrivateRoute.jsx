@@ -8,10 +8,10 @@ const PrivateRoute = ({ children, requiredPermission }) => {
   const userRoles = JSON.parse(localStorage.getItem('roles') || '[]');
   const isAuthenticated = localStorage.getItem('token');
   const location = useLocation();
-  const isAdminPath = location.pathname.startsWith('/admin');
+  const isAdminPath = location.pathname.startsWith('/dashboard-management-sys');
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/v1/auth/login" />;
   }
 
   // Kiểm tra quyền truy cập đường dẫn admin
