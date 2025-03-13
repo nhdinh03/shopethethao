@@ -543,19 +543,31 @@ public class AuthController {
     // Gửi email quên mật khẩu
     @PutMapping("/forgot-password")
     public ResponseEntity<?> sendForgotPasswordEmail(@RequestBody NewOtp newOtp) {
+        // Validate email format
+        if (newOtp.getEmail() == null || newOtp.getEmail().isEmpty()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Email không được để trống"));
+        }
+        
+        // Check if email exists
         Optional<Account> userOpt = accountDAO.findByEmail(newOtp.getEmail());
         if (!userOpt.isPresent()) {
-            return ResponseEntity.ok(new MessageResponse("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                   .body(new MessageResponse("Email không tồn tại trong hệ thống"));
         }
+        
         Account user = userOpt.get();
         String code = otpUtil.generateOtp(); // Tạo OTP mới
+        
+        // Find existing verification or create new one
         Verifications verification = verificationDAO.findByAccountId(user.getId())
                 .stream()
                 .findFirst()
                 .orElse(new Verifications());
+                
         verification.setAccountId(user.getId());
         verification.setCode(code);
         verification.setCreatedAt(LocalDateTime.now());
+        verification.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         verification.setActive(true);
         verificationDAO.save(verification); // Lưu OTP vào cơ sở dữ liệu
 
@@ -566,7 +578,7 @@ public class AuthController {
                     .body(new MessageResponse("Không thể gửi email. Vui lòng thử lại sau."));
         }
 
-        return ResponseEntity.ok(new MessageResponse("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi."));
+        return ResponseEntity.ok(new MessageResponse("Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư."));
     }
 
     @PutMapping("/reset-password")
