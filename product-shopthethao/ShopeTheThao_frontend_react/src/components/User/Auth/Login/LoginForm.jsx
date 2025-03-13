@@ -38,7 +38,7 @@ const LoginForm = () => {
     password: "",
   });
   const [activeTab, setActiveTab] = useState(
-    location.pathname === "/register" ? "register" : "login"
+    location.state?.activeTab || "login" // Get initial tab from location state
   );
   const [formData, setFormData] = useState({
     id: "",
@@ -170,20 +170,23 @@ const LoginForm = () => {
     }
   }, [location.state]);
 
-  // Update tab when URL changes
-  useEffect(() => {
-    if (location.pathname === "/register") {
-      setActiveTab("register");
-    } else if (location.pathname === "/login") {
-      setActiveTab("login");
-    }
-  }, [location.pathname]);
-
   // Update URL when tab changes
   const handleTabChange = (key) => {
     setActiveTab(key);
-    navigate(key === "register" ? "/register" : "/login", { replace: true });
   };
+
+  const renderFormFooter = () => (
+    <div className="form-footer">
+      <p>{activeTab === "login" ? "Không có tài khoản?" : "Đã có tài khoản?"}</p>
+      <button
+        className="switch-auth-mode"
+        onClick={() => handleTabChange(activeTab === "login" ? "register" : "login")}
+      >
+        {activeTab === "login" ? "Đăng ký ngay" : "Đăng nhập ngay"}
+        <FiArrowRight className="arrow-icon" />
+      </button>
+    </div>
+  );
 
   return (
     <div className="login-wrapper">
@@ -343,17 +346,7 @@ const LoginForm = () => {
                             </div>
                           </div>
 
-                          <div className="form-footer">
-                            <p>Không có tài khoản?</p>
-                            <Link
-                              to="/register"
-                              className="register-link"
-                              onClick={() => handleTabChange("register")}
-                            >
-                              Đăng ký ngay
-                              <FiArrowRight className="arrow-icon" />
-                            </Link>
-                          </div>
+                          {renderFormFooter()}
                         </form>
                       </motion.div>
                     )}

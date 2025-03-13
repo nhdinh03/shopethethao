@@ -45,11 +45,6 @@ export const publicRoutes = [
     component: PageUser.LoginForm,
     layout: LayoutPageDefault,
   },
-  {
-    path: "/register",
-    component: PageUser.LoginForm,
-    layout: LayoutPageDefault,
-  },
   { 
     path: "/otp", 
     component: PageUser.OtpForm, 

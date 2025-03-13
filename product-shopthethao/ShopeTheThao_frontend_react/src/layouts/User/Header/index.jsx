@@ -698,8 +698,9 @@ const Header = () => {
           Đăng nhập
         </Link>
         <Link 
-          to="/register" 
+          to="/login" 
           className="btn-register"
+          state={{ activeTab: "register" }} // Add state to set active tab
         >
           Đăng ký
         </Link>
@@ -1151,8 +1152,9 @@ const Header = () => {
                     Đăng nhập
                   </Link>
                   <Link
-                    to="/register"
+                    to="/login"
                     className="mobile-btn accent"
+                    state={{ activeTab: "register" }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Đăng ký
