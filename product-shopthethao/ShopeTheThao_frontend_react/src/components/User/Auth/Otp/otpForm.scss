@@ -1,0 +1,138 @@
+.otp-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  
+  .otp-form-wrapper {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+
+      h2 {
+        color: #2c3e50;
+        margin-bottom: 0.8rem;
+        font-size: 2rem;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+      }
+
+      p {
+        color: #7f8c8d;
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 1rem;
+      background: linear-gradient(to right, #f8f9fa, #e9ecef);
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e1e8ed;
+
+      .icon {
+        color: #5c7cfa;
+        font-size: 1.2rem;
+      }
+
+      span {
+        color: #495057;
+        font-weight: 500;
+      }
+    }
+
+    .input-icon {
+      color: #5c7cfa;
+    }
+
+    .otp-form {
+      .ant-form-item {
+        margin-bottom: 1.8rem;
+
+        .ant-input {
+          height: 45px;
+          border-radius: 8px;
+          border: 2px solid #e1e8ed;
+          transition: all 0.3s ease;
+
+          &:hover, &:focus {
+            border-color: #5c7cfa;
+            box-shadow: 0 0 0 2px rgba(92, 124, 250, 0.1);
+          }
+        }
+      }
+    }
+
+    .resend-container {
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 1.8rem;
+      
+      .email-input {
+        flex: 1;
+        height: 45px;
+        border-radius: 8px;
+      }
+      
+      .resend-button {
+        height: 45px;
+        border-radius: 8px;
+        background: #5c7cfa;
+        color: white;
+        border: none;
+        padding: 0 1.5rem;
+        transition: all 0.3s ease;
+        
+        &:hover:not(:disabled) {
+          background: #4c6ef5;
+          transform: translateY(-2px);
+        }
+
+        &:disabled {
+          background: #dee2e6;
+          color: #868e96;
+        }
+      }
+    }
+
+    .form-actions {
+      .verify-button {
+        height: 45px;
+        border-radius: 8px;
+        background: #5c7cfa;
+        font-weight: 500;
+        font-size: 1rem;
+        border: none;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: #4c6ef5;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(92, 124, 250, 0.2);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+}

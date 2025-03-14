@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   message,
   Button,
@@ -6,117 +6,132 @@ import {
   Row,
   Select,
   Tag,
-  Space,
   Tooltip,
+  Space,
   Popconfirm,
   Alert,
 } from "antd";
 import {
-  PlusOutlined,
-  PhoneOutlined,
-  EnvironmentOutlined,
-  EditOutlined,
   DeleteOutlined,
-  LockOutlined,
+  EditOutlined,
+  EnvironmentOutlined,
   EyeOutlined,
+  LockOutlined,
+  PhoneOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 import { accountsstaffApi, lockreasonsApi } from "api/Admin";
 import "./accountsStaff.scss";
 import uploadApi from "api/service/uploadApi";
 import dayjs from "dayjs";
 import AccountStaffModal from "components/Admin/AccountStaff/AccountStaffModal";
 import AccountStaffTabs from "components/Admin/AccountStaff/AccountStaffTabs";
+import ErrorBoundary from "antd/es/alert/ErrorBoundary";
 
 const AccountStaff = () => {
-  const [totalItems, setTotalItems] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
-  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
+  const [pagination, setPagination] = useState({
+    totalItems: 0,
+    currentPage: 1,
+    pageSize: 5,
+  });
 
-  const [accountsStaff, setAccountsStaff] = useState([]);
-  const [open, setOpen] = useState(false);
-  const [editUser, setEditUser] = useState(null);
-  const [refresh, setRefresh] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [staffState, setStaffState] = useState({
+    accountsStaff: [],
+    lockedUser: [],
+    loading: false,
+    refresh: false,
+  });
+
+  const [modalState, setModalState] = useState({
+    open: false,
+    editUser: null,
+    FileList: [],
+    statusChecked: false,
+    isStatusEditable: false,
+    showLockReason: true,
+  });
+
   const [form] = Form.useForm();
-  const [workSomeThing, setWorkSomeThing] = useState(false);
-  const [FileList, setFileList] = useState([]);
-  const [lockedUser, setLockedUser] = useState([]);
-  const [statusChecked, setStatusChecked] = useState(editUser?.status === 1);
-  const [isStatusEditable, setIsStatusEditable] = useState(false);
-  const [showLockReason, setShowLockReason] = useState(true);
+
+  const totalPages = useMemo(() => {
+    return pagination.totalItems > 0
+      ? Math.ceil(pagination.totalItems / pagination.pageSize)
+      : 1;
+  }, [pagination.totalItems, pagination.pageSize]);
+
+  const fetchStaffData = useCallback(async () => {
+    setStaffState((prev) => ({ ...prev, loading: true }));
+    try {
+      const res = await accountsstaffApi.getByPage(
+        pagination.currentPage,
+        pagination.pageSize
+      );
+
+      if (res.data && Array.isArray(res.data)) {
+        setStaffState((prev) => ({
+          ...prev,
+          accountsStaff: res.data.filter((staff) => staff.status === 1),
+          lockedUser: res.data.filter((staff) => staff.status === 0),
+          loading: false,
+        }));
+        setPagination((prev) => ({
+          ...prev,
+          totalItems: res.totalItems,
+        }));
+      }
+    } catch (error) {
+      message.error("Không thể lấy danh sách nhân viên!");
+      setStaffState((prev) => ({ ...prev, loading: false }));
+    }
+  }, [pagination.currentPage, pagination.pageSize]);
 
   useEffect(() => {
-    let isMounted = true;
-    const getList = async () => {
-      setLoading(true);
+    fetchStaffData();
+  }, [fetchStaffData, staffState.refresh]);
+
+  const handleCancel = useCallback(() => {
+    setModalState((prev) => ({
+      ...prev,
+      open: false,
+      editUser: null,
+      FileList: [],
+      statusChecked: false,
+      isStatusEditable: false,
+      showLockReason: true,
+    }));
+    form.resetFields();
+  }, [form]);
+
+  const handleStatusChange = useCallback(
+    async (lockReasonId) => {
       try {
-        const res = await accountsstaffApi.getByPage(currentPage, pageSize);
+        // Delete lock reason
+        await lockreasonsApi.delete(lockReasonId);
 
-        if (isMounted) {
-          if (res.data && Array.isArray(res.data)) {
-            setAccountsStaff(res.data);
-            setTotalItems(res.totalItems);
-            const lockedAccounts = res.data.filter(
-              (staff) => staff.status === 0
-            );
-            setAccountsStaff(res.data.filter((staff) => staff.status === 1));
-            setLockedUser(lockedAccounts);
-          } else {
-            message.error("Dữ liệu không hợp lệ từ API!");
-          }
-          setLoading(false);
-        }
+        // Update modal state but don't submit changes automatically
+        setModalState((prev) => ({
+          ...prev,
+          showLockReason: false,
+          statusChecked: true,
+        }));
+
+        // Set form status to active
+        form.setFieldsValue({ status: true });
+
+        message.success(
+          "Xóa lý do khóa thành công! Vui lòng bấm cập nhật để lưu thay đổi."
+        );
       } catch (error) {
-        message.error("Không thể lấy danh sách nhân viên. Vui lòng thử lại!");
-        setLoading(false);
+        console.error("Error deleting lock reason:", error);
+        message.error("Không thể xóa lý do khóa!");
       }
-    };
-    getList();
-    return () => {
-      isMounted = false;
-    };
-  }, [currentPage, pageSize, refresh, workSomeThing]);
-
-  const handleStatusChange = async (lockReasonId) => {
-    try {
-      // Call the API to delete the lock reason
-      await lockreasonsApi.delete(lockReasonId);
-      message.success("Xóa lý do khóa thành công!");
-
-      // Set the status to active and hide the lock reason
-      setEditUser((prevUser) => ({
-        ...prevUser,
-        status: 1, // Mark as active
-        lockReasons: [], // Remove lock reason
-      }));
-      setShowLockReason(false); // Hide the lock reason field
-      setStatusChecked(true); // Set status to active
-    } catch (error) {
-      console.error("Có lỗi khi xóa lý do khóa:", error);
-      message.error("Không thể xóa lý do khóa, vui lòng thử lại!");
-    }
-  };
-
-  const handleCancel = () => {
-    setOpen(false);
-    handleResetForm();
-    setOpen(false);
-    form.resetFields();
-    setFileList([]);
-    setTimeout(() => {
-      form.setFieldsValue({ sizes: [] });
-    }, 0);
-  };
-
-  const handleResetForm = () => {
-    form.resetFields();
-    setEditUser(null);
-  };
+    },
+    [form]
+  );
 
   const handleChange = async ({ fileList }) => {
-    setFileList(fileList);
+    setModalState((prev) => ({ ...prev, FileList: fileList }));
 
     if (fileList.length > 0) {
       const file = fileList[0].originFileObj || fileList[0];
@@ -124,21 +139,27 @@ const AccountStaff = () => {
       const uploadedImage = await uploadApi.post(file);
 
       if (uploadedImage) {
-        setFileList([
-          {
-            uid: file.uid,
-            name: file.name,
-            url: `http://localhost:8081/api/upload/${uploadedImage}`,
-          },
-        ]);
+        setModalState((prev) => ({
+          ...prev,
+          FileList: [
+            {
+              uid: file.uid,
+              name: file.name,
+              url: `http://localhost:8081/api/upload/${uploadedImage}`,
+            },
+          ],
+        }));
       }
     }
   };
 
   const handleStatus = (e) => {
     const isChecked = e.target.checked;
-    setStatusChecked(isChecked); // Cập nhật trạng thái khi người dùng chọn hoặc bỏ chọn checkbox
-    setShowLockReason(!isChecked); // Nếu "Đang hoạt động" (status 1), ẩn lý do khóa, ngược lại thì hiển thị
+    setModalState((prev) => ({
+      ...prev,
+      statusChecked: isChecked,
+      showLockReason: !isChecked,
+    }));
   };
 
   const onPreview = async (file) => {
@@ -157,10 +178,22 @@ const AccountStaff = () => {
   };
 
   const handleEditData = (record) => {
-    setEditUser(record);
-    setOpen(true);
-
-    setIsStatusEditable(true);
+    setModalState((prev) => ({
+      ...prev,
+      editUser: record,
+      open: true,
+      isStatusEditable: true,
+      statusChecked: record.status === 1,
+      FileList: record.image
+        ? [
+            {
+              uid: record.id.toString(),
+              name: record.image,
+              url: `http://localhost:8081/api/upload/${record.image}`,
+            },
+          ]
+        : [],
+    }));
 
     form.setFieldsValue({
       ...record,
@@ -170,75 +203,88 @@ const AccountStaff = () => {
       verified: record.verified || false,
       lockReasons: record.lockReasons?.[0]?.reason || "",
     });
-
-    setStatusChecked(record.status === 1);
-    const newUploadFile = record.image
-      ? [
-          {
-            uid: record.id.toString(),
-            name: record.image,
-            url: `http://localhost:8081/api/upload/${record.image}`,
-          },
-        ]
-      : [];
-    setFileList(newUploadFile);
   };
 
   const handleDelete = async (id) => {
     try {
       await accountsstaffApi.delete(id);
       message.success("Xóa tài khoản thành công!");
-      setRefresh(!refresh);
-      setWorkSomeThing(!workSomeThing);
+      setStaffState((prev) => ({ ...prev, refresh: !prev.refresh }));
     } catch (error) {
       message.error("Không thể xóa tài khoản!");
     }
   };
 
   const handlePageSizeChange = (value) => {
-    setPageSize(value);
-    setCurrentPage(1);
+    setPagination((prev) => ({
+      ...prev,
+      pageSize: value,
+      currentPage: 1,
+    }));
+  };
+
+  const validateStaffData = (values) => {
+    if (!values.id || !values.fullname || !values.phone || !values.email) {
+      throw new Error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+    }
+    if (!/^[0-9]{10}$/.test(values.phone)) {
+      throw new Error("Số điện thoại không hợp lệ!");
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+      throw new Error("Email không hợp lệ!");
+    }
+    return true;
   };
 
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
+      validateStaffData(values);
 
-      let image = FileList.length > 0 ? FileList[0].url.split("/").pop() : null;
-
-      const newStaffData = {
+      const staffData = {
         ...values,
-        image: image,
-        birthday: values.birthday ? values.birthday.format("YYYY-MM-DD") : null,
-        role: ["STAFF"], // Set default role as STAFF
-        status: statusChecked ? 1 : 0,
+        image: modalState.FileList[0]?.url?.split("/").pop() || null,
+        birthday: values.birthday?.isValid()
+          ? values.birthday.format("YYYY-MM-DD")
+          : null,
+        role: ["STAFF"],
+        status: modalState.statusChecked ? 1 : 0,
         lockReasons:
-          showLockReason && !statusChecked && values.lockReasons
+          modalState.showLockReason &&
+          !modalState.statusChecked &&
+          values.lockReasons
             ? [{ reason: values.lockReasons }]
             : [],
       };
 
       let res;
-      if (editUser) {
-        res = await accountsstaffApi.update(editUser.id, newStaffData);
-        message.success("Cập nhật nhân viên thành công!");
-      } else {
-        res = await accountsstaffApi.create(newStaffData);
-        message.success("Thêm nhân viên thành công!");
-      }
+      try {
+        if (modalState.editUser) {
+          res = await accountsstaffApi.update(
+            modalState.editUser.id,
+            staffData
+          );
+        } else {
+          res = await accountsstaffApi.create(staffData);
+        }
 
-      if (res.status === 200) {
-        setOpen(false);
-        form.resetFields();
-        setFileList([]);
-        setRefresh((prev) => !prev);
-        setWorkSomeThing(!workSomeThing);
-      } else {
-        throw new Error(`Lỗi API: ${res.statusText}`);
+        if (res.status === 200) {
+          message.success(
+            `${modalState.editUser ? "Cập nhật" : "Thêm"} nhân viên thành công!`
+          );
+          handleCancel();
+          setStaffState((prev) => ({ ...prev, refresh: !prev.refresh }));
+        }
+      } catch (error) {
+        if (error.response?.status === 500) {
+          message.error("Lỗi máy chủ! Vui lòng thử lại sau.");
+        } else {
+          message.error(error.response?.data?.message || "Có lỗi xảy ra!");
+        }
       }
     } catch (error) {
-      console.error("🚨 Lỗi khi thêm/cập nhật nhân viên:", error);
-      message.error(error.message || "Không thể thêm/cập nhật nhân viên!");
+      console.error("Form validation error:", error);
+      message.error(error.message || "Vui lòng kiểm tra lại thông tin!");
     }
   };
 
@@ -434,88 +480,94 @@ const AccountStaff = () => {
     {
       title: "Hành động",
       fixed: "right",
-      width: 100,
+      width: 150,
       render: (_, record) => (
-        <Button
-          type="primary"
-          icon={<EyeOutlined />}
-          onClick={() => handleEditData(record)}
-          size="small"
-        >
-          Chi tiết
-        </Button>
+        <Space size="middle">
+          <Button
+            type="primary"
+            icon={<EyeOutlined />}
+            onClick={() => handleEditData(record)}
+            size="small"
+          >
+            Chi tiết
+          </Button>
+        </Space>
       ),
     },
   ];
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <Row
-        justify="space-between"
-        align="middle"
-        style={{ marginBottom: "20px" }}
-      >
-        <h2>Quản lý nhân viên</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setOpen(true)}
-          className="add-btn"
+    <ErrorBoundary fallback={<div>Đã xảy ra lỗi. Vui lòng thử lại.</div>}>
+      <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: "20px" }}
         >
-          Thêm nhân viên
-        </Button>
-      </Row>
+          <h2>Quản lý nhân viên</h2>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setModalState((prev) => ({ ...prev, open: true }))}
+            className="add-btn"
+          >
+            Thêm nhân viên
+          </Button>
+        </Row>
 
-      <AccountStaffModal
-        open={open}
-        editUser={editUser}
-        form={form}
-        FileList={FileList}
-        statusChecked={statusChecked}
-        isStatusEditable={isStatusEditable}
-        handleCancel={handleCancel}
-        handleChange={handleChange}
-        onPreview={onPreview}
-        handleStatus={handleStatus}
-        handleStatusChange={handleStatusChange}
-        handleResetForm={handleResetForm}
-        handleModalOk={handleModalOk}
-      />
-
-      <AccountStaffTabs
-        loading={loading}
-        staffList={accountsStaff}
-        lockedStaff={lockedUser}
-        columns={columns}
-        lockedColumns={lockedColumns}
-      />
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: "10px",
-          gap: "10px",
-        }}
-      >
-        <PaginationComponent
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
+        <AccountStaffModal
+          open={modalState.open}
+          editUser={modalState.editUser}
+          form={form}
+          FileList={modalState.FileList}
+          statusChecked={modalState.statusChecked}
+          isStatusEditable={modalState.isStatusEditable}
+          handleCancel={handleCancel}
+          handleChange={handleChange}
+          onPreview={onPreview}
+          handleStatus={handleStatus}
+          handleStatusChange={handleStatusChange}
+          handleResetForm={handleCancel}
+          handleModalOk={handleModalOk}
         />
-        <Select
-          value={pageSize}
-          style={{ width: 120, marginTop: 20 }}
-          onChange={handlePageSizeChange}
+
+        <AccountStaffTabs
+          loading={staffState.loading}
+          staffList={staffState.accountsStaff}
+          lockedStaff={staffState.lockedUser}
+          columns={columns}
+          lockedColumns={lockedColumns}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "10px",
+            gap: "10px",
+          }}
         >
-          <Select.Option value={5}>5 hàng</Select.Option>
-          <Select.Option value={10}>10 hàng</Select.Option>
-          <Select.Option value={20}>20 hàng</Select.Option>
-        </Select>
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={pagination.currentPage}
+            setCurrentPage={(page) =>
+              setPagination((prev) => ({ ...prev, currentPage: page }))
+            }
+          />
+          <Select
+            value={pagination.pageSize}
+            style={{ width: 120, marginTop: 20 }}
+            onChange={handlePageSizeChange}
+          >
+            <Select.Option value={5}>5 hàng</Select.Option>
+            <Select.Option value={10}>10 hàng</Select.Option>
+            <Select.Option value={20}>20 hàng</Select.Option>
+          </Select>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 
-export default AccountStaff;
+export default React.memo(AccountStaff);

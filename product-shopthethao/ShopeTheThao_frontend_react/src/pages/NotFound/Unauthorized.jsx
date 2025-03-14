@@ -12,7 +12,7 @@ const Unauthorized = () => (
           </>
         }
         extra={
-            <Link to={'/login'} type="">
+            <Link to={'/v1/auth/login'} type="">
                 <Button>Về Đăng nhập</Button>
             </Link>
         }

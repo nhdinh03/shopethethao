@@ -1,14 +1,14 @@
 import { Card } from 'antd';
 import style from './LayoutPageDefault.module.scss';
 import classNames from 'classnames/bind';
-import Bread from 'layouts/Admin/Breadcrumb/Breadcrumb';
+// import Bread from 'layouts/Admin/Breadcrumb/Breadcrumb';
 import { useLocation } from 'react-router-dom';
 
 const cx = classNames.bind(style);
 
 function LayoutPageDefault({ children, path = '' }) {
       const location = useLocation();
-      const isHomePage = location.pathname === '/admin/index'; 
+      const isHomePage = location.pathname === '/dashboard-management-sys/portal'; 
     return (
         <>
             {/* <Card bordered={false} className={cx('card-Breadcrumb')}>

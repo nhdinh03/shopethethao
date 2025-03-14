@@ -1,47 +1,47 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Table, Tabs } from 'antd';
 
-const AccountStaffTabs = ({
+const AccountStaffTabs = memo(({
   loading,
-  staffList,
-  lockedStaff,
+  staffList = [],
+  lockedStaff = [],
   columns,
   lockedColumns
 }) => {
-  const items = [
+  const items = useMemo(() => [
     {
       key: '1',
-      label: `Nhân viên đang hoạt động (${staffList?.length || 0})`,
+      label: `Nhân viên đang hoạt động (${staffList.length})`,
       children: (
         <Table
           pagination={false}
           columns={columns}
           loading={loading}
-          dataSource={staffList.map((staff, index) => ({
+          dataSource={staffList.map(staff => ({
             ...staff,
-            key: staff.id || `active-${index}`,
+            key: staff.id || `active-${staff.email}`,
           }))}
           scroll={{ x: "max-content" }}
         />
       )
     },
     {
-      key: '2',
-      label: `Nhân viên bị khóa (${lockedStaff?.length || 0})`,
+      key: '2', 
+      label: `Nhân viên bị khóa (${lockedStaff.length})`,
       children: (
         <Table
           pagination={false}
           columns={lockedColumns}
           loading={loading}
-          dataSource={lockedStaff.map((staff, index) => ({
+          dataSource={lockedStaff.map(staff => ({
             ...staff,
-            key: staff.id || `locked-${index}`,
+            key: staff.id || `locked-${staff.email}`,
           }))}
           scroll={{ x: "max-content" }}
         />
       )
     }
-  ];
+  ], [staffList, lockedStaff, columns, lockedColumns, loading]);
 
   return (
     <Tabs 
@@ -50,6 +50,8 @@ const AccountStaffTabs = ({
       className="staff-tabs"
     />
   );
-};
+});
+
+AccountStaffTabs.displayName = 'AccountStaffTabs';
 
 export default AccountStaffTabs;

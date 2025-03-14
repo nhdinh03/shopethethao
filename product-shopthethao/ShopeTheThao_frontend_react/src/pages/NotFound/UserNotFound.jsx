@@ -17,7 +17,7 @@ const UserNotFound = () => (
                 <Link to="/">
                     <Button type="primary">Về trang chủ</Button>
                 </Link>
-                <Link to="/login">
+                <Link to="/v1/auth/login">
                     <Button onClick={() => localStorage.clear()}>Đăng nhập lại</Button>
                 </Link>
             </Space>

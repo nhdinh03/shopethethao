@@ -2,6 +2,9 @@ package com.shopethethao.auth.payload.response;
 
 import java.util.List;
 
+import lombok.Data;
+
+@Data
 public class JwtResponse {
     private String token;
     private String tokenId;

@@ -1,0 +1,30 @@
+$breadcrumb-bg: #f5f5f5;
+$link-color: #1890ff;
+$link-hover-color: darken($link-color, 10%);
+
+.breadcrumb-user-container {
+  padding: 1rem;
+
+  &.transparent-bg {
+    background-color: transparent;
+  }
+
+  &.modern {
+    .ant-breadcrumb-link,
+    .ant-breadcrumb-separator {
+      color: #333;
+    }
+  }
+
+  .ant-breadcrumb-link a {
+    color: $link-color;
+
+    &:hover {
+      color: $link-hover-color;
+    }
+  }
+
+  .home-icon {
+    margin-right: 4px;
+  }
+}

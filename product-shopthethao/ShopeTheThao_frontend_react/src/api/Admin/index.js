@@ -16,4 +16,4 @@ export { default as invoicesApi } from './invoices/InvoicesApi';
 
 export { default as userHistoryApi } from './UserHistory/userHistoryApi';
 
-export { default as loginApi } from './Auth/Login';
+export { default as loginApi } from './Auth/auth';

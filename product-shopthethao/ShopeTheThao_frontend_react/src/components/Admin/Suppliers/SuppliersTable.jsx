@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Select } from 'antd';
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 
 const SuppliersTable = ({

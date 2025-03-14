@@ -1,72 +1,51 @@
 import { LogoutOutlined, SearchOutlined, SettingOutlined } from "@ant-design/icons";
 import {
   faGear,
-  faRightFromBracket,
   faUser,
   faTrophy,
-  faSun,
-  faMoon,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   Dropdown,
   Input,
-  Popconfirm,
   Avatar,
   Tooltip,
-  Switch,
+  message,
 } from "antd";
 import img from "assets/Img";
-import { useDarkMode } from "config/DarkModeProvider";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import NotificationDropdown from "components/Admin/Notifications/NotificationDropdown";
-import AuthService from 'services/authService';
+import authApi from "api/Admin/Auth/auth";
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const navigate = useNavigate();
   const [imageUrl, setImageUrl] = useState('');
 
   useEffect(() => {
-    // Use AuthService to get user data from localStorage
-    const userLocalData = AuthService.getUserData().user;
-    // console.log("User data from localStorage:", userLocalData);
-    
+    const userLocalData = authApi.getUserData().user;
     if (userLocalData) {
       setUserData(userLocalData);
-      
-      // Generate and store image URL for debugging
       if (userLocalData.image) {
         const imgUrl = `http://localhost:8081/api/upload/${userLocalData.image}`;
-        // console.log("Generated image URL:", imgUrl);
         setImageUrl(imgUrl);
       }
     }
   }, []);
-
-  // Function to get the image URL, matching the pattern used in Accounts component
   const getImageUrl = (imageName) => {
     if (!imageName) return '';
     const url = `http://localhost:8081/api/upload/${imageName}`;
-    // console.log("Image URL being used:", url);
     return url;
   };
 
   const handleLogout = async () => {
     try {
-      // Use AuthService for logout
-      AuthService.logout();
-      // Navigate to login page
-      navigate('/login');
-      // Optional: Show success message
-      toast.success('Đăng xuất thành công!');
+      authApi.logout();
+      navigate('/v1/auth/login');
+      message.success("Đăng xuất thành công!");
     } catch (error) {
-      console.error('Logout failed:', error);
-      // Optional: Show error message
-      toast.error('Đăng xuất thất bại, vui lòng thử lại!');
+      message.error("Đăng xuất thất bại!");
     }
   };
 
@@ -182,7 +161,7 @@ function HeaderAdminRight() {
     </Dropdown>
 
     {/* Chuyển đổi chế độ sáng/tối */}
-    <Tooltip
+    {/* <Tooltip
       title={isDarkMode ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"}
     >
       <Switch
@@ -192,7 +171,7 @@ function HeaderAdminRight() {
         onChange={toggleDarkMode}
         className="text-lg"
       />
-    </Tooltip>
+    </Tooltip> */}
 
     {/* Biểu tượng thành tích */}
     <Tooltip title="Thành tích">
@@ -201,7 +180,7 @@ function HeaderAdminRight() {
       </span>
     </Tooltip>
 
-    {/* Thông báo - Replaced with the new component */}
+    {/* Thông báo */}
     <NotificationDropdown />
 
     {/* Nút cài đặt */}

@@ -21,7 +21,7 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 import { accountsUserApi, lockreasonsApi } from "api/Admin";
 import "../index.scss";
 import uploadApi from "api/service/uploadApi";
@@ -177,7 +177,6 @@ const Accounts = () => {
     try {
       // Call the API to delete the lock reason
       await lockreasonsApi.delete(lockReasonId);
-      message.success("Xóa lý do khóa thành công!");
 
       // Set the status to active and hide the lock reason
       setEditUser((prevUser) => ({
@@ -187,6 +186,9 @@ const Accounts = () => {
       }));
       setShowLockReason(false); // Hide the lock reason field
       setStatusChecked(true); // Set status to active
+      message.success(
+        "Xóa lý do khóa thành công! Vui lòng bấm cập nhật để lưu thay đổi."
+      );
     } catch (error) {
       console.error("Có lỗi khi xóa lý do khóa:", error);
       message.error("Không thể xóa lý do khóa, vui lòng thử lại!");
@@ -489,7 +491,6 @@ const Accounts = () => {
         lockedUser={lockedUser}
         columns={columns}
         lockedColumns={lockedColumns}
-        
       />
 
       <div

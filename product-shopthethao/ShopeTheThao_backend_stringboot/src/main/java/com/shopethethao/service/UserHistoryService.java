@@ -43,7 +43,7 @@ public class UserHistoryService {
 
     private static final int MAX_HISTORY_ITEMS = 100;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void logUserAction(String userId, UserActionType actionType, String note, String ipAddress,
             String deviceInfo) {
         if (userId == null || userId.trim().isEmpty()) {
@@ -71,10 +71,16 @@ public class UserHistoryService {
             history.setStatus(1);
             history.setReadStatus(0);
 
-            userHistoryDAO.save(history);
-            log.debug("Successfully saved action {} for user {}", actionType, userId);
+            // Save in a try-catch block
+            try {
+                userHistoryDAO.save(history);
+                log.debug("Successfully saved action {} for user {}", actionType, userId);
+            } catch (Exception e) {
+                log.error("Failed to save user history: {}", e.getMessage());
+                throw new RuntimeException("Failed to save user history", e);
+            }
 
-            // Notify clients through SSE with immediate updates
+            // Move notification outside the inner try-catch
             notifyClientsOfActivityChange(actionType);
 
         } catch (Exception e) {
@@ -83,6 +89,7 @@ public class UserHistoryService {
         }
     }
 
+    @Transactional(readOnly = true)
     private void notifyClientsOfActivityChange(UserActionType actionType) {
         // Determine whether this is an auth-related action or admin action
         try {
@@ -100,23 +107,30 @@ public class UserHistoryService {
                 log.debug("Admin activities notification sent");
             }
         } catch (Exception e) {
+            // Log error but don't throw to prevent transaction rollback
             log.error("Error notifying clients of activity change: {}", e.getMessage(), e);
         }
     }
 
+    @Transactional(readOnly = true)
     public List<UserHistoryDTO> getLatestAuthActivities() {
-        Pageable pageable = PageRequest.of(0, MAX_HISTORY_ITEMS, Sort.by(Sort.Direction.DESC, "historyDateTime"));
-        return userHistoryDAO.findByActionTypeIn(Arrays.asList(
-                UserActionType.LOGIN,
-                UserActionType.LOGOUT,
-                UserActionType.LOGIN_FAILED,
-                UserActionType.RELOGIN,
-                UserActionType.SIGNUP,
-                UserActionType.CREATEACCOUNTFAILED), 
-                pageable)
-            .stream()
-            .map(this::convertToDTO)
-            .collect(Collectors.toList());
+        try {
+            Pageable pageable = PageRequest.of(0, MAX_HISTORY_ITEMS, Sort.by(Sort.Direction.DESC, "historyDateTime"));
+            return userHistoryDAO.findByActionTypeIn(Arrays.asList(
+                    UserActionType.LOGIN,
+                    UserActionType.LOGOUT,
+                    UserActionType.LOGIN_FAILED,
+                    UserActionType.RELOGIN,
+                    UserActionType.SIGNUP,
+                    UserActionType.CREATEACCOUNTFAILED), 
+                    pageable)
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error fetching latest auth activities: {}", e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     public List<UserHistoryDTO> getLatestAdminActivities() {
@@ -134,13 +148,7 @@ public class UserHistoryService {
             .collect(Collectors.toList());
     }
 
-    private List<UserHistoryDTO> fetchLatestAuthActivities() {
-        return getLatestAuthActivities();
-    }
 
-    private List<UserHistoryDTO> fetchLatestAdminActivities() {
-        return getLatestAdminActivities();
-    }
 
     public void sendInitialAuthActivitiesToEmitter(SseEmitter emitter) {
         try {

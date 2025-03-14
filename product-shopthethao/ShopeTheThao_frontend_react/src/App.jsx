@@ -1,23 +1,48 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { publicRoutes, privateRoutes } from "./router";
 import LayoutPageDefault from "./layouts/LayoutPageDefault";
-import PrivateRoute from "./components/Auth/PrivateRoute";
 import NotFound from "./pages/NotFound/notFound";
+import { PrivateRoute } from "components/User";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 const App = () => {
   const renderPublicRoutes = (routes) => {
-    return routes.map(({ path, component: Component, layout: Layout }, index) => {
+    return routes.map(({ path, component: Component, layout: Layout, requiresUnverified }, index) => {
       const LayoutWrapper = Layout || LayoutPageDefault;
+      
+      const RouteComponent = () => {
+        // Check authentication for routes that require unverified status
+        if (requiresUnverified) {
+          const token = localStorage.getItem('token');
+          const user = localStorage.getItem('user');
+          
+          if (token && user) {
+            return <Navigate to="/" replace />;
+          }
+        }
+
+        return (
+          <LayoutWrapper>
+            <Component />
+          </LayoutWrapper>
+        );
+      };
+
       return (
         <Route
           key={index}
           path={path}
-          element={
-            <LayoutWrapper>
-              <Component />
-            </LayoutWrapper>
-          }
+          element={<RouteComponent />}
         />
       );
     });
@@ -44,6 +69,7 @@ const App = () => {
 
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {renderPublicRoutes(publicRoutes)}
         {renderPrivateRoutes(privateRoutes)}

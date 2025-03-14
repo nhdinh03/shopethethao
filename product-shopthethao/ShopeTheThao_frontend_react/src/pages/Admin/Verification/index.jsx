@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Table, Row, Select, Card, Input, Col, Statistic, Space, DatePicker } from "antd";
 import { UserOutlined, CheckCircleOutlined, StopOutlined, SearchOutlined } from "@ant-design/icons";
 import { useVerificationsManagement } from "hooks/useVerificationsManagement";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 
 import "../index.scss";
 import { TableColumns } from "components/Admin/Verification/TableColumns";

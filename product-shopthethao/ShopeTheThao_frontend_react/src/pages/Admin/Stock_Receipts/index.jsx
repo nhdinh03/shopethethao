@@ -5,7 +5,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { productsApi, suppliersApi, stock_ReceiptsAPi } from "api/Admin";
 import moment from "moment";
 import "..//index.scss";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 import brandsApi from "api/Admin/Brands/Brands";
 import styles from "..//modalStyles.module.scss";
 import dayjs from "dayjs";

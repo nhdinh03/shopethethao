@@ -1,0 +1,12 @@
+.user-history-page {
+  // ...existing styles...
+  
+  .unread-row {
+    background-color: #fafafa;
+    font-weight: 500;
+    
+    &:hover {
+      background-color: #f0f0f0;
+    }
+  }
+}

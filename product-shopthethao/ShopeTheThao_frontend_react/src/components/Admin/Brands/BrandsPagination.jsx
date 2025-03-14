@@ -1,6 +1,6 @@
 import React from "react";
 import { Select } from "antd";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 
 
 const BrandsPagination = ({

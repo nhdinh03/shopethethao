@@ -18,7 +18,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { useRolesManagement } from "hooks/useRolesManagement";
-import PaginationComponent from "components/PaginationComponent";
+import PaginationComponent from "components/User/PaginationComponent";
 import "..//index.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { useAvailableRoles } from 'hooks/useAvailableRoles';

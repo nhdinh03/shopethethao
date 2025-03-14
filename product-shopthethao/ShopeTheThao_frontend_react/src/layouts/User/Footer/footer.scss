@@ -26,205 +26,100 @@ $box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 
 // Footer Styles
 .footer {
-  background: linear-gradient(to right, #1a202c, #2d3748);
+  background: #000;
   color: #fff;
-  position: relative;
-  overflow: hidden;
-  .container {
+  padding: 2rem 0;
+
+  .membership-banner {
+    text-align: center;
+    padding: 2rem 0;
+    background: #222;
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .register-btn {
+      display: inline-block;
+      padding: 0.8rem 2rem;
+      background: #fff;
+      color: #000;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #e5e5e5;
+      }
+    }
+  }
+
+  .footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    padding: 0 2rem;
+    max-width: 1200px;
     margin: 0 auto;
   }
-  // Services Section
-  &-services {
-    padding: 3rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
+  .footer-section {
+    h3 {
+      // font-size: 1rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
     }
 
-    .service-card {
-      @include flex-center(row, flex-start, center);
-      gap: 1rem;
-      padding: 1.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: $border-radius;
-      transition: $transition-base;
+    ul {
+      list-style: none;
+      padding: 0;
 
-      &:hover {
-        background: rgba(255, 255, 255, 0.1);
-        @include hover-lift;
-      }
-
-      .icon {
-        font-size: 1.5rem;
-        color: $primary-color;
-      }
-
-      .content {
-        h5 {
-          font-size: 1.1rem;
-          margin-bottom: 0.5rem;
-        }
-
-        p {
-          font-size: 0.9rem;
-          color: $text-light;
-        }
-      }
-    }
-  }
-
-  // Main Footer Content
-  &-main {
-    padding: 4rem 0;
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 3rem;
-    }
-
-    h4 {
-      font-size: 1.2rem;
-      margin-bottom: 1.5rem;
-      position: relative;
-
-      &::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        bottom: -0.5rem;
-        width: 50px;
-        height: 2px;
-        background: $primary-color;
-      }
-    }
-  }
-
-  // Newsletter Section
-  &-newsletter {
-    form {
-      margin-top: 1rem;
-
-      .newsletter-input {
-        position: relative;
-        margin-bottom: 1rem;
-
-        input {
-          width: 100%;
-          padding: 0.8rem 1rem;
-          border-radius: $border-radius;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: #fff;
-          transition: $transition-base;
-
-          &:focus {
-            outline: none;
-            border-color: $primary-color;
-            box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
-          }
-        }
-
-        .success-message {
-          position: absolute;
-          top: -1.5rem;
-          left: 0;
-          color: $success-color;
-          @include flex-center(row, flex-start, center);
-          gap: 0.5rem;
-        }
-      }
-
-      button {
-        width: 100%;
-        padding: 0.8rem;
-        background: $primary-color;
-        color: #fff;
-        border: none;
-        border-radius: $border-radius;
-        cursor: pointer;
-        transition: $transition-base;
-
-        &:hover {
-          background: darken($primary-color, 10%);
-        }
-      }
-    }
-  }
-
-  // Social Links
-  .social-links {
-    @include flex-center(row, flex-start, center);
-    gap: 1rem;
-    margin-top: 1.5rem;
-
-    .social-link {
-      width: 2.5rem;
-      height: 2.5rem;
-      @include flex-center;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      transition: $transition-base;
-
-      &:hover {
-        background: $primary-color;
-        @include hover-lift;
-      }
-    }
-  }
-
-  // Copyright Section
-  &-bottom {
-    padding: 1.5rem 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-
-    .copyright {
-      @include flex-center(row, space-between, center);
-      flex-wrap: wrap;
-      gap: 1rem;
-
-      p {
-        color: $text-light;
-      }
-
-      .footer-extra-links {
-        @include flex-center(row, flex-start, center);
-        gap: 2rem;
+      li {
+        margin-bottom: 0.5rem;
 
         a {
-          color: $text-light;
+          color: #999;
+          text-decoration: none;
+          // font-size: 0.9rem;
           transition: color 0.3s ease;
 
           &:hover {
-            color: $primary-color;
+            color: #fff;
           }
         }
       }
     }
   }
 
-  // Scroll to Top Button
-  .scroll-top {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 3rem;
-    height: 3rem;
-    background: $primary-color;
-    color: #fff;
-    border-radius: 50%;
-    @include flex-center;
-    cursor: pointer;
-    transition: $transition-base;
-    border: none;
-    box-shadow: $box-shadow;
+  .footer-bottom {
+    margin-top: 3rem;
+    text-align: center;
+    padding: 2rem 0;
+    border-top: 1px solid #333;
 
-    &:hover {
-      background: darken($primary-color, 10%);
-      @include hover-lift;
+    .social-links {
+      h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+
+        a {
+          color: #fff;
+          font-size: 1.5rem;
+          transition: color 0.3s ease;
+
+          &:hover {
+            color: #999;
+          }
+        }
+      }
     }
   }
 }
@@ -232,24 +127,8 @@ $box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
 // Responsive Design for Medium Screens (50% width)
 @media (max-width: 768px) {
   .footer {
-    &-main {
-      padding: 2rem 0;
-
-      .footer-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-      }
-    }
-
-    &-bottom {
-      .copyright {
-        flex-direction: column;
-        text-align: center;
-
-        .footer-extra-links {
-          justify-content: center;
-        }
-      }
+    .footer-content {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 }
@@ -289,6 +168,18 @@ $box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
           gap: 0.5rem;
         }
       }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    .footer-content {
+      grid-template-columns: 1fr;
+    }
+
+    .membership-banner h2 {
+      font-size: 1.2rem;
     }
   }
 }

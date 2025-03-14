@@ -11,9 +11,10 @@ import {
   DatePicker
 } from "antd";
 import moment from 'moment';
-import { SearchOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { SearchOutlined, ClockCircleOutlined, EyeOutlined } from "@ant-design/icons";
 import "./user_historis.scss";
 import { userHistoryApi } from "api/Admin";
+import UserHistoryDetailModal from './UserHistoryDetailModal';
 
 const { RangePicker } = DatePicker;
 
@@ -21,6 +22,8 @@ const UserHistory = () => {
   const [loading, setLoading] = useState(false);
   const [histories, setHistories] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   
   useEffect(() => {
     fetchHistories();
@@ -35,6 +38,28 @@ const UserHistory = () => {
       message.error("Không thể tải lịch sử người dùng!");
     }
     setLoading(false);
+  };
+
+  const handleRowClick = (record) => {
+    setSelectedRecord(record);
+    setIsModalVisible(true);
+  };
+
+  const handleModalClose = async () => {
+    if (selectedRecord?.readStatus === 0) {
+      try {
+        await userHistoryApi.markAsRead(selectedRecord.idHistory);
+        setHistories(histories.map(item => 
+          item.idHistory === selectedRecord.idHistory 
+            ? { ...item, readStatus: 1 } 
+            : item
+        ));
+      } catch (error) {
+        message.error('Không thể cập nhật trạng thái xem');
+      }
+    }
+    setIsModalVisible(false);
+    setSelectedRecord(null);
   };
 
   const getActionTypeColor = (type) => {
@@ -102,12 +127,12 @@ const UserHistory = () => {
       title: 'Thiết bị',
       dataIndex: 'deviceInfo',
       key: 'deviceInfo',
-      render: (text) => {
+      render: (text, record) => {  // Add record parameter
         const browser = text.match(/Chrome|Firefox|Safari|Edge/i)?.[0] || 'Unknown';
         return (
           <Space direction="vertical" size="small">
             <Tag>{browser}</Tag>
-            <span className="ip-address">{`IP: ${histories.ipAddress}`}</span>
+            <span className="ip-address">{`IP: ${record.ipAddress || 'N/A'}`}</span>
           </Space>
         );
       },
@@ -120,6 +145,36 @@ const UserHistory = () => {
         <Tag color={status === 1 ? 'success' : 'error'}>
           {status === 1 ? 'Thành công' : 'Thất bại'}
         </Tag>
+      ),
+    },
+    {
+      title: 'Trạng thái xem',
+      dataIndex: 'readStatus',
+      key: 'readStatus',
+      render: (status) => (
+        <Tag color={status === 1 ? 'green' : 'gold'}>
+          {status === 1 ? 'Đã xem' : 'Chưa xem'}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Hành động',
+      key: 'actions',
+      width: 80,
+      render: (_, record) => (
+        <Space size="middle">
+          <EyeOutlined 
+            style={{ 
+              color: record.readStatus === 0 ? '#1890ff' : '#8c8c8c',
+              fontSize: '16px',
+              cursor: 'pointer'
+            }}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent row click event
+              handleRowClick(record);
+            }}
+          />
+        </Space>
       ),
     }
   ];
@@ -151,14 +206,29 @@ const UserHistory = () => {
           dataSource={histories}
           loading={loading}
           rowKey="idHistory"
+          onRow={(record) => ({
+            onClick: () => handleRowClick(record),
+            className: record.readStatus === 0 ? 'unread-row' : ''
+          })}
           scroll={{ x: 1200 }}
           pagination={{
-            pageSize: 5,
+            position: ['bottomCenter'],
+            pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
+            showTotal: (total, range) => 
+              `${range[0]}-${range[1]} của ${total} mục`,
+            size: 'default',
+            className: 'custom-pagination'
           }}
         />
       </Card>
+
+      <UserHistoryDetailModal
+        visible={isModalVisible}
+        record={selectedRecord}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

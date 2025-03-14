@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 function HeaderAdminLeft({ collapsed }) {
   return (
     <div className="flex items-center gap-4">
-      <Link to="/admin/index">
+      <Link to="/dashboard-management-sys/portal">
         {/* ✅ Logo và chữ Shope - Giữ chữ Shope ngay cả khi thu nhỏ */}
         <div className="flex items-center gap-2">
           {!collapsed ? (

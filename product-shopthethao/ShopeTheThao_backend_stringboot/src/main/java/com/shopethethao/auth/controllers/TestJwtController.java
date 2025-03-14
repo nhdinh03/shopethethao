@@ -6,10 +6,13 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.shopethethao.auth.security.jwt.util.JwtUtils;
 import com.shopethethao.auth.payload.response.MessageResponse;
+import com.shopethethao.auth.security.jwt.util.JwtUtils;
 
 @RestController
 @RequestMapping("/api/test")

@@ -25,8 +25,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,8 +32,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.shopethethao.auth.otp.util.AccountLockedException;
+import com.shopethethao.auth.otp.util.AccountNotVerifiedException;
 import com.shopethethao.auth.otp.util.AccountValidationUtil;
 import com.shopethethao.auth.otp.util.EmailUtil;
+import com.shopethethao.auth.otp.util.InvalidCredentialsException;
 import com.shopethethao.auth.otp.util.OtpUtil;
 import com.shopethethao.auth.payload.auth.request.LoginRequest;
 import com.shopethethao.auth.payload.auth.request.SignupRequest;
@@ -61,6 +62,7 @@ import com.shopethethao.modules.userHistory.UserActionType;
 import com.shopethethao.modules.role.ERole;
 import com.shopethethao.modules.verification.Verifications;
 import com.shopethethao.modules.verification.VerificationsDAO;
+import com.shopethethao.service.UserHistorySSEService;
 import com.shopethethao.service.UserHistoryService;
 
 import jakarta.mail.MessagingException;
@@ -109,87 +111,46 @@ public class AuthController {
     @Autowired
     private UserHistoryService userHistoryService;
 
+    @Autowired
+    private UserHistorySSEService sseService;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(
-            @Valid @RequestBody LoginRequest loginRequest,
-            HttpServletRequest request) {
+            @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         try {
-            // ✅ Kiểm tra nếu ID/Phone bị null hoặc trống
-            if (loginRequest.getId() == null || loginRequest.getId().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("ID hoặc số điện thoại không hợp lệ");
-            }
+            // Find and validate account
+            Account account = AccountValidationUtil.findAndValidateAccount(loginRequest.getId(), accountDAO);
 
-            String loginValue = loginRequest.getId().trim();
-
-            // ✅ Tìm tài khoản bằng ID trước, nếu không có thì tìm bằng phone
-            Account account = accountDAO.findById(loginValue)
-                    .orElseGet(() -> accountDAO.findByPhone(loginValue)
-                            .orElseThrow(() -> new UsernameNotFoundException(
-                                    "Không tìm thấy người dùng với ID hoặc phone: " + loginValue)));
-
-            // ✅ Kiểm tra tài khoản có bị khóa hay chưa xác minh không
+            // Basic account validation (verified, not locked, correct password)
             AccountValidationUtil.validateAccount(account, loginRequest.getPassword(), encoder);
 
-            Authentication authentication;
-            try {
-                authentication = authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(account.getId(), loginRequest.getPassword()));
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Sai thông tin đăng nhập hoặc token không hợp lệ");
-            }
+            // Authenticate
+            Authentication authentication = AccountValidationUtil.authenticateUser(
+                account, loginRequest.getPassword(), authenticationManager);
 
-            // ✅ Kiểm tra `authentication.getPrincipal()`
-            if (!(authentication.getPrincipal() instanceof UserDetailsImpl)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Lỗi xác thực, không thể lấy thông tin người dùng");
-            }
-
-            // ✅ Lấy thông tin từ `UserDetailsImpl`
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-            // Trước khi tạo token mới, xóa hết token cũ
+            // Token management
             String userId = userDetails.getId();
-            tokenManager.removeAllTokensForUser(userId);
-            tokenStore.invalidateToken(userId);
-            refreshTokenService.deleteByAccountId(userId);
+            cleanupExistingTokens(userId);
 
-            // Tạo token mới
             String jwt = jwtUtils.generateJwtToken(authentication);
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(userId);
+            tokenStore.saveNewToken(userId, jwt);
 
+            // Process user details
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            tokenStore.saveNewToken(userDetails.getId(), jwt);
+            String gender = (userDetails.getGender() != null) ? 
+                           userDetails.getGender().toString() : 
+                           "Không xác định";
 
-            // ✅ Xử lý `gender` để tránh lỗi `NullPointerException`
-            String gender = (userDetails.getGender() != null) ? userDetails.getGender().toString() : "Không xác định";
+            // Log successful login
+            logSuccessfulLogin(userDetails, roles, request);
 
-            // Thêm try-catch cho việc ghi log
-            try {
-                userHistoryService.logUserAction(
-                        userDetails.getId(),
-                        UserActionType.LOGIN,
-                        String.format("""
-                                Đăng nhập thành công
-                                Chi tiết:
-                                - ID: %s
-                                - Họ tên: %s
-                                - Vai trò: %s""",
-                                userDetails.getId(),
-                                userDetails.getFullname(),
-                                String.join(", ", roles)),
-                        request.getRemoteAddr(),
-                        request.getHeader("User-Agent"));
-
-            } catch (Exception e) {
-                logger.error("Failed to log login action for user {}: {}", userDetails.getId(), e.getMessage());
-            }
-
-            // ✅ Trả về JWT và thông tin người dùng
+            // Return successful response
             return ResponseEntity.ok(new JwtResponseDTO(
                     userDetails.getId(),
                     userDetails.getPhone(),
@@ -200,13 +161,59 @@ public class AuthController {
                     gender,
                     userDetails.getImage(),
                     jwt,
-                    refreshToken.getToken(), // Thêm refresh token vào response
+                    refreshToken.getToken(),
                     "Bearer",
                     roles));
-        } catch (Exception e) {
+
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (AccountNotVerifiedException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (AccountLockedException e) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (InvalidCredentialsException e) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(new MessageResponse("Đăng nhập thất bại: " + e.getMessage()));
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Lỗi đăng nhập không mong muốn: ", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại sau."));
+        }
+    }
+
+    private void cleanupExistingTokens(String userId) {
+        tokenManager.removeAllTokensForUser(userId);
+        tokenStore.invalidateToken(userId);
+        refreshTokenService.deleteByAccountId(userId);
+    }
+
+    private void logSuccessfulLogin(UserDetailsImpl userDetails, List<String> roles, HttpServletRequest request) {
+        try {
+            userHistoryService.logUserAction(
+                    userDetails.getId(),
+                    UserActionType.LOGIN,
+                    String.format("""
+                            Đăng nhập thành công
+                            Chi tiết:
+                            - ID: %s
+                            - Họ tên: %s
+                            - Vai trò: %s""",
+                            userDetails.getId(),
+                            userDetails.getFullname(),
+                            String.join(", ", roles)),
+                    request.getRemoteAddr(),
+                    request.getHeader("User-Agent"));
+        } catch (Exception e) {
+            logger.error("Không ghi được log đăng nhập cho người dùng {}: {}", 
+                        userDetails.getId(), e.getMessage());
         }
     }
 
@@ -238,8 +245,8 @@ public class AuthController {
             }
 
             // Password strength validation
-            if (signUpRequest.getPassword().length() < 6) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu phải có ít nhất 6 ký tự"));
+            if (signUpRequest.getPassword().length() < 8) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Mật khẩu phải có ít nhất 8 ký tự"));
             }
 
             // Check for existing account
@@ -342,27 +349,81 @@ public class AuthController {
 
     @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
-        Account securityAccount = accountDAO.findById(changePasswordRequest.getId())
-                .orElseThrow(
-                        () -> new UsernameNotFoundException("Không tìm thấy người dùng "
-                                + changePasswordRequest.getId()));
-        if (!encoder.matches(changePasswordRequest.getOldPassword(),
-                securityAccount.getPassword())) {
+        try {
+            logger.info("Change password request received: {}", changePasswordRequest.getId());
+            logger.debug("Request details - oldPassword length: {}, newPassword length: {}, confirmNewPassword length: {}", 
+                    changePasswordRequest.getOldPassword() != null ? changePasswordRequest.getOldPassword().length() : 0,
+                    changePasswordRequest.getNewPassword() != null ? changePasswordRequest.getNewPassword().length() : 0,
+                    changePasswordRequest.getConfirmNewPassword() != null ? changePasswordRequest.getConfirmNewPassword().length() : 0);
+            
+            if (changePasswordRequest.getId() == null || changePasswordRequest.getId().trim().isEmpty()) {
+                logger.error("User ID is missing or empty");
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("ID người dùng không được để trống"));
+            }
+            
+            Account securityAccount = accountDAO.findById(changePasswordRequest.getId())
+                    .orElseThrow(() -> {
+                        logger.error("User not found with ID: {}", changePasswordRequest.getId());
+                        return new UsernameNotFoundException("Không tìm thấy người dùng " + changePasswordRequest.getId());
+                    });
+            
+            logger.info("User found: {}", securityAccount.getId());
+            
+            if (changePasswordRequest.getOldPassword() == null || changePasswordRequest.getOldPassword().trim().isEmpty()) {
+                logger.error("Old password is missing or empty for user: {}", securityAccount.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu cũ không được để trống"));
+            }
+            
+            if (!encoder.matches(changePasswordRequest.getOldPassword(), securityAccount.getPassword())) {
+                logger.warn("Invalid old password for user ID: {}", changePasswordRequest.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu cũ không đúng"));
+            }
+            
+            if (changePasswordRequest.getNewPassword() == null || changePasswordRequest.getNewPassword().trim().isEmpty()) {
+                logger.error("New password is missing or empty for user: {}", securityAccount.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu mới không được để trống"));
+            }
+            
+            if (changePasswordRequest.getNewPassword().length() < 8) {
+                logger.error("New password too short for user: {}", securityAccount.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu mới phải có ít nhất 8 ký tự"));
+            }
+            
+            if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword())) {
+                logger.warn("New password and confirmation don't match for user ID: {}", changePasswordRequest.getId());
+                return ResponseEntity
+                        .badRequest()
+                        .body(new MessageResponse("Mật khẩu mới và mật khẩu xác nhận không khớp"));
+            }
+            
+            securityAccount.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
+            accountDAO.save(securityAccount);
+            
+            logger.info("Password successfully changed for user ID: {}", changePasswordRequest.getId());
             return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Mật khẩu cũ không đúng!"));
-        }
-        if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmNewPassword())) {
+                    .ok()
+                    .body(new MessageResponse("Đổi mật khẩu thành công"));
+        } catch (UsernameNotFoundException e) {
+            logger.error("User not found during password change: {}", e.getMessage());
             return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Mật khẩu mới và mật khẩu xác nhận không khớp"));
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error changing password: ", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Có lỗi xảy ra trong quá trình đổi mật khẩu: " + e.getMessage()));
         }
-        securityAccount.setPassword(encoder.encode(changePasswordRequest.getNewPassword()));
-        accountDAO.save(securityAccount);
-        return ResponseEntity
-                .badRequest()
-                .body(new MessageResponse("Đổi Mật khẩu thành công"));
-
     }
 
     @PostMapping("/verify-account")
@@ -380,8 +441,8 @@ public class AuthController {
                     verificationDAO.save(verification);
                     securityAccount.setVerified(true);
                     accountDAO.save(securityAccount);
-                    isOtpValid = true;
-                    break; // Dừng vòng lặp nếu OTP hợp lệ
+                    isOtpValid = true; // Dừng vòng lặp nếu OTP hợp lệ
+                    break;
                 } else {
                     return ResponseEntity.badRequest()
                             .body(new MessageResponse("Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới."));
@@ -482,19 +543,31 @@ public class AuthController {
     // Gửi email quên mật khẩu
     @PutMapping("/forgot-password")
     public ResponseEntity<?> sendForgotPasswordEmail(@RequestBody NewOtp newOtp) {
+        // Validate email format
+        if (newOtp.getEmail() == null || newOtp.getEmail().isEmpty()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Email không được để trống"));
+        }
+        
+        // Check if email exists
         Optional<Account> userOpt = accountDAO.findByEmail(newOtp.getEmail());
         if (!userOpt.isPresent()) {
-            return ResponseEntity.ok(new MessageResponse("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                   .body(new MessageResponse("Email không tồn tại trong hệ thống"));
         }
+        
         Account user = userOpt.get();
         String code = otpUtil.generateOtp(); // Tạo OTP mới
+        
+        // Find existing verification or create new one
         Verifications verification = verificationDAO.findByAccountId(user.getId())
                 .stream()
                 .findFirst()
                 .orElse(new Verifications());
+                
         verification.setAccountId(user.getId());
         verification.setCode(code);
         verification.setCreatedAt(LocalDateTime.now());
+        verification.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         verification.setActive(true);
         verificationDAO.save(verification); // Lưu OTP vào cơ sở dữ liệu
 
@@ -505,7 +578,7 @@ public class AuthController {
                     .body(new MessageResponse("Không thể gửi email. Vui lòng thử lại sau."));
         }
 
-        return ResponseEntity.ok(new MessageResponse("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu sẽ được gửi."));
+        return ResponseEntity.ok(new MessageResponse("Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư."));
     }
 
     @PutMapping("/reset-password")
@@ -538,31 +611,54 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+        String userId = null;
         try {
             String token = request.getHeader("Authorization");
-            String userId = null;
 
             if (token != null && token.startsWith("Bearer ")) {
                 String jwt = token.substring(7);
                 try {
                     userId = jwtUtils.getUserNameFromJwtToken(jwt);
-                    // Get user details for logging
+                    
+                    // 1. First get account info
                     Account account = accountDAO.findById(userId)
                             .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+                    String rolesStr = getRolesAsString(account);
+                    
+                    // 2. Log the logout action
+                    try {
+                        userHistoryService.logUserAction(
+                            userId,
+                            UserActionType.LOGOUT,
+                            String.format("""
+                                    Đăng xuất thành công
+                                    Chi tiết:
+                                    - ID: %s
+                                    - Họ tên: %s
+                                    - Vai trò: %s
+                                    - Thời gian: %s""",
+                                    account.getId(),
+                                    account.getFullname(),
+                                    rolesStr,
+                                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))),
+                            request.getRemoteAddr(),
+                            request.getHeader("User-Agent"));
+                    } catch (Exception e) {
+                        logger.warn("Error logging logout action: {}", e.getMessage());
+                    }
 
-                    // Get roles as string
-                    String roles = account.getRoles().stream()
-                            .map(role -> role.getName().name())
-                            .collect(Collectors.joining(", "));
+                    // 3. Clean up SSE connections
+                    try {
+                        sseService.removeEmittersForUser(userId);
+                    } catch (Exception e) {
+                        logger.warn("Error cleaning up SSE connections: {}", e.getMessage());
+                    }
 
-                    // Cleanup tokens
+                    // 4. Finally invalidate tokens
                     cleanupUserTokens(userId);
 
-                    // Enhanced logout logging
-                    logDetailedUserLogout(account, roles, request);
-
                 } catch (Exception e) {
-                    logger.warn("lỗi khi đăng xuất: {}", e.getMessage());
+                    logger.warn("Error during logout process: {}", e.getMessage());
                 }
             }
 
@@ -570,41 +666,26 @@ public class AuthController {
             return ResponseEntity.ok(new MessageResponse("Đăng xuất thành công"));
 
         } catch (Exception e) {
-            logger.error("Logout error: {}", e.getMessage());
+            logger.error("Critical error during logout: {}", e.getMessage());
             SecurityContextHolder.clearContext();
             return ResponseEntity.ok(new MessageResponse("Đăng xuất hoàn tất"));
         }
     }
 
-    private void logDetailedUserLogout(Account account, String roles, HttpServletRequest request) {
+    private String getRolesAsString(Account account) {
+        return account.getRoles().stream()
+                .map(role -> role.getName().name())
+                .collect(Collectors.joining(", "));
+    }
+
+    private void cleanupUserTokens(String userId) {
         try {
-            String logMessage = String.format("""
-                    Đăng xuất thành công
-                    Chi tiết người dùng:
-                    - ID: %s
-                    - Họ tên: %s
-                    - Vai trò: %s
-                    - Thời gian: %s""",
-                    account.getId(),
-                    account.getFullname(),
-                    roles,
-                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
-
-            userHistoryService.logUserAction(
-                    account.getId(),
-                    UserActionType.LOGOUT,
-                    logMessage,
-                    request.getRemoteAddr(),
-                    request.getHeader("User-Agent"));
-
-            logger.info("Người dùng đã đăng xuất - ID: {}, Tên: {}, Vai trò: {}",
-                    account.getId(),
-                    account.getFullname(),
-                    roles);
-
+            refreshTokenService.deleteByAccountId(userId);
+            tokenStore.invalidateToken(userId);
+            tokenManager.removeToken(userId);
         } catch (Exception e) {
-            logger.error("Không thể thực hiện hành động đăng xuất cho người dùng {}: {}", account.getId(),
-                    e.getMessage());
+            logger.error("Token cleanup failed for user {}: {}", userId, e.getMessage());
+            // Continue with logout even if token cleanup fails
         }
     }
 
@@ -621,16 +702,6 @@ public class AuthController {
                 })
                 .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
                         "Refresh token không có trong database!"));
-    }
-
-    private void cleanupUserTokens(String userId) {
-        try {
-            refreshTokenService.deleteByAccountId(userId);
-            tokenStore.invalidateToken(userId);
-            tokenManager.removeToken(userId);
-        } catch (Exception e) {
-            logger.error("Token cleanup failed for user {}: {}", userId, e.getMessage());
-        }
     }
 
 }

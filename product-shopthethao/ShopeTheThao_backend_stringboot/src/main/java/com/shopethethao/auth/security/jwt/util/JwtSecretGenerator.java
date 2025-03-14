@@ -1,7 +1,8 @@
 package com.shopethethao.auth.security.jwt.util;
+import java.util.Base64;
+
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import java.util.Base64;
 
 public class JwtSecretGenerator {
     public static void main(String[] args) {

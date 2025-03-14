@@ -1,5 +1,5 @@
+import authApi from 'api/Admin/Auth/auth';
 import { useState, useCallback } from 'react';
-import AuthService from '../services/authService';
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false);
@@ -9,7 +9,7 @@ export const useAuth = () => {
     try {
       setLoading(true);
       setError(null);
-      const result = await AuthService.login(credentials);
+      const result = await authApi.login(credentials);
       return result;
     } catch (err) {
       setError(err.message);
@@ -20,7 +20,26 @@ export const useAuth = () => {
   }, []);
 
   const logout = useCallback(() => {
-    AuthService.logout();
+    authApi.logout();
+  }, []);
+
+  // Check if the methods exist before using them
+  const isAuthenticated = useCallback(() => {
+    return typeof authApi.isAuthenticated === 'function' 
+      ? authApi.isAuthenticated() 
+      : false;
+  }, []);
+
+  const hasRole = useCallback((role) => {
+    return typeof authApi.hasRole === 'function'
+      ? authApi.hasRole(role)
+      : false;
+  }, []);
+
+  const getUserData = useCallback(() => {
+    return typeof authApi.getUserData === 'function'
+      ? authApi.getUserData()
+      : null;
   }, []);
 
   return {
@@ -28,8 +47,8 @@ export const useAuth = () => {
     logout,
     loading,
     error,
-    isAuthenticated: AuthService.isAuthenticated(),
-    hasRole: AuthService.hasRole,
-    getUserData: AuthService.getUserData
+    isAuthenticated: isAuthenticated(),
+    hasRole,
+    getUserData
   };
 };

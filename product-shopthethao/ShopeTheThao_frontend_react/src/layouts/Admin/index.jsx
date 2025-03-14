@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import classNames from "classnames/bind";
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -10,15 +9,11 @@ import { HeaderAdminLeft, HeaderAdminRight } from "./Header";
 import Sidebar from "./Sidebar/Sidebar";
 import { useLocation } from "react-router-dom";
 import Bread from "./Breadcrumb/Breadcrumb";
-import styles from "./Admin.module.scss";
-import { useDarkMode } from "config/DarkModeProvider";
 import LayoutPageDefault from "layouts/LayoutPageDefault";
 
 const { Header, Sider, Content } = Layout;
-const cx = classNames.bind(styles);
 
 const AdminLayout = ({ children }) => {
-  const { isDarkMode } = useDarkMode();
   const [isLoading, setIsLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false); // Sidebar Desktop
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); // Sidebar Mobile
@@ -42,7 +37,7 @@ const AdminLayout = ({ children }) => {
 
   return (
     <Layout
-      className={`w-full min-h-screen ${isDarkMode ? "dark-mode" : ""}`}
+      className={`w-full min-h-screen}`}
       style={{ overflowX: "hidden" }}
     >
       {/* Sidebar - Desktop */}
@@ -70,7 +65,7 @@ const AdminLayout = ({ children }) => {
         closable={false} // ✅ Tắt nút mặc định của Ant Design
         onClose={() => setIsMobileSidebarOpen(false)}
         open={isMobileSidebarOpen}
-        width={300} // ✅ Điều chỉnh chiều rộng cho phù hợp
+        width={"100%"} // ✅ Điều chỉnh chiều rộng cho phù hợp
       >
         {/* 🔥 Thêm nút đóng ở góc phải */}
         <div className="flex justify-end items-center py-2  bg-white shadow-sm relative">
