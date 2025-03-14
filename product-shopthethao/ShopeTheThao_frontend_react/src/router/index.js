@@ -26,7 +26,7 @@ export const publicRoutes = [
   },
   {
     path: `/${API_VERSION}/user/wishlist`, // Nhóm các route theo chức năng
-    component: PageUser.wishlist,
+    component: PageUser.Wishlist,
     layout: LayoutPageDefaultUser,
   },
   {
