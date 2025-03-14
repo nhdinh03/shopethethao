@@ -1,26 +1,31 @@
-import { AdminLayout, LayoutPageDefault, LayoutPageDefaultUser, UserLayout } from "layouts";
+import {
+  AdminLayout,
+  LayoutPageDefault,
+  LayoutPageDefaultUser,
+  UserLayout,
+} from "layouts";
 import * as PageAdmin from "../pages/Admin";
 import * as PageUser from "../pages/User";
 import NotFound from "../pages/NotFound/notFound";
 
 // Constants for route paths
-const API_VERSION = 'v1';
-const ADMIN_PREFIX = '/dashboard-management-sys';  // Thay đổi /admin thành tên phức tạp hơn
+const API_VERSION = "v1";
+const ADMIN_PREFIX = "/dashboard-management-sys"; // Thay đổi /admin thành tên phức tạp hơn
 
 export const publicRoutes = [
   { path: "/", component: PageUser.HomeIndex, layout: UserLayout },
   {
-    path: `/${API_VERSION}/shop/products`,  // Thêm version và phân cấp rõ ràng
+    path: `/${API_VERSION}/shop/products`, // Thêm version và phân cấp rõ ràng
     component: PageUser.Products,
     layout: LayoutPageDefaultUser,
   },
   {
-    path: `/${API_VERSION}/shop/seefulldetails/:productId`,  // Chuẩn hóa format URL
+    path: `/${API_VERSION}/shop/seefulldetails/:productId`, // Chuẩn hóa format URL
     component: PageUser.Seefulldetails,
     layout: LayoutPageDefaultUser,
   },
   {
-    path: `/${API_VERSION}/user/wishlist`,  // Nhóm các route theo chức năng
+    path: `/${API_VERSION}/user/wishlist`, // Nhóm các route theo chức năng
     component: PageUser.wishlist,
     layout: LayoutPageDefaultUser,
   },
@@ -44,17 +49,13 @@ export const publicRoutes = [
     component: PageUser.LoginForm,
     layout: LayoutPageDefault,
   },
-  { 
-    path: `/${API_VERSION}/auth/otp`, 
-    component: PageUser.OtpForm, 
-    layout: LayoutPageDefault,
-    requiresUnverified: true  // Add this flag to check auth status
-  },
   {
-    path: `/${API_VERSION}/auth/changepassword`,
-    component: PageUser.ChangePasswordForm,
+    path: `/${API_VERSION}/auth/otp`,
+    component: PageUser.OtpForm,
     layout: LayoutPageDefault,
+    requiresUnverified: true, // Add this flag to check auth status
   },
+
   {
     path: `/${API_VERSION}/404`,
     component: NotFound,
@@ -64,18 +65,18 @@ export const publicRoutes = [
 
 export const privateRoutes = [
   {
-    path: `${ADMIN_PREFIX}/portal`,  // Thay đổi /admin/index
+    path: `${ADMIN_PREFIX}/portal`, // Thay đổi /admin/index
     component: PageAdmin.AdminIndex,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/catalog/products`,  // Nhóm theo chức năng
+    path: `${ADMIN_PREFIX}/catalog/products`, // Nhóm theo chức năng
     component: PageAdmin.Products,
     layout: AdminLayout,
   },
   {
     path: `${ADMIN_PREFIX}/catalog/categories`,
-    component: PageAdmin.Categories, 
+    component: PageAdmin.Categories,
     layout: AdminLayout,
   },
   {
