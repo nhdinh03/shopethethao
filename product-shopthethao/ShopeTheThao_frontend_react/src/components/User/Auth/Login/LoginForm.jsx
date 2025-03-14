@@ -221,7 +221,7 @@ const LoginForm = () => {
                   icon={<FiUser />}
                   type="text"
                   name="id"
-                  placeholder="Email hoặc ID đăng nhập"
+                  placeholder=" Tài khoản đăng nhập hoặc Email, số điện thoại"
                   value={formData.id}
                   onChange={handleChange}
                   error={errors.id}

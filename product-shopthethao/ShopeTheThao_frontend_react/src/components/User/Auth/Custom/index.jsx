@@ -7,18 +7,35 @@ const regexFullname =
   /^[A-ZĐÂÊÔƠƯ][a-zđâêôơưàảãáạăằẳẵắặâầẩẫấậèẻẽéẹêềểễếệìỉĩíịòỏõóọôồổỗốộơờởỡớợùủũúụưừửữứựỳỷỹýỵ]+(\s[A-ZĐÂÊÔƠƯ][a-zđâêôơưàảãáạăằẳẵắặâầẩẫấậèẻẽéẹêềểễếệìỉĩíịòỏõóọôồổỗốộơờởỡớợùủũúụưừửữứựỳỷỹýỵ]+)*$/;
 const repeatingCharsRegex = /(.)\1{2,}/;
 
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 export const validateId = (rule, value, callback) => {
   if (!value) {
     callback("Không được bỏ trống tài khoản!");
-  } else if (value.length < 6) {
-    callback("Tài khoản phải có ít nhất 6 ký tự!");
-  } else if (value.length > 20) {
-    callback("Tài khoản không được dài quá 20 ký tự!");
-  } else if (/[^a-zA-Z0-9]/.test(value)) {
-    callback("Tài khoản không được chứa ký tự đặc biệt!");
-  } else {
-    callback();
+    return;
   }
+  if (value.length < 6) {
+    callback("Tài khoản phải có ít nhất 6 ký tự!");
+    return;
+  }
+  if (value.length > 30) {
+    callback("Tài khoản không được dài quá 30 ký tự!");
+    return;
+  }
+  if (value.includes("@")) {
+    if (!emailRegex.test(value)) {
+      callback("Email không đúng định dạng!");
+      return;
+    }
+    callback();
+    return;
+  }
+  if (/[^a-zA-Z0-9]/.test(value)) {
+    callback("Tài khoản không được chứa ký tự đặc biệt!");
+    return;
+  }
+
+  callback();
 };
 
 export const validatePassword = (rule, value, callback) => {
