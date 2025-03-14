@@ -12,7 +12,7 @@ export { default as UserProfile } from "./UserProfile";
 
 export { default as Cart } from "./Cart";
 
-export { default as wishlist } from "./wishlist";
+export { default as Wishlist } from "./wishlist";
 
 export { default as Checkout } from "./Checkout";
 
