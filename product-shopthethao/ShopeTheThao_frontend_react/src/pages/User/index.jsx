@@ -16,4 +16,5 @@ export { default as wishlist } from "./wishlist";
 
 export { default as Checkout } from "./Checkout";
 
+export { default as Checkorders } from "./Checkorders";
 

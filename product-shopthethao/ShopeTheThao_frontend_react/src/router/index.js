@@ -50,6 +50,11 @@ export const publicRoutes = [
     layout: LayoutPageDefault,
   },
   {
+    path: `/${API_VERSION}/user/checkorders`,
+    component: PageUser.Checkorders,
+    layout: LayoutPageDefaultUser,
+  },
+  {
     path: `/${API_VERSION}/auth/otp`,
     component: PageUser.OtpForm,
     layout: LayoutPageDefault,
