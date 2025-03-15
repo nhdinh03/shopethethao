@@ -930,52 +930,67 @@ const Header = () => {
                 )}
               </Link>
 
-              <div
-                className="profile-dropdown-container"
-                ref={profileDropdownRef}
-              >
-                <div
-                  className="action-icon profile-icon"
-                  onClick={() =>
-                    isAuthenticated &&
-                    setShowProfileDropdown(!showProfileDropdown)
-                  }
+              {/* Only render profile dropdown if authenticated */}
+              {isAuthenticated && (
+                <div 
+                  className="profile-dropdown-container"
+                  ref={profileDropdownRef}
                 >
-                  <FiUser />
-                </div>
+                  <button
+                    className="action-icon profile-icon"
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setShowProfileDropdown(!showProfileDropdown);
+                      }
+                    }}
+                    aria-expanded={showProfileDropdown}
+                    aria-haspopup="true"
+                    aria-label="User menu"
+                    tabIndex={0}
+                  >
+                    <FiUser />
+                  </button>
 
-                {isAuthenticated && showProfileDropdown && (
-                  <div className="profile-dropdown">
-                    <Link to="/v1/user/profile" className="dropdown-item">
-                      <FiUser /> Tài khoản của tôi
-                    </Link>
-                    <Link to="/v1/user/checkorders" className="dropdown-item">
-                      <FiPackage /> Đơn hàng
-                    </Link>
-                    <div
-                      className="dropdown-item logout-item"
-                      onClick={handleLogout}
+                  {showProfileDropdown && (
+                    <div 
+                      className="profile-dropdown"
+                      role="menu"
+                      aria-orientation="vertical"
                     >
-                      <FiLogOut /> Đăng xuất
+                      <Link 
+                        to="/v1/user/profile" 
+                        className="dropdown-item"
+                        role="menuitem"
+                        tabIndex={0}
+                      >
+                        <FiUser /> Tài khoản của tôi
+                      </Link>
+                      <Link 
+                        to="/v1/user/checkorders" 
+                        className="dropdown-item"
+                        role="menuitem"
+                        tabIndex={0}
+                      >
+                        <FiPackage /> Đơn hàng
+                      </Link>
+                      <Link
+                        className="dropdown-item logout-item"
+                        onClick={handleLogout}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            handleLogout();
+                          }
+                        }}
+                        role="menuitem"
+                        tabIndex={0}
+                      >
+                        <FiLogOut /> Đăng xuất
+                      </Link>
                     </div>
-                  </div>
-                )}
-
-                {!isAuthenticated && showProfileDropdown && (
-                  <div className="profile-dropdown">
-                    <Link to="/v1/auth/login" className="dropdown-item">
-                      Đăng nhập
-                    </Link>
-                    <Link
-                      to="/v1/auth/login"
-                      className="dropdown-item"
-                      state={{ activeTab: "register" }}
-                    >
-                      Đăng ký
-                    </Link>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
 
               <button
                 className="mobile-menu-toggle"
@@ -1213,14 +1228,14 @@ const Header = () => {
                     <div className="count-indicator">{cartCount}</div>
                   )}
                 </Link>
-                {/* <Link
-                  to="/orders-history"
+                <Link
+                  to="/v1/user/checkorders"
                   className="action-btn"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <FiShoppingBag />
                   <span>Đơn hàng</span>
-                </Link> */}
+                </Link>
               </div>
 
               {isAuthenticated ? (
