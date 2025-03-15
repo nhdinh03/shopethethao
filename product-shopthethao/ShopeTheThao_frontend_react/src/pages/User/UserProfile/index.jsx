@@ -32,7 +32,7 @@ import {
 import moment from "moment";
 import "./UserProfile.scss";
 import authApi from "api/Admin/Auth/auth";
-
+import Loading from "pages/Loading/loading";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
@@ -52,13 +52,13 @@ const UserProfile = () => {
       const storedUser = authApi.getUser();
       if (storedUser) {
         setUserData(storedUser);
-        
+
         // Set form values from user data
         form.setFieldsValue({
           ...storedUser,
           birthday: storedUser.birthday ? moment(storedUser.birthday) : null,
         });
-        
+
         // Set image URL if available
         if (storedUser.image) {
           setImageUrl(`/uploads/${storedUser.image}`);
@@ -122,9 +122,9 @@ const UserProfile = () => {
         id: userData.id, // Make sure we're using the correct user ID
         oldPassword: values.currentPassword,
         newPassword: values.newPassword,
-        confirmNewPassword: values.confirmPassword
+        confirmNewPassword: values.confirmPassword,
       };
-      
+
       console.log("Password change request payload:", requestPayload);
 
       // Send the password change request
@@ -144,9 +144,10 @@ const UserProfile = () => {
       if (error.response) {
         console.error("Error response data:", error.response.data);
       }
-      
+
       // Display appropriate error message
-      const errorMessage = error.response?.data?.message || "Đổi mật khẩu không thành công";
+      const errorMessage =
+        error.response?.data?.message || "Đổi mật khẩu không thành công";
       notification.error({
         message: "Lỗi",
         description: errorMessage,
@@ -190,16 +191,10 @@ const UserProfile = () => {
     }
   };
 
-
   if (loading) {
-            return (
-                <div className="loading-container">
-                    <Spin size="large" />
-                    <p>Đang tải thông tin...</p>
-                </div>
-            );
-        }
-        
+    return <Loading />;
+  }
+
   return (
     <div className="user-profile-container">
       <div className="profile-header">

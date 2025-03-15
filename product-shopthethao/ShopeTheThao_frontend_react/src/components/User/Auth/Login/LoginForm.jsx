@@ -14,6 +14,7 @@ import { validateId, validatePassword } from "../Custom";
 import { InputField, CustomCheckbox, SocialButton } from "../Common/FormFields";
 import ForgotPasswordForm from "../ForgotPassword/ForgotPasswordForm";
 import RegisterForm from "../Register/RegisterForm";
+import Loading from "pages/Loading/loading";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -201,7 +202,7 @@ const LoginForm = () => {
         }
       ];
     }
-    
+
     // Otherwise show both tabs
     return [
       {

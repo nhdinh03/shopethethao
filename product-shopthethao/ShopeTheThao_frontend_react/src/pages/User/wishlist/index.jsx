@@ -77,7 +77,7 @@ function Wishlist() {
             setWishlistItems(mockItems);
             setFilteredItems(mockItems);
             setLoading(false);
-        }, 1000);
+        }, 500);
     }, []);
 
     // Filter and sort items

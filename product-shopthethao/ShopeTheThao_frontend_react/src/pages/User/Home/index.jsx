@@ -88,54 +88,7 @@ const HomeIndex = () => {
     },
   ];
 
-  // Auto rotate banners
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
-    }, 5000);
 
-    return () => clearInterval(timer);
-  }, [banners.length]);
-
-  // Load products
-  useEffect(() => {
-    // Simulate API loading
-    console.log("Loading products from mock data:", mockProducts);
-    setTimeout(() => {
-      if (mockProducts && mockProducts.length) {
-        setDisplayedProducts(mockProducts.slice(0, 8)); // Show first 8 products
-        console.log("Displayed products set:", mockProducts.slice(0, 8));
-      } else {
-        console.error("Mock products data is empty or undefined");
-      }
-      setLoading(false);
-    }, 500);
-  }, []);
-
-  // Load products for the home page
-  useEffect(() => {
-    // Simulate an API call
-    setTimeout(() => {
-      // Get 4 products for the featured section
-      if (mockProducts && mockProducts.length > 0) {
-        // Get products marked as bestsellers or new, or just take the first 4
-        const featured = mockProducts
-          .filter((p) => p.isBestSeller || p.isNew)
-          .slice(0, 4);
-
-        setFeaturedProducts(
-          featured.length > 0 ? featured : mockProducts.slice(0, 4)
-        );
-        console.log(
-          "Featured products set:",
-          featured.length > 0 ? featured : mockProducts.slice(0, 4)
-        );
-      } else {
-        console.error("Unable to set featured products: mockProducts is empty");
-      }
-      setIsLoading(false);
-    }, 500);
-  }, []);
 
   // Animation variants
   const containerVariants = {
