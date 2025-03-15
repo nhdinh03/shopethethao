@@ -14,6 +14,7 @@ import "./Products.scss";
 import BreadcrumbUser from "layouts/User/BreadcrumbUser/BreadcrumbUser";
 import { mockProducts } from "data/mockData";
 import { ProductCard, QuickView } from "components/User";
+import Loading from "pages/Loading/loading";
 
 const Products = () => {
   const products = mockProducts || [];
@@ -160,11 +161,6 @@ const Products = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Get path segments for breadcrumbs
-  const pathSegments = location.pathname
-    .split("/")
-    .filter((segment) => segment);
-
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -216,17 +212,8 @@ const Products = () => {
   }, [location, navigate]);
 
   if (loading) {
-    return (
-      <div className="products-page">
-        <div className="container">
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>Đang tải sản phẩm...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    return <Loading />;
+}
 
   // Return the product page with products
   return (

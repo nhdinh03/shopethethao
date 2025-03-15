@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { HeartFilled, ShoppingCartOutlined, DeleteOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import { Row, Col, Card, Button, Empty, notification, Spin, Modal, Input, Select, Tooltip, Badge, Drawer, Rate } from 'antd';
 import './wishlist.scss';
+import Loading from 'pages/Loading/loading';
+
 
 function Wishlist() {
     const [wishlistItems, setWishlistItems] = useState([]);
@@ -316,6 +318,193 @@ function Wishlist() {
         );
     };
 
+    const renderWishlistContent = () => {
+        if (loading) {
+            return <Loading />;
+        }
+        
+        if (filteredItems.length > 0) {
+            return (
+                <div className={`wishlist-items ${viewMode}`}>
+                    {viewMode === 'grid' ? (
+                        <Row gutter={[16, 24]}>
+                            {filteredItems.map(item => (
+                                <Col xs={24} sm={12} md={8} lg={6} key={item.id}>
+                                    <button 
+                                        className="card-wrapper"
+                                        onMouseEnter={() => setHoveredItemId(item.id)}
+                                        onMouseLeave={() => setHoveredItemId(null)}
+                                        onClick={() => showQuickView(item)}
+                                        aria-label={`Quick view ${item.name}`}
+                                        style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}
+                                    >
+                                        <Card 
+                                            hoverable 
+                                            className="wishlist-card"
+                                            cover={
+                                                <div className="image-container">
+                                                    <img alt={item.name} src={item.image} />
+                                                    {item.discount > 0 && (
+                                                        <span className="discount-label" role="text" aria-label={`${item.discount}% discount`}>
+                                                            -{item.discount}%
+                                                        </span>
+                                                    )}
+                                                    
+                                                    {hoveredItemId === item.id && (
+                                                        <div className="hover-buttons" role="group" aria-label="Product actions">
+                                                            <Tooltip title="Quick View">
+                                                                <Button 
+                                                                    icon={<EyeOutlined />}
+                                                                    className="hover-btn quick-view-btn"
+                                                                    onClick={(e) => showQuickView(item, e)}
+                                                                    aria-label="Quick view product"
+                                                                />
+                                                            </Tooltip>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            }
+                                        >
+                                            <Card.Meta 
+                                                title={item.name} 
+                                                description={
+                                                    <>
+                                                        <div className="product-price">
+                                                            {item.discount > 0 ? (
+                                                                <>
+                                                                    <span className="discounted-price" role="text" aria-label={`Discounted price ${formatPrice(calculateDiscountedPrice(item.price, item.discount))}`}>
+                                                                        {formatPrice(calculateDiscountedPrice(item.price, item.discount))}
+                                                                    </span>
+                                                                    <span className="original-price" role="text" aria-label={`Original price ${formatPrice(item.price)}`}>
+                                                                        {formatPrice(item.price)}
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                <span className="regular-price">
+                                                                    {formatPrice(item.price)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="product-rating">
+                                                            <Rate disabled defaultValue={item.rating} allowHalf />
+                                                        </div>
+                                                    </>
+                                                }
+                                            />
+                                            
+                                            <div className="card-actions">
+                                                <Button 
+                                                    type="primary" 
+                                                    icon={<ShoppingCartOutlined />}
+                                                    onClick={(e) => showQuickView(item, e)}
+                                                    block
+                                                >
+                                                    Add to Cart
+                                                </Button>
+                                                <Button 
+                                                    danger 
+                                                    icon={<DeleteOutlined />}
+                                                    onClick={(e) => removeFromWishlist(item.id, e)}
+                                                    block
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </div>
+                                        </Card>
+                                    </button>
+                                </Col>
+                            ))}
+                        </Row>
+                    ) : (
+                        <div className="list-view">
+                            {filteredItems.map(item => (
+                                <button 
+                                    key={item.id}
+                                    className="list-card-button"
+                                    onClick={() => showQuickView(item)}
+                                    aria-label={`View details of ${item.name}`}
+                                    style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}
+                                >
+                                    <Card 
+                                        className="list-card"
+                                        hoverable
+                                    >
+                                        <Row gutter={16} align="middle">
+                                            <Col xs={24} sm={8} md={6}>
+                                                <div className="list-image-container">
+                                                    <img src={item.image} alt={item.name} />
+                                                    {item.discount > 0 && <span className="discount-label">-{item.discount}%</span>}
+                                                </div>
+                                            </Col>
+                                            <Col xs={24} sm={10} md={12}>
+                                                <div className="list-item-details">
+                                                    <h3>{item.name}</h3>
+                                                    <div className="product-rating">
+                                                        <Rate disabled defaultValue={item.rating} allowHalf />
+                                                    </div>
+                                                    <p className="item-brand">{item.brand}</p>
+                                                    <p className="item-category">{item.category}</p>
+                                                </div>
+                                            </Col>
+                                            <Col xs={24} sm={6} md={6}>
+                                                <div className="list-item-actions">
+                                                    <div className="product-price">
+                                                        {item.discount > 0 ? (
+                                                            <>
+                                                                <span className="discounted-price" role="text" aria-label={`Discounted price ${formatPrice(calculateDiscountedPrice(item.price, item.discount))}`}>
+                                                                    {formatPrice(calculateDiscountedPrice(item.price, item.discount))}
+                                                                </span>
+                                                                <span className="original-price" role="text" aria-label={`Original price ${formatPrice(item.price)}`}>
+                                                                    {formatPrice(item.price)}
+                                                                </span>
+                                                            </>
+                                                        ) : (
+                                                            <span className="regular-price">
+                                                                {formatPrice(item.price)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <Button 
+                                                        type="primary" 
+                                                        icon={<ShoppingCartOutlined />}
+                                                        onClick={(e) => showQuickView(item, e)}
+                                                        className="list-action-btn"
+                                                    >
+                                                        Add to Cart
+                                                    </Button>
+                                                    <Button 
+                                                        danger 
+                                                        icon={<DeleteOutlined />}
+                                                        onClick={(e) => removeFromWishlist(item.id, e)}
+                                                        className="list-action-btn"
+                                                    >
+                                                        Remove
+                                                    </Button>
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    </Card>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        
+        return (
+            <div className="empty-wishlist">
+                <Empty 
+                    description="Your wishlist is empty" 
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+                <Button type="primary" size="large" href="/products">
+                    Continue Shopping
+                </Button>
+            </div>
+        );
+    };
+
     return (
         <div className="wishlist-container">
             <div className="wishlist-header">
@@ -371,173 +560,7 @@ function Wishlist() {
                 </div>
             </div>
 
-            {loading ? (
-                <div className="loading-container">
-                    <Spin size="large" />
-                </div>
-            ) : filteredItems.length > 0 ? (
-                <div className={`wishlist-items ${viewMode}`}>
-                    {viewMode === 'grid' ? (
-                        <Row gutter={[16, 24]}>
-                            {filteredItems.map(item => (
-                                <Col xs={24} sm={12} md={8} lg={6} key={item.id}>
-                                    <div 
-                                        className="card-wrapper"
-                                        onMouseEnter={() => setHoveredItemId(item.id)}
-                                        onMouseLeave={() => setHoveredItemId(null)}
-                                        onClick={() => showQuickView(item)}
-                                    >
-                                        <Card 
-                                            hoverable 
-                                            className="wishlist-card"
-                                            cover={
-                                                <div className="image-container">
-                                                    <img alt={item.name} src={item.image} />
-                                                    {item.discount > 0 && <span className="discount-label">-{item.discount}%</span>}
-                                                    
-                                                    {hoveredItemId === item.id && (
-                                                        <div className="hover-buttons">
-                                                            <Tooltip title="Quick View">
-                                                                <Button 
-                                                                    icon={<EyeOutlined />}
-                                                                    className="hover-btn quick-view-btn"
-                                                                    onClick={(e) => showQuickView(item, e)}
-                                                                />
-                                                            </Tooltip>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            }
-                                        >
-                                            <Card.Meta 
-                                                title={item.name} 
-                                                description={
-                                                    <>
-                                                        <div className="product-price">
-                                                            {item.discount > 0 ? (
-                                                                <>
-                                                                    <span className="discounted-price">
-                                                                        {formatPrice(calculateDiscountedPrice(item.price, item.discount))}
-                                                                    </span>
-                                                                    <span className="original-price">
-                                                                        {formatPrice(item.price)}
-                                                                    </span>
-                                                                </>
-                                                            ) : (
-                                                                <span className="regular-price">
-                                                                    {formatPrice(item.price)}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="product-rating">
-                                                            <Rate disabled defaultValue={item.rating} allowHalf />
-                                                        </div>
-                                                    </>
-                                                }
-                                            />
-                                            
-                                            <div className="card-actions">
-                                                <Button 
-                                                    type="primary" 
-                                                    icon={<ShoppingCartOutlined />}
-                                                    onClick={(e) => showQuickView(item, e)}
-                                                    block
-                                                >
-                                                    Add to Cart
-                                                </Button>
-                                                <Button 
-                                                    danger 
-                                                    icon={<DeleteOutlined />}
-                                                    onClick={(e) => removeFromWishlist(item.id, e)}
-                                                    block
-                                                >
-                                                    Remove
-                                                </Button>
-                                            </div>
-                                        </Card>
-                                    </div>
-                                </Col>
-                            ))}
-                        </Row>
-                    ) : (
-                        <div className="list-view">
-                            {filteredItems.map(item => (
-                                <Card 
-                                    key={item.id}
-                                    className="list-card"
-                                    onClick={() => showQuickView(item)}
-                                    hoverable
-                                >
-                                    <Row gutter={16} align="middle">
-                                        <Col xs={24} sm={8} md={6}>
-                                            <div className="list-image-container">
-                                                <img src={item.image} alt={item.name} />
-                                                {item.discount > 0 && <span className="discount-label">-{item.discount}%</span>}
-                                            </div>
-                                        </Col>
-                                        <Col xs={24} sm={10} md={12}>
-                                            <div className="list-item-details">
-                                                <h3>{item.name}</h3>
-                                                <div className="product-rating">
-                                                    <Rate disabled defaultValue={item.rating} allowHalf />
-                                                </div>
-                                                <p className="item-brand">{item.brand}</p>
-                                                <p className="item-category">{item.category}</p>
-                                            </div>
-                                        </Col>
-                                        <Col xs={24} sm={6} md={6}>
-                                            <div className="list-item-actions">
-                                                <div className="product-price">
-                                                    {item.discount > 0 ? (
-                                                        <>
-                                                            <span className="discounted-price">
-                                                                {formatPrice(calculateDiscountedPrice(item.price, item.discount))}
-                                                            </span>
-                                                            <span className="original-price">
-                                                                {formatPrice(item.price)}
-                                                            </span>
-                                                        </>
-                                                    ) : (
-                                                        <span className="regular-price">
-                                                            {formatPrice(item.price)}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <Button 
-                                                    type="primary" 
-                                                    icon={<ShoppingCartOutlined />}
-                                                    onClick={(e) => showQuickView(item, e)}
-                                                    className="list-action-btn"
-                                                >
-                                                    Add to Cart
-                                                </Button>
-                                                <Button 
-                                                    danger 
-                                                    icon={<DeleteOutlined />}
-                                                    onClick={(e) => removeFromWishlist(item.id, e)}
-                                                    className="list-action-btn"
-                                                >
-                                                    Remove
-                                                </Button>
-                                            </div>
-                                        </Col>
-                                    </Row>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            ) : (
-                <div className="empty-wishlist">
-                    <Empty 
-                        description="Your wishlist is empty" 
-                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    />
-                    <Button type="primary" size="large" href="/products">
-                        Continue Shopping
-                    </Button>
-                </div>
-            )}
+            {renderWishlistContent()}
             
             {renderQuickViewModal()}
             {renderFilterDrawer()}

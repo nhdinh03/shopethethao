@@ -190,17 +190,16 @@ const UserProfile = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="profile-loading-container">
-        <div className="loading-content">
-          <Spin size="large" />
-          <p>Đang tải thông tin...</p>
-        </div>
-      </div>
-    );
-  }
 
+  if (loading) {
+            return (
+                <div className="loading-container">
+                    <Spin size="large" />
+                    <p>Đang tải thông tin...</p>
+                </div>
+            );
+        }
+        
   return (
     <div className="user-profile-container">
       <div className="profile-header">

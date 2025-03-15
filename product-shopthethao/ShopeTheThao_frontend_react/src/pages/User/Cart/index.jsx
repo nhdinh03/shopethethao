@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaTrash, FaPlus, FaMinus, FaShoppingCart, FaInfoCircle } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import './cart.scss';
+import Loading from 'pages/Loading/loading';
 
 function Cart() {
     const [cartItems, setCartItems] = useState([]);
@@ -16,6 +17,7 @@ function Cart() {
 
     // Fetch cart items from localStorage on component mount
     useEffect(() => {
+        setTimeout(() => {
         const savedCart = localStorage.getItem('cartItems');
         if (savedCart) {
             const parsedCart = JSON.parse(savedCart);
@@ -50,6 +52,8 @@ function Cart() {
             setSelectedItems(initialItems.map(item => item.id));
         }
         setLoading(false);
+        }
+        , 500);
     }, []);
 
     // Save cart to localStorage whenever it changes
@@ -133,7 +137,7 @@ function Cart() {
     const total = subtotal - discountAmount;
 
     if (loading) {
-        return <div className="loading">Đang tải giỏ hàng...</div>;
+        return <Loading />;
     }
 
     return (

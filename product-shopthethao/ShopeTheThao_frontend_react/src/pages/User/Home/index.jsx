@@ -16,6 +16,7 @@ import "./Home.scss";
 import { mockProducts } from "data/mockData";
 import { breadcrumbDataUser } from "layouts/User/BreadcrumbUser/BreadcrumbUserConfig";
 import { ProductCard } from "components/User";
+import Loading from 'pages/Loading/loading';
 
 const HomeIndex = () => {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
@@ -133,7 +134,7 @@ const HomeIndex = () => {
         console.error("Unable to set featured products: mockProducts is empty");
       }
       setIsLoading(false);
-    }, 300);
+    }, 500);
   }, []);
 
   // Animation variants
@@ -179,6 +180,63 @@ const HomeIndex = () => {
     return price * (1 - discount / 100);
   };
 
+  const renderProductsContent = () => {
+    if (loading) {
+      return <Loading />;
+    }
+    
+    if (!displayedProducts || displayedProducts.length === 0) {
+      return (
+        <div className="no-products">
+          <p>Không tìm thấy sản phẩm nào.</p>
+        </div>
+      );
+    }
+  
+    return (
+      <motion.div
+        className={`products-grid view-${viewMode}`}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {displayedProducts.map((product, index) => (
+          <motion.div
+            key={product.id || index}
+            className="product-item"
+            variants={itemVariants}
+          >
+            <ProductCard product={product} index={index} />
+          </motion.div>
+        ))}
+      </motion.div>
+    );
+  };
+  
+  const renderFeaturedProducts = () => {
+    if (isLoading) {
+      return <Loading />;
+    }
+  
+    if (!featuredProducts || featuredProducts.length === 0) {
+      return (
+        <div className="no-products">
+          <p>Không tìm thấy sản phẩm nổi bật nào.</p>
+        </div>
+      );
+    }
+  
+    return (
+      <div className="products-grid">
+        {featuredProducts.map((product, index) => (
+          <div key={product.id || index} className="product-item">
+            <ProductCard product={product} index={index} />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="home-page">
       {/* Hero Banner Section */}
@@ -215,14 +273,21 @@ const HomeIndex = () => {
             </motion.button>
           </div>
         </div>
-        <div className="banner-indicators">
+        <div className="banner-indicators" role="tablist">
           {banners.map((_, index) => (
-            <span
+            <button
               key={index}
-              className={`indicator ${
-                currentBannerIndex === index ? "active" : ""
-              }`}
+              role="tab"
+              aria-selected={currentBannerIndex === index}
+              aria-controls={`banner-${index}`}
+              className={`indicator ${currentBannerIndex === index ? "active" : ""}`}
               onClick={() => setCurrentBannerIndex(index)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setCurrentBannerIndex(index);
+                }
+              }}
+              tabIndex={0}
             />
           ))}
         </div>
@@ -373,34 +438,9 @@ const HomeIndex = () => {
               </div>
             )}
 
+
             {/* Products Grid */}
-            {loading ? (
-              <div className="loading-spinner">
-                <div className="spinner"></div>
-                <p>Đang tải sản phẩm...</p>
-              </div>
-            ) : displayedProducts && displayedProducts.length > 0 ? (
-              <motion.div
-                className={`products-grid view-${viewMode}`}
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                {displayedProducts.map((product, index) => (
-                  <motion.div
-                    key={product.id || index}
-                    className="product-item"
-                    variants={itemVariants}
-                  >
-                    <ProductCard product={product} index={index} />
-                  </motion.div>
-                ))}
-              </motion.div>
-            ) : (
-              <div className="no-products">
-                <p>Không tìm thấy sản phẩm nào.</p>
-              </div>
-            )}
+            {renderProductsContent()}
           </div>
 
           {/* All Products Link */}
@@ -427,24 +467,7 @@ const HomeIndex = () => {
             </p>
           </motion.div>
 
-          {isLoading ? (
-            <div className="loading-spinner">
-              <div className="spinner"></div>
-              <p>Đang tải sản phẩm...</p>
-            </div>
-          ) : featuredProducts && featuredProducts.length > 0 ? (
-            <div className="products-grid">
-              {featuredProducts.map((product, index) => (
-                <div key={product.id || index} className="product-item">
-                  <ProductCard product={product} index={index} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="no-products">
-              <p>Không tìm thấy sản phẩm nổi bật nào.</p>
-            </div>
-          )}
+          {renderFeaturedProducts()}
 
           <div className="view-all-container">
             <Link to="/v1/shop/products" className="view-all-link">

@@ -27,6 +27,7 @@ import "./Seefulldetails.scss";
 import BreadcrumbUser from "layouts/User/BreadcrumbUser/BreadcrumbUser";
 import { mockProducts } from "data/mockData";
 import { ProductCard } from "../../../components/User";
+import Loading from "pages/Loading/loading";
 
 const Seefulldetails = () => {
   const { productId } = useParams();
@@ -50,8 +51,8 @@ const Seefulldetails = () => {
   const [viewedCount, setViewedCount] = useState(0);
   const [isStickyAddToCart, setIsStickyAddToCart] = useState(false);
   const productRef = useRef(null);
-    // Single boolean flag to track if initialization is done
-    const [isInitialized, setIsInitialized] = useState(false);
+  // Single boolean flag to track if initialization is done
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Mock FAQ data
   const faqs = [
@@ -84,10 +85,8 @@ const Seefulldetails = () => {
     4: 20,
     3: 10,
     2: 3,
-    1: 2
+    1: 2,
   };
-
-
 
   // Fetch product data
   useEffect(() => {
@@ -111,7 +110,7 @@ const Seefulldetails = () => {
             const completeProduct = {
               ...sampleProduct,
               ...foundProduct, // Allow mock data to override sample data if needed
-              id: foundProduct.id || sampleProduct.id
+              id: foundProduct.id || sampleProduct.id,
             };
 
             setProduct(completeProduct);
@@ -169,7 +168,7 @@ const Seefulldetails = () => {
 
       // Set stock
       setCurrentStock(product.stock || 0);
-      
+
       // Mark initialization as complete
       setIsInitialized(true);
     }
@@ -192,20 +191,21 @@ const Seefulldetails = () => {
       "/images/products/giay-jogarbola-navy-1.jpg",
       "/images/products/giay-jogarbola-navy-2.jpg",
       "/images/products/giay-jogarbola-navy-3.jpg",
-      "/images/products/giay-jogarbola-navy-4.jpg"
+      "/images/products/giay-jogarbola-navy-4.jpg",
     ],
-    description: "Giày thể thao chạy bộ Jogarbola Kaze với thiết kế hiện đại, êm ái, nhẹ nhàng, bền bỉ. Phần đế được thiết kế đặc biệt giúp tăng độ bám và chống trơn trượt hiệu quả.",
+    description:
+      "Giày thể thao chạy bộ Jogarbola Kaze với thiết kế hiện đại, êm ái, nhẹ nhàng, bền bỉ. Phần đế được thiết kế đặc biệt giúp tăng độ bám và chống trơn trượt hiệu quả.",
     material: "Vải lưới thoáng khí, đế cao su",
     origin: "Việt Nam",
     gender: "Nam",
-    sku: "JG-KAZE-04"
+    sku: "JG-KAZE-04",
   };
 
   // Format price with VND
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
-      currency: "VND"
+      currency: "VND",
     }).format(price);
   };
 
@@ -293,16 +293,7 @@ const Seefulldetails = () => {
   };
 
   if (loading) {
-    return (
-      <div className="product-details-page">
-        <div className="container">
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>Đang tải thông tin sản phẩm...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error || !product) {
@@ -356,21 +347,32 @@ const Seefulldetails = () => {
             <div className="gallery-layout">
               {/* Vertical thumbnails on the left */}
               <div className="thumbnails-column">
-                {[product.thumbnail, ...(product.images || [])].map((image, index) => (
-                  <div
-                    key={index}
-                    className={`thumbnail ${selectedImage === index ? "active" : ""}`}
-                    onClick={() => handleImageSelect(index)}
-                  >
-                    <img src={image} alt={`${product.name} - View ${index + 1}`} />
-                  </div>
-                ))}
+                {[product.thumbnail, ...(product.images || [])].map(
+                  (image, index) => (
+                    <div
+                      key={index}
+                      className={`thumbnail ${
+                        selectedImage === index ? "active" : ""
+                      }`}
+                      onClick={() => handleImageSelect(index)}
+                    >
+                      <img
+                        src={image}
+                        alt={`${product.name} - View ${index + 1}`}
+                      />
+                    </div>
+                  )
+                )}
               </div>
 
               {/* Main image display */}
               <div className={`main-image ${zoomActive ? "zoom-active" : ""}`}>
                 <img
-                  src={selectedImage === 0 ? product.thumbnail : (product.images?.[selectedImage - 1] || product.thumbnail)}
+                  src={
+                    selectedImage === 0
+                      ? product.thumbnail
+                      : product.images?.[selectedImage - 1] || product.thumbnail
+                  }
                   alt={product.name}
                   onClick={() => setZoomActive(!zoomActive)}
                 />
@@ -382,7 +384,7 @@ const Seefulldetails = () => {
           <div className="product-info">
             {/* Product title with highlighting */}
             <h1 className="product-title">{product.name}</h1>
-            
+
             {/* Detailed Meta Information */}
             <div className="product-meta">
               <div className="product-rating">
@@ -403,7 +405,8 @@ const Seefulldetails = () => {
               </div>
 
               <div className="product-brand">
-                Thương hiệu: <span className="brand-highlight">{product.brand}</span>
+                Thương hiệu:{" "}
+                <span className="brand-highlight">{product.brand}</span>
               </div>
 
               <div className="stock-status">
@@ -457,7 +460,9 @@ const Seefulldetails = () => {
               <div className="details-list">
                 <div className="detail-row">
                   <span className="detail-label">Thương hiệu:</span>
-                  <span className="detail-value brand-highlight">{product.brand}</span>
+                  <span className="detail-value brand-highlight">
+                    {product.brand}
+                  </span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Mô tả:</span>
@@ -465,11 +470,15 @@ const Seefulldetails = () => {
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Chất liệu:</span>
-                  <span className="detail-value">{product.material || "Polyester, Cotton"}</span>
+                  <span className="detail-value">
+                    {product.material || "Polyester, Cotton"}
+                  </span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Xuất xứ:</span>
-                  <span className="detail-value">{product.origin || "Việt Nam"}</span>
+                  <span className="detail-value">
+                    {product.origin || "Việt Nam"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -680,7 +689,9 @@ const Seefulldetails = () => {
                   {formatPrice(product.price + (accessories[0]?.price || 0))}
                 </p>
               </div>
-              <button className="bundle-add-btn">Thêm tất cả vào giỏ hàng</button>
+              <button className="bundle-add-btn">
+                Thêm tất cả vào giỏ hàng
+              </button>
             </div>
           </div>
         </div>
