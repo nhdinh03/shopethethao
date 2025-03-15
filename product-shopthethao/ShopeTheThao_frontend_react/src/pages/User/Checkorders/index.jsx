@@ -28,8 +28,6 @@ import {
 import axios from "axios";
 import Loading from "pages/Loading/loading";
 
-
-
 function Checkorders() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,200 +69,199 @@ function Checkorders() {
   const API_URL = "https://api.shopethethao.com/orders";
   const IMAGE_BASE_URL = "https://api.shopethethao.com/images/";
 
-
   // Dữ liệu mẫu cho sản phẩm - đặt ngoài component để tránh tạo lại mỗi lần render
-const sampleOrderItems = [
-  {
-    id: 14,
-    product: {
-      id: 15,
-      name: "Nguyễn Hoàng Dinh",
-      quantity: 0,
-      price: 1233211,
-      description: "1111",
-      status: true,
-      categorie: {
+  const sampleOrderItems = [
+    {
+      id: 14,
+      product: {
+        id: 15,
+        name: "Nguyễn Hoàng Dinh",
+        quantity: 0,
+        price: 1233211,
+        description: "1111",
+        status: true,
+        categorie: {
+          id: 2,
+          name: "dinh431",
+          description: "dinh43111",
+        },
+        sizes: [
+          {
+            id: 703,
+            quantity: 101,
+            price: 200000,
+            size: {
+              id: 1,
+              name: "S",
+              description: "1sss",
+            },
+          },
+          {
+            id: 704,
+            quantity: 201,
+            price: 180000,
+            size: {
+              id: 2,
+              name: "L",
+              description: "ssss",
+            },
+          },
+        ],
+        images: [
+          {
+            id: 808,
+            imageUrl:
+              "422a1a02-523e-4650-9516-bfdea3ebb972_Áo tập luyện chính hãng Arsenal 2024 25 2.jpg",
+          },
+        ],
+      },
+      size: {
         id: 2,
-        name: "dinh431",
-        description: "dinh43111",
+        name: "L",
+        description: "ssss",
       },
-      sizes: [
-        {
-          id: 703,
-          quantity: 101,
-          price: 200000,
-          size: {
-            id: 1,
-            name: "S",
-            description: "1sss",
-          },
-        },
-        {
-          id: 704,
-          quantity: 201,
-          price: 180000,
-          size: {
-            id: 2,
-            name: "L",
-            description: "ssss",
-          },
-        },
-      ],
-      images: [
-        {
-          id: 808,
-          imageUrl:
-            "422a1a02-523e-4650-9516-bfdea3ebb972_Áo tập luyện chính hãng Arsenal 2024 25 2.jpg",
-        },
-      ],
+      quantity: 10,
+      unitPrice: 1500000,
+      paymentMethod: "Thẻ tín dụng",
     },
-    size: {
-      id: 2,
-      name: "L",
-      description: "ssss",
-    },
-    quantity: 10,
-    unitPrice: 1500000,
-    paymentMethod: "Thẻ tín dụng",
-  },
-];
+  ];
 
-// Dữ liệu mẫu đơn hàng
-const sampleOrders = [
-  {
-    id: 1,
-    orderCode: "#10",
-    status: "cancelled",
-    items: sampleOrderItems,
-    total: 15000000,
-    date: "20/02/2025 00:11",
-    createdAt: "2025-02-20T00:11:00",
-    address: "192 Đường ABC, Quận 10, TP.HCM",
-    paymentMethod: "Thẻ tín dụng",
-    note: "Giao hàng nhanh",
-    customerName: "Hoàng Thị K",
-    customerCode: "U10",
-    trackingSteps: [
-      {
-        status: "ordered",
-        time: "20/02/2025 00:11",
-        title: "Đơn hàng đã đặt",
-      },
-      {
-        status: "processing",
-        time: "20/02/2025 08:30",
-        title: "Đang xử lý",
-      },
-      {
-        status: "cancelled",
-        time: "21/02/2025 10:15",
-        title: "Đã hủy",
-      },
-    ],
-  },
-  {
-    id: 2,
-    orderCode: "#11",
-    status: "delivered",
-    items: sampleOrderItems,
-    total: 15000000,
-    date: "15/02/2025 08:30",
-    createdAt: "2025-02-15T08:30:00",
-    address: "456 Đường Lê Lợi, Quận 3, TP.HCM",
-    paymentMethod: "Thẻ tín dụng",
-    note: "",
-    customerName: "Nguyễn Văn A",
-    customerCode: "U11",
-    trackingSteps: [
-      {
-        status: "ordered",
-        time: "15/02/2025 08:30",
-        title: "Đơn hàng đã đặt",
-      },
-      {
-        status: "processing",
-        time: "15/02/2025 10:45",
-        title: "Đang xử lý",
-      },
-      {
-        status: "shipping",
-        time: "16/02/2025 09:20",
-        title: "Đang giao hàng",
-      },
-      {
-        status: "delivered",
-        time: "17/02/2025 14:30",
-        title: "Đã nhận hàng",
-      },
-    ],
-  },
-  {
-    id: 3,
-    orderCode: "#12",
-    status: "pending",
-    items: sampleOrderItems,
-    total: 15000000,
-    date: "18/02/2025 15:22",
-    createdAt: "2025-02-18T15:22:00",
-    address: "789 Đường Hai Bà Trưng, Quận 1, TP.HCM",
-    paymentMethod: "Thẻ tín dụng",
-    note: "Giao giờ hành chính",
-    customerName: "Trần Thị B",
-    customerCode: "U12",
-    trackingSteps: [
-      {
-        status: "ordered",
-        time: "18/02/2025 15:22",
-        title: "Đơn hàng đã đặt",
-      },
-      {
-        status: "processing",
-        time: "18/02/2025 16:45",
-        title: "Đang xử lý",
-      },
-      {
-        status: "shipping",
-        time: "19/02/2025 08:30",
-        title: "Đang giao hàng",
-      },
-    ],
-  },
-  {
-    id: 4,
-    orderCode: "#13",
-    status: "pending",
-    items: sampleOrderItems,
-    total: 8500000,
-    date: "01/01/2025 11:30",
-    createdAt: "2025-01-01T11:30:00",
-    address: "123 Đường Nguyễn Huệ, Quận 1, TP.HCM",
-    paymentMethod: "Chuyển khoản",
-    note: "",
-    customerName: "Lê Văn C",
-    customerCode: "U13",
-    trackingSteps: [
-      {
-        status: "ordered",
-        time: "01/01/2025 11:30",
-        title: "Đơn hàng đã đặt",
-      },
-      {
-        status: "processing",
-        time: "01/01/2025 14:45",
-        title: "Đang xử lý",
-      },
-      {
-        status: "shipping",
-        time: "02/01/2025 09:20",
-        title: "Đang giao hàng",
-      },
-    ],
-  },
-];
+  // Dữ liệu mẫu đơn hàng
+  const sampleOrders = [
+    {
+      id: 1,
+      orderCode: "#10",
+      status: "cancelled",
+      items: sampleOrderItems,
+      total: 15000000,
+      date: "20/02/2025 00:11",
+      createdAt: "2025-02-20T00:11:00",
+      address: "192 Đường ABC, Quận 10, TP.HCM",
+      paymentMethod: "Thẻ tín dụng",
+      note: "Giao hàng nhanh",
+      customerName: "Hoàng Thị K",
+      customerCode: "U10",
+      trackingSteps: [
+        {
+          status: "ordered",
+          time: "20/02/2025 00:11",
+          title: "Đơn hàng đã đặt",
+        },
+        {
+          status: "processing",
+          time: "20/02/2025 08:30",
+          title: "Đang xử lý",
+        },
+        {
+          status: "cancelled",
+          time: "21/02/2025 10:15",
+          title: "Đã hủy",
+        },
+      ],
+    },
+    {
+      id: 2,
+      orderCode: "#11",
+      status: "delivered",
+      items: sampleOrderItems,
+      total: 15000000,
+      date: "15/02/2025 08:30",
+      createdAt: "2025-02-15T08:30:00",
+      address: "456 Đường Lê Lợi, Quận 3, TP.HCM",
+      paymentMethod: "Thẻ tín dụng",
+      note: "",
+      customerName: "Nguyễn Văn A",
+      customerCode: "U11",
+      trackingSteps: [
+        {
+          status: "ordered",
+          time: "15/02/2025 08:30",
+          title: "Đơn hàng đã đặt",
+        },
+        {
+          status: "processing",
+          time: "15/02/2025 10:45",
+          title: "Đang xử lý",
+        },
+        {
+          status: "shipping",
+          time: "16/02/2025 09:20",
+          title: "Đang giao hàng",
+        },
+        {
+          status: "delivered",
+          time: "17/02/2025 14:30",
+          title: "Đã nhận hàng",
+        },
+      ],
+    },
+    {
+      id: 3,
+      orderCode: "#12",
+      status: "pending",
+      items: sampleOrderItems,
+      total: 15000000,
+      date: "18/02/2025 15:22",
+      createdAt: "2025-02-18T15:22:00",
+      address: "789 Đường Hai Bà Trưng, Quận 1, TP.HCM",
+      paymentMethod: "Thẻ tín dụng",
+      note: "Giao giờ hành chính",
+      customerName: "Trần Thị B",
+      customerCode: "U12",
+      trackingSteps: [
+        {
+          status: "ordered",
+          time: "18/02/2025 15:22",
+          title: "Đơn hàng đã đặt",
+        },
+        {
+          status: "processing",
+          time: "18/02/2025 16:45",
+          title: "Đang xử lý",
+        },
+        {
+          status: "shipping",
+          time: "19/02/2025 08:30",
+          title: "Đang giao hàng",
+        },
+      ],
+    },
+    {
+      id: 4,
+      orderCode: "#13",
+      status: "pending",
+      items: sampleOrderItems,
+      total: 8500000,
+      date: "01/01/2025 11:30",
+      createdAt: "2025-01-01T11:30:00",
+      address: "123 Đường Nguyễn Huệ, Quận 1, TP.HCM",
+      paymentMethod: "Chuyển khoản",
+      note: "",
+      customerName: "Lê Văn C",
+      customerCode: "U13",
+      trackingSteps: [
+        {
+          status: "ordered",
+          time: "01/01/2025 11:30",
+          title: "Đơn hàng đã đặt",
+        },
+        {
+          status: "processing",
+          time: "01/01/2025 14:45",
+          title: "Đang xử lý",
+        },
+        {
+          status: "shipping",
+          time: "02/01/2025 09:20",
+          title: "Đang giao hàng",
+        },
+      ],
+    },
+  ];
 
   useEffect(() => {
     setLoading(true);
-    
+
     // Mô phỏng gọi API bằng timeout
     const timeoutId = setTimeout(() => {
       try {
@@ -275,7 +272,7 @@ const sampleOrders = [
         //   setLoading(false);
         // };
         // fetchData();
-        
+
         // Sử dụng dữ liệu mẫu
         setOrders(sampleOrders);
         setLoading(false);
@@ -923,7 +920,7 @@ const sampleOrders = [
                                   key={index}
                                   className={`tracking-step ${step.status}`}
                                 >
-                                  <div className="step-icon">
+                                  <div className="step-icon" aria-hidden="true">
                                     {getStatusIcon(step.status)}
                                   </div>
                                   <div className="step-info">
@@ -933,7 +930,10 @@ const sampleOrders = [
                                     <div className="step-time">{step.time}</div>
                                   </div>
                                   {index < order.trackingSteps.length - 1 && (
-                                    <div className="step-connector"></div>
+                                    <div
+                                      className="step-connector"
+                                      aria-hidden="true"
+                                    ></div>
                                   )}
                                 </div>
                               ))}
@@ -998,7 +998,7 @@ const sampleOrders = [
                 <div className="tracking-timeline">
                   {selectedOrder.trackingSteps.map((step, index) => (
                     <div key={index} className={`tracking-step ${step.status}`}>
-                      <div className="step-icon">
+                      <div className="step-icon" aria-hidden="true">
                         {getStatusIcon(step.status)}
                       </div>
                       <div className="step-info">
@@ -1006,7 +1006,10 @@ const sampleOrders = [
                         <div className="step-time">{step.time}</div>
                       </div>
                       {index < selectedOrder.trackingSteps.length - 1 && (
-                        <div className="step-connector"></div>
+                        <div
+                          className="step-connector"
+                          aria-hidden="true"
+                        ></div>
                       )}
                     </div>
                   ))}

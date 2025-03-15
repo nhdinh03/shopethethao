@@ -1,16 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { message } from "antd";
 import { FiInfo, FiMail, FiLock, FiEyeOff, FiEye } from "react-icons/fi";
-// Make sure to use the correct path to import the form components
 import { InputField, EmailField } from "../Common/FormFields";
 import authApi from "api/Admin/Auth/auth";
 
 const ForgotPasswordForm = ({
   forgotPasswordEmail,
   setForgotPasswordEmail,
-
   onCancel,
 }) => {
   const [otpSent, setOtpSent] = useState(false);
@@ -20,12 +17,6 @@ const ForgotPasswordForm = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState({
-    email: "",
-    otp: "",
-    password: "",
-    confirmPassword: "",
-  });
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
