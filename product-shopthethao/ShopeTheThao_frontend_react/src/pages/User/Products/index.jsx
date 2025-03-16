@@ -31,15 +31,8 @@ const Products = () => {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const location = useLocation();
   const [showAlternate, setShowAlternate] = useState(null);
-  const [activeCategory, setActiveCategory] = useState("YOU GOT THIS");
   const navigate = useNavigate();
 
-  const featuredCategories = [
-    "YOU GOT THIS",
-    "TERREX",
-    "Sporty & Rich",
-    "Pantone Color- Mocha Mousse",
-  ];
 
   const featuredProducts = products.slice(0, 4);
 
@@ -459,40 +452,7 @@ const Products = () => {
       </div>
 
       {/* Banner */}
-      <div className="page-banner">
-        <div className="container">
-          <div className="featured-section">
-            <div className="category-buttons">
-              {featuredCategories.map((category) => (
-                <button
-                  key={category}
-                  className={activeCategory === category ? "active" : ""}
-                  onClick={() => setActiveCategory(category)}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-
-            <div className="product-slider">
-              <div className="products-row">
-                {featuredProducts.map((product) => (
-                  <div key={product.id} className="featured-product">
-                    <img src={product.thumbnail} alt={product.name} />
-                    <div className="product-info">
-                      <h3>{product.name}</h3>
-                      <div className="price">
-                        {new Intl.NumberFormat("vi-VN").format(product.price)}₫
-                      </div>
-                      <div className="category">Performance</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+   
 
       {/* Quick View Modal */}
       {quickViewProduct && (
