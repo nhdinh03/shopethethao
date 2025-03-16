@@ -69,12 +69,32 @@ const ProductCard = ({ product, index, onQuickView, quickViewButton, showAlterna
           src={showAlternate && product.images?.[1] ? product.images[1] : product.thumbnail} 
           alt={product.name}
           className="product-image primary"
+          loading="lazy"
+          srcSet={`${product.thumbnail} 300w,
+                   ${product.thumbnail} 600w,
+                   ${product.thumbnail} 900w`}
+          sizes="(max-width: 320px) 280px,
+                 (max-width: 375px) 335px,
+                 (max-width: 425px) 385px,
+                 (max-width: 768px) 728px,
+                 (max-width: 1024px) 984px,
+                 1200px"
         />
         {product.alternateThumbnail && (
           <img 
             src={product.alternateThumbnail}
             alt={`${product.name} - alternate view`}
             className="product-image alternate"
+            loading="lazy"
+            srcSet={`${product.alternateThumbnail} 300w,
+                     ${product.alternateThumbnail} 600w,
+                     ${product.alternateThumbnail} 900w`}
+            sizes="(max-width: 320px) 280px,
+                   (max-width: 375px) 335px,
+                   (max-width: 425px) 385px,
+                   (max-width: 768px) 728px,
+                   (max-width: 1024px) 984px,
+                   1200px"
           />
         )}
         <div className="product-actions">
@@ -126,12 +146,7 @@ const ProductCard = ({ product, index, onQuickView, quickViewButton, showAlterna
           </div>
         )}
       </div>
-      
-      {quickViewButton && (
-        <div className="quick-view-button-container">
-          {quickViewButton}
-        </div>
-      )}
+
     </motion.div>
   );
 };

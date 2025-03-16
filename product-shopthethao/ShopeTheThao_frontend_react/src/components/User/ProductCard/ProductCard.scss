@@ -451,3 +451,124 @@ $border-radius: 8px;
     }
   }
 }
+
+// New responsive breakpoints
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+$breakpoint-mobile-s: 320px;
+
+// 4K Displays
+@media (min-width: $breakpoint-4k) {
+  .product-card {
+    .product-info {
+      padding: 2rem;
+
+      .product-name {
+        font-size: 2rem;
+      }
+
+      .product-price {
+        .current-price,
+        .discounted-price {
+          font-size: 2.5rem;
+        }
+        .original-price {
+          font-size: 2rem;
+        }
+      }
+    }
+  }
+}
+
+// Laptop
+@media (max-width: $breakpoint-laptop) {
+  .product-card {
+    .product-image-container {
+      .product-actions {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.9);
+      }
+    }
+  }
+}
+
+// Tablet
+@media (max-width: $breakpoint-tablet) {
+  .product-card {
+    margin-bottom: 1rem;
+
+    .product-info {
+      padding: 1rem;
+
+      .product-name {
+        font-size: 0.9rem;
+        -webkit-line-clamp: 1;
+      }
+
+      .product-price {
+        .current-price,
+        .discounted-price {
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+}
+
+// Mobile Large
+@media (max-width: $breakpoint-mobile-l) {
+  .product-card {
+    .product-image-container {
+      padding-bottom: 75%;
+
+      .product-actions {
+        .action-btn {
+          width: 35px;
+          height: 35px;
+        }
+      }
+    }
+  }
+}
+
+// Mobile Medium
+@media (max-width: $breakpoint-mobile-m) {
+  .product-card {
+    .product-badges {
+      .badge {
+        font-size: 8px;
+        padding: 3px 6px;
+      }
+    }
+
+    .product-info {
+      .product-rating {
+        svg {
+          width: 14px;
+        }
+      }
+    }
+  }
+}
+
+// Mobile Small
+@media (max-width: $breakpoint-mobile-s) {
+  .product-card {
+    .product-image-container {
+      .product-actions {
+        .action-btn {
+          width: 30px;
+          height: 30px;
+          
+          svg {
+            width: 12px;
+            height: 12px;
+          }
+        }
+      }
+    }
+  }
+}

@@ -265,6 +265,7 @@ $border-radius: 8px;
 
 // Responsive
 @media (max-width: 576px) {
+
   .product-card {
     .product-image {
       height: 200px;
@@ -446,6 +447,7 @@ $border-radius: 8px;
     background: white;
     border-radius: $border-radius;
     border: 1px solid $border-color;
+    width: 100%;
 
     .result-count {
       font-size: 0.95rem;
@@ -464,6 +466,7 @@ $border-radius: 8px;
       font-size: 0.9rem;
       cursor: pointer;
       transition: $transition;
+      white-space: nowrap;
 
       &:hover {
         background: $accent-color;
@@ -624,6 +627,7 @@ $border-radius: 8px;
       }
     }
   }
+  
   
   .products-container {
     display: flex;
@@ -998,6 +1002,34 @@ $border-radius: 8px;
               }
             }
           }
+        }
+      }
+    }
+    
+    .product-summary {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      margin: 0 auto;
+      max-width: 100%;
+      box-sizing: border-box;
+      
+      .result-count {
+        font-size: 0.9rem;
+        text-align: left;
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .clear-filters-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+        
+        svg {
+          font-size: 0.9rem;
         }
       }
     }

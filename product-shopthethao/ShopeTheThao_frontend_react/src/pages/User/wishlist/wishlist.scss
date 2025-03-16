@@ -645,4 +645,212 @@
       }
     }
   }
+
+  // New responsive breakpoints
+  $breakpoint-4k: 2560px;
+  $breakpoint-laptop: 1024px;
+  $breakpoint-tablet: 768px;
+  $breakpoint-mobile-l: 425px;
+  $breakpoint-mobile-m: 375px;
+  $breakpoint-mobile-s: 320px;
+
+  .wishlist-container {
+    // Updated responsive styles
+    @media (min-width: $breakpoint-4k) {
+      max-width: 2560px;
+      padding: 48px;
+
+      .wishlist-items.grid {
+        .wishlist-card {
+          .image-container {
+            height: 400px;
+          }
+
+          .ant-card-meta-title {
+            font-size: 24px;
+            height: 60px;
+          }
+
+          .product-price {
+            .discounted-price,
+            .regular-price {
+              font-size: 24px;
+            }
+          }
+        }
+      }
+
+      .quick-view-modal {
+        .product-image {
+          height: 600px;
+        }
+      }
+    }
+
+    @media (max-width: $breakpoint-laptop) {
+      padding: 20px;
+      
+      .wishlist-items.grid {
+        .card-wrapper {
+          .ant-card-meta-title {
+            font-size: 15px;
+            height: 40px;
+          }
+        }
+      }
+
+      .list-card {
+        .list-image-container {
+          height: 180px;
+        }
+      }
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+      padding: 16px;
+
+      .wishlist-header {
+        .header-left h1 {
+          font-size: 22px;
+        }
+      }
+
+      .wishlist-items.grid {
+        .wishlist-card {
+          .image-container {
+            height: 200px;
+          }
+        }
+      }
+
+      .quick-view-modal {
+        .ant-modal-body {
+          padding: 12px;
+        }
+
+        .product-image {
+          height: 220px;
+        }
+      }
+    }
+
+    @media (max-width: $breakpoint-mobile-l) {
+      padding: 12px;
+
+      .wishlist-header {
+        .header-left h1 {
+          font-size: 20px;
+        }
+
+        .header-right {
+          .view-options,
+          .filter-options {
+            button {
+              padding: 4px 8px;
+              font-size: 13px;
+            }
+          }
+        }
+      }
+
+      .wishlist-items.grid {
+        .wishlist-card {
+          .image-container {
+            height: 180px;
+          }
+
+          .card-actions {
+            button {
+              padding: 6px 12px;
+              font-size: 13px;
+            }
+          }
+        }
+      }
+    }
+
+    @media (max-width: $breakpoint-mobile-m) {
+      padding: 8px;
+
+      .wishlist-items.grid {
+        .wishlist-card {
+          .image-container {
+            height: 160px;
+          }
+
+          .ant-card-meta-title {
+            font-size: 14px;
+          }
+
+          .product-price {
+            .discounted-price,
+            .regular-price {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+
+      .list-card {
+        .list-item-details {
+          h3 {
+            font-size: 15px;
+          }
+        }
+      }
+    }
+
+    @media (max-width: $breakpoint-mobile-s) {
+      padding: 6px;
+
+      .wishlist-header {
+        .header-left h1 {
+          font-size: 18px;
+        }
+      }
+
+      .wishlist-items.grid {
+        .wishlist-card {
+          .image-container {
+            height: 140px;
+          }
+
+          .ant-card-meta-title {
+            font-size: 13px;
+          }
+        }
+      }
+
+      .quick-view-modal {
+        .size-selection {
+          .size-options {
+            .size-btn {
+              min-width: 36px;
+              height: 36px;
+              font-size: 12px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Performance optimizations
+.wishlist-items {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.image-container img {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+// Optimize transitions
+.wishlist-card,
+.list-card {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }

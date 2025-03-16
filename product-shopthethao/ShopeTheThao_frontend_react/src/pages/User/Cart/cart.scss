@@ -1,3 +1,19 @@
+// Define breakpoints
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+$breakpoint-mobile-s: 320px;
+
+
+
+// If you want to remove the ant-card-body class completely
+.ant-card-body.cart-container {
+  all: unset;  // Reset all styles
+  display: block;  // Restore display property
+}
+
 .cart-container {
   max-width: 1200px;
   margin: 2rem auto;
@@ -9,6 +25,21 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
+  
+  // For 4K displays, increase the max-width
+  @media (min-width: $breakpoint-laptop) {
+    max-width: 80%;
+  }
+  
+  @media (min-width: $breakpoint-4k) {
+    max-width: 1600px;
+    padding: 30px;
+  }
+  
+  @media (max-width: $breakpoint-mobile-l) {
+    padding: 15px;
+    margin: 1rem auto;
+  }
   
   &::before {
     content: "";
@@ -100,9 +131,17 @@
     gap: 30px;
     contain: content;
     
-    @media (min-width: 992px) {
+    @media (min-width: $breakpoint-laptop) {
       flex-direction: row;
       align-items: flex-start;
+    }
+    
+    @media (min-width: $breakpoint-4k) {
+      gap: 50px;
+    }
+    
+    @media (max-width: $breakpoint-mobile-l) {
+      gap: 20px;
     }
   }
   
@@ -237,6 +276,16 @@
           object-fit: cover;
           border-radius: 5px;
           box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+          
+          @media (min-width: $breakpoint-4k) {
+            width: 120px;
+            height: 120px;
+          }
+          
+          @media (max-width: $breakpoint-tablet) {
+            width: 70px;
+            height: 70px;
+          }
         }
         
         .item-details {
@@ -365,6 +414,10 @@
     position: sticky;
     top: 20px;
     contain: content;
+    
+    @media (min-width: $breakpoint-4k) {
+      top: 30px;
+    }
     
     .coupon-section, .order-summary {
       background: #fff;
@@ -620,29 +673,14 @@
     }
   }
   
-  @keyframes modalFadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  @keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0px); }
-  }
-  
-  // Responsive styles
-  @media (max-width: 992px) {
+  // Enhanced Responsive styles
+  @media (max-width: $breakpoint-laptop) {
     .cart-summary {
       position: static;
     }
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: $breakpoint-tablet) {
     .cart-title {
       font-size: 24px;
     }
@@ -728,9 +766,10 @@
     }
   }
   
-  @media (max-width: 480px) {
+  @media (max-width: $breakpoint-mobile-l) {
     .cart-title {
       font-size: 22px;
+      padding-bottom: 10px;
     }
     
     .empty-cart {
@@ -740,10 +779,136 @@
         font-size: 20px;
       }
     }
+    
+    .cart-item {
+      padding: 12px 8px !important;
+      
+      .item-product {
+        img {
+          width: 65px !important;
+          height: 65px !important;
+        }
+        
+        .item-details h3 {
+          font-size: 14px;
+        }
+      }
+      
+      .item-quantity .quantity-input {
+        width: 35px;
+      }
+    }
+    
+    .summary-row.total {
+      padding: 15px 0 10px;
+    }
+    
+    .checkout-actions .checkout-btn,
+    .checkout-actions .continue-shopping {
+      padding: 12px;
+    }
+  }
+  
+  @media (max-width: $breakpoint-mobile-m) {
+    .cart-title {
+      font-size: 20px;
+    }
+    
+    .cart-item {
+      .item-product img {
+        width: 60px !important;
+        height: 60px !important;
+      }
+      
+      .item-details h3 {
+        font-size: 13px;
+      }
+      
+      .item-quantity {
+        .quantity-btn {
+          width: 24px;
+          height: 24px;
+        }
+        .quantity-input {
+          width: 30px;
+          height: 24px;
+        }
+      }
+    }
+  }
+  
+  @media (max-width: $breakpoint-mobile-s) {
+    .cart-container {
+      padding: 10px;
+      margin: 0.5rem auto;
+    }
+    
+    .cart-title {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    
+    .cart-actions {
+      padding: 12px;
+      
+      .select-all span {
+        font-size: 13px;
+      }
+      
+      .clear-cart-btn {
+        font-size: 12px;
+      }
+    }
+    
+    .cart-item {
+      .item-product img {
+        width: 50px !important;
+        height: 50px !important;
+      }
+      
+      .item-details h3 {
+        font-size: 12px;
+      }
+    }
+    
+    .empty-cart {
+      padding: 20px 10px;
+      
+      h2 {
+        font-size: 18px;
+      }
+      
+      p {
+        font-size: 14px;
+      }
+      
+      .continue-shopping {
+        padding: 10px 20px;
+      }
+    }
   }
 }
+
+// Performance optimizations for animations
 @keyframes pulse {
   0% { opacity: 1; }
   50% { opacity: 0.8; }
   100% { opacity: 1; }
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+// Add hardware acceleration
+.cart-container, .cart-item, .checkout-btn, .continue-shopping {
+  will-change: transform;
+  backface-visibility: hidden;
 }

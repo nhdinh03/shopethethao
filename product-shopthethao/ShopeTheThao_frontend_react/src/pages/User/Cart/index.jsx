@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaTrash,
@@ -7,10 +7,19 @@ import {
   FaShoppingCart,
   FaInfoCircle,
 } from "react-icons/fa";
-// Remove AnimatePresence and motion for better performance
 import "./cart.scss";
 import Loading from "pages/Loading/loading";
 import debounce from "lodash/debounce";
+
+// Define breakpoints for responsive logic
+const BREAKPOINTS = {
+  MOBILE_S: 320,
+  MOBILE_M: 375,
+  MOBILE_L: 425,
+  TABLET: 768,
+  LAPTOP: 1024,
+  DESKTOP_4K: 2560
+};
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -21,9 +30,45 @@ function Cart() {
   const [loading, setLoading] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  
+  // Refs for performance optimization
+  const cartRef = useRef(null);
 
-  // Fetch cart items from localStorage on component mount
+  // Handle window resize with debounce for performance
   useEffect(() => {
+    const handleResize = debounce(() => {
+      setWindowWidth(window.innerWidth);
+    }, 200);
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      handleResize.cancel();
+    };
+  }, []);
+
+  // Fetch cart items - optimized with cached data check
+  useEffect(() => {
+    const cachedCart = sessionStorage.getItem("cachedCart");
+    
+    if (cachedCart) {
+      try {
+        const { data, timestamp } = JSON.parse(cachedCart);
+        const isExpired = Date.now() - timestamp > 60000; // 1 minute expiration
+        
+        if (!isExpired) {
+          setCartItems(data);
+          setSelectedItems(data.map(item => item.id));
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Error parsing cached cart:", error);
+      }
+    }
+    
+    // If no valid cache, continue with normal loading
     setTimeout(() => {
       const savedCart = localStorage.getItem("cartItems");
 
@@ -32,6 +77,12 @@ function Cart() {
           const parsedCart = JSON.parse(savedCart);
           setCartItems(parsedCart);
           setSelectedItems(parsedCart.map((item) => item.id));
+          
+          // Cache the result
+          sessionStorage.setItem("cachedCart", JSON.stringify({
+            data: parsedCart,
+            timestamp: Date.now()
+          }));
         } else {
           // Demo data if no saved cart
           const initialItems = [
@@ -62,22 +113,38 @@ function Cart() {
           ];
           setCartItems(initialItems);
           setSelectedItems(initialItems.map((item) => item.id));
+          
+          // Cache the demo data
+          sessionStorage.setItem("cachedCart", JSON.stringify({
+            data: initialItems,
+            timestamp: Date.now()
+          }));
         }
       } catch (error) {
         console.error("Error parsing cart data:", error);
         setCartItems([]);
         setSelectedItems([]);
       } finally {
-        // Set loading to false regardless of outcome
         setLoading(false);
       }
-    }, 500);
+    }, 300); // Reduced loading time for better UX
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage with throttling to prevent excessive writes
   useEffect(() => {
     if (!loading) {
-      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+      const saveCartToStorage = debounce(() => {
+        localStorage.setItem("cartItems", JSON.stringify(cartItems));
+        
+        // Update cache
+        sessionStorage.setItem("cachedCart", JSON.stringify({
+          data: cartItems,
+          timestamp: Date.now()
+        }));
+      }, 500);
+      
+      saveCartToStorage();
+      return () => saveCartToStorage.cancel();
     }
   }, [cartItems, loading]);
 
@@ -90,6 +157,7 @@ function Cart() {
     }
   }, [selectedItems, cartItems]);
 
+  // Optimize quantity change with better debouncing
   const handleQuantityChange = useCallback(
     (id, change) => {
       setCartItems(
@@ -103,7 +171,7 @@ function Cart() {
     [cartItems]
   );
 
-  const debouncedHandleQuantityChange = useCallback(
+  const debouncedHandleQuantityChange = useMemo(() => 
     debounce(handleQuantityChange, 300),
     [handleQuantityChange]
   );
@@ -176,7 +244,39 @@ function Cart() {
     };
   }, [selectedCartItems, discount]);
 
-  // Simplify animations by removing motion variants
+  // Responsive image size based on screen width
+  const getResponsiveImageSize = useCallback(() => {
+    if (windowWidth >= BREAKPOINTS.DESKTOP_4K) return 120;
+    if (windowWidth >= BREAKPOINTS.LAPTOP) return 100;
+    if (windowWidth >= BREAKPOINTS.TABLET) return 80;
+    if (windowWidth >= BREAKPOINTS.MOBILE_L) return 70;
+    if (windowWidth >= BREAKPOINTS.MOBILE_M) return 60;
+    return 50; // For smallest screens
+  }, [windowWidth]);
+
+  // Use intersection observer for better performance with many items
+  useEffect(() => {
+    if (!loading && cartRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+      
+      const cartItems = cartRef.current.querySelectorAll('.cart-item');
+      cartItems.forEach(item => observer.observe(item));
+      
+      return () => {
+        cartItems.forEach(item => observer.unobserve(item));
+      };
+    }
+  }, [loading, cartItems.length]);
+
   if (loading) {
     return <Loading />;
   }
@@ -228,8 +328,7 @@ function Cart() {
                 <span className="header-action">Xóa</span>
               </div>
 
-              {/* Replace AnimatePresence with a simple div */}
-              <div className="cart-items-list">
+              <div className="cart-items-list" ref={cartRef}>
                 {cartItems.map((item) => (
                   <div
                     className={`cart-item ${
@@ -245,7 +344,13 @@ function Cart() {
                       />
                     </div>
                     <div className="item-product" data-label="Sản phẩm">
-                      <img src={item.image} alt={item.name} />
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        width={getResponsiveImageSize()}
+                        height={getResponsiveImageSize()}
+                        loading="lazy"
+                      />
                       <div className="item-details">
                         <h3>{item.name}</h3>
                         <p>
@@ -373,9 +478,9 @@ function Cart() {
         </div>
       )}
 
-      {/* Confirmation modal */}
+      {/* Confirmation modal with improved animation */}
       {showConfirmation && (
-        <div className="confirmation-modal">
+        <div className="confirmation-modal" style={{animation: 'modalFadeIn 0.3s ease'}}>
           <div className="confirmation-content">
             <h3>Xác nhận xóa</h3>
             <p>
@@ -413,5 +518,8 @@ function Cart() {
   );
 }
 
-// Use React.memo to prevent unnecessary re-renders
-export default React.memo(Cart);
+// Use React.memo with custom comparison for better performance
+export default React.memo(Cart, (prevProps, nextProps) => {
+  // Custom comparison logic if needed
+  return true;
+});

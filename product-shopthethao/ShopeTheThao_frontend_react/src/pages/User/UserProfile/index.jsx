@@ -36,15 +36,24 @@ import Loading from "pages/Loading/loading";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
-  const [passwordForm] = Form.useForm(); // Add form for password
+  const [passwordForm] = Form.useForm();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
   const [imageUrl, setImageUrl] = useState("");
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
-  const [changePasswordLoading, setChangePasswordLoading] = useState(false); // Add this state
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false);
+  
+  // Enhanced responsive breakpoints
+  const [screenSize, setScreenSize] = useState({
+    is4k: window.innerWidth >= 2560,
+    isLaptop: window.innerWidth >= 1024 && window.innerWidth < 2560,
+    isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
+    isMobileL: window.innerWidth >= 425 && window.innerWidth < 768,
+    isMobileM: window.innerWidth >= 375 && window.innerWidth < 425,
+    isMobileS: window.innerWidth < 375,
+  });
 
   // Replace the mock data loading with actual user data from localStorage
   useEffect(() => {
@@ -76,12 +85,28 @@ const UserProfile = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setScreenSize({
+        is4k: window.innerWidth >= 2560,
+        isLaptop: window.innerWidth >= 1024 && window.innerWidth < 2560,
+        isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
+        isMobileL: window.innerWidth >= 425 && window.innerWidth < 768,
+        isMobileM: window.innerWidth >= 375 && window.innerWidth < 425,
+        isMobileS: window.innerWidth < 375,
+      });
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Dynamically calculate avatar size based on screen size
+  const getAvatarSize = () => {
+    if (screenSize.is4k) return 150;
+    if (screenSize.isLaptop) return 100;
+    if (screenSize.isTablet) return 90;
+    if (screenSize.isMobileL) return 80;
+    return 70; // For mobile M and S
+  };
 
   const handleSubmit = (values) => {
     setSaveLoading(true);
@@ -201,7 +226,7 @@ const UserProfile = () => {
         <div className="profile-avatar">
           <div className="avatar-container">
             <Avatar
-              size={100}
+              size={getAvatarSize()}
               src={imageUrl}
               icon={!imageUrl && <UserOutlined />}
               className="user-avatar"
@@ -246,7 +271,7 @@ const UserProfile = () => {
       >
         <div className="profile-content">
           <Card className="profile-card basic-info" title="Thông tin cơ bản">
-            <Row gutter={[24, 16]}>
+            <Row gutter={[screenSize.isMobileM || screenSize.isMobileS ? 12 : 24, screenSize.is4k ? 24 : 16]}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="fullname"
@@ -257,6 +282,7 @@ const UserProfile = () => {
                     prefix={<UserOutlined />}
                     readOnly={!isEditing}
                     className={!isEditing ? "readonly-input" : ""}
+                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
                   />
                 </Form.Item>
               </Col>
@@ -272,6 +298,7 @@ const UserProfile = () => {
                     prefix={<PhoneOutlined />}
                     readOnly={!isEditing}
                     className={!isEditing ? "readonly-input" : ""}
+                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
                   />
                 </Form.Item>
               </Col>
@@ -281,6 +308,7 @@ const UserProfile = () => {
                     prefix={<MailOutlined />}
                     readOnly
                     className="readonly-input"
+                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
                   />
                 </Form.Item>
               </Col>
@@ -298,6 +326,7 @@ const UserProfile = () => {
                     disabled={!isEditing}
                     className={!isEditing ? "readonly-input" : ""}
                     suffixIcon={<CalendarOutlined />}
+                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
                   />
                 </Form.Item>
               </Col>
@@ -333,10 +362,11 @@ const UserProfile = () => {
               rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
             >
               <Input.TextArea
-                rows={3}
+                rows={screenSize.isMobileS ? 2 : 3}
                 readOnly={!isEditing}
                 className={!isEditing ? "readonly-input" : ""}
                 placeholder="Nhập địa chỉ của bạn"
+                size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
               />
             </Form.Item>
           </Card>
@@ -355,6 +385,7 @@ const UserProfile = () => {
                   type="primary"
                   onClick={() => setPasswordModalVisible(true)}
                   className="change-password-btn"
+                  size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
                 >
                   Đổi mật khẩu
                 </Button>
@@ -371,6 +402,7 @@ const UserProfile = () => {
         footer={null}
         centered
         className="password-modal"
+        width={screenSize.is4k ? 600 : screenSize.isMobileL || screenSize.isMobileM || screenSize.isMobileS ? "95%" : 520}
       >
         <Form
           layout="vertical"
@@ -388,6 +420,7 @@ const UserProfile = () => {
             <Input.Password
               prefix={<LockOutlined />}
               placeholder="Nhập mật khẩu hiện tại"
+              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
             />
           </Form.Item>
 
@@ -404,6 +437,7 @@ const UserProfile = () => {
             <Input.Password
               prefix={<LockOutlined />}
               placeholder="Nhập mật khẩu mới"
+              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
             />
           </Form.Item>
 
@@ -428,6 +462,7 @@ const UserProfile = () => {
             <Input.Password
               prefix={<LockOutlined />}
               placeholder="Xác nhận mật khẩu mới"
+              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
             />
           </Form.Item>
 
@@ -438,6 +473,7 @@ const UserProfile = () => {
                 setPasswordModalVisible(false);
                 passwordForm.resetFields();
               }}
+              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
             >
               Hủy
             </Button>
@@ -447,6 +483,7 @@ const UserProfile = () => {
               type="primary"
               htmlType="submit"
               loading={changePasswordLoading}
+              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
             >
               Xác nhận
             </Button>

@@ -1,5 +1,5 @@
 .slideshow-section {
-  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
 
   .container {
@@ -181,7 +181,7 @@
   .slide-container {
     .each-slide {
       > div {
-        height: 400px;
+        height: 300px;
       }
 
       .slide-caption {
@@ -194,6 +194,8 @@
     }
   }
 }
+
+
 
 @media (max-width: 480px) {
   .slide-container {
@@ -210,6 +212,25 @@
         .shop-now {
           padding: 10px 20px;
           font-size: 14px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 320px) {
+  .slide-container {
+    .each-slide {
+      > div {
+        width: 100%;
+        height: 300px;
+      }
+
+      .slide-caption {
+        text-align: center;
+
+        h2 {
+          font-size: 2rem;
         }
       }
     }
