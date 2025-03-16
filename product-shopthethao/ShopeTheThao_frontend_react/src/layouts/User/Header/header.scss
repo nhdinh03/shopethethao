@@ -29,11 +29,40 @@
   --gl-button-font-set-weight-functional-1: 700;
 }
 
-body,
-html {
+// Common mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin hover-transition {
+  transition: all 0.2s ease;
+}
+
+@mixin icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  @include flex-center;
+  color: var(--color-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  @include hover-transition;
+
+  &:hover {
+    background: rgba(255, 68, 0, 0.1);
+    color: var(--color-accent);
+  }
+}
+
+// Base styles
+body, html {
   font-family: "Roboto", sans-serif;
 }
 
+// Header component
 .header {
   width: 100%;
   box-shadow: var(--shadow-sm);
@@ -94,7 +123,7 @@ html {
 
         // Thêm đường kẻ dọc giữa các cột
         .category-column:not(:last-child)::after {
-          content: '';
+          content: "";
           position: absolute;
           top: 0;
           right: -15px;
@@ -140,7 +169,7 @@ html {
               }
 
               &.new-item::after {
-                content: 'Mới';
+                content: "Mới";
                 margin-left: 8px;
                 font-size: 11px;
                 padding: 2px 6px;
@@ -161,7 +190,7 @@ html {
             height: 100%;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
             img {
               width: 100%;
@@ -177,7 +206,7 @@ html {
               padding: 20px;
               background: linear-gradient(
                 to top,
-                rgba(0,0,0,0.8),
+                rgba(0, 0, 0, 0.8),
                 transparent
               );
               color: white;
@@ -276,7 +305,7 @@ html {
       min-height: 20px; // Fixed height to prevent layout shifts
       height: 20px;
       overflow: hidden;
-      
+
       .brand-desc {
         margin: 0;
         font-size: 13px;
@@ -297,7 +326,7 @@ html {
       min-width: fit-content; // Ensure buttons don't shrink
       display: flex;
       justify-content: flex-end;
-      
+
       .auth-buttons {
         display: flex;
         gap: 10px;
@@ -356,6 +385,70 @@ html {
       justify-content: space-between;
       align-items: center;
       height: 100%;
+    }
+    .mobile-menu-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: none; // Hidden by default, shown in mobile
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--color-primary);
+
+      &:hover {
+        background: rgba(255, 68, 0, 0.1);
+        color: var(--color-accent);
+        transform: scale(1.05);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      svg {
+        font-size: 24px;
+        transition: transform 0.3s ease;
+      }
+
+      // Custom ripple effect
+      &::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(255, 68, 0, 0.2);
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.3s ease;
+      }
+
+      &:active::after {
+        opacity: 1;
+        transform: scale(1.2);
+        transition: 0s;
+      }
+
+      // Show in mobile view
+      @media (max-width: 1024px) {
+        display: flex;
+        margin-left: 8px;
+      }
+
+      // Adjust for smaller screens
+      @media (max-width: 480px) {
+        width: 36px;
+        height: 36px;
+
+        svg {
+          font-size: 20px;
+        }
+      }
     }
 
     .logo {
@@ -424,13 +517,14 @@ html {
             svg {
               margin-left: 4px;
             }
-            &.primary-item, &.special-item {
+            &.primary-item,
+            &.special-item {
               > a {
                 font-weight: var(--gl-button-font-set-weight-functional-1);
                 letter-spacing: 0.5px;
               }
             }
-      
+
             &.special-item > a {
               color: var(--color-accent);
             }
@@ -627,28 +721,11 @@ html {
       gap: 5px;
 
       .action-icon {
+        @include icon-button;
         position: relative;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--color-primary);
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.2s ease; // Remove color transition
-        text-decoration: none;
 
         svg {
           font-size: 20px;
-        }
-
-        &:hover {
-          background: rgba(255, 68, 0, 0.1);
-          color: var(--color-accent);
-          transform: none; // Remove transform animation
         }
 
         .count-badge {
@@ -661,9 +738,7 @@ html {
           color: white;
           font-size: 11px;
           font-weight: bold;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          @include flex-center;
           border-radius: 50%;
           box-shadow: 0 2px 5px rgba(255, 68, 0, 0.3);
           border: 2px solid white;
@@ -782,71 +857,6 @@ html {
                 }
               }
             }
-          }
-        }
-      }
-
-      .mobile-menu-toggle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        display: none; // Hidden by default, shown in mobile
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        color: var(--color-primary);
-        
-        &:hover {
-          background: rgba(255, 68, 0, 0.1);
-          color: var(--color-accent);
-          transform: scale(1.05);
-        }
-
-        &:active {
-          transform: scale(0.95);
-        }
-
-        svg {
-          font-size: 24px;
-          transition: transform 0.3s ease;
-        }
-
-        // Custom ripple effect
-        &::after {
-          content: '';
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          background: rgba(255, 68, 0, 0.2);
-          opacity: 0;
-          transform: scale(0.5);
-          transition: all 0.3s ease;
-        }
-
-        &:active::after {
-          opacity: 1;
-          transform: scale(1.2);
-          transition: 0s;
-        }
-
-        // Show in mobile view
-        @media (max-width: 1024px) {
-          display: flex;
-          margin-left: 8px;
-        }
-
-        // Adjust for smaller screens
-        @media (max-width: 480px) {
-          width: 36px;
-          height: 36px;
-          
-          svg {
-            font-size: 20px;
           }
         }
       }
@@ -1016,21 +1026,34 @@ html {
       }
     }
   }
-  
 
   .mobile-menu {
     position: fixed;
     top: 0;
-    right: 0;
-    width: 320px;
-    height: 100vh;
+    left: -100%; // Thay đổi right thành left
+    width: 100%; // Giảm chiều rộng menu
+    height: 100%;
     background: white;
     box-shadow: var(--shadow-md);
-    z-index: 2000;
+    z-index: 2001; // Tăng z-index
     display: flex;
     flex-direction: column;
     padding: 20px;
-    transition: transform 0.2s ease;
+    overflow-y: auto;
+    overscroll-behavior: contain; // Ngăn scroll lan truyền
+    -webkit-overflow-scrolling: touch; // Smooth scroll cho iOS
+    will-change: transform; // Tối ưu GPU
+    transform: translateX(-100%); // Ban đầu ẩn về bên trái
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); // Timing function mượt
+
+    &.active {
+      transform: translateX(0);
+
+      & + .mobile-menu-backdrop {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
 
     .mobile-menu-header {
       display: flex;
@@ -1108,7 +1131,11 @@ html {
     nav {
       flex: 1;
       overflow-y: auto;
-      margin-bottom: 20px;
+      // margin: 0 -20px; // Mở rộng full width
+      height: 200px;
+      padding: 0 20px;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
 
       ul {
         list-style: none;
@@ -1165,8 +1192,9 @@ html {
           .submenu {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.2s ease; // Remove opacity transition
+            transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1); // Remove opacity transition
             padding-left: 15px;
+            will-change: max-height;
 
             li {
               border: none;
@@ -1196,7 +1224,9 @@ html {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
-        margin-bottom: 24px;
+        margin: 15px;
+        margin-top: 5px;
+        
 
         .action-btn {
           display: flex;
@@ -1207,13 +1237,13 @@ html {
           border-radius: 8px;
           background: var(--color-gray-light);
           text-decoration: none;
-          color: var(--color-text);
+          color: var (--color-text);
           transition: var(--transition);
           position: relative;
           overflow: hidden;
 
           &::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 0;
             left: 0;
@@ -1245,20 +1275,20 @@ html {
           &:hover {
             background: rgba(255, 68, 0, 0.08);
             transform: translateY(-2px);
-            
+
             &::before {
               opacity: 1;
             }
-            
+
             svg {
               transform: scale(1.1);
             }
           }
-          
+
           &:active {
             transform: translateY(0);
           }
-          
+
           // Badge styling for counts
           .count-indicator {
             position: absolute;
@@ -1346,7 +1376,6 @@ html {
   line-height: var(--gl-body-font-set-lineheight-functional-2);
   text-decoration: var(--gl-body-font-set-decoration-functional-2);
   text-transform: uppercase;
-
 }
 
 // Media Queries
@@ -1444,9 +1473,6 @@ html {
       &.special-item.bold-text > a {
         color: var(--color-accent);
       }
-    
-  
-
 
       &.has-mega-menu {
         position: static;
@@ -1658,104 +1684,7 @@ html {
   }
 }
 
-// Mobile menu updates
-.mobile-menu {
-  nav {
-    ul {
-      li {
-        .submenu {
-          .submenu-group {
-            margin-bottom: 10px;
 
-            .group-toggle {
-              display: none;
-
-              &:checked ~ .group-items {
-                max-height: 500px;
-                opacity: 1;
-                padding: 8px 0 8px 15px;
-              }
-
-              &:checked ~ .group-label svg {
-                transform: rotate(180deg);
-              }
-            }
-
-            .group-label {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              padding: 10px 0;
-              font-weight: 500;
-              cursor: pointer;
-              color: var(--color-text);
-
-              svg {
-                transition: var(--transition);
-                font-size: 16px;
-              }
-            }
-
-            .group-items {
-              max-height: 0;
-              overflow: hidden;
-              opacity: 0;
-              transition: all 0.3s ease;
-
-              li {
-                border: none;
-                margin: 2px 0;
-
-                a {
-                  padding: 8px 0;
-                  font-size: 14px;
-                  font-weight: normal;
-                }
-              }
-            }
-          }
-
-          .mobile-quick-links {
-            padding: 15px 0;
-            margin-top: 10px;
-            border-top: 1px solid var(--color-gray-light);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-
-            .mobile-quick-link {
-              color: var(--color-accent);
-              text-decoration: none;
-              font-size: 14px;
-              font-weight: 500;
-
-              &::after {
-                content: "→";
-                margin-left: 4px;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  .mobile-auth-buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-
-    .mobile-btn {
-      flex: 1;
-      text-align: center;
-
-      &.accent {
-        background: var(--color-accent);
-        color: white;
-      }
-    }
-  }
-}
 
 @media (max-width: 1024px) {
   .mega-menu-categories {
@@ -1865,7 +1794,7 @@ html {
           color: var(--color-primary);
 
           &::after {
-            content: '';
+            content: "";
             position: absolute;
             bottom: -2px;
             left: 50%;
@@ -1878,13 +1807,11 @@ html {
 
           &:hover {
             color: var(--color-accent);
-            
+
             &::after {
               width: 100%;
             }
           }
-
-     
         }
       }
     }
@@ -1894,18 +1821,18 @@ html {
 @media (max-width: 360px) {
   .mobile-menu .mobile-menu-footer .user-actions-mobile {
     grid-template-columns: 1fr;
-    
+
     .action-btn {
       flex-direction: row;
       justify-content: flex-start;
       padding: 12px 16px;
-      
+
       svg {
         margin-right: 12px;
         margin-bottom: 0;
         font-size: 20px;
       }
-      
+
       span {
         text-align: left;
       }
@@ -1913,106 +1840,27 @@ html {
   }
 }
 
-.mobile-menu {
-  // ...existing code...
 
-  .mobile-menu-footer {
-    .user-actions-mobile {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
-
-      .action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 12px 8px;
-        border-radius: 8px;
-        background: var(--color-gray-light);
-        text-decoration: none;
-        color: var(--color-text);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 2px;
-          background: var(--color-accent);
-          opacity: 0;
-          transition: var(--transition);
-        }
-
-        svg {
-          font-size: 20px;
-          margin-bottom: 6px;
-          color: var(--color-accent);
-          transition: var(--transition);
-        }
-
-        span {
-          font-size: 12px;
-          font-weight: 500;
-          text-align: center;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 100%;
-          line-height: 1.2;
-        }
-
-        // ...existing hover effects...
-
-        // Badge styling for counts
-        .count-indicator {
-          position: absolute;
-          top: 5px;
-          right: 5px;
-          min-width: 16px;
-          height: 16px;
-          padding: 0 4px;
-          border-radius: 8px;
-          background: var(--color-accent);
-          color: white;
-          font-size: 9px;
-          font-weight: bold;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 1px 3px rgba(255, 68, 0, 0.3);
-        }
-      }
-    }
-
-    // ...existing code...
-  }
-}
 
 @media (max-width: 360px) {
   .mobile-menu .mobile-menu-footer .user-actions-mobile {
     grid-template-columns: 1fr;
-    
+
     .action-btn {
       flex-direction: row;
       justify-content: flex-start;
       padding: 10px 12px;
-      
+
       svg {
         margin-right: 10px;
         margin-bottom: 0;
         font-size: 18px;
       }
-      
+
       span {
         text-align: left;
       }
-      
+
       .count-indicator {
         top: 50%;
         right: 12px;
@@ -2022,66 +1870,22 @@ html {
   }
 }
 
-.mobile-menu {
-  // ...existing code...
-
-  .mobile-menu-footer {
-    // ...existing code...
-
-    .user-actions-mobile {
-      // ...existing code...
-
-      &.compact-actions {
-        margin-bottom: 16px;
-        
-        .action-btn {
-          padding: 8px 6px;
-          min-height: 70px;
-          
-          &::before {
-            height: 2px;
-          }
-          
-          svg {
-            font-size: 18px;
-            margin-bottom: 4px;
-          }
-          
-          span {
-            font-size: 11px;
-            line-height: 1.1;
-          }
-          
-          .count-indicator {
-            min-width: 14px;
-            height: 14px;
-            font-size: 8px;
-            top: 3px;
-            right: 3px;
-            padding: 0 3px;
-          }
-        }
-      }
-    }
-    // ...existing code...
-  }
-}
 
 @media (max-width: 360px) {
   .mobile-menu .mobile-menu-footer .user-actions-mobile.compact-actions {
     .action-btn {
       padding: 8px 10px;
       min-height: 0;
-      
+
       svg {
         font-size: 16px;
         margin-right: 8px;
       }
-      
+
       span {
         font-size: 10px;
       }
-      
+
       .count-indicator {
         right: 8px;
       }
@@ -2158,4 +1962,59 @@ html {
   }
 }
 
-// ...existing code...
+// Thêm backdrop mờ
+.mobile-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px); 
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+  will-change: opacity;
+}
+
+// Disable scroll trên body khi menu mở
+body.menu-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+
+
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 85%;
+  height: 100vh;
+  background: white;
+  box-shadow: var(--shadow-md);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
+  &.active {
+    left: 0;
+    transform: translateX(0);
+    
+    & + .mobile-menu-backdrop {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+

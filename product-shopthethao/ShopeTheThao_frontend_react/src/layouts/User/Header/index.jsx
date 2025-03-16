@@ -646,14 +646,41 @@ const Header = () => {
 
   // Animation variants
   const mobileMenuVariants = {
-    closed: { opacity: 0, x: "100%" },
-    open: { opacity: 1, x: 0 },
+    closed: {
+      x: "-100%",
+      transition: {
+        type: "tween",
+        duration: 0.25,
+        ease: [0.4, 0, 0.2, 1]
+      }
+    },
+    open: {
+      x: 0,
+      transition: {
+        type: "tween", 
+        duration: 0.25,
+        ease: [0.4, 0, 0.2, 1]
+      }
+    }
   };
 
   const searchBarVariants = {
     closed: { opacity: 0, y: -20 },
     open: { opacity: 1, y: 0 },
   };
+
+  // Thêm effect để xử lý scroll lock
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+
+    return () => {
+      document.body.classList.remove('menu-open');
+    };
+  }, [mobileMenuOpen]);
 
   // Update the renderMegaMenu function to apply special styling to highlighted items
   const renderMenuItem = (item, index) => {
@@ -785,6 +812,15 @@ const Header = () => {
       <div className="main-nav">
         <div className="container">
           <div className="nav-wrapper">
+            {/* Move mobile menu toggle here */}
+            <button
+              className="mobile-menu-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Menu"
+            >
+              <FiMenu />
+            </button>
+
             {/* Logo */}
             <Link to="/" className="logo">
               <h1 style={{ fontSize: "3.5rem" }}>
@@ -902,7 +938,8 @@ const Header = () => {
                 ))}
               </ul>
             </nav>
-            {/* User Actions */}
+
+            {/* User Actions - Remove mobile-menu-toggle from here */}
             <div className="user-actions">
               <button
                 className={`action-icon search-icon ${
@@ -991,14 +1028,6 @@ const Header = () => {
                   )}
                 </div>
               )}
-
-              <button
-                className="mobile-menu-toggle"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Menu"
-              >
-                <FiMenu />
-              </button>
             </div>
           </div>
         </div>
@@ -1100,207 +1129,212 @@ const Header = () => {
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            id="mobile-menu"
-            className="mobile-menu"
-            variants={mobileMenuVariants}
-            initial="closed"
-            animate="open"
-            exit="closed"
-            transition={{ type: "spring", stiffness: 400, damping: 40 }}
-          >
-            <div className="mobile-menu-header">
-              <button
-                className="close-menu"
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close menu"
-              >
-                <FiX />
-              </button>
-            </div>
+          <>
+            <motion.div
+              id="mobile-menu"
+              className={`mobile-menu ${mobileMenuOpen ? 'active' : ''}`}
+              variants={mobileMenuVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
+            >
+              <div className="mobile-menu-header">
+                <button
+                  className="close-menu"
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Close menu"
+                >
+                  <FiX />
+                </button>
+              </div>
 
-            <nav>
-              <ul>
-                {mainCategories.map((category) => (
-                  <li key={category.id}>
-                    {categoryDetails[category.id] ? (
-                      <>
-                        <input
-                          type="checkbox"
-                          id={`mobile-${category.id}`}
-                          className="submenu-toggle"
-                        />
-                        <label
-                          htmlFor={`mobile-${category.id}`}
-                          className="submenu-label"
-                        >
-                          {category.name} <FiChevronDown />
-                        </label>
-                        <div className="submenu">
-                          {categoryDetails[category.id].groups.map(
-                            (group, groupIndex) => (
-                              <div key={groupIndex} className="submenu-group">
-                                <input
-                                  type="checkbox"
-                                  id={`mobile-${category.id}-group-${groupIndex}`}
-                                  className="group-toggle"
-                                />
-                                <label
-                                  htmlFor={`mobile-${category.id}-group-${groupIndex}`}
-                                  className="group-label"
-                                >
-                                  {group.title} <FiChevronDown />
-                                </label>
-                                <ul className="group-items">
-                                  {group.items.map((item, itemIndex) => (
-                                    <li key={itemIndex}>
-                                      <Link
-                                        to={item.path}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                      >
-                                        {item.name}
-                                      </Link>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )
-                          )}
-                          {/* Quick links for mobile */}
-                          <div className="mobile-quick-links">
-                            {categoryDetails[category.id].quickLinks.map(
-                              (link, linkIndex) => (
-                                <Link
-                                  key={linkIndex}
-                                  to={link.path}
-                                  className="mobile-quick-link"
-                                  onClick={() => setMobileMenuOpen(false)}
-                                >
-                                  {link.name}
-                                </Link>
+              <nav>
+                <ul>
+                  {mainCategories.map((category) => (
+                    <li key={category.id}>
+                      {categoryDetails[category.id] ? (
+                        <>
+                          <input
+                            type="checkbox"
+                            id={`mobile-${category.id}`}
+                            className="submenu-toggle"
+                          />
+                          <label
+                            htmlFor={`mobile-${category.id}`}
+                            className="submenu-label"
+                          >
+                            {category.name} <FiChevronDown />
+                          </label>
+                          <div className="submenu">
+                            {categoryDetails[category.id].groups.map(
+                              (group, groupIndex) => (
+                                <div key={groupIndex} className="submenu-group">
+                                  <input
+                                    type="checkbox"
+                                    id={`mobile-${category.id}-group-${groupIndex}`}
+                                    className="group-toggle"
+                                  />
+                                  <label
+                                    htmlFor={`mobile-${category.id}-group-${groupIndex}`}
+                                    className="group-label"
+                                  >
+                                    {group.title} <FiChevronDown />
+                                  </label>
+                                  <ul className="group-items">
+                                    {group.items.map((item, itemIndex) => (
+                                      <li key={itemIndex}>
+                                        <Link
+                                          to={item.path}
+                                          onClick={() => setMobileMenuOpen(false)}
+                                        >
+                                          {item.name}
+                                        </Link>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
                               )
                             )}
+                            {/* Quick links for mobile */}
+                            <div className="mobile-quick-links">
+                              {categoryDetails[category.id].quickLinks.map(
+                                (link, linkIndex) => (
+                                  <Link
+                                    key={linkIndex}
+                                    to={link.path}
+                                    className="mobile-quick-link"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                  >
+                                    {link.name}
+                                  </Link>
+                                )
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    ) : (
-                      <Link
-                        to={category.path}
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {category.name}
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </nav>
+                        </>
+                      ) : (
+                        <Link
+                          to={category.path}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {category.name}
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </nav>
 
-            <div className="mobile-menu-footer">
-              <div className="user-actions-mobile compact-actions">
-                <Link
-                  to="/v1/user/profile"
-                  className="action-btn"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <FiUser />
-                  <span>Tài khoản</span>
-                </Link>
-                <Link
-                  to="/v1/user/wishlist"
-                  className="action-btn"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <AiOutlineHeart />
-                  <span>Yêu thích</span>
-                  {wishlistCount > 0 && (
-                    <div className="count-indicator">{wishlistCount}</div>
-                  )}
-                </Link>
-                <Link
-                  to="/v1/user/cart"
-                  className="action-btn"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <FiShoppingBag />
-                  <span>Giỏ hàng</span>
-                  {cartCount > 0 && (
-                    <div className="count-indicator">{cartCount}</div>
-                  )}
-                </Link>
-                <Link
-                  to="/v1/user/checkorders"
-                  className="action-btn"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <FiShoppingBag />
-                  <span>Đơn hàng</span>
-                </Link>
-              </div>
-
-              {isAuthenticated ? (
-                <div className="mobile-auth-buttons">
+              <div className="mobile-menu-footer">
+                <div className="user-actions-mobile compact-actions">
                   <Link
                     to="/v1/user/profile"
-                    className="mobile-btn"
+                    className="action-btn"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <FiUser /> Tài khoản
-                  </Link>
-                  <button
-                    className="mobile-btn accent"
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    <FiLogOut /> Đăng xuất
-                  </button>
-                </div>
-              ) : (
-                <div className="mobile-auth-buttons">
-                  <Link
-                    to="/v1/auth/login"
-                    className="mobile-btn"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Đăng nhập
+                    <FiUser />
+                    <span>Tài khoản</span>
                   </Link>
                   <Link
-                    to="/v1/auth/login"
-                    className="mobile-btn accent"
-                    state={{ activeTab: "register" }}
+                    to="/v1/user/wishlist"
+                    className="action-btn"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Đăng ký
+                    <AiOutlineHeart />
+                    <span>Yêu thích</span>
+                    {wishlistCount > 0 && (
+                      <div className="count-indicator">{wishlistCount}</div>
+                    )}
+                  </Link>
+                  <Link
+                    to="/v1/user/cart"
+                    className="action-btn"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FiShoppingBag />
+                    <span>Giỏ hàng</span>
+                    {cartCount > 0 && (
+                      <div className="count-indicator">{cartCount}</div>
+                    )}
+                  </Link>
+                  <Link
+                    to="/v1/user/checkorders"
+                    className="action-btn"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FiShoppingBag />
+                    <span>Đơn hàng</span>
                   </Link>
                 </div>
-              )}
-              <div className="social-links">
-                <a
-                  href="https://facebook.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Facebook
-                </a>
-                <a
-                  href="https://instagram.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Instagram
-                </a>
-                <a
-                  href="https://tiktok.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  TikTok
-                </a>
+
+                {isAuthenticated ? (
+                  <div className="mobile-auth-buttons">
+                    <Link
+                      to="/v1/user/profile"
+                      className="mobile-btn"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <FiUser /> Tài khoản
+                    </Link>
+                    <button
+                      className="mobile-btn accent"
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <FiLogOut /> Đăng xuất
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mobile-auth-buttons">
+                    <Link
+                      to="/v1/auth/login"
+                      className="mobile-btn"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Đăng nhập
+                    </Link>
+                    <Link
+                      to="/v1/auth/login"
+                      className="mobile-btn accent"
+                      state={{ activeTab: "register" }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Đăng ký
+                    </Link>
+                  </div>
+                )}
+                <div className="social-links">
+                  <a
+                    href="https://facebook.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Facebook
+                  </a>
+                  <a
+                    href="https://instagram.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Instagram
+                  </a>
+                  <a
+                    href="https://tiktok.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    TikTok
+                  </a>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+            <div 
+              className="mobile-menu-backdrop"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+          </>
         )}
       </AnimatePresence>
     </header>
