@@ -1,19 +1,30 @@
+const ADMIN_PREFIX = "/dashboard-management-sys";
+
 export const breadcrumbData = [
-    { url: "/admin/index", title: "Trang chủ" },
-    { url: "/admin/product", title: "Sản phẩm" },
-    { url: "/admin/sizes", title: "Quản Lý Size" },
-    { url: "/admin/categories", title: "Danh mục sản phẩm" },
-    { url: "/admin/product-attributes", title: "Quản lý thuộc tính" },
-    { url: "/admin/suppliers", title: "Nhà cung cấp" },
-    { url: "/admin/stock-receipts", title: "Phiếu nhập kho" },
-    { url: "/admin/brands", title: "Thương hiệu" },
-    { url: "/admin/invoices", title: "Hóa đơn" },
-    { url: "/admin/detailed-invoices", title: "Chi tiết hóa đơn" },
-    { url: "/admin/account", title: "Người dùng" },
-    { url: "/admin/accountStaff", title: "Nhân viên" },
-    { url: "/admin/roles", title: "vai trò" },
-    { url: "/admin/products-distinctives", title: "Thuộc tính sản phẩm" },
-    { url: "/admin/statistics-documents", title: "Tài liệu thống kê" },
-    { url: "/admin/charts", title: "Biểu đồ thống kê" },
-    { url: "/admin/verification", title: "Thống kê Tài khoản" },
+
+    
+    // Catalog Management
+    { url: `${ADMIN_PREFIX}/catalog/products`, title: "Quản lý Sản phẩm" },
+    { url: `${ADMIN_PREFIX}/catalog/categories`, title: "Danh mục sản phẩm" },
+    { url: `${ADMIN_PREFIX}/catalog/product-attributes`, title: "Thuộc tính sản phẩm" },
+    
+    // Inventory Management
+    { url: `${ADMIN_PREFIX}/inventory/sizes`, title: "Quản lý Size" },
+    { url: `${ADMIN_PREFIX}/inventory/brands`, title: "Thương hiệu" },
+    { url: `${ADMIN_PREFIX}/inventory/suppliers`, title: "Nhà cung cấp" },
+    { url: `${ADMIN_PREFIX}/inventory/stock-receipts`, title: "Phiếu nhập kho" },
+    
+    // User Management
+    { url: `${ADMIN_PREFIX}/users/accounts`, title: "Quản lý người dùng" },
+    { url: `${ADMIN_PREFIX}/users/staff`, title: "Quản lý nhân viên" },
+    { url: `${ADMIN_PREFIX}/users/roles`, title: "Quản lý vai trò" },
+    { url: `${ADMIN_PREFIX}/users/history`, title: "Lịch sử người dùng" },
+    
+    // Order Management
+    { url: `${ADMIN_PREFIX}/invoices`, title: "Hóa đơn" },
+    { url: `${ADMIN_PREFIX}/invoices/detailed`, title: "Chi tiết hóa đơn" },
+    
+    // Analytics & Reports
+    { url: `${ADMIN_PREFIX}/charts`, title: "Biểu đồ thống kê" },
+    { url: `${ADMIN_PREFIX}/verification`, title: "Thống kê tài khoản" }
 ];

@@ -60,23 +60,51 @@
   }
 
 .admin-breadcrumb {
-  padding: 16px 24px;
-  // background-color: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  padding: 12px 16px;
+  background: linear-gradient(to right, #f8f9fa, #e9ecef);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
 
   .ant-breadcrumb {
-    font-size: 14px;
+    font-size: 15px;
 
-    a {
-      color: #1890ff;
-      
+    .ant-breadcrumb-separator {
+      margin: 0 8px;
+      color: #6c757d;
+    }
+
+    .bread-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #2563eb;
+      transition: all 0.3s ease;
+
       &:hover {
-        color: #40a9ff;
+        color: #1d4ed8;
+        transform: translateX(2px);
+      }
+
+      .anticon {
+        font-size: 16px;
       }
     }
 
-    .anticon {
-      margin-right: 8px;
+    .current-page {
+      color: #4b5563;
+      font-weight: 500;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .admin-breadcrumb {
+    padding: 8px 12px;
+    
+    .ant-breadcrumb {
+      font-size: 14px;
     }
   }
 }
