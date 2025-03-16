@@ -1,15 +1,50 @@
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+$text-color: #595959;
+
+// Update color variables
+$background-color: #f5f5f5;
+$text-color: #262626;
+$card-bg: #ffffff;
+$border-color: #e8e8e8;
+
 .user-profile-container {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 30px auto;
   padding: 0 20px;
-  
-  @media (max-width: 768px) {
-    margin: 15px auto;
+  background-color: $background-color;
+
+  @media (min-width: $breakpoint-4k) {
+    max-width: 2000px;
+    margin: 50px auto;
+    padding: 0 40px;
+  }
+
+  @media (max-width: $breakpoint-laptop) {
+    max-width: 900px;
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    margin: 20px auto;
     padding: 0 15px;
   }
 
-  @media (max-width: 576px) {
+  @media (max-width: $breakpoint-mobile-l) {
+    margin: 15px auto;
+    padding: 0 12px;
+  }
+
+  @media (max-width: $breakpoint-mobile-m) {
     padding: 0 10px;
+  }
+
+  // Update container padding for mobile
+  @media (max-width: $breakpoint-tablet) {
+    padding: 0;
+    margin: 0;
   }
 
   // Profile loading state
@@ -22,22 +57,47 @@
 
   // Profile Header
   .profile-header {
-    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    background: linear-gradient(135deg, #40a9ff 0%, #096dd9 100%);
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 20px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     animation: fadeInDown 0.5s ease;
+    color: white;
+
+    @media (min-width: $breakpoint-4k) {
+      padding: 40px;
+      border-radius: 16px;
+    }
+
+    @media (max-width: $breakpoint-mobile-l) {
+      padding: 15px;
+      border-radius: 8px;
+    }
 
     @media (max-width: 576px) {
       padding: 20px;
       border-radius: 10px;
     }
 
+    // Update profile header
+    border-radius: 0;
+    margin-bottom: 0;
+    box-shadow: none;
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+
+    @media (max-width: $breakpoint-tablet) {
+      padding: 20px 15px;
+    }
+
+    @media (max-width: $breakpoint-mobile-l) {
+      padding: 15px 10px;
+    }
+
     .profile-avatar {
       display: flex;
       align-items: center;
-      
+
       @media (max-width: 576px) {
         flex-direction: column;
         text-align: center;
@@ -46,7 +106,15 @@
       .avatar-container {
         position: relative;
         margin-right: 30px;
-        
+
+        @media (min-width: $breakpoint-4k) {
+          margin-right: 40px;
+
+          .user-avatar {
+            border-width: 6px;
+          }
+        }
+
         @media (max-width: 576px) {
           margin-right: 0;
           margin-bottom: 15px;
@@ -61,7 +129,7 @@
           position: absolute;
           bottom: 0;
           right: 0;
-          
+
           .camera-button {
             display: flex;
             justify-content: center;
@@ -75,7 +143,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             transition: all 0.3s;
-            
+
             &:hover {
               transform: scale(1.1);
               background-color: #f0f0f0;
@@ -86,22 +154,38 @@
 
       .profile-info {
         color: white;
-        
+
         .user-name {
           font-size: 24px;
           margin: 0 0 5px;
           text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-          
+
+          @media (min-width: $breakpoint-4k) {
+            font-size: 32px;
+          }
+
+          @media (max-width: $breakpoint-tablet) {
+            font-size: 22px;
+          }
+
+          @media (max-width: $breakpoint-mobile-l) {
+            font-size: 20px;
+          }
+
+          @media (max-width: $breakpoint-mobile-m) {
+            font-size: 18px;
+          }
+
           @media (max-width: 576px) {
             font-size: 20px;
           }
         }
-        
+
         .user-email {
           opacity: 0.8;
           margin: 0 0 15px;
         }
-        
+
         .edit-button {
           border-radius: 20px;
           height: 36px;
@@ -110,7 +194,7 @@
           padding: 0 20px;
           transition: all 0.3s;
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-          
+
           &:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -127,29 +211,94 @@
     gap: 20px;
     animation: fadeInUp 0.5s ease;
 
+    @media (min-width: $breakpoint-4k) {
+      gap: 30px;
+    }
+
+    @media (max-width: $breakpoint-mobile-l) {
+      gap: 15px;
+    }
+
+    // Update content cards
+    gap: 0;
+
     .profile-card {
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       transition: all 0.3s;
       overflow: hidden;
-      
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
       &:hover {
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         transform: translateY(-3px);
       }
-      
+
       .ant-card-head {
         border-bottom: 1px solid #f0f0f0;
         padding: 0 20px;
-        
+        background: transparent;
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+
         .ant-card-head-title {
           font-size: 16px;
           font-weight: 500;
+          color: $text-color;
         }
       }
-      
+
       .ant-card-body {
         padding: 20px;
+        background: transparent;
+      }
+
+      @media (min-width: $breakpoint-4k) {
+        .ant-card-head-title {
+          font-size: 20px;
+          padding: 24px 0;
+        }
+
+        .ant-card-body {
+          padding: 30px;
+        }
+      }
+
+      @media (max-width: $breakpoint-mobile-l) {
+        .ant-card-head-title {
+          font-size: 15px;
+          padding: 12px 0;
+        }
+
+        .ant-card-body {
+          padding: 15px;
+        }
+      }
+
+      border-radius: 0;
+      box-shadow: none;
+      margin-bottom: 8px;
+      background: #fff;
+
+      &:hover {
+        transform: none;
+        box-shadow: none;
+      }
+
+      .ant-card-head {
+        padding: 0 15px;
+
+        @media (max-width: $breakpoint-mobile-l) {
+          padding: 0 10px;
+        }
+      }
+
+      .ant-card-body {
+        padding: 15px;
+
+        @media (max-width: $breakpoint-mobile-l) {
+          padding: 10px;
+        }
       }
     }
   }
@@ -161,14 +310,15 @@
       .ant-picker:not(.readonly-input) {
         background-color: #fff;
         border-color: #d9d9d9;
-        
-        &:hover, &:focus {
+
+        &:hover,
+        &:focus {
           border-color: #1890ff;
           box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
         }
       }
     }
-    
+
     .ant-form-item {
       margin-bottom: 20px;
       transition: all 0.3s ease;
@@ -176,32 +326,108 @@
       .ant-form-item-label > label {
         color: #333;
         font-weight: 500;
+        color: $text-color;
       }
     }
-    
+
     .readonly-input {
       background-color: #f9f9f9;
       border-color: #f0f0f0;
       cursor: default;
-      
-      &:hover, &:focus {
+      background: transparent;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: $text-color;
+
+      &:hover,
+      &:focus {
         border-color: #f0f0f0 !important;
         box-shadow: none !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
       }
     }
-    
+
     .gender-group {
       display: flex;
       gap: 20px;
-      
+
       .gender-label {
         display: flex;
         align-items: center;
-        
+
         .anticon {
           margin-right: 5px;
         }
       }
+    }
+
+    @media (min-width: $breakpoint-4k) {
+      .ant-form-item {
+        margin-bottom: 30px;
+      }
+
+      .ant-form-item-label > label {
+        font-size: 18px;
+      }
+
+      .ant-input,
+      .ant-picker,
+      .ant-radio-wrapper {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: $breakpoint-mobile-l) {
+      .ant-form-item {
+        margin-bottom: 15px;
+      }
+
+      .ant-form-item-label > label {
+        font-size: 14px;
+      }
+
+      .ant-input,
+      .ant-picker,
+      .ant-radio-wrapper {
+        font-size: 13px;
+      }
+    }
+
+    // Update form items for mobile
+    .ant-form-item {
+      margin-bottom: 16px;
+
+      @media (max-width: $breakpoint-mobile-l) {
+        margin-bottom: 12px;
+      }
+    }
+
+    // Remove borders from readonly inputs
+    .readonly-input {
+      border: none;
+      background: transparent;
+      padding-left: 0;
+
+      &:hover,
+      &:focus {
+        background: transparent;
+      }
+    }
+
+    .ant-input,
+    .ant-picker,
+    .ant-input-password {
+      background-color: transparent;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: $text-color;
+
+      &:hover,
+      &:focus {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    .ant-radio-wrapper {
+      color: $text-color;
     }
   }
 
@@ -212,17 +438,17 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        
+
         @media (max-width: 576px) {
           flex-direction: column;
           align-items: flex-start;
           gap: 15px;
         }
-        
+
         .password-info {
           display: flex;
           align-items: center;
-          
+
           .security-icon {
             font-size: 24px;
             color: #1890ff;
@@ -231,13 +457,13 @@
             background-color: #e6f7ff;
             border-radius: 50%;
           }
-          
+
           .security-text {
             h3 {
               margin: 0 0 5px;
               font-size: 16px;
             }
-            
+
             p {
               margin: 0;
               color: #666;
@@ -245,11 +471,187 @@
             }
           }
         }
-        
+
         .change-password-btn {
           border-radius: 20px;
           height: 36px;
         }
+      }
+    }
+
+    .security-sections {
+      .security-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        @media (max-width: $breakpoint-mobile-l) {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .security-header {
+          display: flex;
+          align-items: center;
+
+          .security-icon-container {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #e6f7ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 16px;
+
+            @media (min-width: $breakpoint-4k) {
+              width: 60px;
+              height: 60px;
+            }
+
+            @media (max-width: $breakpoint-mobile-l) {
+              width: 40px;
+              height: 40px;
+            }
+
+            &.verify-icon {
+              background-color: #f6ffed;
+            }
+
+            .security-icon {
+              font-size: 24px;
+              color: #1890ff;
+
+              @media (min-width: $breakpoint-4k) {
+                font-size: 30px;
+              }
+
+              @media (max-width: $breakpoint-mobile-l) {
+                font-size: 20px;
+              }
+            }
+          }
+
+          .security-text {
+            h3 {
+              margin: 0 0 5px;
+              font-size: 16px;
+              font-weight: 500;
+              color: #262626;
+              color: $text-color;
+
+              @media (min-width: $breakpoint-4k) {
+                font-size: 20px;
+                margin-bottom: 8px;
+              }
+            }
+
+            p {
+              margin: 0;
+              color: #8c8c8c;
+              font-size: 14px;
+              color: rgba(38, 38, 38, 0.65);
+
+              @media (min-width: $breakpoint-4k) {
+                font-size: 16px;
+              }
+
+              @media (max-width: $breakpoint-mobile-l) {
+                font-size: 13px;
+              }
+            }
+          }
+        }
+
+        .security-action {
+          @media (max-width: $breakpoint-mobile-l) {
+            margin-top: 15px;
+            margin-left: 66px; // Align with text
+          }
+
+          @media (max-width: $breakpoint-mobile-m) {
+            margin-left: 56px;
+          }
+
+          .change-password-btn,
+          .verify-button {
+            min-width: 140px;
+            border-radius: 20px;
+
+            @media (min-width: $breakpoint-4k) {
+              min-width: 180px;
+              height: 45px;
+            }
+
+            @media (max-width: $breakpoint-mobile-l) {
+              min-width: 130px;
+            }
+          }
+
+          .verify-button {
+            border-color: #52c41a;
+            color: #52c41a;
+
+            &:hover {
+              background-color: #f6ffed;
+            }
+          }
+        }
+      }
+
+      .security-tips {
+        background-color: #f9f9f9;
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 10px;
+        border-left: 4px solid #1890ff;
+
+        h4 {
+          font-size: 15px;
+          font-weight: 500;
+          margin: 0 0 10px;
+          color: #262626;
+          display: flex;
+          align-items: center;
+          color: $text-color;
+
+          @media (min-width: $breakpoint-4k) {
+            font-size: 18px;
+          }
+        }
+
+        ul {
+          margin: 0;
+          padding-left: 20px;
+
+          li {
+            color: #595959;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: rgba(38, 38, 38, 0.85);
+
+            @media (min-width: $breakpoint-4k) {
+              font-size: 16px;
+              margin-bottom: 8px;
+            }
+
+            @media (max-width: $breakpoint-mobile-l) {
+              font-size: 13px;
+            }
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+
+        border: none;
+        background: #f9f9f9;
+        padding: 12px;
+        margin: 12px -15px -15px;
+        border-radius: 0;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-left: 4px solid #1890ff;
       }
     }
   }
@@ -259,28 +661,375 @@
     .ant-modal-title {
       font-size: 18px;
       color: #333;
+      color: $text-color;
     }
-    
+
     .modal-buttons {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
       margin-top: 20px;
-      
+
       @media (max-width: 576px) {
         button {
           flex: 1;
         }
       }
     }
+
+    // Update modal for mobile
+    @media (max-width: $breakpoint-tablet) {
+      .ant-modal-content {
+        border-radius: 0;
+        background-color: $background-color;
+      }
+
+      .ant-modal-header {
+        padding: 16px;
+        border-radius: 0;
+        background-color: transparent;
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .ant-modal-body {
+        padding: 16px;
+        background-color: transparent;
+      }
+
+      .modal-buttons {
+        margin: 20px -16px -16px;
+        padding: 12px 16px;
+        background: #f9f9f9;
+        border-top: 1px solid #f0f0f0;
+        background-color: transparent;
+        border-top-color: rgba(255, 255, 255, 0.1);
+
+        button {
+          height: 40px;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  // Add these new styles for address section
+  .address-info {
+    .address-section {
+      margin-bottom: 20px;
+
+      .address-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+
+        .section-icon {
+          font-size: 20px;
+          color: #096dd9;
+          margin-right: 10px;
+          background-color: #e6f7ff;
+          padding: 8px;
+          border-radius: 50%;
+
+          @media (min-width: $breakpoint-4k) {
+            font-size: 24px;
+            padding: 12px;
+          }
+
+          @media (max-width: $breakpoint-mobile-l) {
+            font-size: 16px;
+            padding: 6px;
+          }
+        }
+
+        .section-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: #262626;
+          color: $text-color;
+
+          @media (min-width: $breakpoint-4k) {
+            font-size: 20px;
+          }
+
+          @media (max-width: $breakpoint-mobile-l) {
+            font-size: 15px;
+          }
+        }
+      }
+
+      .address-textarea {
+        border-radius: 8px;
+
+        &.readonly-input {
+          font-size: 15px;
+          background-color: #f5f5f5;
+          border-color: #e8e8e8;
+          color: #262626;
+          background-color: transparent;
+        }
+
+        @media (min-width: $breakpoint-4k) {
+          font-size: 18px;
+          border-radius: 12px;
+        }
+      }
+    }
+
+    .address-visualization {
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px dashed #d9d9d9;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+
+      .address-map-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+
+        .address-icon-container {
+          background-color: #e6f7ff;
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 15px;
+
+          @media (min-width: $breakpoint-4k) {
+            width: 80px;
+            height: 80px;
+          }
+
+          @media (max-width: $breakpoint-mobile-l) {
+            width: 50px;
+            height: 50px;
+          }
+
+          .address-pin-icon {
+            font-size: 30px;
+            color: #1890ff;
+
+            @media (min-width: $breakpoint-4k) {
+              font-size: 40px;
+            }
+
+            @media (max-width: $breakpoint-mobile-l) {
+              font-size: 24px;
+            }
+          }
+        }
+
+        .address-note {
+          color: #8c8c8c;
+          font-size: 14px;
+          max-width: 300px;
+          margin: 0 auto;
+          color: rgba(38, 38, 38, 0.65);
+
+          @media (min-width: $breakpoint-4k) {
+            font-size: 16px;
+            max-width: 400px;
+          }
+
+          @media (max-width: $breakpoint-mobile-l) {
+            font-size: 13px;
+          }
+        }
+      }
+    }
+
+    // Update address section
+    .address-section {
+      margin-bottom: 16px;
+
+      .address-textarea {
+        border: 1px solid #f0f0f0;
+        background: #fff;
+        background-color: transparent;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: $text-color;
+
+        &.readonly-input {
+          border: none;
+          background: transparent;
+        }
+      }
+    }
+
+    .address-visualization {
+      border: none;
+      background: #f9f9f9;
+      margin: 0 -15px -15px;
+      border-radius: 0;
+    }
+  }
+
+  // Profile Navigation
+  .profile-navigation {
+    display: flex;
+    margin: 0;
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    justify-content: space-around;
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.85);
+      transition: all 0.3s ease;
+      position: relative;
+      gap: 8px;
+
+      .nav-icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+
+        .anticon {
+          font-size: 18px;
+          transition: all 0.3s ease;
+        }
+      }
+
+      .nav-text {
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      &:hover {
+        color: #fff;
+
+        .nav-icon-wrapper {
+          background: rgba(255, 255, 255, 0.2);
+          transform: translateY(-2px);
+        }
+      }
+
+      &.active {
+        color: #fff;
+
+        .nav-icon-wrapper {
+          background: rgba(255, 255, 255, 0.25);
+          transform: scale(1.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 20%;
+          width: 60%;
+          height: 3px;
+          background: #fff;
+          border-radius: 3px 3px 0 0;
+        }
+      }
+
+      // Accessibility focus styles
+      &:focus-visible {
+        outline: none;
+        
+        .nav-icon-wrapper {
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+        }
+      }
+
+      @media (max-width: $breakpoint-mobile-l) {
+        padding: 10px 8px;
+        flex-direction: column;
+        gap: 4px;
+
+        .nav-icon-wrapper {
+          width: 28px;
+          height: 28px;
+
+          .anticon {
+            font-size: 16px;
+          }
+        }
+
+        .nav-text {
+          font-size: 12px;
+        }
+
+        &.active::after {
+          width: 40%;
+          left: 30%;
+        }
+      }
+
+      @media (min-width: $breakpoint-4k) {
+        padding: 16px;
+        gap: 12px;
+
+        .nav-icon-wrapper {
+          width: 48px;
+          height: 48px;
+
+          .anticon {
+            font-size: 24px;
+          }
+        }
+
+        .nav-text {
+          font-size: 18px;
+        }
+      }
+    }
+  }
+
+  // Enhance tab panel visibility
+  [role="tabpanel"] {
+    animation: fadeIn 0.2s ease-in-out;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  // Add keyboard focus styles to interactive elements
+  .security-action button,
+  .edit-button,
+  .camera-button {
+    &:focus-visible {
+      outline: 2px solid #1890ff;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    }
   }
 
   // Animations
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
-  
+
   @keyframes fadeInDown {
     from {
       opacity: 0;
@@ -291,7 +1040,7 @@
       transform: translateY(0);
     }
   }
-  
+
   @keyframes fadeInUp {
     from {
       opacity: 0;

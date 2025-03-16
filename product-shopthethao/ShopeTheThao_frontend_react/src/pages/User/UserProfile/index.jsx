@@ -16,6 +16,7 @@ import {
   Avatar,
   Tooltip,
   notification,
+  Tabs,
 } from "antd";
 import {
   UserOutlined,
@@ -28,6 +29,10 @@ import {
   CheckCircleOutlined,
   CalendarOutlined,
   IdcardOutlined,
+  SettingOutlined,
+  HomeOutlined,
+  SafetyCertificateOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
 import "./UserProfile.scss";
@@ -44,6 +49,7 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [changePasswordLoading, setChangePasswordLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("basic");
   
   // Enhanced responsive breakpoints
   const [screenSize, setScreenSize] = useState({
@@ -101,11 +107,11 @@ const UserProfile = () => {
 
   // Dynamically calculate avatar size based on screen size
   const getAvatarSize = () => {
-    if (screenSize.is4k) return 150;
-    if (screenSize.isLaptop) return 100;
-    if (screenSize.isTablet) return 90;
-    if (screenSize.isMobileL) return 80;
-    return 70; // For mobile M and S
+    if (screenSize.is4k) return 180;
+    if (screenSize.isLaptop) return 120;
+    if (screenSize.isTablet) return 100;
+    if (screenSize.isMobileL) return 90;
+    return 80; // For mobile M and S
   };
 
   const handleSubmit = (values) => {
@@ -216,60 +222,32 @@ const UserProfile = () => {
     }
   };
 
-  if (loading) {
-    return <Loading />;
-  }
+  const tabItems = [
+    {
+      key: 'basic',
+      icon: <UserOutlined />,
+      label: 'Thông tin cơ bản',
+      ariaControls: 'basic-tab'
+    },
+    {
+      key: 'address',
+      icon: <HomeOutlined />,
+      label: 'Địa chỉ',
+      ariaControls: 'address-tab'
+    },
+    {
+      key: 'security',
+      icon: <SafetyCertificateOutlined />,
+      label: 'Bảo mật',
+      ariaControls: 'security-tab'
+    }
+  ];
 
-  return (
-    <div className="user-profile-container">
-      <div className="profile-header">
-        <div className="profile-avatar">
-          <div className="avatar-container">
-            <Avatar
-              size={getAvatarSize()}
-              src={imageUrl}
-              icon={!imageUrl && <UserOutlined />}
-              className="user-avatar"
-            />
-            {isEditing && (
-              <Upload
-                name="avatar"
-                showUploadList={false}
-                beforeUpload={beforeUpload}
-                onChange={handleUpload}
-                className="avatar-upload"
-              >
-                <button className="camera-button">
-                  <CameraOutlined />
-                </button>
-              </Upload>
-            )}
-          </div>
-
-          <div className="profile-info">
-            <h2 className="user-name">{userData.fullname}</h2>
-            <p className="user-email">{userData.email}</p>
-
-            <Button
-              type={isEditing ? "primary" : "default"}
-              icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
-              onClick={toggleEdit}
-              loading={saveLoading}
-              className="edit-button"
-            >
-              {isEditing ? "Lưu thông tin" : "Chỉnh sửa"}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        className={`profile-form ${isEditing ? "editing" : ""}`}
-      >
-        <div className="profile-content">
+  // Profile content based on active tab
+  const renderProfileContent = () => {
+    switch (activeTab) {
+      case "basic":
+        return (
           <Card className="profile-card basic-info" title="Thông tin cơ bản">
             <Row gutter={[screenSize.isMobileM || screenSize.isMobileS ? 12 : 24, screenSize.is4k ? 24 : 16]}>
               <Col xs={24} md={12}>
@@ -354,44 +332,211 @@ const UserProfile = () => {
               </Col>
             </Row>
           </Card>
-
+        );
+      case "address":
+        return (
           <Card className="profile-card address-info" title="Địa chỉ">
-            <Form.Item
-              name="address"
-              label="Địa chỉ liên hệ"
-              rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
-            >
-              <Input.TextArea
-                rows={screenSize.isMobileS ? 2 : 3}
-                readOnly={!isEditing}
-                className={!isEditing ? "readonly-input" : ""}
-                placeholder="Nhập địa chỉ của bạn"
-                size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-              />
-            </Form.Item>
-          </Card>
+            <div className="address-section">
+              <div className="address-header">
+                <HomeOutlined className="section-icon" />
+                <span className="section-title">Địa chỉ liên hệ</span>
+              </div>
 
+              <Form.Item
+                name="address"
+                rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
+              >
+                <Input.TextArea
+                  rows={screenSize.isMobileS ? 3 : 4}
+                  readOnly={!isEditing}
+                  className={!isEditing ? "readonly-input address-textarea" : "address-textarea"}
+                  placeholder="Nhập địa chỉ của bạn"
+                  size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
+                />
+              </Form.Item>
+            </div>
+            
+            {!isEditing && (
+              <div className="address-visualization">
+                <div className="address-map-placeholder">
+                  <div className="address-icon-container">
+                    <i className="address-pin-icon"><HomeOutlined /></i>
+                  </div>
+                  <p className="address-note">Địa chỉ hiển thị ở đây giúp bạn nhận hàng nhanh chóng</p>
+                </div>
+              </div>
+            )}
+          </Card>
+        );
+      case "security":
+        return (
           <Card className="profile-card security-info" title="Bảo mật">
-            <div className="security-content">
-              <div className="password-section">
-                <div className="password-info">
-                  <LockOutlined className="security-icon" />
+            <div className="security-sections">
+              <div className="security-item">
+                <div className="security-header">
+                  <div className="security-icon-container">
+                    <LockOutlined className="security-icon" />
+                  </div>
                   <div className="security-text">
                     <h3>Mật khẩu</h3>
                     <p>Cập nhật mật khẩu để bảo vệ tài khoản của bạn</p>
                   </div>
                 </div>
-                <Button
-                  type="primary"
-                  onClick={() => setPasswordModalVisible(true)}
-                  className="change-password-btn"
-                  size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-                >
-                  Đổi mật khẩu
-                </Button>
+                <div className="security-action">
+                  <Button
+                    type="primary"
+                    onClick={() => setPasswordModalVisible(true)}
+                    className="change-password-btn"
+                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
+                    icon={<LockOutlined />}
+                  >
+                    Đổi mật khẩu
+                  </Button>
+                </div>
+              </div>
+              
+              <Divider style={{ margin: '24px 0' }} />
+              
+              <div className="security-item">
+                <div className="security-header">
+                  <div className="security-icon-container verify-icon">
+                    <SafetyCertificateOutlined className="security-icon" />
+                  </div>
+                  <div className="security-text">
+                    <h3>Xác thực hai yếu tố</h3>
+                    <p>Bảo vệ tài khoản bằng xác thực thêm qua điện thoại</p>
+                  </div>
+                </div>
+                <div className="security-action">
+                  <Button
+                    type="default"
+                    className="verify-button"
+                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
+                    icon={<CheckCircleOutlined />}
+                  >
+                    {userData?.phone ? "Đã xác thực" : "Chưa xác thực"}
+                  </Button>
+                </div>
+              </div>
+              
+              <Divider style={{ margin: '24px 0' }} />
+              
+              <div className="security-tips">
+                <h4>
+                  <InfoCircleOutlined style={{ marginRight: '8px' }} />
+                  Mẹo bảo mật
+                </h4>
+                <ul>
+                  <li>Sử dụng mật khẩu mạnh, bao gồm ký tự đặc biệt và số</li>
+                  <li>Không sử dụng cùng một mật khẩu trên nhiều trang web</li>
+                  <li>Cập nhật mật khẩu định kỳ mỗi 3-6 tháng</li>
+                </ul>
               </div>
             </div>
           </Card>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  return (
+    <div className="user-profile-container">
+      <div className="profile-header">
+        <div className="profile-avatar">
+          <div className="avatar-container">
+            <Avatar
+              size={getAvatarSize()}
+              src={imageUrl}
+              icon={!imageUrl && <UserOutlined />}
+              className="user-avatar"
+            />
+            {isEditing && (
+              <Upload
+                name="avatar"
+                showUploadList={false}
+                beforeUpload={beforeUpload}
+                onChange={handleUpload}
+                className="avatar-upload"
+              >
+                <button className="camera-button">
+                  <CameraOutlined />
+                </button>
+              </Upload>
+            )}
+          </div>
+          <div className="profile-info">
+            <h2 className="user-name">{userData.fullname}</h2>
+            <p className="user-email">{userData.email}</p>
+            <Button
+              type={isEditing ? "primary" : "default"}
+              icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
+              onClick={toggleEdit}
+              loading={saveLoading}
+              className="edit-button"
+              size={screenSize.is4k ? "large" : (screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle")}
+            >
+              {isEditing ? "Lưu thông tin" : "Chỉnh sửa"}
+            </Button>
+          </div>
+        </div>
+        
+        <div className="profile-navigation" role="tablist">
+          {tabItems.map(item => (
+            <button
+              key={item.key}
+              role="tab"
+              className={`nav-item ${activeTab === item.key ? 'active' : ''}`}
+              onClick={() => setActiveTab(item.key)}
+              onKeyPress={(e) => e.key === 'Enter' && setActiveTab(item.key)}
+              tabIndex={0}
+              aria-selected={activeTab === item.key}
+              aria-controls={item.ariaControls}
+            >
+              <div className="nav-icon-wrapper">
+                {item.icon}
+              </div>
+              <span className="nav-text">{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        className={`profile-form ${isEditing ? "editing" : ""}`}
+      >
+        <div className="profile-content" role="tabpanel" aria-label="Tab Content">
+          <div 
+            id="basic-tab"
+            role="tabpanel"
+            aria-labelledby="basic-tab"
+            hidden={activeTab !== "basic"}
+          >
+            {activeTab === "basic" && renderProfileContent()}
+          </div>
+          <div 
+            id="address-tab"
+            role="tabpanel"
+            aria-labelledby="address-tab"
+            hidden={activeTab !== "address"}
+          >
+            {activeTab === "address" && renderProfileContent()}
+          </div>
+          <div 
+            id="security-tab"
+            role="tabpanel"
+            aria-labelledby="security-tab"
+            hidden={activeTab !== "security"}
+          >
+            {activeTab === "security" && renderProfileContent()}
+          </div>
         </div>
       </Form>
 
@@ -478,7 +623,7 @@ const UserProfile = () => {
               Hủy
             </Button>
             <Button
-              style={{ left: 20 }}
+              style={{ marginLeft: 10 }}
               key="submit"
               type="primary"
               htmlType="submit"
@@ -493,5 +638,4 @@ const UserProfile = () => {
     </div>
   );
 };
-
 export default UserProfile;

@@ -1,94 +1,94 @@
-.breadcrumb-container {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    font-size: 14px; // Tuỳ chỉnh kích thước chữ
-    color: #333; // Màu chữ
-  }
-  .breadcrumb-icon {
-    display: flex;
-    align-items: center;
-    gap: 8px; // Khoảng cách giữa icon và text (tuỳ chỉnh)
-  }
+// .breadcrumb-container {
+//     display: flex;
+//     align-items: center;
+//     margin-left: 10px;
+//     font-size: 14px; // Tuỳ chỉnh kích thước chữ
+//     color: #333; // Màu chữ
+//   }
+//   .breadcrumb-icon {
+//     display: flex;
+//     align-items: center;
+//     gap: 8px; // Khoảng cách giữa icon và text (tuỳ chỉnh)
+//   }
   
-  .logo {
-    height: 32px;
-    margin: 16px;
-    background: rgba(255, 255, 255, 0.3);
-    text-align: center;
-    color: #fff;
-    font-size: 18px;
-    line-height: 32px;
-  }
+//   .logo {
+//     height: 32px;
+//     margin: 16px;
+//     background: rgba(255, 255, 255, 0.3);
+//     text-align: center;
+//     color: #fff;
+//     font-size: 18px;
+//     line-height: 32px;
+//   }
   
-  .ant-layout-header {
-    padding: 0 !important;
-  }
+//   .ant-layout-header {
+//     padding: 0 !important;
+//   }
   
-  .ant-breadcrumb {
-    padding: 2px;
-    background-color: #f3f4f6; /* Màu nền xám đậm cho phần tiêu đề */
-    font-weight: bold;
-    color: #000000; /* Màu chữ trắng */
-    border: 2px solid #f2f3f3; /* Viền màu tối */
-    border-radius: 8px; /* Bo tròn góc */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Bóng đổ nhẹ */
-    margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
+//   .ant-breadcrumb {
+//     padding: 2px;
+//     background-color: #f3f4f6; /* Màu nền xám đậm cho phần tiêu đề */
+//     font-weight: bold;
+//     color: #000000; /* Màu chữ trắng */
+//     border: 2px solid #f2f3f3; /* Viền màu tối */
+//     border-radius: 8px; /* Bo tròn góc */
+//     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Bóng đổ nhẹ */
+//     margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
 
 
-    // margin-bottom: 16px;
+//     // margin-bottom: 16px;
   
-    .ant-breadcrumb-link {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+//     .ant-breadcrumb-link {
+//       display: flex;
+//       align-items: center;
+//       gap: 8px;
   
-      a {
-        color: #1890ff;
-        text-decoration: none;
+//       a {
+//         color: #1890ff;
+//         text-decoration: none;
   
-        &:hover {
-          text-decoration: underline;
-          text-decoration: none;
-        }
-      }
-    }
+//         &:hover {
+//           text-decoration: underline;
+//           text-decoration: none;
+//         }
+//       }
+//     }
   
-    .ant-breadcrumb-separator {
-      color: #999;
-    }
-  }
+//     .ant-breadcrumb-separator {
+//       color: #999;
+//     }
+//   }
 
-.layout-wrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+// .layout-wrapper {
+//   min-height: 100vh;
+//   display: flex;
+//   flex-direction: column;
+// }
 
-.main-content {
-  flex: 1;
-  padding: 20px;
+// .main-content {
+//   flex: 1;
+//   padding: 20px;
   
-  &.with-header-footer {
-    margin-top: 60px; // Adjust based on header height
-    margin-bottom: 40px; // Space before footer
-  }
-}
+//   &.with-header-footer {
+//     margin-top: 60px; // Adjust based on header height
+//     margin-bottom: 40px; // Space before footer
+//   }
+// }
 
-.card-content-page {
-  min-height: calc(100vh - 200px); // Adjust based on header/footer height
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+// .card-content-page {
+//   min-height: calc(100vh - 200px); // Adjust based on header/footer height
+//   background: #fff;
+//   border-radius: 8px;
+//   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+// }
 
-@media (max-width: 768px) {
-  .main-content {
-    padding: 15px;
+// @media (max-width: 768px) {
+//   .main-content {
+//     padding: 15px;
     
-    &.with-header-footer {
-      margin-top: 50px;
-      margin-bottom: 30px;
-    }
-  }
-}
+//     &.with-header-footer {
+//       margin-top: 50px;
+//       margin-bottom: 30px;
+//     }
+//   }
+// }
