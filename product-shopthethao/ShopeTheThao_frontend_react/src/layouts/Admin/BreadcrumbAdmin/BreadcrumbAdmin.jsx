@@ -1,6 +1,6 @@
 import React from "react";
 import { Breadcrumb } from "antd";
-import "./Breadcrumb.scss";
+import "./BreadcrumbAdmin.scss";
 import { HomeOutlined, RightOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { breadcrumbData } from './breadcrumbConfig';
@@ -12,7 +12,7 @@ const Bread = ({ path }) => {
     const items = [
         {
             title: (
-                <Link to="/dashboard-management-sys/portal" className="bread-link">
+                <Link to="/dashboard-management-sys/portal" className="bread-link-Admin">
                     <HomeOutlined /> 
                     <span>Trang chủ</span>
                 </Link>

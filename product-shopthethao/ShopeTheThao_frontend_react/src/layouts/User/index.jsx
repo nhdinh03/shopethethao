@@ -6,6 +6,7 @@ import Snowfall from "./Snowfall/Snowfall";
 import "./User.module.scss"; // Import as global stylesheet
 import { Products } from "pages/User";
 import { Slideshow } from "components/User";
+import BreadcrumbUser from "./BreadcrumbUser/BreadcrumbUser";
 
 
 const UserLayout = () => {
@@ -21,8 +22,9 @@ const UserLayout = () => {
       {!isLoginPage && <Header className="layout-header" />}
       <div className="layout-wrapper">
         <main className={`layout-main ${isProductsPage ? 'products-main' : ''} ${isProductDetailsPage ? 'product-details-main' : ''}`}>
+          {/* Move breadcrumb outside content-wrapper for full-width background */}
+          {!isHomePage && <BreadcrumbUser path={location.pathname} />}
           <div className="content-wrapper">
-            {/* Remove BreadcrumbUser from here as we'll add it to each page */}
             {isHomePage && <Slideshow/>}
             {!isProductsPage && !isProductDetailsPage && isHomePage && <Products />}
             <Outlet />

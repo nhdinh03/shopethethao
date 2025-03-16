@@ -8,7 +8,7 @@ import { Layout, Button, Skeleton, Drawer, FloatButton } from "antd";
 import { HeaderAdminLeft, HeaderAdminRight } from "./Header";
 import Sidebar from "./Sidebar/Sidebar";
 import { useLocation } from "react-router-dom";
-import Bread from "./Breadcrumb/Breadcrumb";
+import Bread from "./BreadcrumbAdmin/BreadcrumbAdmin";
 import LayoutPageDefault from "layouts/LayoutPageDefault";
 
 const { Header, Sider, Content } = Layout;

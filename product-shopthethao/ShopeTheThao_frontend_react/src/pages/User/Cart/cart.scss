@@ -20,11 +20,16 @@ $breakpoint-mobile-s: 320px;
   padding: 0 15px;
   font-family: 'Roboto', sans-serif;
   background-color: #f7f8fc;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
+  
+  // Remove the gradient border effect
+  &::before {
+    display: none;
+  }
   
   // For 4K displays, increase the max-width
   @media (min-width: $breakpoint-laptop) {
@@ -39,16 +44,6 @@ $breakpoint-mobile-s: 320px;
   @media (max-width: $breakpoint-mobile-l) {
     padding: 15px;
     margin: 1rem auto;
-  }
-  
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 6px;
-    background: linear-gradient(to right, #ff5722, #ff9800);
   }
   
   .cart-title {
@@ -155,19 +150,14 @@ $breakpoint-mobile-s: 320px;
       align-items: center;
       margin-bottom: 15px;
       background: #fff;
-      padding: 18px;
-      border-radius: 12px 12px 0 0;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+      padding: 15px;
+      border-radius: 8px;
+      border-bottom: 1px solid #eee;
+      box-shadow: none;
       position: relative;
       
       &::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 4px;
-        background: linear-gradient(to bottom, #ff5722, #ff9800);
+        display: none;
       }
       
       .select-all {
@@ -213,8 +203,8 @@ $breakpoint-mobile-s: 320px;
   
   .cart-items {
     background: #fff;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     
     .cart-header {
@@ -240,7 +230,7 @@ $breakpoint-mobile-s: 320px;
       transition: background-color 0.2s;
       
       &:hover {
-        background-color: #f9f9f9;
+        background-color: #fafafa;
       }
       
       &:last-child {
@@ -248,8 +238,8 @@ $breakpoint-mobile-s: 320px;
       }
       
       &.selected {
-        background-color: rgba(255, 87, 34, 0.04);
-        border-left: 3px solid #ff5722;
+        background-color: #f5f5f5;
+        border-left: 2px solid #ff5722;
       }
       
       .item-select {
@@ -422,26 +412,18 @@ $breakpoint-mobile-s: 320px;
     .coupon-section, .order-summary {
       background: #fff;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       padding: 20px;
       margin-bottom: 20px;
-      transition: box-shadow 0.3s;
       position: relative;
       overflow: hidden;
       
       &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, transparent 70%, rgba(255, 87, 34, 0.08) 70%);
-        border-radius: 0 12px 0 0;
+        display: none;
       }
       
       &:hover {
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
       
       h3 {
@@ -550,15 +532,15 @@ $breakpoint-mobile-s: 320px;
       }
       
       .checkout-btn {
-        background: linear-gradient(to right, #ff5722, #ff9800);
-        box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+        background: #ff5722;
+        box-shadow: none;
         color: white;
         letter-spacing: 0.5px;
         transition: background-color 0.3s, box-shadow 0.3s;
         
         &:hover:not(.disabled) {
-          background: linear-gradient(to right, #e64a19, #f57c00);
-          box-shadow: 0 8px 20px rgba(255, 87, 34, 0.4);
+          background: #f4511e;
+          box-shadow: none;
         }
         
         &:active:not(.disabled) {
@@ -588,7 +570,7 @@ $breakpoint-mobile-s: 320px;
         transition: background-color 0.3s;
         
         &:hover {
-          background: #f5f5f5;
+          background: #f0f0f0;
           border-color: #ccc;
         }
         
@@ -610,7 +592,7 @@ $breakpoint-mobile-s: 320px;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    backdrop-filter: blur(3px);
+    backdrop-filter: none;
     
     .confirmation-content {
       background: #fff;
@@ -618,7 +600,7 @@ $breakpoint-mobile-s: 320px;
       border-radius: 8px;
       width: 90%;
       max-width: 400px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       
       h3 {
         margin-top: 0;
@@ -897,18 +879,22 @@ $breakpoint-mobile-s: 320px;
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
+// Remove float animation
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0%, 50%, 100% { transform: translateY(0); }
 }
 
-// Add hardware acceleration
+// Remove hardware acceleration properties
 .cart-container, .cart-item, .checkout-btn, .continue-shopping {
-  will-change: transform;
-  backface-visibility: hidden;
+  will-change: auto;
+  backface-visibility: visible;
+}
+
+// Simplify transitions
+.cart-container * {
+  transition-duration: 0.2s;
 }

@@ -6,7 +6,6 @@ import {
   FiPlus,
   FiHeart,
   FiShoppingCart,
-  FiShare2,
   FiPackage,
   FiTruck,
   FiRefreshCw,
@@ -20,11 +19,9 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 
-import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "./Seefulldetails.scss";
-import BreadcrumbUser from "layouts/User/BreadcrumbUser/BreadcrumbUser";
 import { mockProducts } from "data/mockData";
 import { ProductCard } from "../../../components/User";
 import Loading from "pages/Loading/loading";
@@ -314,12 +311,7 @@ const Seefulldetails = () => {
   return (
     <div className="product-details-page" ref={productRef}>
       <div className="container">
-        {/* Pass the product object directly to the BreadcrumbUser component */}
-        <BreadcrumbUser
-          extraData={{ product }}
-          modern={true}
-          withBackground={false}
-        />
+  
 
         {/* Banner khuyến mãi giới hạn thời gian */}
         <motion.div

@@ -1,0 +1,33 @@
+.admin-breadcrumb {
+  background: #f0f2f5;
+  padding: 16px 24px;
+  
+  .ant-breadcrumb {
+    font-size: 14px;
+    
+    .bread-link-Admin {
+      color: #1677ff;
+      display: inline-flex;
+      align-items: center;
+      
+      .anticon {
+        margin-right: 8px;
+        font-size: 16px;
+      }
+      
+      &:hover {
+        color: #69b1ff;
+      }
+    }
+    
+    .current-page {
+      color: rgba(0, 0, 0, 0.65);
+    }
+    
+    .anticon-right {
+      font-size: 10px;
+      color: rgba(0, 0, 0, 0.45);
+      margin: 0 12px;
+    }
+  }
+}

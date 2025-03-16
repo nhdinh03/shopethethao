@@ -5,18 +5,15 @@ import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Header from '../User/Header';
 import Footer from '../User/Footer';
+import BreadcrumbUser from 'layouts/User/BreadcrumbUser/BreadcrumbUser';
 
-function LayoutPageDefaultUser({ children, path = '' }) {
+function LayoutPageDefaultUser({ children }) {
     const location = useLocation();
-    const isHomePage = location.pathname === '/';
     const [isAnimating, setIsAnimating] = useState(true);
     
-    const shouldShowHeaderFooter = !location.pathname.includes('/login') && 
-                                  !location.pathname.includes('/register') && 
-                                  !location.pathname.includes('/forgotpassword') &&
-                                  !location.pathname.includes('/otp') &&
-                                  !location.pathname.includes('/changepassword');
-
+    const isAuthPage = ['/login', '/register', '/forgotpassword', '/otp', '/changepassword']
+                        .some(path => location.pathname.includes(path));
+    
     useEffect(() => {
         setIsAnimating(true);
         const timer = setTimeout(() => setIsAnimating(false), 500);
@@ -25,31 +22,25 @@ function LayoutPageDefaultUser({ children, path = '' }) {
 
     return (
         <div className="layout-wrapper">
-            {shouldShowHeaderFooter && <Header />}
-            
+            {!isAuthPage && <Header />}
+            {!isAuthPage && <BreadcrumbUser path={location?.pathname || ""} />}
             <main className={classNames('main-content', { 
-                'with-header-footer': shouldShowHeaderFooter,
-                'home-page': isHomePage,
+                'with-header-footer': !isAuthPage,
                 'product-page': location.pathname.includes('/products'),
                 'product-detail-page': location.pathname.includes('/seefulldetails'),
                 'animate-in': isAnimating
             })}>
-                {isHomePage ? (
-                    <>{children}</>
-                ) : (
-                    <Card 
-                        bordered={false} 
-                        className={classNames('card-content-page', {
-                            'product-detail-card': location.pathname.includes('/seefulldetails'),
-                            'has-interaction': true
-                        })}
-                    >
-                        {children}
-                    </Card>
-                )}
+                <Card 
+                    bordered={false} 
+                    className={classNames('card-content-page', {
+                        'product-detail-card': location.pathname.includes('/seefulldetails'),
+                        'has-interaction': true
+                    })}
+                >
+                    {children}
+                </Card>
             </main>
-
-            {shouldShowHeaderFooter && <Footer />}
+            {!isAuthPage && <Footer />}
         </div>
     );
 }

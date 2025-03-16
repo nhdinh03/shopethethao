@@ -11,7 +11,6 @@ import {
 } from "react-icons/fi";
 
 import "./Products.scss";
-import BreadcrumbUser from "layouts/User/BreadcrumbUser/BreadcrumbUser";
 import { mockProducts } from "data/mockData";
 import { ProductCard, QuickView } from "components/User";
 import Loading from "pages/Loading/loading";
@@ -211,12 +210,8 @@ const Products = () => {
   // Return the product page with products
   return (
     <div className="products-page">
-      {/* Main Content */}
+
       <div className="container">
-        {/* Add BreadcrumbUser component */}
-        <BreadcrumbUser modern={true} />
-        
-        {/* Product Count Summary */}
         <div className="product-summary">
           <span
             className="result-count"

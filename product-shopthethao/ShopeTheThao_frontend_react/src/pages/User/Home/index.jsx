@@ -13,8 +13,7 @@ import {
 } from "react-icons/fi";
 
 import "./Home.scss";
-import { mockProducts } from "data/mockData";
-import { breadcrumbDataUser } from "layouts/User/BreadcrumbUser/BreadcrumbUserConfig";
+
 import { ProductCard } from "components/User";
 import Loading from 'pages/Loading/loading';
 
@@ -26,7 +25,7 @@ const HomeIndex = () => {
   const [displayedProducts, setDisplayedProducts] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [breadcrumbData, setBreadcrumbData] = useState(breadcrumbDataUser);
+
 
   // Mock data for categories
   const categories = [
