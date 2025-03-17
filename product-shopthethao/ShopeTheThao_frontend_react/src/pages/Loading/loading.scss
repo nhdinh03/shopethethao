@@ -1,22 +1,49 @@
 .loading-container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    // height: 300px; /* Adjust the height as needed */
-    // width: 300px; /* Adjust the width as needed */
-    position: relative; /* Change from fixed to relative */
-    top: auto;
-    left: auto;
+    min-height: 200px;
+    position: relative;
     background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(5px); /* Add a blur effect to the background */
-    z-index: 1000; /* Ensure it's on top of everything */
-    margin: 0 auto; /* Center the loading container */
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    margin: 0 auto;
+    padding: 20px;
+
+    &.error {
+        background: rgba(255, 245, 245, 0.9);
+        
+        .loading-message {
+            color: #E20044;
+            text-align: center;
+
+            span {
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 8px;
+            }
+
+            p {
+                font-size: 14px;
+                margin-top: 8px;
+                color: #666;
+            }
+        }
+    }
 
     .loading-spinner {
         width: 64px;
         height: 64px;
         border-radius: 50%;
         perspective: 800px;
+        margin-bottom: 16px;
+    }
+
+    .loading-message {
+        margin-top: 16px;
+        color: #333;
+        font-size: 16px;
     }
 
     .inner {

@@ -7,6 +7,12 @@ import { breadcrumbData } from './breadcrumbConfig';
 import PropTypes from 'prop-types';
 
 const Bread = ({ path }) => {
+    const isHomePage = path === "/dashboard-management-sys/portal";
+    
+    if (isHomePage) {
+        return null; // Ẩn breadcrumb trên trang chủ
+    }
+
     const matchingItem = breadcrumbData.find((item) => path.endsWith(item.url));
     
     const items = [
