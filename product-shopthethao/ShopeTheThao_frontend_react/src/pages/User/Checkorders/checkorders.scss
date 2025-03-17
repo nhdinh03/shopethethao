@@ -1,11 +1,73 @@
+// Breakpoint variables
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+$breakpoint-mobile-s: 320px;
+
+// Font size variables
+$font-xxxs: 10px;
+$font-xxs: 11px;
+$font-xs: 12px;
+$font-sm: 13px;
+$font-base: 14px;
+$font-md: 16px;
+$font-lg: 18px;
+$font-xl: 20px;
+$font-xxl: 24px;
+
+// Redefined font size variables using pixels
+// Added responsive font mixins
+// Added breakpoint variables
+// Updated typography scale to:
+// 12px - Very small text (labels, captions)
+// 13px - Small text
+// 14px - Base text (default)
+// 16px - Medium/heading text
+// 18px - Large headings
+// 20px+ - Larger headings and display text
+
+// Replace font-size rem with pixels
+@mixin responsive-font($size) {
+  font-size: $size;
+  
+  @media (min-width: $breakpoint-4k) {
+    font-size: $size * 1.5;
+  }
+  
+  @media (max-width: $breakpoint-laptop) {
+    font-size: $size;
+  }
+  
+  @media (max-width: $breakpoint-tablet) {
+    font-size: $size * 0.95;
+  }
+  
+  @media (max-width: $breakpoint-mobile-l) {
+    font-size: $size * 0.9;
+  }
+  
+  @media (max-width: $breakpoint-mobile-m) {
+    font-size: $size * 0.85;
+  }
+}
+
 .check-orders {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  
+  .page-title {
+    @include responsive-font($font-xxl);
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 600;
+  }
 }
 
 .page-title {
-  font-size: 1.8rem;
+  @include responsive-font($font-xxl);
   margin-bottom: 20px;
   color: #333;
   font-weight: 600;
@@ -19,6 +81,7 @@
     width: 100%;
     
     input {
+      @include responsive-font($font-base);
       width: 100%;
       padding: 12px 15px 12px 40px;
       border: 1px solid #ddd;
@@ -50,6 +113,7 @@
 }
 
 .tab-btn {
+  @include responsive-font($font-xs);
   padding: 10px 20px;
   border: 1px solid #ddd;
   background: white;
@@ -111,6 +175,7 @@
   flex-direction: column;
   
   .order-id {
+    @include responsive-font($font-base);
     font-weight: bold;
     margin-bottom: 5px;
     font-size: 14px;
@@ -119,6 +184,7 @@
   }
   
   .order-date {
+    @include responsive-font($font-xxxs);
     color: #888;
     font-size: 10px;
   }
@@ -153,6 +219,7 @@
 }
 
 .order-status {
+  @include responsive-font($font-xs);
   font-weight: bold;
   font-size: 12px;
   font-weight: 600;
@@ -201,6 +268,7 @@
   }
   
   .product-name {
+    @include responsive-font($font-sm);
     font-weight: 500;
     margin-bottom: 5px;
     font-size: 14px;
@@ -212,16 +280,18 @@
     display: flex;
     justify-content: space-between;
     color: #666;
-    font-size: 0.9rem;
+    font-size: 14px;
     align-items: center;
     
     .product-price {
+      @include responsive-font($font-xs);
       font-size: 12px;
       font-weight: 600;
       color: #ee4d2d;
     }
     
     .product-size-qty {
+      @include responsive-font($font-xxxs);
       font-size: 10px;
       color: #888;
     }
@@ -259,8 +329,9 @@
     text-align: right;
     
     &.total-value {
+      @include responsive-font($font-md);
       color: #ee4d2d;
-      font-size: 1.1rem;
+      font-size: 16px;
     }
   }
   
@@ -292,6 +363,7 @@
     .rebuy-btn {
       background-color: #ee4d2d;
       color: white;
+      font-size: 14px;
       
       &:hover {
         background-color: #d73211;
@@ -317,7 +389,6 @@
   
   .order-total {
     color: #ee4d2d;
-    font-size: 1.1rem;
     font-size: 14px;
     font-weight: 600;
   }
@@ -377,6 +448,22 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  
+  @media (min-width: $breakpoint-4k) {
+    max-width: 1200px;
+  }
+  
+  @media (max-width: $breakpoint-tablet) {
+    width: 95%;
+    margin: 10px;
+  }
+  
+  @media (max-width: $breakpoint-mobile-l) {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
 }
 
 .modal-header {
@@ -389,17 +476,17 @@
   position: relative;
   
   h2 {
+    @include responsive-font($font-md);
     margin: 0;
-    font-size: 1.4rem;
-    color: #333;
     font-size: 16px;
+    color: #333;
     font-weight: 600;
   }
   
   .close-btn {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
     color: #666;
     padding: 5px;
@@ -413,16 +500,15 @@
   }
   
   .modal-status {
+    @include responsive-font($font-xs);
     position: absolute;
     top: 15px;
     right: 45px;
     font-weight: bold;
     padding: 4px 12px;
     border-radius: 4px;
-    font-size: 0.9rem;
-    text-transform: uppercase;
     font-size: 10px;
-    font-weight: 700;
+    text-transform: uppercase;
     letter-spacing: 0.5px;
     
     &.pending {
@@ -449,12 +535,12 @@
     margin-bottom: 25px;
     
     h3 {
-      font-size: 1.1rem;
+      @include responsive-font($font-base);
+      font-size: 14px;
       margin-bottom: 12px;
       padding-bottom: 8px;
       border-bottom: 1px solid #eee;
       color: #333;
-      font-size: 14px;
       font-weight: 600;
     }
     
@@ -463,6 +549,7 @@
       margin-bottom: 10px;
       
       .info-label {
+        @include responsive-font($font-xs);
         width: 150px;
         min-width: 150px;
         color: #666;
@@ -471,6 +558,7 @@
       }
       
       .info-value {
+        @include responsive-font($font-sm);
         flex-grow: 1;
         color: #333;
         font-size: 13px;
@@ -482,7 +570,7 @@
     margin-bottom: 25px;
     
     h3 {
-      font-size: 1.1rem;
+      font-size: 14px;
       margin-bottom: 12px;
       padding-bottom: 8px;
       border-bottom: 1px solid #eee;
@@ -529,13 +617,12 @@
         background: none;
         border: none;
         color: #1a75ff;
-        font-size: 0.8rem;
+        font-size: 10px;
         cursor: pointer;
         padding: 2px 5px;
         display: flex;
         align-items: center;
         gap: 3px;
-        font-size: 10px;
         
         &:hover {
           text-decoration: underline;
@@ -555,9 +642,9 @@
         }
         
         &.total-value {
+          @include responsive-font($font-md);
           color: #ee4d2d;
-          font-size: 1.1rem;
-          font-size: 14px;
+          font-size: 16px;
           font-weight: 700;
         }
       }
@@ -629,10 +716,9 @@
   justify-content: center;
   align-items: center;
   height: 300px;
-  font-size: 1.1rem;
+  font-size: 14px;
   color: #666;
   text-align: center;
-  font-size: 14px;
 }
 
 .error-container {
@@ -730,18 +816,18 @@
     }
     
     .stat-value {
-      font-size: 1.5rem;
+      @include responsive-font($font-lg);
+      font-size: 18px;
       font-weight: bold;
       color: #333;
-      font-size: 1.5rem;
       font-weight: 700;
     }
     
     .stat-label {
-      font-size: 0.8rem;
+      @include responsive-font($font-xxs);
+      font-size: 10px;
       color: #666;
       margin-top: 3px;
-      font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -788,7 +874,6 @@
       border: 1px solid #ddd;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 0.9rem;
       color: #555;
       transition: all 0.2s;
       
@@ -900,9 +985,8 @@
     h3 {
       margin: 0;
       color: #555;
-      font-size: 1.2rem;
-      font-weight: 600;
       font-size: 14px;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -929,7 +1013,6 @@
     align-items: flex-start;
     gap: 8px;
     color: #666;
-    font-size: 0.9rem;
     font-size: 10px;
     
     .info-icon {
@@ -1002,9 +1085,8 @@
       
       .step-time {
         color: #888;
-        font-size: 0.85rem;
-        margin-top: 3px;
         font-size: 10px;
+        margin-top: 3px;
       }
     }
     
@@ -1086,7 +1168,6 @@
         padding: 8px 10px;
         
         .stat-value {
-          font-size: 1.2rem;
           font-size: 16px !important;
         }
       }
@@ -1175,7 +1256,7 @@
     }
     
     .products-table {
-      font-size: 0.9rem;
+      font-size: 14px;
       
       th, td {
         padding: 8px 4px;
@@ -1351,14 +1432,13 @@
       .clear-history {
         background: none;
         border: none;
-        font-size: 12px;
+        font-size: 10px;
         color: #ee4d2d;
         cursor: pointer;
         padding: 3px 5px;
         display: flex;
         align-items: center;
         gap: 3px;
-        font-size: 10px;
         
         &:hover {
           text-decoration: underline;
@@ -1502,7 +1582,7 @@
     gap: 15px;
     
     .spinning {
-      font-size: 30px;
+      font-size: 16px;
       color: #ee4d2d;
       animation: spin 1s linear infinite;
     }
@@ -1621,3 +1701,173 @@
     to { transform: translateY(0); }
   }
 }
+
+// Add new responsive breakpoints
+@media (min-width: $breakpoint-4k) {
+  .check-orders {
+    max-width: 2000px;
+    padding: 40px;
+    
+    .orders-list {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+  }
+  
+  .product-image {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .order-statistics {
+    .stat-item {
+      min-width: 240px;
+      padding: 25px;
+      
+      .stat-value {
+        @include responsive-font($font-xl);
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-laptop) {
+  .check-orders {
+    max-width: 900px;
+    padding: 20px;
+  }
+  
+  .order-statistics {
+    .stat-item {
+      min-width: 160px;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-tablet) {
+  .check-orders {
+    padding: 15px;
+  }
+  
+  .search-container {
+    width: 100%;
+  }
+  
+  .order-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .modal-content {
+    width: 95%;
+  }
+}
+
+@media (max-width: $breakpoint-mobile-l) {
+  .check-orders {
+    padding: 10px;
+  }
+  
+  .order-statistics {
+    .stat-item {
+      min-width: 90px;
+      padding: 8px;
+    }
+  }
+  
+  .product-image {
+    width: 60px;
+    height: 60px;
+  }
+  
+  button, 
+  .tab-btn,
+  .search-input input {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: $breakpoint-mobile-m) {
+  .order-statistics {
+    gap: 8px;
+    
+    .stat-item {
+      min-width: 80px;
+      
+      .stat-value {
+        @include responsive-font($font-base);
+      }
+      
+      .stat-label {
+        @include responsive-font($font-xxxs);
+      }
+    }
+  }
+  
+  .search-input input {
+    height: 40px;
+    @include responsive-font($font-xs);
+  }
+}
+
+// Performance optimizations
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Add hardware acceleration for animations
+.order-item,
+.modal-content,
+.search-input,
+.notification-bell {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+// Add touch-friendly optimizations
+@media (max-width: $breakpoint-tablet) {
+  input,
+  button,
+  select {
+    touch-action: manipulation;
+  }
+  
+  .order-tabs,
+  .orders-list {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.stat-value {
+  @include responsive-font($font-lg);
+}
+
+.stat-label {
+  @include responsive-font($font-xxs);
+}
+
+.modal-header h2 {
+  @include responsive-font($font-md);
+}
+
+.modal-status {
+  @include responsive-font($font-xs);
+}
+
+.info-section {
+  h3 {
+    @include responsive-font($font-base);
+  }
+  
+  .info-label {
+    @include responsive-font($font-xs);
+  }
+  
+  .info-value {
+    @include responsive-font($font-sm);
+  }
+}
+

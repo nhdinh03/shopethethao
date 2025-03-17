@@ -5,7 +5,7 @@ import { message, Spin, notification } from "antd";
 import moment from "moment";
 import { userHistoryApi } from "api/Admin";
 import { userHistorySSE } from "api/Admin/UserHistory/userHistorySSE";
-import Loading from "pages/Loading/loading";
+
 
 const AdminIndex = () => {
   const [adminHistories, setAdminHistories] = useState([]);
@@ -504,10 +504,6 @@ const AdminIndex = () => {
       </div>
     </Link>
   );
-
-  if (isLoading) {
-    return <Loading />;
-  }
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">

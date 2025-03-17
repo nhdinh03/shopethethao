@@ -1,7 +1,156 @@
-// Import base styles
-@import "../Accounts/accounts.scss";
+.header-container {
+  display: flex;
+  justify-content: flex-end; // 🔹 Căn phải
+  align-items: center;
+  width: 100%;
+  margin-bottom: 12px; // 🔹 Giảm margin cho gọn hơn
+  
+  .add-btn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px; // 🔹 Nhỏ lại một chút
+    font-weight: 600; // 🔹 Giữ độ đậm vừa phải
+    background-color: #1890ff;
+    border: none;
+    padding: 6px 12px; // 🔹 Thu nhỏ padding cho vừa tay
+    transition: all 0.2s ease-in-out;
+    border-radius: 6px; // 🔹 Bớt bo góc lại
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+    min-width: 130px; // 🔹 Giữ cho nút không bị quá nhỏ
+    height: 36px; // 🔹 Đặt chiều cao cố định để đồng bộ UI
 
-// Add any staff-specific styles here if needed
-.staff-specific-class {
-  // Add custom styles
+    &:hover {
+      background-color: #40a9ff;
+      transform: scale(1.03); // 🔥 Hiệu ứng hover nhẹ hơn
+    }
+
+    &:active {
+      transform: scale(0.98); // 🔹 Hiệu ứng nhấn xuống mượt hơn
+    }
+  }
+}
+
+
+
+.ellipsis-text {
+  display: inline-block;
+  max-width: 300px; // Giới hạn chiều rộng
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: color 0.1s ease-in-out;
+
+  // &:hover {
+  //   color: #1890ff; // Màu xanh khi hover
+  // }
+}
+
+/* Giới hạn chiều rộng của cột Kích cỡ, Số lượng và Giá tiền */
+.space-vertical {
+  margin-bottom: 10px;  /* Tạo khoảng cách giữa các mục */
+}
+
+/* Giảm độ rộng của cột nếu cần */
+.ant-table-thead > tr > th {
+  text-align: center; /* Căn giữa tiêu đề */
+}
+
+/* Tạo đường viền để bảng trông rõ ràng hơn */
+.ant-table-cell {
+  padding: 12px; /* Tăng khoảng cách trong các ô */
+}
+
+
+/* Ngăn chặn sao chép trong bảng */
+.no-copy {
+-webkit-user-select: none; /* Safari */
+-moz-user-select: none; /* Firefox */
+-ms-user-select: none; /* IE/Edge */
+user-select: none; /* Chrome, Opera */
+}
+
+.user-info-cell {
+display: flex;
+align-items: center;
+gap: 12px;
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #1890ff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 16px;
+  }
+}
+
+.user-details {
+  .fullname {
+    font-weight: 500;
+    color: #262626;
+  }
+
+  .email {
+    font-size: 12px;
+    color: #8c8c8c;
+  }
+}
+}
+
+.address-cell {
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+max-width: 200px;
+}
+
+.action-buttons {
+.ant-btn {
+  border-radius: 4px;
+  
+  &:hover {
+    transform: translateY(-1px);
+    transition: transform 0.2s;
+  }
+}
+}
+
+.locked-user-info {
+.name {
+  font-weight: 500;
+  color: #262626;
+}
+
+.email {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+}
+
+.lock-reason {
+.ant-alert {
+  border-radius: 4px;
+}
+
+.no-reason {
+  color: #8c8c8c;
+  font-style: italic;
+}
 }

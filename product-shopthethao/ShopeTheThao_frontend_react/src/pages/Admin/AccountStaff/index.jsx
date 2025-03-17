@@ -570,4 +570,4 @@ const AccountStaff = () => {
   );
 };
 
-export default React.memo(AccountStaff);
+export default AccountStaff;

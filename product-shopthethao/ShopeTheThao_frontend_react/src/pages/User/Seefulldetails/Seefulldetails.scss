@@ -15,23 +15,29 @@ $font-family: 'Roboto', sans-serif;
 $heading-line-height: 1.2;
 $body-line-height: 1.6;
 
-// Font sizes - using a typographic scale
-$font-size-xs: 0.75rem;    // 12px
-$font-size-sm: 0.875rem;   // 14px
-$font-size-base: 1rem;     // 16px
-$font-size-md: 1.125rem;   // 18px
-$font-size-lg: 1.5rem;    // 24px
-$font-size-xl: 1.75rem;   // 28px
-$font-size-2xl: 2rem;     // 32px
-$font-size-3xl: 2.5rem;   // 40px
-$font-size-4xl: 3rem;     // 48px
-$font-size-5xl: 3.75rem;  // 60px
+// Typography scale in pixels
+$font-size-xs: 12px;     // Extra small text
+$font-size-sm: 13px;     // Small text
+$font-size-base: 14px;   // Base/body text
+$font-size-md: 16px;     // Medium/heading text
+$font-size-lg: 18px;     // Large headings
+$font-size-xl: 20px;     // Extra large headings
+$font-size-2xl: 24px;    // H2 headings
+$font-size-3xl: 28px;    // H1 headings
+$font-size-4xl: 32px;    // Hero headings
+$font-size-5xl: 36px;    // Display headings
 
 // Font weights for better hierarchy
 $font-weight-normal: 400;
 $font-weight-medium: 500;
 $font-weight-semibold: 600;
 $font-weight-bold: 700;
+
+// Responsive breakpoints - add these if not already present
+$mobile: 576px;
+$tablet: 768px;
+$desktop: 992px;
+$large-desktop: 1200px;
 
 // Mixins
 @mixin flex-center {
@@ -56,32 +62,40 @@ $font-weight-bold: 700;
   }
 }
 
+// Responsive font size mixins
+@mixin responsive-font($desktop-size, $tablet-size: null, $mobile-size: null) {
+  font-size: $desktop-size;
+
+  @if $tablet-size {
+    @media (max-width: $tablet) {
+      font-size: $tablet-size;
+    }
+  }
+
+  @if $mobile-size {
+    @media (max-width: $mobile) {
+      font-size: $mobile-size;
+    }
+  }
+}
+
 // Typography mixins
 @mixin heading-1 {
-  font-size: $font-size-3xl;
+  @include responsive-font(28px, 24px, 20px);
   font-weight: $font-weight-bold;
   line-height: $heading-line-height;
-  letter-spacing: -0.02em;
   margin-bottom: 1.2rem;
-  
-  @media (max-width: 768px) {
-    font-size: $font-size-2xl;
-  }
 }
 
 @mixin heading-2 {
-  font-size: $font-size-2xl;
+  @include responsive-font(24px, 20px, 18px);
   font-weight: $font-weight-bold;
   line-height: $heading-line-height;
   margin-bottom: 1.5rem;
-  
-  @media (max-width: 768px) {
-    font-size: $font-size-xl;
-  }
 }
 
 @mixin heading-3 {
-  font-size: $font-size-lg;
+  @include responsive-font(18px, 16px, 16px);
   font-weight: $font-weight-semibold;
   line-height: $heading-line-height;
   margin-bottom: 1rem;
@@ -406,8 +420,7 @@ $font-weight-bold: 700;
       flex: 1;
       
       .product-title {
-        @include heading-1;
-        font-size: $font-size-4xl; // Increased size
+        @include responsive-font(24px, 20px, 18px);
         font-weight: $font-weight-bold;
         color: $text-color;
         margin-bottom: 1rem;
@@ -421,6 +434,7 @@ $font-weight-bold: 700;
         margin-bottom: 1.5rem;
         padding-bottom: 15px;
         border-bottom: 1px solid $border-color;
+        font-size: $font-size-base;
         
         > div {
           margin-right: 20px;
@@ -481,7 +495,7 @@ $font-weight-bold: 700;
         
         .price-current {
           display: block;
-          font-size: $font-size-5xl; // Increased size
+          @include responsive-font(28px, 24px, 20px);
           font-weight: $font-weight-bold;
           color: $accent-color;
           line-height: 1.2;
@@ -493,7 +507,7 @@ $font-weight-bold: 700;
         
         .price-original {
           display: block;
-          font-size: $font-size-xl; // Increased size
+          font-size: $font-size-lg;
           color: #999;
           text-decoration: line-through;
           margin-top: 7px;
@@ -1003,10 +1017,10 @@ $font-weight-bold: 700;
         .product-description {
           color: #555;
           line-height: $body-line-height;
+          font-size: $font-size-base;
           
           p {
             margin-bottom: 1rem;
-            font-size: $font-size-base;
           }
           
           ul {
