@@ -12,10 +12,13 @@ const ProductAttributesModal = ({
 }) => {
   return (
     <Modal
+      className="product-attributes-modal"
       title={editProductAttributes ? "Cập nhật kích thước" : "Thêm kích thước mới"}
       open={open}
       footer={null}
       onCancel={handleCancel}
+      width="auto"
+      style={{ maxWidth: '500px', margin: '0 auto' }}
     >
       <Form form={form} layout="vertical">
         <Form.Item

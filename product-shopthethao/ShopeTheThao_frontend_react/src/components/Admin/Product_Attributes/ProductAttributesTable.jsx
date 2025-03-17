@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Select } from "antd";
+import { Table } from "antd";
 import PaginationComponent from "components/User/PaginationComponent";
 
 const ProductAttributesTable = ({
@@ -18,8 +18,8 @@ const ProductAttributesTable = ({
           ...sizes,
           key: sizes.id,
         }))}
+        className="responsive-table"
       />
-      
     </div>
   );
 };

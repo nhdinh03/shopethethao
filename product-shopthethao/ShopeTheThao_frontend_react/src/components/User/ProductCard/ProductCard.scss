@@ -216,6 +216,33 @@ $border-radius: 8px;
       }
     }
   }
+
+  .product-image {
+    position: relative;
+    width: 100%;
+    height: 270px;
+    overflow: hidden;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.3s ease;
+
+      &.hover-image {
+        animation: fadeIn 0.3s ease;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 // View mode toggle buttons

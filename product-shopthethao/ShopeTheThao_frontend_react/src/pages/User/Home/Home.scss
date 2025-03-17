@@ -12,6 +12,38 @@ $transition: all 0.3s ease-in-out;
 $border-radius: 8px;
 $section-spacing: 5rem;
 
+// Breakpoints
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+$breakpoint-mobile-s: 320px;
+
+// Typography Scale
+$font-xs: 12px;    // Very small text
+$font-sm: 13px;    // Small text
+$font-base: 14px;  // Base text
+$font-md: 16px;    // Medium text
+$font-lg: 18px;    // Large headings
+$font-xl: 20px;    // Extra large headings
+$font-2xl: 24px;   // Display text
+$font-3xl: 32px;   // Hero text
+$font-4xl: 40px;   // Large hero text
+
+// Responsive Font Mixins
+@mixin responsive-font($size) {
+  font-size: $size;
+  
+  @media (max-width: $breakpoint-tablet) {
+    font-size: max($size * 0.9, $font-xs);
+  }
+  
+  @media (max-width: $breakpoint-mobile-l) {
+    font-size: max($size * 0.85, $font-xs);
+  }
+}
+
 // Mixins
 @mixin flex-center($direction: row, $justify: center, $align: center) {
   display: flex;
@@ -34,6 +66,18 @@ $section-spacing: 5rem;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
+
+  @media (min-width: $breakpoint-4k) {
+    max-width: 2000px;
+  }
+  
+  @media (max-width: $breakpoint-laptop) {
+    padding: 0 2rem;
+  }
+  
+  @media (max-width: $breakpoint-tablet) {
+    padding: 0 1.5rem;
+  }
 }
 
 // General Home Page Styles
@@ -43,7 +87,7 @@ $section-spacing: 5rem;
     margin-bottom: 3rem;
     
     h2 {
-      font-size: 2.5rem;
+      font-size: $font-3xl; // 32px instead of 2.5rem
       margin-bottom: 1rem;
       font-weight: 700;
       color: $secondary-color;
@@ -57,13 +101,25 @@ $section-spacing: 5rem;
         background-color: $accent-color;
         margin: 0.8rem auto 0;
       }
+      
+      @media (max-width: $breakpoint-tablet) {
+        font-size: $font-2xl; // 24px
+      }
+      
+      @media (max-width: $breakpoint-mobile-l) {
+        font-size: $font-xl; // 20px
+      }
     }
     
     p {
-      font-size: 1.125rem;
+      font-size: $font-md; // 16px instead of 1.125rem
       color: rgba($text-color, 0.7);
       max-width: 600px;
       margin: 0 auto;
+      
+      @media (max-width: $breakpoint-mobile-l) {
+        font-size: $font-base; // 14px
+      }
     }
   }
 }
@@ -102,16 +158,32 @@ $section-spacing: 5rem;
     max-width: 500px;
     
     h1 {
-      font-size: 3.5rem;
+      font-size: $font-4xl; // 40px instead of 3.5rem
       font-weight: 800;
       margin-bottom: 1.5rem;
       line-height: 1.2;
+      
+      @media (max-width: $breakpoint-laptop) {
+        font-size: $font-3xl; // 32px
+      }
+      
+      @media (max-width: $breakpoint-tablet) {
+        font-size: $font-2xl; // 24px
+      }
     }
     
     p {
-      font-size: 1.25rem;
+      font-size: $font-lg; // 18px instead of 1.25rem
       margin-bottom: 2rem;
       opacity: 0.9;
+      
+      @media (max-width: $breakpoint-tablet) {
+        font-size: $font-md; // 16px
+      }
+      
+      @media (max-width: $breakpoint-mobile-l) {
+        font-size: $font-base; // 14px
+      }
     }
     
     .cta-button {
@@ -119,7 +191,7 @@ $section-spacing: 5rem;
       color: white;
       border: none;
       padding: 0.875rem 2rem;
-      font-size: 1.125rem;
+      font-size: $font-md; // 16px instead of 1.125rem
       font-weight: 600;
       border-radius: 30px;
       cursor: pointer;
@@ -139,6 +211,10 @@ $section-spacing: 5rem;
       
       &:hover svg {
         transform: translateX(5px);
+      }
+      
+      @media (max-width: $breakpoint-mobile-l) {
+        font-size: $font-base; // 14px
       }
     }
   }
@@ -213,7 +289,7 @@ $section-spacing: 5rem;
       }
       
       h3 {
-        font-size: 1.25rem;
+
         margin: 1.5rem 0 1rem;
         font-weight: 600;
         color: $secondary-color;
@@ -325,7 +401,6 @@ $section-spacing: 5rem;
           padding: 5px 12px;
           border-radius: 20px;
           font-weight: 500;
-          font-size: 0.875rem;
           z-index: 2;
         }
         
@@ -372,13 +447,13 @@ $section-spacing: 5rem;
         
         .product-category {
           color: rgba($text-color, 0.6);
-          font-size: 0.875rem;
+          font-size: $font-sm; // 13px instead of 0.875rem
           display: block;
           margin-bottom: 0.5rem;
         }
         
         .product-name {
-          font-size: 1.125rem;
+          font-size: $font-md; // 16px instead of 1.125rem
           font-weight: 600;
           margin-bottom: 0.75rem;
           color: $secondary-color;
@@ -386,6 +461,10 @@ $section-spacing: 5rem;
           
           &:hover {
             color: $primary-color;
+          }
+          
+          @media (max-width: $breakpoint-mobile-l) {
+            font-size: $font-base; // 14px
           }
         }
         
@@ -404,7 +483,6 @@ $section-spacing: 5rem;
           
           span {
             color: rgba($text-color, 0.6);
-            font-size: 0.875rem;
             margin-left: 5px;
           }
         }
@@ -415,9 +493,13 @@ $section-spacing: 5rem;
           gap: 10px;
           
           .current-price, .discounted-price {
-            font-size: 1.25rem;
+            font-size: $font-lg; // 18px instead of 1.25rem
             font-weight: 700;
             color: $secondary-color;
+            
+            @media (max-width: $breakpoint-mobile-l) {
+              font-size: $font-md; // 16px
+            }
           }
           
           .discounted-price {
@@ -425,9 +507,13 @@ $section-spacing: 5rem;
           }
           
           .original-price {
-            font-size: 1rem;
+            font-size: $font-base; // 14px instead of 1rem
             color: rgba($text-color, 0.5);
             text-decoration: line-through;
+            
+            @media (max-width: $breakpoint-mobile-l) {
+              font-size: $font-sm; // 13px
+            }
           }
         }
       }
@@ -443,7 +529,6 @@ $section-spacing: 5rem;
       align-items: center;
       gap: 10px;
       color: $secondary-color;
-      font-size: 1rem;
       font-weight: 600;
       text-decoration: none;
       padding: 12px 25px;
@@ -498,14 +583,12 @@ $section-spacing: 5rem;
     color: white;
     
     h2 {
-      font-size: 3rem;
       font-weight: 800;
       margin-bottom: 1rem;
       letter-spacing: 2px;
     }
     
     p {
-      font-size: 1.25rem;
       margin-bottom: 2rem;
       opacity: 0.9;
     }
@@ -515,7 +598,6 @@ $section-spacing: 5rem;
       color: white;
       border: none;
       padding: 1rem 2.5rem;
-      font-size: 1.125rem;
       font-weight: 600;
       border-radius: 30px;
       cursor: pointer;
@@ -568,6 +650,14 @@ $section-spacing: 5rem;
   padding: $section-spacing 0;
   background-color: $light-bg;
   
+  @media (max-width: $breakpoint-tablet) {
+    padding: $section-spacing * 0.8 0;
+  }
+  
+  @media (max-width: $breakpoint-mobile-l) {
+    padding: $section-spacing * 0.6 0;
+  }
+  
   .products-toolbar {
     display: flex;
     align-items: center;
@@ -604,7 +694,7 @@ $section-spacing: 5rem;
       flex-wrap: wrap;
       
       .product-count {
-        font-size: 0.9rem;
+        font-size: $font-base; // 14px instead of 0.9rem
         color: $text-color;
       }
       
@@ -774,21 +864,7 @@ $section-spacing: 5rem;
     }
   }
   
-  .products-grid {
-    flex: 1;
-    
-    &.view-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-    
-    &.view-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-  }
+ 
 }
 
 // Home Products Section
@@ -875,12 +951,12 @@ $section-spacing: 5rem;
     
     .banner-content {
       h1 {
-        font-size: 2rem;
+        font-size: $font-2xl; // 24px
         margin-bottom: 1rem;
       }
       
       p {
-        font-size: 1rem;
+        font-size: $font-base; // 14px
         margin-bottom: 1.5rem;
       }
     }
@@ -894,11 +970,11 @@ $section-spacing: 5rem;
     margin-bottom: 2rem;
     
     h2 {
-      font-size: 2rem;
+      font-size: $font-2xl; // 24px
     }
     
     p {
-      font-size: 1rem;
+      font-size: $font-base; // 14px
     }
   }
   
@@ -947,12 +1023,12 @@ $section-spacing: 5rem;
       width: 90%;
       
       h1 {
-        font-size: 1.75rem;
+        font-size: $font-xl; // 20px
       }
       
       .cta-button {
         padding: 0.75rem 1.5rem;
-        font-size: 1rem;
+        font-size: $font-base; // 14px
       }
     }
   }
@@ -976,7 +1052,7 @@ $section-spacing: 5rem;
       
       .shop-now-btn {
         padding: 0.75rem 2rem;
-        font-size: 1rem;
+        font-size: $font-base; // 14px
       }
     }
   }
@@ -997,6 +1073,165 @@ $section-spacing: 5rem;
     .products-grid {
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 15px;
+    }
+  }
+}
+
+// ...existing code...
+
+.featured-products {
+  padding: 4rem 0;
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .view-all {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #333;
+      text-decoration: none;
+      
+      &:hover {
+        color: #ff4d4d;
+      }
+    }
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+}
+
+.newsletter-section {
+  background: #f5f5f5;
+  padding: 4rem 0;
+  text-align: center;
+
+  h2 {
+    margin-bottom: 1rem;
+  }
+
+  .email-form {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    gap: 1rem;
+
+    input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 0.75rem 2rem;
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover {
+        background: #ff3333;
+      }
+    }
+  }
+}
+
+// Add responsive styles
+@media (max-width: 768px) {
+  .featured-products .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .featured-products .products-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.products-grid {
+  &.five-products {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    
+    @media (max-width: $breakpoint-laptop) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    @media (max-width: $breakpoint-mobile-l) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    
+    @media (max-width: $breakpoint-mobile-s) {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+}
+
+// ...existing code...
+.view-all-container {
+  margin-top: 2rem;
+  text-align: center;
+  padding: 1rem 0;
+  
+  .view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 30px;
+    background-color: transparent;
+    border: 2px solid $accent-color;
+    color: $accent-color;
+    font-weight: 600;
+    font-size: $font-md;
+    text-decoration: none;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: $accent-color;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba($accent-color, 0.3);
+      
+      svg {
+        transform: translateX(5px);
+      }
+    }
+    
+    svg {
+      transition: transform 0.3s ease;
+      font-size: 1.2em;
+    }
+    
+    @media (max-width: $breakpoint-mobile-l) {
+      padding: 10px 20px;
+      font-size: $font-base;
+      
+      svg {
+        font-size: 1.1em;
+      }
     }
   }
 }

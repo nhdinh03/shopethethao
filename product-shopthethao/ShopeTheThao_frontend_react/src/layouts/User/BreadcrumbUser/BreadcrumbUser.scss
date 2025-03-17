@@ -1,3 +1,36 @@
+// Responsive breakpoints
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+$breakpoint-mobile-s: 320px;
+
+// Font sizes
+$font-xs: 12px;
+$font-sm: 13px;
+$font-base: 14px;
+$font-md: 16px;
+$font-lg: 18px;
+$font-xl: 20px;
+
+// Responsive mixins
+@mixin responsive($breakpoint) {
+  @if $breakpoint == 4k {
+    @media (min-width: #{$breakpoint-4k}) { @content; }
+  } @else if $breakpoint == laptop {
+    @media (max-width: #{$breakpoint-laptop}) { @content; }
+  } @else if $breakpoint == tablet {
+    @media (max-width: #{$breakpoint-tablet}) { @content; }
+  } @else if $breakpoint == mobile-l {
+    @media (max-width: #{$breakpoint-mobile-l}) { @content; }
+  } @else if $breakpoint == mobile-m {
+    @media (max-width: #{$breakpoint-mobile-m}) { @content; }
+  } @else if $breakpoint == mobile-s {
+    @media (max-width: #{$breakpoint-mobile-s}) { @content; }
+  }
+}
+
 .user-breadcrumb {
   background: #ffffff;
   border-bottom: 1px solid #f0f0f0;
@@ -7,8 +40,29 @@
     margin: 0 auto;
     padding: 20px 16px;
     
+    @include responsive(4k) {
+      max-width: 2200px;
+      padding: 30px 24px;
+    }
+    
+    @include responsive(tablet) {
+      padding: 16px 12px;
+    }
+    
+    @include responsive(mobile-l) {
+      padding: 12px 10px;
+    }
+    
     .ant-breadcrumb {
-      font-size: 13px;
+      font-size: $font-sm;
+      
+      @include responsive(4k) {
+        font-size: $font-md;
+      }
+      
+      @include responsive(mobile-m) {
+        font-size: $font-xs;
+      }
       
       a {
         display: inline-flex;
@@ -19,6 +73,16 @@
         .anticon {
           margin-right: 6px;
           font-size: 15px;
+          
+          @include responsive(4k) {
+            font-size: 18px;
+            margin-right: 8px;
+          }
+          
+          @include responsive(mobile-l) {
+            font-size: 14px;
+            margin-right: 4px;
+          }
         }
         
         &:hover {
@@ -30,6 +94,16 @@
         font-size: 9px;
         color: #929292;
         margin: 0 8px;
+        
+        @include responsive(4k) {
+          font-size: 12px;
+          margin: 0 12px;
+        }
+        
+        @include responsive(mobile-l) {
+          font-size: 8px;
+          margin: 0 6px;
+        }
       }
       
       span {

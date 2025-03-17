@@ -97,7 +97,7 @@ const AdminLayout = ({ children }) => {
         {/* Nội dung chính */}
         <Content className="m-4 p-4 bg-gray-100 min-h-[80vh] rounded-md shadow-md">
           {/* Ẩn Breadcrumb trên mobile để tiết kiệm không gian */}
-          <div className="breadcrumb-container hidden md:block">
+          <div className="breadcrumb-container">
             <Bread path={location.pathname} />
           </div>
 
@@ -109,6 +109,7 @@ const AdminLayout = ({ children }) => {
             )}
           </div>
         </Content>
+        
 
         {/* Nút cuộn lên đầu trang */}
         {showScrollButton && (

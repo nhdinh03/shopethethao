@@ -1,152 +1,68 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiHeart, FiShoppingCart, FiStar, FiEye } from 'react-icons/fi';
 import './ProductCard.scss';
 
-const ProductCard = ({ product, index, onQuickView, quickViewButton, showAlternate }) => {
-  const navigate = useNavigate();
+const ProductCard = ({ product, showBadge, badgeText }) => {
+  const [isHovered, setIsHovered] = useState(false);
 
-  if (!product) {
-    console.error("Product data is undefined");
-    return <div className="product-card error">Dữ liệu sản phẩm không hợp lệ</div>;
-  }
-
-  // Format price with VND
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(price);
   };
 
-  // Calculate discounted price
-  const calculateDiscountedPrice = (price, discount) => {
-    return price * (1 - discount / 100);
-  };
-
-  // Handle card click to navigate to product details
-  const handleProductClick = (e) => {
-    // Prevent navigation if the click was on a button inside the card
-    if (e.target.closest('button')) {
-      return;
-    }
-    window.scrollTo(0, 0);
-    navigate(`/v1/shop/seefulldetails/${product.id}`, { replace: true });
-  };
-
-  // Handle quick view button click
-  const handleQuickView = (e) => {
-    e.stopPropagation();
-    if (onQuickView) onQuickView();
-  };
-
-  // Animation variants
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.3, delay: index * 0.1 }
-    }
-  };
+  const discountedPrice = product.discountPercentage 
+    ? product.price * (1 - product.discountPercentage / 100)
+    : product.price;
 
   return (
-    <motion.div 
-      className="product-card"
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      onClick={handleProductClick}
-    >
-      <div className="product-badges">
-        {product.isNew && <span className="badge new">Mới</span>}
-        {product.isBestSeller && <span className="badge bestseller">Bán chạy</span>}
-        {product.discountPercentage > 0 && (
-          <span className="badge discount">-{product.discountPercentage}%</span>
+    <motion.div className="product-card">
+      <div 
+        className="product-image"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {showBadge && badgeText && (
+          <span className="badge" 
+            style={{
+              backgroundColor: 
+                badgeText === 'Mới' ? '#00c853' :
+                badgeText === 'Bán chạy' ? '#ff3d00' : '#2196f3'
+            }}
+          >
+            {badgeText}
+          </span>
         )}
-      </div>
-      
-      <div className="product-image-container">
-        <img 
-          src={showAlternate && product.images?.[1] ? product.images[1] : product.thumbnail} 
-          alt={product.name}
-          className="product-image primary"
-          loading="lazy"
-          srcSet={`${product.thumbnail} 300w,
-                   ${product.thumbnail} 600w,
-                   ${product.thumbnail} 900w`}
-          sizes="(max-width: 320px) 280px,
-                 (max-width: 375px) 335px,
-                 (max-width: 425px) 385px,
-                 (max-width: 768px) 728px,
-                 (max-width: 1024px) 984px,
-                 1200px"
-        />
-        {product.alternateThumbnail && (
+        <Link to={`/product/${product.id}`}>
           <img 
-            src={product.alternateThumbnail}
-            alt={`${product.name} - alternate view`}
-            className="product-image alternate"
-            loading="lazy"
-            srcSet={`${product.alternateThumbnail} 300w,
-                     ${product.alternateThumbnail} 600w,
-                     ${product.alternateThumbnail} 900w`}
-            sizes="(max-width: 320px) 280px,
-                   (max-width: 375px) 335px,
-                   (max-width: 425px) 385px,
-                   (max-width: 768px) 728px,
-                   (max-width: 1024px) 984px,
-                   1200px"
+            src={isHovered && product.alternateThumbnail ? product.alternateThumbnail : product.thumbnail} 
+            alt={product.name}
+            className={isHovered ? 'hover-image' : ''}
           />
-        )}
-        <div className="product-actions">
-          <button className="action-btn wishlist-btn" title="Thêm vào danh sách yêu thích">
-            <FiHeart />
-          </button>
-          <button className="action-btn cart-btn" title="Thêm vào giỏ hàng">
-            <FiShoppingCart />
-          </button>
-          <button className="action-btn quick-view-btn" title="Xem nhanh" onClick={handleQuickView}>
-            <FiEye />
-          </button>
-        </div>
+        </Link>
       </div>
-      
       <div className="product-info">
-        <span className="product-category">{product.category}</span>
-        <h3 className="product-name">{product.name}</h3>
-        
-        <div className="product-rating">
-          {[...Array(5)].map((_, i) => (
-            <FiStar key={i} className={i < Math.round(product.rating) ? "filled" : ""} />
-          ))}
-          <span>({product.reviews || 0})</span>
-        </div>
-        
+        <Link to={`/product/${product.id}`} className="product-name">
+          <h3>{product.name}</h3>
+        </Link>
         <div className="product-price">
-          {product.discountPercentage > 0 ? (
-            <>
-              <span className="discounted-price">
-                {formatPrice(calculateDiscountedPrice(product.price, product.discountPercentage))}
-              </span>
-              <span className="original-price">{formatPrice(product.price)}</span>
-            </>
-          ) : (
-            <span className="current-price">{formatPrice(product.price)}</span>
+          <span className="current-price">
+            {formatPrice(discountedPrice)}
+          </span>
+          {product.discountPercentage > 0 && (
+            <span className="original-price">
+              {formatPrice(product.price)}
+            </span>
           )}
         </div>
-        
-        {product.colors && product.colors.length > 0 && (
-          <div className="product-colors">
-            {product.colors.map((color, i) => (
-              <span 
-                key={i} 
-                className="color-dot" 
-                style={{ backgroundColor: color }}
-              />
-            ))}
+        {product.rating && (
+          <div className="product-rating">
+            <span>⭐ {product.rating}</span>
           </div>
         )}
       </div>
-
     </motion.div>
   );
 };

@@ -1,0 +1,175 @@
+// Breakpoints
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+
+// Font sizes
+$font-xs: 12px;
+$font-sm: 13px;
+$font-base: 14px;
+$font-md: 16px;
+$font-lg: 18px;
+$font-xl: 20px;
+$font-xxl: 24px;
+
+// Responsive mixins
+@mixin responsive($breakpoint) {
+  @media screen and (max-width: $breakpoint) {
+    @content;
+  }
+}
+
+// Typography mixins
+@mixin heading-xl {
+  font-size: $font-xxl;
+  font-weight: 700;
+  
+  @include responsive($breakpoint-laptop) {
+    font-size: $font-xl;
+  }
+  
+  @include responsive($breakpoint-tablet) {
+    font-size: $font-lg;
+  }
+  
+  @include responsive($breakpoint-mobile-l) {
+    font-size: $font-md;
+  }
+}
+
+@mixin heading-md {
+  font-size: $font-lg;
+  font-weight: 600;
+  
+  @include responsive($breakpoint-tablet) {
+    font-size: $font-md;
+  }
+  
+  @include responsive($breakpoint-mobile-l) {
+    font-size: $font-base;
+  }
+}
+
+// Component styles
+.product-attributes-page {
+  padding: 20px;
+  
+  @include responsive($breakpoint-mobile-l) {
+    padding: 10px;
+  }
+  
+  .page-title {
+    @include heading-xl;
+    margin-bottom: 16px;
+  }
+  
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    @include responsive($breakpoint-mobile-l) {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .add-btn {
+        width: 100%;
+        margin-top: 10px;
+        height: auto;
+        padding: 10px;
+        font-size: $font-base;
+      }
+    }
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    margin-bottom: 20px;
+    
+    @include responsive($breakpoint-tablet) {
+      font-size: $font-sm;
+      
+      .ant-table {
+        font-size: $font-sm;
+      }
+    }
+    
+    @include responsive($breakpoint-mobile-l) {
+      .ant-table-cell {
+        padding: 8px 4px;
+      }
+      
+      .ant-btn {
+        padding: 4px 8px;
+        font-size: $font-xs;
+      }
+    }
+  }
+  
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    
+    @include responsive($breakpoint-mobile-l) {
+      .ant-pagination {
+        display: none;
+      }
+      
+      .ant-select {
+        display: none;
+      }
+      
+      .mobile-load-more {
+        display: block;
+        width: 100%;
+        margin-top: 16px;
+        height: auto;
+        padding: 10px;
+        font-size: $font-base;
+      }
+    }
+    
+    .mobile-load-more {
+      display: none;
+    }
+  }
+}
+
+// Modal styles
+.product-attributes-modal {
+  .ant-modal-content {
+    @include responsive($breakpoint-mobile-l) {
+      padding: 16px;
+    }
+  }
+  
+  .ant-modal-header {
+    @include responsive($breakpoint-mobile-l) {
+      padding: 0 0 16px 0;
+      
+      .ant-modal-title {
+        font-size: $font-md;
+      }
+    }
+  }
+  
+  .ant-form-item-label > label {
+    @include responsive($breakpoint-mobile-l) {
+      font-size: $font-sm;
+    }
+  }
+  
+  .ant-btn {
+    @include responsive($breakpoint-mobile-l) {
+      font-size: $font-sm;
+      padding: 4px 15px;
+      height: auto;
+    }
+  }
+}

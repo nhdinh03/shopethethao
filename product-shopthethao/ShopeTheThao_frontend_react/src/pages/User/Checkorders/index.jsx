@@ -281,7 +281,7 @@ function Checkorders() {
         setError("Không thể tải dữ liệu đơn hàng. Vui lòng thử lại sau.");
         setLoading(false);
       }
-    }, 1000);
+    }, 500);
 
     // Cleanup function to cancel the timeout if component unmounts
     return () => clearTimeout(timeoutId);

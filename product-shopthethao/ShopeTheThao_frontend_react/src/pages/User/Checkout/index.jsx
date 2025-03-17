@@ -172,15 +172,6 @@ const Checkout = () => {
       <h1 className="checkout-title">
         <FaShoppingCart className="checkout-icon" /> Thanh toán
       </h1>
-
-      <div className="checkout-breadcrumb">
-        <Link to="/cart">Giỏ hàng</Link>
-        <FaAngleRight />
-        <span className="active">Thanh toán</span>
-        <FaAngleRight />
-        <span>Hoàn thành</span>
-      </div>
-
       <div className="checkout-content">
         <form className="checkout-form" onSubmit={handleSubmit}>
           <div className="checkout-section shipping-info">

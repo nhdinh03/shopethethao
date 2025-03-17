@@ -1,24 +1,75 @@
+// Breakpoints
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+
+// Font sizes
+$font-xs: 12px;
+$font-sm: 13px;
+$font-base: 14px;
+$font-md: 16px;
+$font-lg: 18px;
+$font-xl: 20px;
+
+// Mixins for responsive design
+@mixin responsive($breakpoint) {
+  @if $breakpoint == 4k {
+    @media (min-width: $breakpoint-4k) { @content; }
+  }
+  @if $breakpoint == laptop {
+    @media (max-width: $breakpoint-laptop) { @content; }
+  }
+  @if $breakpoint == tablet {
+    @media (max-width: $breakpoint-tablet) { @content; }
+  }
+  @if $breakpoint == mobile-l {
+    @media (max-width: $breakpoint-mobile-l) { @content; }
+  }
+  @if $breakpoint == mobile-m {
+    @media (max-width: $breakpoint-mobile-m) { @content; }
+  }
+}
+
 .header-container {
   display: flex;
   justify-content: flex-end; // 🔹 Căn phải
   align-items: center;
   width: 100%;
-  margin-bottom: 12px; // 🔹 Giảm margin cho gọn hơn
+  margin-bottom: 1rem; // 🔹 Giảm margin cho gọn hơn
+  padding: 0 1rem;
+
+  @include responsive(mobile-l) {
+    padding: 0 0.5rem;
+  }
   
-  .add-btn{
+  .add-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px; // 🔹 Nhỏ lại một chút
+    font-size: $font-sm; // 🔹 Nhỏ lại một chút
     font-weight: 600; // 🔹 Giữ độ đậm vừa phải
     background-color: #1890ff;
     border: none;
-    padding: 6px 12px; // 🔹 Thu nhỏ padding cho vừa tay
+    padding: 0.5rem 1rem; // 🔹 Thu nhỏ padding cho vừa tay
     transition: all 0.2s ease-in-out;
     border-radius: 6px; // 🔹 Bớt bo góc lại
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
     min-width: 130px; // 🔹 Giữ cho nút không bị quá nhỏ
     height: 36px; // 🔹 Đặt chiều cao cố định để đồng bộ UI
+
+    @include responsive(4k) {
+      font-size: $font-md;
+      height: 44px;
+      min-width: 160px;
+    }
+
+    @include responsive(mobile-l) {
+      min-width: 110px;
+      font-size: $font-xs;
+      height: 32px;
+    }
 
     &:hover {
       background-color: #40a9ff;
@@ -31,8 +82,6 @@
   }
 }
 
-
-
 .ellipsis-text {
   display: inline-block;
   max-width: 300px; // Giới hạn chiều rộng
@@ -40,7 +89,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  font-size: $font-base;
   transition: color 0.1s ease-in-out;
+
+  @include responsive(4k) {
+    max-width: 500px;
+    font-size: $font-md;
+  }
+
+  @include responsive(tablet) {
+    max-width: 200px;
+  }
+
+  @include responsive(mobile-l) {
+    max-width: 150px;
+    font-size: $font-sm;
+  }
 
   // &:hover {
   //   color: #1890ff; // Màu xanh khi hover
@@ -50,11 +114,45 @@
 /* Giới hạn chiều rộng của cột Kích cỡ, Số lượng và Giá tiền */
 .space-vertical {
   margin-bottom: 10px;  /* Tạo khoảng cách giữa các mục */
+
+  @include responsive(4k) {
+    margin-bottom: 16px;
+  }
+
+  @include responsive(mobile-l) {
+    margin-bottom: 8px;
+  }
 }
 
 /* Giảm độ rộng của cột nếu cần */
-.ant-table-thead > tr > th {
-  text-align: center; /* Căn giữa tiêu đề */
+.ant-table {
+  font-size: $font-base;
+
+  @include responsive(4k) {
+    font-size: $font-md;
+  }
+
+  @include responsive(mobile-l) {
+    font-size: $font-sm;
+  }
+
+  .ant-table-thead > tr > th {
+    text-align: center; /* Căn giữa tiêu đề */
+    padding: 12px 8px;
+    white-space: nowrap;
+
+    @include responsive(mobile-l) {
+      padding: 8px 4px;
+    }
+  }
+
+  .ant-table-cell {
+    padding: 12px 8px;
+
+    @include responsive(mobile-l) {
+      padding: 8px 4px;
+    }
+  }
 }
 
 /* Tạo đường viền để bảng trông rõ ràng hơn */
@@ -71,6 +169,10 @@
   td {
     padding: 16px;
     visibility: hidden;
+
+    @include responsive(mobile-l) {
+      padding: 8px;
+    }
   }
 
   .drag-visible {
