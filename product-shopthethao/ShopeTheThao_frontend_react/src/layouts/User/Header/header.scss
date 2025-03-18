@@ -1041,9 +1041,9 @@ transition: box-shadow 0.2s ease; // Specific property transition instead of all
 .mobile-menu {
   position: fixed;
   top: 0;
-  left: -100%; // Thay đổi right thành left
-  width: 100%; // Giảm chiều rộng menu
-  height: 100%;
+  left: 0;
+  width: 100%;
+  height: 100vh;
   background: white;
   box-shadow: var(--shadow-md);
   z-index: 2001; // Tăng z-index
@@ -1056,6 +1056,9 @@ transition: box-shadow 0.2s ease; // Specific property transition instead of all
   will-change: transform; // Tối ưu GPU
   transform: translateX(-100%); // Ban đầu ẩn về bên trái
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); // Timing function mượt
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  transition: none; // Remove SCSS transition
 
   &.active {
     transform: translateX(0);
@@ -1064,6 +1067,16 @@ transition: box-shadow 0.2s ease; // Specific property transition instead of all
       opacity: 1;
       visibility: visible;
     }
+  }
+
+  .submenu {
+    transition: max-height 0.15s ease-out, opacity 0.15s ease-out;
+    will-change: max-height, opacity;
+  }
+
+  .submenu-label svg {
+    transition: transform 0.15s ease;
+    will-change: transform;
   }
 
   .mobile-menu-header {
@@ -2163,7 +2176,7 @@ overscroll-behavior: contain;
   display: flex;
   justify-content: flex-end;
   background: #fff;
-  padding: 0 max(20px, calc((100% - var(--container-width)) / 2));
+  padding: 0 max(7px, calc((100% - var(--container-width)) / 2));
   transition: all 0.2s ease;
   height: 32px;
   border-bottom: 1px solid var(--color-gray-light);

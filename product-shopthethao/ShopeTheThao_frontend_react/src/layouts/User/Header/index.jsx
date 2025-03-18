@@ -649,19 +649,29 @@ const Header = () => {
     closed: {
       x: "-100%",
       transition: {
-        type: "tween",
-        duration: 0.25,
-        ease: [0.4, 0, 0.2, 1],
-      },
+        duration: 0.15, // Faster animation
+        ease: [0.4, 0, 0.2, 1]
+      }
     },
     open: {
       x: 0,
       transition: {
-        type: "tween",
-        duration: 0.25,
-        ease: [0.4, 0, 0.2, 1],
-      },
+        duration: 0.15, // Faster animation
+        ease: [0.4, 0, 0.2, 1]
+      }
+    }
+  };
+
+  // Add backdrop variants
+  const backdropVariants = {
+    closed: {
+      opacity: 0,
+      transition: { duration: 0.1 }
     },
+    open: {
+      opacity: 1,
+      transition: { duration: 0.15 }
+    }
   };
 
   const searchBarVariants = {
@@ -1159,16 +1169,29 @@ const Header = () => {
       </AnimatePresence>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {mobileMenuOpen && (
           <>
             <motion.div
+              className="mobile-menu-backdrop"
+              variants={backdropVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div
               id="mobile-menu"
-              className={`mobile-menu ${mobileMenuOpen ? "active" : ""}`}
+              className="mobile-menu"
               variants={mobileMenuVariants}
               initial="closed"
               animate="open"
               exit="closed"
+              style={{ 
+                willChange: "transform",
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden"
+              }}
             >
               <div className="mobile-menu-header">
                 <button
@@ -1195,7 +1218,8 @@ const Header = () => {
                             htmlFor={`mobile-${category.id}`}
                             className="submenu-label"
                           >
-                            {category.name} <FiChevronDown />
+                            {category.name}
+                            <FiChevronDown style={{ transition: "transform 0.15s ease" }} />
                           </label>
                           <div className="submenu">
                             {categoryDetails[category.id].groups.map(
@@ -1364,10 +1388,6 @@ const Header = () => {
                 </div>
               </div>
             </motion.div>
-            <div
-              className="mobile-menu-backdrop"
-              onClick={() => setMobileMenuOpen(false)}
-            />
           </>
         )}
       </AnimatePresence>
