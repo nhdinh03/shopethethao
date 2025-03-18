@@ -650,28 +650,28 @@ const Header = () => {
       x: "-100%",
       transition: {
         duration: 0.15, // Faster animation
-        ease: [0.4, 0, 0.2, 1]
-      }
+        ease: [0.4, 0, 0.2, 1],
+      },
     },
     open: {
       x: 0,
       transition: {
         duration: 0.15, // Faster animation
-        ease: [0.4, 0, 0.2, 1]
-      }
-    }
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
   };
 
   // Add backdrop variants
   const backdropVariants = {
     closed: {
       opacity: 0,
-      transition: { duration: 0.1 }
+      transition: { duration: 0.1 },
     },
     open: {
       opacity: 1,
-      transition: { duration: 0.15 }
-    }
+      transition: { duration: 0.15 },
+    },
   };
 
   const searchBarVariants = {
@@ -693,7 +693,7 @@ const Header = () => {
   }, [mobileMenuOpen]);
 
   // Update the renderMegaMenu function to apply special styling to highlighted items
-  const renderMenuItem = (item, index) => {
+  const renderMegaMenuItem = (item, index) => {
     let className = "";
     if (item.isNew) className = "new-item";
     if (item.isHot) className = "hot-item";
@@ -802,6 +802,42 @@ const Header = () => {
   // Update the menu backdrop click handler
   const handleBackdropClick = () => {
     handleCloseMenu();
+  };
+
+  // Add this helper function before the return statement
+  const getMenuTitle = () => {
+    if (activeGroup !== null) {
+      return categoryDetails[activeSubmenu].groups[activeGroup].title;
+    }
+    if (activeSubmenu) {
+      return categoryDetails[activeSubmenu].title;
+    }
+    return "Menu";
+  };
+
+  // Extract nested ternary into clear conditional blocks
+  const renderMobileMenuItem = (category) => {
+    if (categoryDetails[category.id]) {
+      return (
+        <button
+          className={`menu-item ${category.isSpecial ? "special" : ""}`}
+          onClick={() => setActiveSubmenu(category.id)}
+        >
+          {category.name}
+          <FiChevronDown style={{ transform: "rotate(-90deg)" }} />
+        </button>
+      );
+    }
+    
+    return (
+      <Link
+        to={category.path}
+        className={`menu-item ${category.isSpecial ? "special" : ""}`}
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        {category.name}
+      </Link>
+    );
   };
 
   return (
@@ -932,7 +968,7 @@ const Header = () => {
                                     </h4>
                                     <ul>
                                       {group.items.map((item, itemIndex) =>
-                                        renderMenuItem(item, itemIndex)
+                                        renderMegaMenuItem(item, itemIndex)
                                       )}
                                     </ul>
                                   </div>
@@ -1201,140 +1237,112 @@ const Header = () => {
             />
             <motion.div
               id="mobile-menu"
-              className={`mobile-menu ${activeSubmenu ? 'has-active-submenu' : ''}`}
+              className={`mobile-menu`}
               variants={mobileMenuVariants}
               initial="closed"
               animate="open"
               exit="closed"
-              style={{ 
+              style={{
                 willChange: "transform",
                 transform: "translateZ(0)",
-                backfaceVisibility: "hidden"
+                backfaceVisibility: "hidden",
               }}
             >
-              {/* Only show mobile-menu-header when no submenu is active */}
-              {!activeSubmenu && (
-                <div className="mobile-menu-header">
-                  <button
-                    className="close-menu"
-                    onClick={handleCloseMenu}
-                    aria-label="Close menu"
-                  >
-                    <FiX />
-                  </button>
-                </div>
-              )}
-
-              <nav className="mobile-nav">
-                {activeSubmenu ? (
-                  // Submenu view
-                  <div className="submenu-view">
-                    <div className="submenu-header">
-                      <button 
-                        className="back-button"
-                        onClick={() => {
-                          setActiveSubmenu(null);
+              <div className="mobile-menu-header">
+                {activeSubmenu || activeGroup ? (
+                  <div className="submenu-header">
+                    <button
+                      className="back-button"
+                      onClick={() => {
+                        if (activeGroup !== null) {
                           setActiveGroup(null);
-                        }}
-                      >
-                        <FiChevronDown style={{ transform: 'rotate(90deg)' }} />
-                        <span>Trở về</span>
-                      </button>
-                      <h3>{categoryDetails[activeSubmenu]?.title}</h3>
-                      <button 
-                        className="close-submenu"
-                        onClick={handleCloseMenu}
-                      >
-                        <FiX />
-                      </button>
-                    </div>
-
-                    <div className="submenu-content">
-                      {activeGroup ? (
-                        // Group items view
-                        <>
-                          <div className="group-header">
-                            <button 
-                              className="back-button"
-                              onClick={() => setActiveGroup(null)}
-                            >
-                              <FiChevronDown style={{ transform: 'rotate(90deg)' }} />
-                              <span>Trở về</span>
-                            </button>
-                            <h4>{categoryDetails[activeSubmenu].groups[activeGroup].title}</h4>
-                          </div>
-                          <ul className="group-items">
-                            {categoryDetails[activeSubmenu].groups[activeGroup].items.map((item, index) => (
-                              <li key={index}>
-                                <Link 
-                                  to={item.path}
-                                  className={item.isNew ? 'new-item' : ''}
-                                  onClick={() => setMobileMenuOpen(false)}
-                                >
-                                  {item.name}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </>
-                      ) : (
-                        // Groups list view
-                        <>
-                          <ul className="submenu-groups">
-                            {categoryDetails[activeSubmenu].groups.map((group, index) => (
-                              <li key={index}>
-                                <button 
-                                  className={`group-button ${group.isHighlight ? 'highlight' : ''}`}
-                                  onClick={() => setActiveGroup(index)}
-                                >
-                                  {group.title}
-                                  <FiChevronDown style={{ transform: 'rotate(-90deg)' }} />
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="mobile-quick-links">
-                            {categoryDetails[activeSubmenu].quickLinks.map((link, index) => (
-                              <Link
-                                key={index}
-                                to={link.path}
-                                className="mobile-quick-link"
-                                onClick={() => setMobileMenuOpen(false)}
-                              >
-                                {link.name}
-                              </Link>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
+                        } else {
+                          setActiveSubmenu(null);
+                        }
+                      }}
+                    >
+                      <FiChevronDown style={{ transform: "rotate(90deg)" }} />
+                      <span>Trở về</span>
+                    </button>
+                    <h3>{getMenuTitle()}</h3>
+                    <button className="close-menu" onClick={handleCloseMenu}>
+                      <FiX />
+                    </button>
                   </div>
                 ) : (
-                  // Main menu view
-                  <ul className="main-menu">
-                    {mainCategories.map((category) => (
-                      <li key={category.id}>
-                        {categoryDetails[category.id] ? (
-                          <button
-                            className={`menu-item ${category.isSpecial ? 'special' : ''}`}
-                            onClick={() => setActiveSubmenu(category.id)}
-                          >
-                            {category.name}
-                            <FiChevronDown style={{ transform: 'rotate(-90deg)' }} />
-                          </button>
-                        ) : (
+                  <button className="close-menu" onClick={handleCloseMenu}>
+                    <FiX />
+                  </button>
+                )}
+              </div>
+
+              <nav className="mobile-nav">
+                <div className="menu-content">
+                  {activeGroup !== null ? (
+                    // Group items view
+                    <ul className="group-items">
+                      {categoryDetails[activeSubmenu].groups[
+                        activeGroup
+                      ].items.map((item, index) => (
+                        <li key={index}>
                           <Link
-                            to={category.path}
-                            className={`menu-item ${category.isSpecial ? 'special' : ''}`}
+                            to={item.path}
+                            className={item.isNew ? "new-item" : ""}
                             onClick={() => setMobileMenuOpen(false)}
                           >
-                            {category.name}
+                            {item.name}
                           </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : activeSubmenu ? (
+                    // Category groups view
+                    <>
+                      <ul className="submenu-groups">
+                        {categoryDetails[activeSubmenu].groups.map(
+                          (group, index) => (
+                            <li key={index}>
+                              <button
+                                className={`group-button ${
+                                  group.isHighlight ? "highlight" : ""
+                                }`}
+                                onClick={() => setActiveGroup(index)}
+                              >
+                                {group.title}
+                                <FiChevronDown
+                                  style={{ transform: "rotate(-90deg)" }}
+                                />
+                              </button>
+                            </li>
+                          )
                         )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                      </ul>
+                      <div className="mobile-quick-links">
+                        {categoryDetails[activeSubmenu].quickLinks.map(
+                          (link, index) => (
+                            <Link
+                              key={index}
+                              to={link.path}
+                              className="mobile-quick-link"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              {link.name}
+                            </Link>
+                          )
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    // Main menu view
+                    <ul className="main-menu">
+                      {mainCategories.map((category) => (
+                        <li key={category.id}>
+                          {renderMobileMenuItem(category)}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </nav>
 
               <div className="mobile-menu-footer">
@@ -1450,8 +1458,3 @@ const Header = () => {
 };
 
 export default Header;
-
-
-
-
-

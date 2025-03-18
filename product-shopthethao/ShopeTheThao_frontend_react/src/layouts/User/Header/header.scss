@@ -105,7 +105,7 @@
 @mixin menu-content-styles {
   flex: 1;
   overflow-y: auto;
-  margin-top: 4px;
+  // margin-top: 4px;
   padding: 12px 16px;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -124,6 +124,53 @@
     background: var(--color-accent);
     border-radius: 4px;
   }
+}
+
+// New mixins
+@mixin menu-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@mixin menu-item-base {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 8px;
+  text-align: left;
+  background: #f8f8f8;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s ease;
+
+  &:hover, &:active {
+    background: #f0f0f0;
+  }
+}
+
+// Add new mixins
+@mixin menu-list-base {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@mixin menu-link-base {
+  display: block;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 // Base styles
@@ -1270,31 +1317,17 @@ html {
 
       // Main menu styling
       .main-menu {
-        @include menu-content-styles;
+        // @include menu-content-styles;
         
         .menu-item {
-          width: 100%;
-          padding: 14px;
-          margin-bottom: 8px;
-          text-align: left;
-          background: #f8f8f8;
-          border: none;
-          border-radius: 8px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
+          @include menu-item-base;
           color: var(--color-text);
           text-decoration: none;
           font-weight: 500;
-          transition: background 0.2s ease;
 
           &.special {
             color: var(--color-accent);
             font-weight: bold;
-          }
-
-          &:hover, &:active {
-            background: #f0f0f0;
           }
         }
       }
@@ -1315,14 +1348,7 @@ html {
           @include menu-header-styles;
           
           h3 {
-            flex: 1;
-            font-size: 16px;
-            font-weight: 600;
-            text-align: center;
-            margin: 0;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
+            @include menu-title;
           }
 
           .back-button {
@@ -1378,60 +1404,56 @@ html {
             margin: 0;
 
             .group-button {
-              width: 100%;
-              padding: 14px;
-              margin-bottom: 8px;
-              text-align: left;
-              background: #f8f8f8;
-              border: none;
-              border-radius: 8px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
+              @include menu-item-base;
               font-weight: 500;
-              transition: background 0.2s ease;
 
               &.highlight {
                 background: rgba(255, 68, 0, 0.08);
                 color: var(--color-accent);
               }
-
-              &:hover, &:active {
-                background: #f0f0f0;
-              }
             }
           }
 
           .group-items {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            margin-top: 60px; // Space for the header
+            @include menu-list-base;
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
 
             li {
               a {
-                display: block;
-                padding: 14px;
-                margin-bottom: 8px;
+                @include menu-link-base;
+                @include menu-item-base;
+                padding: 16px;
                 background: #f8f8f8;
-                border-radius: 8px;
-                color: var(--color-text);
-                text-decoration: none;
-                transition: background 0.2s ease;
-
-                &:hover, &:active {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                
+                &:hover {
                   background: #f0f0f0;
+                  transform: translateX(2px);
                 }
 
-                &.new-item::after {
-                  content: "Mới";
-                  margin-left: 8px;
-                  font-size: 11px;
-                  padding: 2px 6px;
-                  border-radius: 10px;
-                  background: var(--color-accent);
-                  color: white;
-                  font-weight: 500;
+                &:active {
+                  transform: translateX(4px);
+                  background: #e8e8e8;
+                }
+
+                &.new-item {
+                  position: relative;
+                  
+                  &::after {
+                    content: "Mới";
+                    margin-left: 8px;
+                    padding: 4px 8px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: white;
+                    background: var(--color-accent);
+                    border-radius: 12px;
+                  }
                 }
               }
             }
@@ -2232,6 +2254,70 @@ body.menu-open {
     }
   }
 
+  .mobile-menu-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
+    
+    .submenu-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 60px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+      h3 {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+      }
+    }
+
+    .close-menu,
+    .back-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--color-text);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+
+    .back-button {
+      padding: 0 12px;
+      width: auto;
+      gap: 4px;
+      
+      span {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .menu-content {
+    padding: 16px;
+    overflow-y: auto;
+    height: calc(100vh - 60px);
+  }
+
   .mobile-nav {
     .submenu-view {
       // Add transform properties for smoother transitions
@@ -2629,5 +2715,239 @@ body.menu-open {
   }
   to {
     transform: translateX(100%);
+  }
+}
+
+// ... existing code ...
+
+.mobile-nav {
+  // ... existing code ...
+
+  // Common mixin for list items
+  @mixin mobile-list-item {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 8px;
+    text-align: left;
+    background: #f8f8f8;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: var(--color-text);
+
+    &:hover, &:active {
+      background: #f0f0f0;
+      transform: translateX(2px);
+    }
+  }
+
+  .submenu-groups {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+
+    li {
+      margin-bottom: 8px;
+
+      .group-button {
+        @include mobile-list-item;
+        width: 100%;
+        cursor: pointer;
+
+        &.highlight {
+          background: rgba(255, 68, 0, 0.08);
+          color: var(--color-accent);
+          font-weight: 600;
+
+          &:hover {
+            background: rgba(255, 68, 0, 0.12);
+          }
+        }
+
+        svg {
+          font-size: 18px;
+          color: var(--color-gray);
+          transition: transform 0.2s ease;
+        }
+      }
+    }
+  }
+
+  .mobile-quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+
+    .mobile-quick-link {
+      flex: 1;
+      min-width: calc(50% - 4px);
+      padding: 12px 16px;
+      background: rgba(255, 68, 0, 0.08);
+      border-radius: 8px;
+      color: var(--color-accent);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: rgba(255, 68, 0, 0.12);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(1px);
+      }
+    }
+  }
+
+  .main-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      // margin-bottom: 8px;
+
+      .menu-item {
+        @include mobile-list-item;
+        text-decoration: none;
+
+        &.special {
+          color: var(--color-accent);
+          font-weight: 600;
+        }
+
+        svg {
+          font-size: 18px;
+          color: var(--color-gray);
+          transition: transform 0.2s ease;
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 360px) {
+  .mobile-nav {
+    .submenu-groups li .group-button,
+    .main-menu li .menu-item {
+      padding: 12px;
+      font-size: 13px;
+
+      svg {
+        font-size: 16px;
+      }
+    }
+
+    .mobile-quick-links .mobile-quick-link {
+      padding: 10px;
+      font-size: 12px;
+      min-width: 100%;
+    }
+  }
+}
+
+// Add ripple effect for touch feedback
+@media (pointer: coarse) {
+  .mobile-nav {
+    .submenu-groups li .group-button,
+    .main-menu li .menu-item,
+    .mobile-quick-links .mobile-quick-link {
+      position: relative;
+      overflow: hidden;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: inherit;
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+        transition: transform 0.3s, opacity 0.3s;
+      }
+
+      &:active::after {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        transition: 0s;
+      }
+    }
+  }
+}
+
+.menu-content {
+  @include menu-content-styles;
+  padding: 20px 16px;
+  
+  .main-menu,
+  .group-items {
+    @include menu-list-base;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    li {
+      a, 
+      .menu-item {
+        @include menu-link-base;
+        @include menu-item-base;
+        padding: 16px;
+        background: #f8f8f8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background: #f0f0f0;
+          transform: translateX(2px);
+        }
+
+        &:active {
+          transform: translateX(4px);
+          background: #e8e8e8;
+        }
+
+        &.special {
+          color: var(--color-accent);
+          font-weight: bold;
+        }
+
+        &.new-item::after {
+          content: "Mới";
+          margin-left: 8px;
+          padding: 4px 8px;
+          font-size: 11px;
+          font-weight: 600;
+          color: white;
+          background: var(--color-accent);
+          border-radius: 12px;
+        }
+
+        svg {
+          font-size: 18px;
+          color: var(--color-gray);
+          transition: transform 0.2s ease;
+        }
+      }
+    }
+  }
+
+  // Specific adjustments for group-items
+  .group-items {
+    // margin-top: 60px; // Space for header
   }
 }
