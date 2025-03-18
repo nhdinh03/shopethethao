@@ -651,17 +651,17 @@ const Header = () => {
       transition: {
         type: "tween",
         duration: 0.25,
-        ease: [0.4, 0, 0.2, 1]
-      }
+        ease: [0.4, 0, 0.2, 1],
+      },
     },
     open: {
       x: 0,
       transition: {
-        type: "tween", 
+        type: "tween",
         duration: 0.25,
-        ease: [0.4, 0, 0.2, 1]
-      }
-    }
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
   };
 
   const searchBarVariants = {
@@ -672,13 +672,13 @@ const Header = () => {
   // Thêm effect để xử lý scroll lock
   useEffect(() => {
     if (mobileMenuOpen) {
-      document.body.classList.add('menu-open');
+      document.body.classList.add("menu-open");
     } else {
-      document.body.classList.remove('menu-open');
+      document.body.classList.remove("menu-open");
     }
 
     return () => {
-      document.body.classList.remove('menu-open');
+      document.body.classList.remove("menu-open");
     };
   }, [mobileMenuOpen]);
 
@@ -811,6 +811,38 @@ const Header = () => {
       {/* Main Navigation */}
       <div className="main-nav">
         <div className="container">
+          <div
+            className={`_header_top_svty4_0 ${
+              isScrolled ? "header-top-hidden" : ""
+            }`}
+          >
+            <ul className="_header_top_svty4_1">
+              <li>
+                <a href="/help" data-tracking="header-help">
+                  Trợ giúp
+                </a>
+              </li>
+              <li>
+                <a href="/wishlists" data-tracking="header-wishlist">
+                  Danh sách yêu thích
+                </a>
+              </li>
+              <li>
+                <a href="/order-tracking" data-tracking="header-order-tracker">
+                  Theo dõi đơn
+                </a>
+              </li>
+              <li className="_language_selector_svty4_40">
+                <button aria-label="Chọn ngôn ngữ" title="Chọn ngôn ngữ">
+                  <img
+                    src="https://adl-foundation.adidas.com/flags/1-2-1/vn.svg"
+                    alt="Việt Nam"
+                    className="gl-flag"
+                  />
+                </button>
+              </li>
+            </ul>
+          </div>
           <div className="nav-wrapper">
             {/* Move mobile menu toggle here */}
             <button
@@ -969,7 +1001,7 @@ const Header = () => {
 
               {/* Only render profile dropdown if authenticated */}
               {isAuthenticated && (
-                <div 
+                <div
                   className="profile-dropdown-container"
                   ref={profileDropdownRef}
                 >
@@ -977,7 +1009,7 @@ const Header = () => {
                     className="action-icon profile-icon"
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
+                      if (e.key === "Enter" || e.key === " ") {
                         setShowProfileDropdown(!showProfileDropdown);
                       }
                     }}
@@ -990,21 +1022,21 @@ const Header = () => {
                   </button>
 
                   {showProfileDropdown && (
-                    <div 
+                    <div
                       className="profile-dropdown"
                       role="menu"
                       aria-orientation="vertical"
                     >
-                      <Link 
-                        to="/v1/user/profile" 
+                      <Link
+                        to="/v1/user/profile"
                         className="dropdown-item"
                         role="menuitem"
                         tabIndex={0}
                       >
                         <FiUser /> Tài khoản của tôi
                       </Link>
-                      <Link 
-                        to="/v1/user/checkorders" 
+                      <Link
+                        to="/v1/user/checkorders"
                         className="dropdown-item"
                         role="menuitem"
                         tabIndex={0}
@@ -1015,7 +1047,7 @@ const Header = () => {
                         className="dropdown-item logout-item"
                         onClick={handleLogout}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
+                          if (e.key === "Enter" || e.key === " ") {
                             handleLogout();
                           }
                         }}
@@ -1132,7 +1164,7 @@ const Header = () => {
           <>
             <motion.div
               id="mobile-menu"
-              className={`mobile-menu ${mobileMenuOpen ? 'active' : ''}`}
+              className={`mobile-menu ${mobileMenuOpen ? "active" : ""}`}
               variants={mobileMenuVariants}
               initial="closed"
               animate="open"
@@ -1185,7 +1217,9 @@ const Header = () => {
                                       <li key={itemIndex}>
                                         <Link
                                           to={item.path}
-                                          onClick={() => setMobileMenuOpen(false)}
+                                          onClick={() =>
+                                            setMobileMenuOpen(false)
+                                          }
                                         >
                                           {item.name}
                                         </Link>
@@ -1330,7 +1364,7 @@ const Header = () => {
                 </div>
               </div>
             </motion.div>
-            <div 
+            <div
               className="mobile-menu-backdrop"
               onClick={() => setMobileMenuOpen(false)}
             />

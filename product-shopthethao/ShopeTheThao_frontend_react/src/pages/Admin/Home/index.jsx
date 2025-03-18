@@ -151,28 +151,28 @@ const AdminIndex = () => {
     { 
       title: "Thêm sản phẩm mới",
       description: "Thêm sản phẩm mới vào kho",
-      link: "/admin/product",
+      link: "/dashboard-management-sys/catalog/products",
       color: "bg-blue-100 text-blue-600",
       icon: <FiPackage className="w-8 h-8 text-blue-500" />
     },
     {
       title: "Xử lý đơn hàng",
       description: "Quản lý đơn hàng mới",
-      link: "/admin/invoices",
+      link: "/dashboard-management-sys/invoices",
       color: "bg-green-100 text-green-600",
       icon: <FiShoppingCart className="w-8 h-8 text-green-500" />
     },
     {
       title: "Quản lý kho",
       description: "Kiểm tra nhập kho",
-      link: "/admin/stock-receipts",
+      link: "/dashboard-management-sys/inventory/stock-receipts",
       color: "bg-orange-100 text-orange-600",
       icon: <FiPieChart className="w-8 h-8 text-orange-500" />
     },
     {
       title: "Báo cáo doanh thu",
       description: "Xem báo cáo chi tiết",
-      link: "/admin/charts",
+      link: "/dashboard-management-sys/charts",
       color: "bg-purple-100 text-purple-600",
       icon: <FiTrendingUp className="w-8 h-8 text-purple-500" />
     }

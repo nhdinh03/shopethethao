@@ -1,4 +1,3 @@
-
 :root {
 --header-height: 80px;
 --header-mobile-height: 60px;
@@ -256,6 +255,13 @@ transition: box-shadow 0.2s ease; // Specific property transition instead of all
     overflow: hidden;
   }
 
+  ._header_top_svty4_0 {
+    max-height: 0;
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+  }
+
   .main-nav {
     height: var(--header-mobile-height);
   }
@@ -389,7 +395,7 @@ transition: box-shadow 0.2s ease; // Specific property transition instead of all
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 100%;
+    margin-top: 5px;
   }
   .mobile-menu-toggle {
     width: 40px;
@@ -2151,4 +2157,103 @@ overscroll-behavior: contain;
   padding-top: env(safe-area-inset-top);
   height: calc(48px + env(safe-area-inset-top));
 }
+}
+// Thêm vào file header.scss
+._header_top_svty4_0 {
+  display: flex;
+  justify-content: flex-end;
+  background: #fff;
+  padding: 0 max(20px, calc((100% - var(--container-width)) / 2));
+  transition: all 0.2s ease;
+  height: 32px;
+  border-bottom: 1px solid var(--color-gray-light);
+
+  &.header-top-hidden {
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+    border: none;
+  }
+
+  ._header_top_svty4_1 {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    > li {
+      height: 100%;
+      display: flex;
+      align-items: center;
+
+      > a {
+        display: flex;
+        align-items: center;
+
+        color: var(--color-text);
+        font-size: 12px;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        padding: 0 4px;
+
+        &:hover {
+          color: var(--color-accent);
+        }
+
+        // Icons for links
+        &[data-tracking="header-help"]::before {
+          content: "";
+          width: 16px;
+          height: 16px;
+       
+          background-size: contain;
+        }
+
+        &[data-tracking="header-wishlist"]::before {
+          content: "";
+          width: 16px;
+          height: 16px;
+
+          background-size: contain;
+        }
+
+        &[data-tracking="header-order-tracker"]::before {
+          content: "";
+          width: 16px;
+          height: 16px;
+
+          background-size: contain;
+        }
+      }
+    }
+
+    ._language_selector_svty4_40 {
+      button {
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+
+        &:hover {
+          transform: scale(1.1);
+        }
+
+        .gl-flag {
+          width: 25px;
+          height: auto;
+          border-radius: 2px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+      }
+    }
+  }
+
+  // Responsive styles
+  @media (max-width: 960px) {
+    display: none;
+  }
 }
