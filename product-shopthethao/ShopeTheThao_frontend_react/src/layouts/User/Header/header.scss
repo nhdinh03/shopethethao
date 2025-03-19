@@ -358,29 +358,49 @@ html {
     box-shadow: var(--shadow-md);
     position: fixed;
     width: 100%;
+    background: white;
+    transform: translateY(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     .top-bar {
       height: 0;
       padding: 0;
+      margin: 0;
       opacity: 0;
       visibility: hidden;
       transition: all 0.2s ease;
       overflow: hidden;
+      position: absolute; // Thêm position absolute
+      top: 0;
     }
 
     ._header_top_svty4_0 {
-      max-height: 0;
+      height: 0;
       padding: 0;
+      margin: 0;
       opacity: 0;
       visibility: hidden;
+      position: absolute; // Thêm position absolute
+      top: 0;
+      overflow: hidden;
     }
 
     .main-nav {
       height: var(--header-mobile-height);
+      transform: translateY(0);
+
+      .nav-wrapper {
+        padding-top: 8px;
+        padding-bottom: 8px;
+      }
+
+      .container {
+        padding-top: 0;
+      }
     }
 
     .mega-menu {
-      top: 60px !important; // Đảm bảo vị trí khi scroll
+      top: var(--header-mobile-height) !important;
     }
   }
 
@@ -391,8 +411,10 @@ html {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 13px;
+    position: relative; // Thêm position relative
+    z-index: 5;
 
     .contact-info {
       display: flex;
@@ -492,23 +514,28 @@ html {
   }
 
   .main-nav {
-    height: var(--header-height);
-    transition: var(--transition);
+    // height: var(--header-height);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 0 max(20px, calc((100% - var(--container-width)) / 2));
-    background: linear-gradient(90deg, #fdfdfd, #ffffff);
+    background: white;
+    position: relative; // Thêm position relative
+    z-index: 10;
 
     .container {
       max-width: var(--container-width);
       margin: 0 auto;
       height: 100%;
       padding: 0;
+      transition: padding 0.3s ease;
     }
 
     .nav-wrapper {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 5px;
+      height: 100%;
+      padding: 10px 0;
+      transition: all 0.3s ease;
     }
     .mobile-menu-toggle {
       width: 40px;
