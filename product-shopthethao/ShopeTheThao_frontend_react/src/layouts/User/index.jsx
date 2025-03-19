@@ -4,7 +4,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import Snowfall from "./Snowfall/Snowfall";
 import "./User.module.scss"; // Import as global stylesheet
-import { HomeIndex, Products } from "pages/User";
+import { HomeIndex } from "pages/User";
 
 
 const UserLayout = () => {

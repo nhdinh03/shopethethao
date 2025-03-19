@@ -828,7 +828,7 @@ const Header = () => {
         </button>
       );
     }
-    
+
     return (
       <Link
         to={category.path}
@@ -881,30 +881,78 @@ const Header = () => {
               isScrolled ? "header-top-hidden" : ""
             }`}
           >
+            <div className="header-top-left">
+              <span>Kết nối với chúng tôi:</span>
+
+              <div className="social-links">
+                <a
+                  href="https://www.facebook.com/nhdinh03"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                >
+                  Facebook
+                </a>
+                <div className="divider"></div>
+                <a
+                  href="https://www.instagram.com/nhdinhdz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                >
+                  Instagram
+                </a>
+              </div>
+              <div className="divider"></div>
+          
+            </div>
+
             <ul className="_header_top_svty4_1">
               <li>
-                <a href="/help" data-tracking="header-help">
-                  Trợ giúp
-                </a>
-              </li>
-              <li>
                 <a href="/wishlists" data-tracking="header-wishlist">
+                  <i className="fas fa-heart" />
                   Danh sách yêu thích
                 </a>
               </li>
               <li>
-                <a href="/order-tracking" data-tracking="header-order-tracker">
-                  Theo dõi đơn
-                </a>
+                <button className="has-dropdown">
+                  <i className="fas fa-map-marker-alt" />
+                  Theo dõi đơn hàng
+                </button>
+                <div className="top-dropdown">
+                  <a href="/order-tracking" className="dropdown-item">
+                    <i className="fas fa-truck" />
+                    Tra cứu đơn hàng
+                  </a>
+                  <a href="/orders/history" className="dropdown-item">
+                    <i className="fas fa-history" />
+                    Lịch sử đơn hàng
+                  </a>
+                </div>
               </li>
               <li className="_language_selector_svty4_40">
-                <button aria-label="Chọn ngôn ngữ" title="Chọn ngôn ngữ">
+                <button
+                  className="has-dropdown"
+                  aria-label="Chọn ngôn ngữ"
+                  title="Chọn ngôn ngữ"
+                >
                   <img
                     src="https://adl-foundation.adidas.com/flags/1-2-1/vn.svg"
                     alt="Việt Nam"
                     className="gl-flag"
                   />
+                  <span>Tiếng Việt</span>
                 </button>
+                <div className="top-dropdown">
+                  <a href="#" className="dropdown-item">
+                    <img src="/flags/en.svg" alt="English" />
+                    English
+                  </a>
+                  <a href="#" className="dropdown-item">
+                    <img src="/flags/vn.svg" alt="Tiếng Việt" />
+                    Tiếng Việt
+                  </a>
+                </div>
               </li>
             </ul>
           </div>

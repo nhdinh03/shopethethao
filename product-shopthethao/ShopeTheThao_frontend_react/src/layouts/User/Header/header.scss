@@ -2486,18 +2486,58 @@ body.menu-open {
 // Thêm vào file header.scss
 ._header_top_svty4_0 {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between; // Thay đổi từ flex-end sang space-between
   background: #fff;
   padding: 0 max(7px, calc((100% - var(--container-width)) / 2));
   transition: all 0.2s ease;
   height: 32px;
   // border-bottom: 1px solid var(--color-gray-light);
 
-  &.header-top-hidden {
-    height: 0;
-    opacity: 0;
-    visibility: hidden;
-    border: none;
+  // Thêm phần left side
+  .header-top-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--color-gray);
+
+    .download-app {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      
+      &:hover {
+        color: var(--color-accent);
+      }
+
+      i {
+        font-size: 14px;
+      }
+    }
+
+    .social-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .social-link {
+        color: var(--color-gray);
+        text-decoration: none;
+        transition: color 0.2s ease;
+        font-size: 12px;
+
+        &:hover {
+          color: var(--color-accent);
+        }
+      }
+
+      .divider {
+        width: 1px;
+        height: 12px;
+        background: var(--color-gray-light);
+      }
+    }
   }
 
   ._header_top_svty4_1 {
@@ -2506,49 +2546,92 @@ body.menu-open {
     margin: 0;
     padding: 0;
     list-style: none;
+    gap: 16px; // Thêm khoảng cách giữa các items
 
     > li {
+      position: relative; // Thêm cho dropdown
       height: 100%;
       display: flex;
       align-items: center;
 
-      > a {
+      // Thêm style cho dropdown
+      .top-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 200px;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        padding: 8px 0;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.2s ease;
+        z-index: 100;
+
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          padding: 8px 16px;
+          color: var(--color-text);
+          font-size: 12px;
+          text-decoration: none;
+          transition: background 0.2s ease;
+
+          &:hover {
+            background: rgba(0,0,0,0.05);
+          }
+
+          i {
+            margin-right: 8px;
+            font-size: 14px;
+          }
+        }
+      }
+
+      &:hover .top-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      > a, > button {
         display: flex;
         align-items: center;
-
+        gap: 4px;
         color: var(--color-text);
         font-size: 12px;
         text-decoration: none;
         transition: color 0.2s ease;
         padding: 0 4px;
+        background: none;
+        border: none;
+        cursor: pointer;
 
         &:hover {
           color: var(--color-accent);
         }
 
-        // Icons for links
-        &[data-tracking="header-help"]::before {
-          content: "";
-          width: 16px;
-          height: 16px;
-
-          background-size: contain;
+        i {
+          font-size: 14px;
         }
 
-        &[data-tracking="header-wishlist"]::before {
-          content: "";
-          width: 16px;
-          height: 16px;
-
-          background-size: contain;
+        // Thêm indicator cho items có dropdown
+        &.has-dropdown::after {
+          content: '';
+          display: inline-block;
+          width: 0;
+          height: 0;
+          margin-left: 4px;
+          border-left: 4px solid transparent;
+          border-right: 4px solid transparent;
+          border-top: 4px solid currentColor;
+          transition: transform 0.2s ease;
         }
 
-        &[data-tracking="header-order-tracker"]::before {
-          content: "";
-          width: 16px;
-          height: 16px;
-
-          background-size: contain;
+        &:hover::after {
+          transform: rotate(180deg);
         }
       }
     }
