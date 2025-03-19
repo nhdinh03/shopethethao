@@ -2489,7 +2489,7 @@ body.menu-open {
   justify-content: space-between; // Thay đổi từ flex-end sang space-between
   background: #fff;
   padding: 0 max(7px, calc((100% - var(--container-width)) / 2));
-  transition: all 0.2s ease;
+  // transition: all 0.2s ease;
   height: 32px;
   // border-bottom: 1px solid var(--color-gray-light);
 
@@ -3059,5 +3059,26 @@ body.menu-open {
   // Specific adjustments for group-items
   .group-items {
     // margin-top: 60px; // Space for header
+  }
+}
+
+.social-links {
+  .social-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    svg {
+      font-size: 14px;
+      transition: transform 0.2s ease;
+    }
+
+    &:hover {
+      color: var(--color-accent);
+      
+      svg {
+        transform: scale(1.1);
+      }
+    }
   }
 }

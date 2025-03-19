@@ -286,3 +286,20 @@ CREATE TABLE RefreshToken
         REFERENCES Accounts(id) ON DELETE CASCADE
 );
 GO
+
+-- Tạo bảng Feedback (Góp ý khách hàng)
+CREATE TABLE Feedback
+(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    email NVARCHAR(350) NOT NULL,
+    message NVARCHAR(MAX) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT GETDATE(),
+    status INT NOT NULL DEFAULT 0 -- 0: Chưa xử lý, 1: Đang xử lý, 2: Đã xử lý
+);
+GO
+
+-- Tạo index cho bảng Feedback
+CREATE INDEX IX_Feedback_Email ON Feedback(email);
+CREATE INDEX IX_Feedback_Status ON Feedback(status);
+CREATE INDEX IX_Feedback_CreatedAt ON Feedback(created_at);
+GO

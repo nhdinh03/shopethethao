@@ -14,7 +14,7 @@ class BaseApi {
     }
 
     async create(data) {
-        return axiosClient.post(this.uri, data);
+                return axiosClient.post(this.uri, data);
     }
 
     async update(id, data) {

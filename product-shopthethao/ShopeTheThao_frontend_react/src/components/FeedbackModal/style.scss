@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(145deg, #2196f3, #1e88e5);
+  background: linear-gradient(145deg, #ff4400, #ff5500);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   animation: slideIn 0.5s ease-out;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -76,7 +76,7 @@
   }
   
   &:hover {
-    background: linear-gradient(145deg, #1e88e5, #1976d2);
+    background: linear-gradient(145deg, #ff5500, #ff4400);
     transform: translateY(-3px) scale(1.02);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   }
@@ -84,7 +84,7 @@
   // Enhanced active state animation
   &:active {
     transform: translateY(0) scale(0.98);
-    background: linear-gradient(145deg, #1976d2, #1565c0);
+    background: linear-gradient(145deg, #ff4400, #e63e00);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
@@ -145,6 +145,7 @@
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
     
     @media (max-width: 480px) {
       border-radius: 10px;
@@ -350,6 +351,8 @@
 :global(.custom-message) {
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
 
   // Better message contrast
   .ant-message-notice-content {
@@ -389,5 +392,141 @@
   }
   100% {
     box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
+  }
+}
+
+.feedback-modal.modern {
+  .ant-modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .ant-modal-header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+    padding: 24px;
+    border: none;
+  }
+
+  .feedback-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: white;
+
+    .feedback-icon {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 24px;
+    }
+
+    .feedback-title {
+      h3 {
+        color: white;
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      
+      .subtitle {
+        margin: 4px 0 0;
+        opacity: 0.8;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .form-container {
+    padding: 24px;
+  }
+
+  .form-label {
+    font-weight: 500;
+    font-size: 15px;
+    color: #1a1a1a;
+  }
+
+  .form-label-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .help-icon {
+      color: #8c8c8c;
+      font-size: 16px;
+      transition: color 0.3s;
+      
+      &:hover {
+        color: #ff4400;
+      }
+    }
+  }
+
+  .modern-input, .modern-textarea {
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    transition: all 0.3s;
+    
+    &:hover, &:focus {
+      border-color: #ff4400;
+      box-shadow: 0 0 0 2px rgba(255, 68, 0, 0.1);
+    }
+  }
+
+  .modern-textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .form-actions.modern {
+    margin-top: 32px;
+    display: flex;
+    justify-content: flex-end;
+
+    .cancel-button {
+      border-radius: 6px;
+      
+      &:hover {
+        color: #ff4400;
+        border-color: #ff4400;
+      }
+    }
+
+    .submit-button {
+      border-radius: 6px;
+      background: linear-gradient(135deg, #ff4400 0%, #ff5500 100%);
+      border: none;
+      
+      &:hover {
+        background: linear-gradient(135deg, #ff5500 0%, #ff4400 100%);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+:global(.ant-message-success) {
+  .anticon {
+    color: #ff4400;
+  }
+}
+
+// Override ant-design default colors
+:global {
+  .ant-btn-primary {
+    background: #ff4400;
+    border-color: #ff4400;
+
+    &:hover {
+      background: #ff5500;
+      border-color: #ff5500;
+    }
+  }
+
+  .ant-input:focus, 
+  .ant-input-focused {
+    border-color: #ff4400;
+    box-shadow: 0 0 0 2px rgba(255, 68, 0, 0.1);
   }
 }

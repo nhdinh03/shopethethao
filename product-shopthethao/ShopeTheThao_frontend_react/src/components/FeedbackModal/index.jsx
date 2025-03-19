@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Modal, Form, Input, Button, message, Space, Typography, Spin, Tooltip } from 'antd';
 import { MessageOutlined, SendOutlined, MailOutlined, CommentOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { feedbackApi } from 'api/User';
 import './style.scss';
+
 
 const { Text } = Typography;
 
@@ -42,16 +44,8 @@ const FeedbackModal = () => {
 
   const handleCancel = useCallback(() => {
     if (!isSubmitting) {
-      Modal.confirm({
-        title: 'Xác nhận',
-        content: 'Bạn có chắc muốn đóng form góp ý không?',
-        onOk: () => {
-          setIsModalVisible(false);
-          form.resetFields();
-        },
-        okText: 'Đóng',
-        cancelText: 'Tiếp tục',
-      });
+      setIsModalVisible(false);
+      form.resetFields();
     }
   }, [isSubmitting, form]);
 
@@ -69,21 +63,22 @@ const FeedbackModal = () => {
     if (isSubmitting) return;
     
     setIsSubmitting(true);
+    // Hiển thị thông báo thành công ngay lập tức
+    setIsModalVisible(false);
+    message.success({
+      content: 'Cảm ơn bạn đã gửi góp ý!',
+      key: 'feedback',
+      duration: 2,
+      className: 'custom-message'
+    });
+    form.resetFields();
+
+    // Gửi API trong background
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      message.success({
-        content: 'Cảm ơn bạn đã gửi góp ý!',
-        duration: 3,
-        className: 'custom-message'
-      });
-      setIsModalVisible(false);
-      form.resetFields();
+      await feedbackApi.create(values);
     } catch (error) {
-      message.error({
-        content: 'Có lỗi xảy ra, vui lòng thử lại!',
-        duration: 3,
-        className: 'custom-message'
-      });
+      // Chỉ hiển thị lỗi nếu thật sự cần thiết
+      console.error('Feedback error:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -137,18 +132,29 @@ const FeedbackModal = () => {
       </div>
       <Modal
         title={
-          <Space align="center">
-            <MessageOutlined />
-            <span>Góp ý của bạn</span>
-          </Space>
+          <div className="feedback-header">
+            <div className="feedback-icon">
+              <MessageOutlined />
+            </div>
+            <div className="feedback-title">
+              <h3>Góp ý của bạn</h3>
+              <p className="subtitle">Ý kiến của bạn giúp chúng tôi tốt hơn từng ngày</p>
+            </div>
+          </div>
         }
         open={isModalVisible}
-        onCancel={handleCancel}
+     
         footer={null}
         centered
-        maskClosable={false}
+        maskClosable={true} // Cho phép click ra ngoài để đóng
+        onCancel={(e) => {
+          // Nếu click từ mask hoặc nút close
+          if (e && e.target.className.includes('ant-modal-wrap') || e.target.className.includes('ant-modal-close')) {
+            handleCancel();
+          }
+        }}
         destroyOnClose
-        className="feedback-modal"
+        className="feedback-modal modern black-orange-theme"
         keyboard={!isSubmitting}
         closable={!isSubmitting}
         width={getModalWidth()}
@@ -158,77 +164,87 @@ const FeedbackModal = () => {
           onFinish={handleSubmit}
           layout="vertical"
           validateMessages={validateMessages}
-          className="feedback-form"
+          className="feedback-form modern"
           requiredMark={false}
           onKeyPress={handleKeyPress}
         >
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[
-              { required: true },
-              { type: 'email' },
-              { max: 50, message: 'Email không được vượt quá 50 ký tự' }
-            ]}
-          >
-            <Input
-              prefix={<MailOutlined className="field-icon" />}
-              placeholder="Nhập email của bạn"
-              disabled={isSubmitting}
-              autoComplete="email"
-              size={['xxsmall', 'xsmall'].includes(screenSize) ? 'small' : 'middle'}
-            />
-          </Form.Item>
-          <Form.Item
-            name="feedback"
-            label={
-              <Space>
-                <span>Nội dung góp ý</span>
-                {['medium', 'large', 'xlarge', 'xxlarge'].includes(screenSize) && (
-                  <Tooltip title="Hãy chia sẻ ý kiến của bạn để chúng tôi cải thiện dịch vụ">
-                    <QuestionCircleOutlined style={{ color: '#8c8c8c' }} />
-                  </Tooltip>
-                )}
-              </Space>
-            }
-            rules={[
-              { required: true },
-              { min: 10 },
-              { max: 500 }
-            ]}
-            help={getHelpText()}
-          >
-            <Input.TextArea
-              prefix={<CommentOutlined className="field-icon" />}
-              placeholder="Nhập nội dung góp ý của bạn"
-              disabled={isSubmitting}
-              showCount
-              autoSize={getTextAreaRows()}
-            />
-          </Form.Item>
-          <Form.Item className="form-actions">
-            <Space>
-              <Button
-                onClick={handleCancel}
+          <div className="form-container">
+            <Form.Item
+              name="email"
+              label={<span className="form-label">Email của bạn</span>}
+              rules={[
+                { required: true },
+                { type: 'email' },
+                { max: 50, message: 'Email không được vượt quá 50 ký tự' }
+              ]}
+            >
+              <Input
+                className="modern-input"
+                prefix={<MailOutlined className="field-icon" />}
+                placeholder="Nhập email của bạn"
                 disabled={isSubmitting}
-                size={getButtonSize()}
-              >
-                Hủy
-              </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                icon={<SendOutlined />}
-                loading={isSubmitting}
-                size={getButtonSize()}
-              >
-                {isSubmitting ? 
-                  (['xxsmall', 'xsmall'].includes(screenSize) ? '' : 'Đang gửi...') 
-                  : 'Gửi góp ý'
-                }
-              </Button>
-            </Space>
-          </Form.Item>
+                autoComplete="email"
+                size={['xxsmall', 'xsmall'].includes(screenSize) ? 'small' : 'middle'}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="message"
+              label={
+                <div className="form-label-wrapper">
+                  <span className="form-label">Nội dung góp ý</span>
+                  {['medium', 'large', 'xlarge', 'xxlarge'].includes(screenSize) && (
+                    <Tooltip 
+                      title="Hãy chia sẻ ý kiến của bạn để chúng tôi cải thiện dịch vụ"
+                      overlayClassName="modern-tooltip"
+                    >
+                      <QuestionCircleOutlined style={{ color: '#757575' }} />
+                    </Tooltip>
+                  )}
+                </div>
+              }
+              rules={[
+                { required: true },
+                { min: 10 },
+                { max: 500 }
+              ]}
+              help={getHelpText()}
+            >
+              <Input.TextArea
+                className="modern-textarea"
+                placeholder="Nhập nội dung góp ý của bạn"
+                disabled={isSubmitting}
+                showCount
+                autoSize={getTextAreaRows()}
+              />
+            </Form.Item>
+
+            <Form.Item className="form-actions modern">
+              <Space size="middle">
+                <Button
+                  className="cancel-button"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                  size={getButtonSize()}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  icon={<SendOutlined />}
+                  loading={isSubmitting}
+                  size={getButtonSize()}
+                  className="submit-button"
+                >
+                  {isSubmitting ? 
+                    (['xxsmall', 'xsmall'].includes(screenSize) ? '' : 'Đang gửi...') 
+                    : 'Gửi góp ý'
+                  }
+                </Button>
+              </Space>
+            </Form.Item>
+          </div>
         </Form>
       </Modal>
     </>

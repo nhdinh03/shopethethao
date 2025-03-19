@@ -52,6 +52,27 @@ public class EmailUtil {
     javaMailSender.send(mimeMessage);
   }
 
+  // Phương thức gửi email phản hồi góp ý
+  public void sendFeedbackResponseEmail(String email, String originalMessage, String response) throws MessagingException {
+    String subject = "Phản hồi góp ý của bạn - ShopTheThao";
+    String content = String.format("""
+        Kính gửi quý khách,
+        
+        Cảm ơn bạn đã gửi góp ý cho ShopTheThao. Dưới đây là phản hồi của chúng tôi:
+        
+        Góp ý của bạn:
+        "%s"
+        
+        Phản hồi của chúng tôi:
+        "%s"
+        
+        Trân trọng,
+        ShopTheThao Team
+        """, originalMessage, response);
+        
+    sendEmail(email, subject, content);
+  }
+
   // Phương thức trợ giúp để tạo nội dung HTML cho email
   private String createHtmlContent(String message, String dynamicPart) {
     return "<!DOCTYPE html>" +

@@ -16,6 +16,7 @@ import {
 } from "react-icons/fi";
 import { AiOutlineHeart } from "react-icons/ai";
 import { message } from "antd";
+import { FaFacebook, FaInstagram } from "react-icons/fa";
 
 import "./header.scss";
 import authApi from "api/Admin/Auth/auth";
@@ -891,7 +892,7 @@ const Header = () => {
                   rel="noopener noreferrer"
                   className="social-link"
                 >
-                  Facebook
+                  <FaFacebook /> Facebook
                 </a>
                 <div className="divider"></div>
                 <a
@@ -900,7 +901,7 @@ const Header = () => {
                   rel="noopener noreferrer"
                   className="social-link"
                 >
-                  Instagram
+                  <FaInstagram /> Instagram
                 </a>
               </div>
               <div className="divider"></div>
