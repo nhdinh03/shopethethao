@@ -36,6 +36,22 @@ public class EmailUtil {
     sendEmail(to, subject, htmlContent);
   }
 
+  // Phương thức gửi email góp ý từ khách hàng
+  public void sendFeedbackEmail(String fromEmail, String feedbackMessage) throws MessagingException {
+    String adminEmail = "nhdinhpc03@gmail.com"; // Email của admin
+    String subject = "Góp ý từ khách hàng - Shop Thể Thao Nhdinh";
+    String htmlContent = createFeedbackHtmlContent(fromEmail, feedbackMessage);
+    
+    MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+    helper.setTo(adminEmail);
+    helper.setSubject(subject);
+    helper.setText(htmlContent, true);
+    helper.setReplyTo(fromEmail); // Set Reply-To để có thể phản hồi trực tiếp
+
+    javaMailSender.send(mimeMessage);
+  }
+
   // Phương thức trợ giúp để tạo nội dung HTML cho email
   private String createHtmlContent(String message, String dynamicPart) {
     return "<!DOCTYPE html>" +
@@ -88,6 +104,50 @@ public class EmailUtil {
         "      <a href='https://www.tiktok.com/@nhdinhdz'>TikTok</a>" +
         "    </div>" +
         "    <p>© 2025 Shop Thể Thao Nhdinh. All rights reserved.</p>" +
+        "  </div>" +
+        "</div>" +
+        "</body>" +
+        "</html>";
+  }
+
+  // Tạo nội dung HTML cho email góp ý
+  private String createFeedbackHtmlContent(String fromEmail, String feedbackMessage) {
+    return "<!DOCTYPE html>" +
+        "<html lang='en'>" +
+        "<head>" +
+        "<meta charset='UTF-8'>" +
+        "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+        "<style>" +
+        "body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }" +
+        ".container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }" +
+        ".header { background: linear-gradient(135deg, #0052cc, #0078d4); padding: 30px 20px; border-radius: 10px 10px 0 0; text-align: center; }" +
+        ".header h1 { color: #ffffff; font-size: 28px; margin: 0; text-transform: uppercase; letter-spacing: 2px; }" +
+        ".content { padding: 40px 30px; color: #333333; }" +
+        ".message-box { background-color: #f8f9fa; border-radius: 8px; padding: 25px; margin: 20px 0; }" +
+        ".message-header { font-weight: bold; margin-bottom: 10px; color: #0052cc; }" +
+        ".message-content { white-space: pre-line; line-height: 1.6; }" +
+        ".customer-info { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }" +
+        ".footer { background-color: #f8f9fa; padding: 20px; border-radius: 0 0 10px 10px; text-align: center; }" +
+        "</style>" +
+        "</head>" +
+        "<body>" +
+        "<div class='container'>" +
+        "  <div class='header'>" +
+        "    <h1>Góp Ý Khách Hàng</h1>" +
+        "  </div>" +
+        "  <div class='content'>" +
+        "    <p>Bạn đã nhận được góp ý mới từ khách hàng:</p>" +
+        "    <div class='message-box'>" +
+        "      <div class='message-header'>Nội dung góp ý:</div>" +
+        "      <div class='message-content'>" + feedbackMessage.replace("\n", "<br/>") + "</div>" +
+        "    </div>" +
+        "    <div class='customer-info'>" +
+        "      <p><strong>Email khách hàng:</strong> " + fromEmail + "</p>" +
+        "      <p><strong>Thời gian gửi:</strong> " + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) + "</p>" +
+        "    </div>" +
+        "  </div>" +
+        "  <div class='footer'>" +
+        "    <p>© " + java.time.LocalDate.now().getYear() + " Shop Thể Thao Nhdinh. All rights reserved.</p>" +
         "  </div>" +
         "</div>" +
         "</body>" +

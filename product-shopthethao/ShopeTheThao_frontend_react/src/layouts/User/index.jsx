@@ -3,9 +3,10 @@ import { useLocation, Outlet } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
 import Snowfall from "./Snowfall/Snowfall";
+import BackToTop from "components/BackToTop";
+import FeedbackModal from "components/FeedbackModal";
 import "./User.module.scss"; // Import as global stylesheet
 import { HomeIndex } from "pages/User";
-
 
 const UserLayout = () => {
   const location = useLocation();
@@ -29,7 +30,13 @@ const UserLayout = () => {
           </div>
         </main>
       </div>
-      {!isLoginPage && <Footer />}
+      {!isLoginPage && (
+        <>
+          <Footer />
+          <BackToTop />
+          <FeedbackModal />
+        </>
+      )}
     </div>
   );
 };

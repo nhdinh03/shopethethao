@@ -1,0 +1,393 @@
+.feedback-trigger {
+  position: fixed;
+  color: white;
+  cursor: pointer;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(145deg, #2196f3, #1e88e5);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.5s ease-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @keyframes slideIn {
+    from { transform: translateX(100px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  // Enhanced responsive styles with smoother transitions between breakpoints
+  @media (max-width: 320px) {
+    bottom: 20px;
+    right: 10px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    font-size: 12px;
+    transform-origin: bottom right;
+  }
+
+  @media (min-width: 321px) and (max-width: 480px) {
+    bottom: 25px;
+    right: 15px;
+    padding: 7px 12px;
+    border-radius: 18px;
+    font-size: 13px;
+    transform-origin: bottom right;
+  }
+
+  @media (min-width: 481px) and (max-width: 760px) {
+    bottom: 28px;
+    right: 18px;
+    padding: 8px 14px;
+    border-radius: 19px;
+    font-size: 14px;
+  }
+
+  @media (min-width: 761px) and (max-width: 960px) {
+    bottom: 30px;
+    right: 20px;
+    padding: 9px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+  }
+
+  @media (min-width: 961px) and (max-width: 1200px) {
+    bottom: 32px;
+    right: 22px;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+  }
+
+  @media (min-width: 1201px) and (max-width: 1600px) {
+    bottom: 35px;
+    right: 25px;
+    padding: 10px 18px;
+    border-radius: 22px;
+    font-size: 15px;
+  }
+
+  @media (min-width: 1601px) {
+    bottom: 38px;
+    right: 28px;
+    padding: 12px 20px;
+    border-radius: 24px;
+    font-size: 16px;
+  }
+  
+  &:hover {
+    background: linear-gradient(145deg, #1e88e5, #1976d2);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  // Enhanced active state animation
+  &:active {
+    transform: translateY(0) scale(0.98);
+    background: linear-gradient(145deg, #1976d2, #1565c0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  span {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    
+    @media (max-width: 480px) {
+      display: none;
+    }
+    @media (min-width: 481px) and (max-width: 760px) {
+      margin-left: 2px;
+    }
+  }
+}
+
+// Enhanced modal responsive styles with better scaling
+:global(.ant-modal) {
+  @media (max-width: 320px) {
+    max-width: 95% !important;
+    margin: 8px;
+  }
+
+  @media (min-width: 321px) and (max-width: 480px) {
+    max-width: 92% !important;
+    margin: 10px;
+  }
+
+  @media (min-width: 481px) and (max-width: 760px) {
+    max-width: 85% !important;
+    margin: 12px;
+  }
+
+  @media (min-width: 761px) and (max-width: 960px) {
+    max-width: 75% !important;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 961px) and (max-width: 1200px) {
+    max-width: 650px !important;
+  }
+
+  @media (min-width: 1201px) and (max-width: 1600px) {
+    max-width: 700px !important;
+  }
+
+  @media (min-width: 1601px) {
+    max-width: 750px !important;
+  }
+  
+  // Add smooth transition for modal resize
+  transition: width 0.3s ease-in-out;
+}
+
+// Modal enhancements for professional look
+:global(.feedback-modal) {
+  .ant-modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    
+    @media (max-width: 480px) {
+      border-radius: 10px;
+    }
+    
+    @media (min-width: 1201px) {
+      border-radius: 14px;
+    }
+  }
+
+  .ant-modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 0;
+    background: linear-gradient(to right, #fafafa, #f5f5f5);
+    
+    @media (max-width: 480px) {
+      padding: 12px 16px;
+    }
+    
+    @media (min-width: 1201px) {
+      padding: 18px 24px;
+    }
+    
+    .ant-modal-title {
+      font-weight: 500;
+      
+      @media (min-width: 1201px) {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .ant-modal-body {
+    padding: 24px;
+    max-height: 80vh;
+    overflow-y: auto;
+
+    @media (max-width: 480px) {
+      padding: 16px;
+    }
+
+    // Improved scrollbar styling
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+      
+      &:hover {
+        background: #a1a1a1;
+      }
+    }
+  }
+
+  .form-actions {
+    margin-bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    button {
+      min-width: 100px;
+
+      @media (max-width: 480px) {
+        min-width: 80px;
+        padding: 4px 15px;
+      }
+    }
+    
+    // Add separation line above buttons on mobile
+    @media (max-width: 480px) {
+      padding-top: 16px;
+      margin-top: 8px;
+      border-top: 1px dashed #f0f0f0;
+    }
+  }
+
+  // Loading state styles
+  .ant-form-item {
+    &.ant-form-item-has-error {
+      margin-bottom: 24px;
+    }
+  }
+
+  .ant-input[disabled],
+  .ant-input-textarea[disabled] {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+
+  // Character count style
+  .ant-input-textarea-show-count::after {
+    color: #888;
+    font-size: 12px;
+  }
+
+  .feedback-form {
+    .field-icon {
+      color: #bfbfbf;
+      margin-right: 8px;
+    }
+
+    .ant-form-item {
+      margin-bottom: 24px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .ant-form-item-label {
+        padding-bottom: 8px;
+        
+        label {
+          font-weight: 500;
+          color: #262626;
+          
+          @media (min-width: 1201px) {
+            font-size: 15px;
+          }
+          
+          @media (max-width: 480px) {
+            font-size: 13px;
+          }
+        }
+      }
+
+      @media (max-width: 480px) {
+        margin-bottom: 16px;
+      }
+    }
+
+    .ant-input-affix-wrapper {
+      padding: 8px 11px;
+      
+      &:hover {
+        border-color: #40a9ff;
+      }
+      
+      &-focused {
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        border-color: #40a9ff;
+      }
+
+      @media (max-width: 480px) {
+        padding: 6px 10px;
+      }
+    }
+    
+    .ant-input-textarea {
+      border-radius: 4px;
+      
+      textarea {
+        border-radius: 4px;
+        
+        &:focus {
+          box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+      }
+    }
+
+    .ant-input-textarea-show-count::after {
+      color: #8c8c8c;
+      font-size: 12px;
+      font-style: italic;
+    }
+  }
+}
+
+// Enhanced backdrop blur effect
+:global(.ant-modal-mask) {
+  backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+// Improve modal animation
+:global(.ant-modal-wrap) {
+  .ant-modal {
+    transform-origin: center;
+    animation: modalZoomIn 0.3s ease-out;
+  }
+}
+
+@keyframes modalZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Custom message styling with better visibility
+:global(.custom-message) {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+  // Better message contrast
+  .ant-message-notice-content {
+    padding: 12px 16px;
+    font-weight: 500;
+    
+    @media (max-width: 480px) {
+      padding: 10px 14px;
+    }
+  }
+
+  // Adjust messages based on screen size
+  @media (max-width: 480px) {
+    width: 90% !important;
+    margin-left: 5% !important;
+  }
+  
+  @media (min-width: 481px) and (max-width: 960px) {
+    width: 80% !important;
+    margin-left: 10% !important;
+  }
+}
+
+// Add scrolling animation for BackToTop
+.back-to-top {
+  &.scrolling {
+    animation: pulse 1s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
+  }
+}

@@ -5,7 +5,7 @@ export { default as OtpForm } from "components/User/Auth/Otp/OtpForm";
 
 
 
-export { default as Seefulldetails } from "pages/User/Seefulldetails";
+export { default as Seefulldetails } from "./Seefulldetails";
 
 
 export { default as UserProfile } from "./UserProfile";
@@ -17,4 +17,6 @@ export { default as Wishlist } from "./wishlist";
 export { default as Checkout } from "./Checkout";
 
 export { default as Checkorders } from "./Checkorders";
+
+
 
