@@ -93,20 +93,23 @@ const BackToTop = () => {
     };
 
     const toggleVisibility = () => {
+      // Hide button if screen width is less than 376px
+      if (window.innerWidth < 424) {
+        setIsVisible(false);
+        return;
+      }
+
       const scrollPosition = window.pageYOffset;
-      
       if (scrollPosition > getScrollThreshold()) {
         setIsVisible(true);
         setIsActive(true);
         
-        // Clear existing timeouts
         if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
         if (fadeTimeout.current) clearTimeout(fadeTimeout.current);
         
-        // Set new timeout to fade out button
         scrollTimeout.current = setTimeout(() => {
           setIsActive(false);
-        }, 3000);
+        }, 30000);
       } else {
         setIsVisible(false);
         setIsActive(false);
@@ -114,8 +117,14 @@ const BackToTop = () => {
     };
 
     window.addEventListener('scroll', toggleVisibility);
+    window.addEventListener('resize', toggleVisibility); // Add resize listener to check width changes
+
+    // Initial check
+    toggleVisibility();
+
     return () => {
       window.removeEventListener('scroll', toggleVisibility);
+      window.removeEventListener('resize', toggleVisibility);
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
       if (fadeTimeout.current) clearTimeout(fadeTimeout.current);
     };
