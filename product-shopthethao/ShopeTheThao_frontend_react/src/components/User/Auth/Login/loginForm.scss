@@ -97,10 +97,71 @@ $border-color: #E2E8F0;
         text-align: center;
         margin-bottom: 2.5rem;
 
-        .brand-logo {
-          width: 220px;
-          height: 120px;
-          margin-bottom: 1rem;
+   
+
+        .flag-container {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin: 1rem 0;
+
+          .vietnam-flag {
+            width: 220px;
+            height: 120px;
+            margin-bottom: 1rem;
+     
+          }
+
+          .flag-caption {
+            color: #1E293B;
+            font-size: 13px;
+            text-align: center;
+            font-style: italic;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            margin: 0;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            user-select: none;
+            -webkit-user-select: none;
+            position: relative;
+            
+            .protected-letter {
+              display: inline-block;
+              color: #1E293B;
+              user-select: none;
+              pointer-events: none;
+              position: relative;
+
+              &::after {
+                content: attr(data-char);
+                position: absolute;
+                left: 0;
+                top: 0;
+                color: inherit;
+                pointer-events: none;
+              }
+            }
+          }
+          
+          // Root variables for protected content
+          &:root {
+            --sovereign-text: #1E293B;
+            --caption-size: 13px;
+            --caption-align: center;
+            --caption-style: italic;
+            --caption-weight: 500;
+            --caption-spacing: 0.3px;
+            --caption-margin: 0;
+            --caption-padding: 4px 8px;
+            --caption-bg: rgba(255, 255, 255, 0.9);
+            --caption-radius: 4px;
+            --caption-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --protected-content: "Hoang Sa and Truong Sa belong to Vietnam";
+          }
         }
 
         h2 {

@@ -1,16 +1,32 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Modal, Form, Input, Button, message, Space, Typography, Spin, Tooltip } from 'antd';
-import { MessageOutlined, SendOutlined, MailOutlined, CommentOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { feedbackApi } from 'api/User';
-import './style.scss';
-
+import React, { useState, useCallback, useEffect } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Button,
+  message,
+  Space,
+  Typography,
+  Spin,
+  Tooltip,
+} from "antd";
+import {
+  MessageOutlined,
+  SendOutlined,
+  MailOutlined,
+  CommentOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
+import { feedbackApi } from "api/User";
+import "./style.scss";
+import img from "assets/Img";
 
 const { Text } = Typography;
 
 const FeedbackModal = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [screenSize, setScreenSize] = useState('large');
+  const [screenSize, setScreenSize] = useState("large");
   const [form] = Form.useForm();
 
   // Improved screen size detection with finer breakpoints
@@ -18,26 +34,26 @@ const FeedbackModal = () => {
     const updateScreenSize = () => {
       const width = window.innerWidth;
       if (width <= 320) {
-        setScreenSize('xxsmall');
+        setScreenSize("xxsmall");
       } else if (width <= 480) {
-        setScreenSize('xsmall');
+        setScreenSize("xsmall");
       } else if (width <= 760) {
-        setScreenSize('small');
+        setScreenSize("small");
       } else if (width <= 960) {
-        setScreenSize('medium');
+        setScreenSize("medium");
       } else if (width <= 1200) {
-        setScreenSize('large');
+        setScreenSize("large");
       } else if (width <= 1600) {
-        setScreenSize('xlarge');
+        setScreenSize("xlarge");
       } else {
-        setScreenSize('xxlarge');
+        setScreenSize("xxlarge");
       }
     };
-    
+
     updateScreenSize();
-    window.addEventListener('resize', updateScreenSize);
-    
-    return () => window.removeEventListener('resize', updateScreenSize);
+    window.addEventListener("resize", updateScreenSize);
+
+    return () => window.removeEventListener("resize", updateScreenSize);
   }, []);
 
   const showModal = () => setIsModalVisible(true);
@@ -50,26 +66,26 @@ const FeedbackModal = () => {
   }, [isSubmitting, form]);
 
   const validateMessages = {
-    required: '${label} là bắt buộc!',
+    required: "${label} là bắt buộc!",
     types: {
-      email: '${label} không hợp lệ!',
+      email: "${label} không hợp lệ!",
     },
     string: {
-      min: '${label} phải có ít nhất ${min} ký tự',
-    }
+      min: "${label} phải có ít nhất ${min} ký tự",
+    },
   };
 
   const handleSubmit = async (values) => {
     if (isSubmitting) return;
-    
+
     setIsSubmitting(true);
     // Hiển thị thông báo thành công ngay lập tức
     setIsModalVisible(false);
     message.success({
-      content: 'Cảm ơn bạn đã gửi góp ý!',
-      key: 'feedback',
+      content: "Cảm ơn bạn đã gửi góp ý!",
+      key: "feedback",
       duration: 2,
-      className: 'custom-message'
+      className: "custom-message",
     });
     form.resetFields();
 
@@ -78,78 +94,110 @@ const FeedbackModal = () => {
       await feedbackApi.create(values);
     } catch (error) {
       // Chỉ hiển thị lỗi nếu thật sự cần thiết
-      console.error('Feedback error:', error);
+      console.error("Feedback error:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === 'Escape' && !isSubmitting) {
-      handleCancel();
-    }
-  }, [handleCancel, isSubmitting]);
+  const handleKeyPress = useCallback(
+    (e) => {
+      if (e.key === "Escape" && !isSubmitting) {
+        handleCancel();
+      }
+    },
+    [handleCancel, isSubmitting]
+  );
 
   // Enhanced textarea rows calculation
   const getTextAreaRows = () => {
-    if (['xxsmall', 'xsmall'].includes(screenSize)) return { minRows: 3, maxRows: 5 };
-    if (screenSize === 'small') return { minRows: 3, maxRows: 6 };
-    if (screenSize === 'medium') return { minRows: 4, maxRows: 7 };
-    if (screenSize === 'large') return { minRows: 4, maxRows: 8 };
+    if (["xxsmall", "xsmall"].includes(screenSize))
+      return { minRows: 3, maxRows: 5 };
+    if (screenSize === "small") return { minRows: 3, maxRows: 6 };
+    if (screenSize === "medium") return { minRows: 4, maxRows: 7 };
+    if (screenSize === "large") return { minRows: 4, maxRows: 8 };
     return { minRows: 5, maxRows: 10 }; // xlarge and xxlarge
   };
 
   // Enhanced modal width calculation for better responsiveness
   const getModalWidth = () => {
-    if (screenSize === 'xxsmall') return '95%';
-    if (screenSize === 'xsmall') return '92%';
-    if (screenSize === 'small') return '85%';
-    if (screenSize === 'medium') return '75%';
-    if (screenSize === 'large') return 600;
-    if (screenSize === 'xlarge') return 650;
+    if (screenSize === "xxsmall") return "95%";
+    if (screenSize === "xsmall") return "92%";
+    if (screenSize === "small") return "85%";
+    if (screenSize === "medium") return "75%";
+    if (screenSize === "large") return 600;
+    if (screenSize === "xlarge") return 650;
     return 700; // xxlarge
   };
 
   // Button sizes based on screen size
   const getButtonSize = () => {
-    if (['xxsmall', 'xsmall'].includes(screenSize)) return 'small';
-    return 'middle';
+    if (["xxsmall", "xsmall"].includes(screenSize)) return "small";
+    return "middle";
   };
 
   // Enhanced UI with conditional help text
   const getHelpText = () => {
-    if (['xxsmall', 'xsmall', 'small'].includes(screenSize)) {
-      return <Text type="secondary" style={{ fontSize: '12px' }}>10-500 ký tự</Text>;
+    if (["xxsmall", "xsmall", "small"].includes(screenSize)) {
+      return (
+        <Text type="secondary" style={{ fontSize: "12px" }}>
+          10-500 ký tự
+        </Text>
+      );
     }
     return <Text type="secondary">Tối thiểu 10 ký tự, tối đa 500 ký tự</Text>;
   };
 
   return (
     <>
-      <div className="feedback-trigger" onClick={showModal} role="button" tabIndex={0}>
-        <MessageOutlined style={{ fontSize: ['xxsmall', 'xsmall'].includes(screenSize) ? '14px' : '16px' }} />
+      <div
+        className="feedback-trigger"
+        onClick={showModal}
+        role="button"
+        tabIndex={0}
+      >
+        <MessageOutlined
+          style={{
+            fontSize: ["xxsmall", "xsmall"].includes(screenSize)
+              ? "14px"
+              : "16px",
+          }}
+        />
         <span>Góp ý</span>
       </div>
       <Modal
         title={
           <div className="feedback-header">
-            <div className="feedback-icon">
-              <MessageOutlined />
+            <div className="flag-container">
+              <img
+                src={img.Co_VN}
+                alt="Vietnam Flag"
+                className="vietnam-flag"
+              />
+              <p className="flag-caption">
+                Hoang Sa and Truong Sa belong to Vietnam.
+              </p>
             </div>
+
             <div className="feedback-title">
               <h3>Góp ý của bạn</h3>
-              <p className="subtitle">Ý kiến của bạn giúp chúng tôi tốt hơn từng ngày</p>
+              <p className="subtitle">
+                Rất quan trọng đối với chúng tôi. Mỗi đóng góp giúp chúng tôi
+                cải thiện và mang đến dịch vụ tốt nhất.
+              </p>
             </div>
           </div>
         }
         open={isModalVisible}
-     
         footer={null}
         centered
         maskClosable={true} // Cho phép click ra ngoài để đóng
         onCancel={(e) => {
           // Nếu click từ mask hoặc nút close
-          if (e && e.target.className.includes('ant-modal-wrap') || e.target.className.includes('ant-modal-close')) {
+          if (
+            (e && e.target.className.includes("ant-modal-wrap")) ||
+            e.target.className.includes("ant-modal-close")
+          ) {
             handleCancel();
           }
         }}
@@ -159,8 +207,8 @@ const FeedbackModal = () => {
         closable={!isSubmitting}
         width={getModalWidth()}
       >
-        <Form 
-          form={form} 
+        <Form
+          form={form}
           onFinish={handleSubmit}
           layout="vertical"
           validateMessages={validateMessages}
@@ -174,8 +222,8 @@ const FeedbackModal = () => {
               label={<span className="form-label">Email của bạn</span>}
               rules={[
                 { required: true },
-                { type: 'email' },
-                { max: 50, message: 'Email không được vượt quá 50 ký tự' }
+                { type: "email" },
+                { max: 50, message: "Email không được vượt quá 50 ký tự" },
               ]}
             >
               <Input
@@ -184,7 +232,11 @@ const FeedbackModal = () => {
                 placeholder="Nhập email của bạn"
                 disabled={isSubmitting}
                 autoComplete="email"
-                size={['xxsmall', 'xsmall'].includes(screenSize) ? 'small' : 'middle'}
+                size={
+                  ["xxsmall", "xsmall"].includes(screenSize)
+                    ? "small"
+                    : "middle"
+                }
               />
             </Form.Item>
 
@@ -193,21 +245,19 @@ const FeedbackModal = () => {
               label={
                 <div className="form-label-wrapper">
                   <span className="form-label">Nội dung góp ý</span>
-                  {['medium', 'large', 'xlarge', 'xxlarge'].includes(screenSize) && (
-                    <Tooltip 
+                  {["medium", "large", "xlarge", "xxlarge"].includes(
+                    screenSize
+                  ) && (
+                    <Tooltip
                       title="Hãy chia sẻ ý kiến của bạn để chúng tôi cải thiện dịch vụ"
                       overlayClassName="modern-tooltip"
                     >
-                      <QuestionCircleOutlined style={{ color: '#757575' }} />
+                      <QuestionCircleOutlined style={{ color: "#757575" }} />
                     </Tooltip>
                   )}
                 </div>
               }
-              rules={[
-                { required: true },
-                { min: 10 },
-                { max: 500 }
-              ]}
+              rules={[{ required: true }, { min: 10 }, { max: 500 }]}
               help={getHelpText()}
             >
               <Input.TextArea
@@ -237,10 +287,11 @@ const FeedbackModal = () => {
                   size={getButtonSize()}
                   className="submit-button"
                 >
-                  {isSubmitting ? 
-                    (['xxsmall', 'xsmall'].includes(screenSize) ? '' : 'Đang gửi...') 
-                    : 'Gửi góp ý'
-                  }
+                  {isSubmitting
+                    ? ["xxsmall", "xsmall"].includes(screenSize)
+                      ? ""
+                      : "Đang gửi..."
+                    : "Gửi góp ý"}
                 </Button>
               </Space>
             </Form.Item>

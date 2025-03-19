@@ -366,7 +366,24 @@ const LoginForm = () => {
         >
           {/* Form Header with Logo */}
           <motion.div className="form-header">
-            <motion.img src={img.Co_VN} alt="Logo" className="brand-logo" />
+   
+            <div className="flag-container">
+              <img src={img.Co_VN} alt="Vietnam Flag" className="vietnam-flag" />
+              <p className="flag-caption">
+                {Array.from("Hoang Sa and Truong Sa belong to Vietnam").map((char, index) => (
+                  <span 
+                    key={index} 
+                    className="protected-letter"
+                    data-char={char}
+                    style={{
+                      marginRight: char === " " ? "4px" : "0"
+                    }}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </p>
+            </div>
           </motion.div>
 
           <Tabs

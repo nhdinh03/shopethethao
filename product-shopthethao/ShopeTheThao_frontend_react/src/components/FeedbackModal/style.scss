@@ -404,35 +404,88 @@
 
   .ant-modal-header {
     background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
-    padding: 24px;
+    padding: 0;
     border: none;
   }
 
   .feedback-header {
     display: flex;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
     gap: 16px;
     color: white;
+    padding: 16px 0;
+
+    .flag-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 16px;
+
+      .vietnam-flag {
+        width: 60px;
+        height: auto;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+
+      .flag-caption {
+        color: white;
+        font-size: 13px;
+        margin-top: 8px;
+        text-align: center;
+        font-style: italic;
+        font-weight: 500;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        letter-spacing: 0.3px;
+      }
+    }
 
     .feedback-icon {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
       padding: 12px;
       font-size: 24px;
+      margin-bottom: 8px;
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: rotate(15deg);
+      }
     }
 
     .feedback-title {
       h3 {
         color: white;
         margin: 0;
-        font-size: 20px;
-        font-weight: 600;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        background: linear-gradient(to right, #fff, #f0f0f0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: titleShine 2s ease-in-out infinite;
       }
       
       .subtitle {
-        margin: 4px 0 0;
-        opacity: 0.8;
-        font-size: 14px;
+        margin: 12px 0 0;
+        opacity: 0.95;
+        font-size: 15px;
+        line-height: 1.6;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        max-width: 80%;
+        margin-left: auto;
+        margin-right: auto;
       }
     }
   }
@@ -503,6 +556,15 @@
         transform: translateY(-1px);
       }
     }
+  }
+}
+
+@keyframes titleShine {
+  0% {
+    background-position: -200px;
+  }
+  100% {
+    background-position: 200px;
   }
 }
 
