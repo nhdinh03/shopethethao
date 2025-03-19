@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { UpOutlined } from '@ant-design/icons';
 import './style.scss';
 
@@ -7,6 +7,9 @@ const BackToTop = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [screenSize, setScreenSize] = useState('large');
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const scrollTimeout = useRef(null);
+  const fadeTimeout = useRef(null);
 
   // Enhanced screen size detection
   useEffect(() => {
@@ -91,31 +94,63 @@ const BackToTop = () => {
 
     const toggleVisibility = () => {
       const scrollPosition = window.pageYOffset;
-      const viewportHeight = window.innerHeight;
       
       if (scrollPosition > getScrollThreshold()) {
         setIsVisible(true);
+        setIsActive(true);
+        
+        // Clear existing timeouts
+        if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+        if (fadeTimeout.current) clearTimeout(fadeTimeout.current);
+        
+        // Set new timeout to fade out button
+        scrollTimeout.current = setTimeout(() => {
+          setIsActive(false);
+        }, 3000);
       } else {
         setIsVisible(false);
+        setIsActive(false);
       }
     };
 
     window.addEventListener('scroll', toggleVisibility);
-    return () => window.removeEventListener('scroll', toggleVisibility);
+    return () => {
+      window.removeEventListener('scroll', toggleVisibility);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      if (fadeTimeout.current) clearTimeout(fadeTimeout.current);
+    };
   }, [screenSize]);
+
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      scrollToTop();
+    }
+  };
 
   return (
     <>
       {isVisible && (
-        <div 
-          className={`back-to-top ${isScrolling ? 'scrolling' : ''}`} 
+        <button 
+          type="button"
+          className={`back-to-top ${isScrolling ? 'scrolling' : ''} 
+                     ${isActive ? 'active' : 'inactive'}`}
           onClick={scrollToTop}
-          role="button"
-          tabIndex={0}
+          onKeyPress={handleKeyPress}
+          onMouseEnter={() => {
+            if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+            if (fadeTimeout.current) clearTimeout(fadeTimeout.current);
+            setIsActive(true);
+          }}
+          onMouseLeave={() => {
+            scrollTimeout.current = setTimeout(() => {
+              setIsActive(false);
+            }, 2000);
+          }}
           aria-label="Trở về đầu trang"
         >
           <UpOutlined />
-        </div>
+        </button>
       )}
     </>
   );

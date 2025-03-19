@@ -20,19 +20,43 @@
   @media (max-width: 320px) {
     bottom: 20px;
     right: 10px;
-    padding: 6px 10px;
-    border-radius: 16px;
-    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 5px;
     transform-origin: bottom right;
+    flex-direction: row;
+    min-width: auto;
+    
+    span {
+      display: inline-block;
+      margin-left: 4px;
+      white-space: nowrap;
+    }
+
+    .feedback-icon {
+      font-size: 16px;
+    }
   }
 
   @media (min-width: 321px) and (max-width: 480px) {
     bottom: 25px;
     right: 15px;
-    padding: 7px 12px;
-    border-radius: 18px;
-    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 5px;
     transform-origin: bottom right;
+    flex-direction: row;
+    min-width: auto;
+    
+    span {
+      display: inline-block;
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+
+    .feedback-icon {
+      font-size: 16px;
+    }
   }
 
   @media (min-width: 481px) and (max-width: 760px) {
@@ -93,7 +117,7 @@
     letter-spacing: 0.3px;
     
     @media (max-width: 480px) {
-      display: none;
+      display: inline-block; // Changed from 'none' to 'inline-block'
     }
     @media (min-width: 481px) and (max-width: 760px) {
       margin-left: 2px;
