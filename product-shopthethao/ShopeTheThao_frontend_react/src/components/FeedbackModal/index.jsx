@@ -66,20 +66,31 @@ const FeedbackModal = () => {
   }, [isSubmitting, form]);
 
   const validateMessages = {
-    required: "${label} là bắt buộc!",
+    required: "Email này là bắt buộc!", // Specific message for required fields
     types: {
-      email: "${label} không hợp lệ!",
+      email: "Email không hợp lệ! Vui lòng nhập đúng định dạng email.",
     },
     string: {
-      min: "${label} phải có ít nhất ${min} ký tự",
+      min: "Nội dung phải có ít nhất 10 ký tự.",
+      max: "Nội dung không được vượt quá 500 ký tự.",
     },
   };
 
   const handleSubmit = async (values) => {
     if (isSubmitting) return;
 
+    // Validate email format
+    if (!values.email.endsWith("@gmail.com")) {
+      message.error({
+        content: "Email phải có đuôi @gmail.com",
+        key: "feedback-error",
+        duration: 2,
+        className: "custom-message",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    // Hiển thị thông báo thành công ngay lập tức
     setIsModalVisible(false);
     message.success({
       content: "Cảm ơn bạn đã gửi góp ý!",
@@ -89,11 +100,9 @@ const FeedbackModal = () => {
     });
     form.resetFields();
 
-    // Gửi API trong background
     try {
       await feedbackApi.create(values);
     } catch (error) {
-      // Chỉ hiển thị lỗi nếu thật sự cần thiết
       console.error("Feedback error:", error);
     } finally {
       setIsSubmitting(false);

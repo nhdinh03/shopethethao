@@ -59,6 +59,10 @@ public class FeedbackAPI {
                 return new ResponseEntity<>("Email không được để trống", HttpStatus.BAD_REQUEST);
             }
             
+            if (!feedbackModal.getEmail().endsWith("@gmail.com")) {
+                return new ResponseEntity<>("Email phải có đuôi @gmail.com", HttpStatus.BAD_REQUEST);
+            }
+            
             if (feedbackModal.getMessage() == null || feedbackModal.getMessage().trim().isEmpty()) {
                 return new ResponseEntity<>("Nội dung góp ý không được để trống", HttpStatus.BAD_REQUEST);
             }
