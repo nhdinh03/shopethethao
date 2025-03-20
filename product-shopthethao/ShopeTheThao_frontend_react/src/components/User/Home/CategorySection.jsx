@@ -30,15 +30,17 @@ const CategorySection = () => {
   const categories = [
     {
       id: 1,
-      name: "Áo thun",
-      image:
-        "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+      name: "Áo thể thao",
+      description: "Thoáng mát, năng động",
+      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
+      count: "150+ sản phẩm"
     },
     {
       id: 2,
-      name: "Áo khoác",
-      image:
-        "https://images.unsplash.com/photo-1544022613-e87ca75a784a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+      name: "Giày thể thao",
+      description: "Êm ái, bền bỉ",
+      image: "https://images.unsplash.com/photo-1544022613-e87ca75a784a",
+      count: "200+ sản phẩm"
     },
     {
       id: 3,
@@ -91,14 +93,24 @@ const CategorySection = () => {
               key={category.id}
               className="category-card"
               variants={childVariants}
+              whileHover={{ 
+                scale: 1.05,
+                transition: { duration: 0.2 }
+              }}
             >
               <div className="category-image">
                 <img src={category.image} alt={category.name} />
+                <div className="category-overlay">
+                  <span className="product-count">{category.count}</span>
+                </div>
               </div>
-              <h3>{category.name}</h3>
-              <Link to={`/category/${category.id}`} className="category-link">
-                Xem sản phẩm <FiArrowRight />
-              </Link>
+              <div className="category-content">
+                <h3>{category.name}</h3>
+                <p>{category.description}</p>
+                <Link to={`/category/${category.id}`} className="category-link">
+                  Khám phá ngay <FiArrowRight />
+                </Link>
+              </div>
             </motion.div>
           ))}
         </motion.div>

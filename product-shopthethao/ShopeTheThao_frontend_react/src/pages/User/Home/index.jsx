@@ -2,12 +2,13 @@ import React, { useState, useEffect, Suspense, useCallback } from "react";
 
 import "./Home.scss";
 
-import { BrandSection, CategorySection, FeaturedProducts, PromoBanner, Slideshow } from "components/User";
+import { BrandSection, Slideshow ,CategorySection} from "components/User";
 
 import Loading from "pages/Loading/loading";
 
 import { mockProducts, categories, brands } from "data/mockData";
 import { noibatdata } from "data/noibatdata";
+
 
 
 
@@ -134,29 +135,6 @@ const HomeIndex = () => {
         <CategorySection />
       </Suspense>
 
-      {/* <Suspense fallback={<Loading />}>
-        <FeaturedProducts products={featuredProducts} />
-      </Suspense> */}
-
-      {/* <Suspense fallback={<Loading />}>
-        <PromoBanner />
-      </Suspense> */}
-
-      {/* <Suspense fallback={<Loading />}>
-        <BrandStory />
-      </Suspense> */}
-
-      {/* <Suspense fallback={<Loading />}>
-        <CustomerReviews />
-      </Suspense> */}
-
-      {/* <Suspense fallback={<Loading />}>
-        <BlogSection />
-      </Suspense> */}
-
-      {/* <Suspense fallback={<Loading />}>
-        <NewsletterSection />
-      </Suspense> */}
 
       <Suspense fallback={<Loading />}>
         <BrandSection />
