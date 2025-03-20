@@ -52,6 +52,18 @@ const CategorySection = () => {
       image:
         "https://images.unsplash.com/photo-1491553895911-0055eca6402d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
     },
+    {
+      id: 5,
+      name: "Giày",
+      image:
+        "https://images.unsplash.com/photo-1491553895911-0055eca6402d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+    },
+    {
+      id: 6,
+      name: "Giày",
+      image:
+        "https://images.unsplash.com/photo-1491553895911-0055eca6402d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+    },
   ];
 
   return (

@@ -10,7 +10,7 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
   --transition: 0.2s ease; // Reduced from 0.3s and simplified timing function
-  --container-width: 1400px;
+  --container-width: 1600px;
   --dropdown-width: 280px;
   --dropdown-bg: white;
   --dropdown-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -27,6 +27,26 @@
   --gl-body-font-decoration-functional-2: none;
   --gl-body-font-case-functional-2: uppercase;
   --gl-button-font-set-weight-functional-1: 700;
+
+  // Add responsive breakpoints
+  --breakpoint-4k: 2560px;
+  --breakpoint-laptop: 1024px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-mobile-l: 425px;
+  --breakpoint-mobile-m: 375px;
+  --breakpoint-mobile-s: 320px;
+
+  // Update colors
+  --background-color: #f5f5f5;
+  --text-color: #262626;
+  --card-bg: #ffffff;
+  --border-color: #e8e8e8;
+
+  // Add responsive container widths
+  --container-4k: 2000px;
+  --container-desktop: 1200px;
+  --container-laptop: 900px;
+  --container-tablet: 100%;
 }
 .desktop-nav ul li.has-mega-menu {
   position: static !important; /* Phải static để mega-menu thoát khỏi giới hạn của cha */
@@ -529,6 +549,27 @@ html {
       height: 100%;
       padding: 0;
       transition: padding 0.3s ease;
+
+      @media (min-width: var(--breakpoint-4k)) {
+        max-width: 2000px;
+        padding: 0 40px;
+      }
+
+      @media (max-width: var(--breakpoint-laptop)) {
+        max-width: 900px;
+      }
+
+      @media (max-width: var(--breakpoint-tablet)) {
+        padding: 0 15px;
+      }
+
+      @media (max-width: var(--breakpoint-mobile-l)) {
+        padding: 0 12px;
+      }
+
+      @media (max-width: var(--breakpoint-mobile-m)) {
+        padding: 0 10px;
+      }
     }
 
     .nav-wrapper {
@@ -538,6 +579,22 @@ html {
       height: 100%;
       padding: 10px 0;
       transition: all 0.3s ease;
+
+      @media (min-width: var(--breakpoint-4k)) {
+        padding: 20px 0;
+      }
+
+      @media (max-width: var(--breakpoint-laptop)) {
+        padding: 12px 0;
+      }
+
+      @media (max-width: var(--breakpoint-tablet)) {
+        padding: 10px 0;
+      }
+
+      @media (max-width: var(--breakpoint-mobile-l)) {
+        padding: 8px 0;
+      }
     }
     .mobile-menu-toggle {
       width: 40px;
@@ -613,6 +670,22 @@ html {
         font-weight: 800;
         color: var(--color-primary);
         margin: 0;
+
+        @media (min-width: var(--breakpoint-4k)) {
+          font-size: 2.5rem;
+        }
+
+        @media (max-width: var(--breakpoint-laptop)) {
+          font-size: 2rem;
+        }
+
+        @media (max-width: var(--breakpoint-tablet)) {
+          font-size: 1.8rem;
+        }
+
+        @media (max-width: var(--breakpoint-mobile-l)) {
+          font-size: 1.5rem;
+        }
 
         span {
           color: var(--color-accent);
@@ -1012,6 +1085,24 @@ html {
             }
           }
         }
+
+        @media (min-width: var(--breakpoint-4k)) {
+          width: 48px;
+          height: 48px;
+
+          svg {
+            font-size: 24px;
+          }
+        }
+
+        @media (max-width: var(--breakpoint-mobile-l)) {
+          width: 36px;
+          height: 36px;
+
+          svg {
+            font-size: 18px;
+          }
+        }
       }
     }
   }
@@ -1201,6 +1292,26 @@ html {
     transform: translateZ(0);
     backface-visibility: hidden;
     transition: none; // Remove SCSS transition
+
+    @media (min-width: var(--breakpoint-4k)) {
+      width: 500px;
+      padding: 30px;
+    }
+
+    @media (max-width: var(--breakpoint-laptop)) {
+      width: 400px;
+      padding: 24px;
+    }
+
+    @media (max-width: var(--breakpoint-tablet)) {
+      width: 320px;
+      padding: 20px;
+    }
+
+    @media (max-width: var(--breakpoint-mobile-m)) {
+      width: 100%;
+      padding: 16px;
+    }
 
     &.active {
       transform: translateX(0);
@@ -3058,10 +3169,6 @@ body.menu-open {
     }
   }
 
-  // Specific adjustments for group-items
-  .group-items {
-    // margin-top: 60px; // Space for header
-  }
 }
 
 .social-links {
@@ -3083,4 +3190,246 @@ body.menu-open {
       }
     }
   }
+}
+
+// Breakpoints
+$breakpoint-4k: 2560px;
+$breakpoint-laptop: 1024px;
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+
+// Colors
+$background-color: #f5f5f5;
+$text-color: #262626;
+$card-bg: #ffffff;
+$border-color: #e8e8e8;
+
+// Update root variables
+:root {
+  // ...existing code...
+
+  // Add responsive container widths
+  --container-4k: 2000px;
+  --container-desktop: 1200px;
+  --container-laptop: 900px;
+  --container-tablet: 100%;
+}
+
+// Update header container
+.header {
+  // ...existing code...
+
+  .container {
+    width: 100%;
+    max-width: var(--container-desktop);
+    margin: 0 auto;
+    padding: 0 20px;
+    transition: padding 0.3s ease;
+
+    @media (min-width: #{$breakpoint-4k}) {
+      max-width: var(--container-4k);
+      padding: 0 40px;
+    }
+
+    @media (max-width: #{$breakpoint-laptop}) {
+      max-width: var(--container-laptop);
+    }
+
+    @media (max-width: #{$breakpoint-tablet}) {
+      padding: 0 15px;
+    }
+
+    @media (max-width: #{$breakpoint-mobile-l}) {
+      padding: 0 12px;
+    }
+
+    @media (max-width: #{$breakpoint-mobile-m}) {
+      padding: 0 10px;
+    }
+  }
+
+  // Update main navigation
+  .main-nav {
+    // ...existing code...
+
+    .nav-wrapper {
+      // ...existing code...
+
+      @media (min-width: #{$breakpoint-4k}) {
+        padding: 20px 0;
+      }
+
+      @media (max-width: #{$breakpoint-laptop}) {
+        padding: 15px 0;
+      }
+
+      @media (max-width: #{$breakpoint-tablet}) {
+        padding: 12px 0;
+      }
+
+      @media (max-width: #{$breakpoint-mobile-l}) {
+        padding: 10px 0;
+      }
+    }
+
+    // Update logo sizing
+    .logo {
+      h1 {
+        font-size: 2rem;
+
+        @media (min-width: #{$breakpoint-4k}) {
+          font-size: 2.5rem;
+        }
+
+        @media (max-width: #{$breakpoint-laptop}) {
+          font-size: 1.8rem;
+        }
+
+        @media (max-width: #{$breakpoint-tablet}) {
+          font-size: 1.6rem;
+        }
+
+        @media (max-width: #{$breakpoint-mobile-l}) {
+          font-size: 1.4rem;
+        }
+      }
+    }
+
+    // Update user actions
+    .user-actions {
+      .action-icon {
+        @media (min-width: #{$breakpoint-4k}) {
+          width: 48px;
+          height: 48px;
+        }
+
+        @media (max-width: #{$breakpoint-mobile-l}) {
+          width: 36px;
+          height: 36px;
+        }
+      }
+    }
+  }
+
+  // Update mega menu
+  .mega-menu {
+    .mega-menu-inner {
+      @media (min-width: #{$breakpoint-4k}) {
+        max-width: var(--container-4k);
+        padding: 40px;
+      }
+
+      @media (max-width: #{$breakpoint-laptop}) {
+        max-width: var(--container-laptop);
+        padding: 30px 20px;
+      }
+
+      @media (max-width: #{$breakpoint-tablet}) {
+        padding: 20px 15px;
+      }
+    }
+
+    .mega-menu-categories {
+      @media (max-width: #{$breakpoint-laptop}) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      @media (max-width: #{$breakpoint-tablet}) {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+    }
+  }
+
+  // Update mobile menu
+  .mobile-menu {
+    @media (min-width: #{$breakpoint-4k}) {
+      width: 500px;
+    }
+
+    @media (max-width: #{$breakpoint-laptop}) {
+      width: 400px;
+    }
+
+    @media (max-width: #{$breakpoint-tablet}) {
+      width: 320px;
+    }
+
+    @media (max-width: #{$breakpoint-mobile-m}) {
+      width: 100%;
+    }
+  }
+
+  // Update background colors
+  &.scrolled {
+    background-color: $card-bg;
+    border-bottom: 1px solid $border-color;
+  }
+}
+
+// Update dropdown and modal backgrounds
+.dropdown-menu,
+.mega-menu,
+.mobile-menu {
+  background-color: $card-bg;
+}
+
+// Update text colors
+body {
+  color: $text-color;
+}
+
+// Optimize for performance
+.header,
+.mega-menu,
+.mobile-menu {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+// Add smooth transitions
+.header {
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.mega-menu {
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+// Add container width mixin
+@mixin container-width {
+  width: 100%;
+  margin: 0 auto;
+  
+  @media (min-width: #{$breakpoint-4k}) {
+    max-width: var(--container-4k);
+    padding: 0 40px;
+  }
+
+  @media (max-width: #{$breakpoint-laptop}) {
+    max-width: var(--container-laptop);
+    padding: 0 20px;
+  }
+
+  @media (max-width: #{$breakpoint-tablet}) {
+    padding: 0 15px;
+  }
+
+  @media (max-width: #{$breakpoint-mobile-l}) {
+    padding: 0 12px;
+  }
+
+  @media (max-width: #{$breakpoint-mobile-m}) {
+    padding: 0 10px;
+  }
+}
+
+// Apply container width mixin
+.header .container,
+.mega-menu-inner,
+.search-bar .container {
+  @include container-width;
 }

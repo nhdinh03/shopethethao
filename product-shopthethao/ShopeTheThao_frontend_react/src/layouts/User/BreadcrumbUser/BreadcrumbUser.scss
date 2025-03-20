@@ -39,7 +39,7 @@ $font-xl: 20px;
   align-items: center;
   
   .breadcrumb-container {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 0 16px;
     width: 100%;
@@ -48,7 +48,6 @@ $font-xl: 20px;
     align-items: center;
     
     @include responsive(4k) {
-      max-width: 2000px;
       padding: 0 24px;
     }
     

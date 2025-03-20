@@ -1705,7 +1705,7 @@ $font-xxl: 24px;
 // Add new responsive breakpoints
 @media (min-width: $breakpoint-4k) {
   .check-orders {
-    max-width: 2000px;
+    max-width: 1600px;
     padding: 40px;
     
     .orders-list {

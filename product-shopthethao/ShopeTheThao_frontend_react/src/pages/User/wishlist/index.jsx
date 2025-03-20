@@ -72,6 +72,42 @@ function Wishlist() {
                     brand: 'New Balance',
                     sizes: ['39', '41', '42', '43'],
                     description: 'Iconic silhouette with premium materials and EVA foam midsole for great cushioning and support.'
+                },
+                {
+                    id: 5,
+                    name: 'New Balance 574',
+                    image: 'https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i?$pdpflexf2$&wid=440&hei=440',
+                    price: 1950000,
+                    discount: 5,
+                    rating: 4.2,
+                    category: 'Casual',
+                    brand: 'New Balance',
+                    sizes: ['39', '41', '42', '43'],
+                    description: 'Iconic silhouette with premium materials and EVA foam midsole for great cushioning and support.'
+                },
+                {
+                    id: 6,
+                    name: 'New Balance 574',
+                    image: 'https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i?$pdpflexf2$&wid=440&hei=440',
+                    price: 1950000,
+                    discount: 5,
+                    rating: 4.2,
+                    category: 'Casual',
+                    brand: 'New Balance',
+                    sizes: ['39', '41', '42', '43'],
+                    description: 'Iconic silhouette with premium materials and EVA foam midsole for great cushioning and support.'
+                },
+                {
+                    id: 7,
+                    name: 'New Balance 574',
+                    image: 'https://nb.scene7.com/is/image/NB/ml574evg_nb_02_i?$pdpflexf2$&wid=440&hei=440',
+                    price: 1950000,
+                    discount: 5,
+                    rating: 4.2,
+                    category: 'Casual',
+                    brand: 'New Balance',
+                    sizes: ['39', '41', '42', '43'],
+                    description: 'Iconic silhouette with premium materials and EVA foam midsole for great cushioning and support.'
                 }
             ];
             setWishlistItems(mockItems);

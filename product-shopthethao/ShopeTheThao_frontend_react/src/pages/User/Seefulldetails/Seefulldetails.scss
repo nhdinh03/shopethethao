@@ -37,7 +37,7 @@ $font-weight-bold: 700;
 $mobile: 576px;
 $tablet: 768px;
 $desktop: 992px;
-$large-desktop: 1200px;
+$large-desktop: 1600px;
 
 // Mixins
 @mixin flex-center {
@@ -111,7 +111,7 @@ $large-desktop: 1200px;
   letter-spacing: 0.01em;
   
   .container {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 0 20px;
   }

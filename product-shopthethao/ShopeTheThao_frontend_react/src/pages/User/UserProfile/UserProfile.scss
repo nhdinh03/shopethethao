@@ -12,13 +12,13 @@ $card-bg: #ffffff;
 $border-color: #e8e8e8;
 
 .user-profile-container {
-  max-width: 1200px;
+  max-width: 1600px; 
   margin: 30px auto;
   padding: 0 20px;
   background-color: $background-color;
 
   @media (min-width: $breakpoint-4k) {
-    max-width: 2000px;
+    max-width: 1600px;
     margin: 50px auto;
     padding: 0 40px;
   }

@@ -8,6 +8,7 @@ const BrandSection = () => {
     "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg",
     "https://upload.wikimedia.org/wikipedia/commons/a/ae/Puma-logo-%28text%29.svg",
     "https://upload.wikimedia.org/wikipedia/commons/4/44/Under_armour_logo.svg",
+    "https://upload.wikimedia.org/wikipedia/commons/3/35/Chanel_logo.svg",
   ];
 
   // Animation variants
