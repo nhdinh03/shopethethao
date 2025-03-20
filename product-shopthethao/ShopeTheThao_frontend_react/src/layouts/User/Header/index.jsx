@@ -843,8 +843,34 @@ const Header = ({ onMobileMenuToggle }) => {
     }
   };
 
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Set scrolled state
+      setIsScrolled(currentScrollY > 10);
+
+      // Determine scroll direction and update visibility
+      if (currentScrollY > lastScrollY.current) {
+        // Scrolling down - hide header
+        setIsVisible(false);
+      } else {
+        // Scrolling up - show header
+        setIsVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className={`header ${mobileMenuOpen ? "menu-open" : ""}`}>
+    <header className={`header ${isScrolled ? 'scrolled' : ''} ${isVisible ? 'visible' : ''} ${mobileMenuOpen ? "menu-open" : ""}`}>
       {/* Top Bar */}
       <div className="top-bar">
         <div className="contact-info">

@@ -355,12 +355,15 @@ html {
   }
 
   &.scrolled {
-    box-shadow: var(--shadow-md);
     position: fixed;
     width: 100%;
     background: white;
-    transform: translateY(0);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(-100%); // Initially hide when scrolled
+    transition: transform 0.3s ease;
+
+    &.visible {
+      transform: translateY(0); // Show when scrolling up
+    }
 
     .top-bar {
       height: 0;
@@ -368,9 +371,8 @@ html {
       margin: 0;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.2s ease;
       overflow: hidden;
-      position: absolute; // Thêm position absolute
+      position: absolute;
       top: 0;
     }
 
@@ -380,7 +382,7 @@ html {
       margin: 0;
       opacity: 0;
       visibility: hidden;
-      position: absolute; // Thêm position absolute
+      position: absolute;
       top: 0;
       overflow: hidden;
     }
