@@ -21,7 +21,7 @@ import { FaFacebook, FaInstagram } from "react-icons/fa";
 import "./header.scss";
 import authApi from "api/Admin/Auth/auth";
 
-const Header = () => {
+const Header = ({ onMobileMenuToggle }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -792,12 +792,7 @@ const Header = () => {
 
   // Add this function to handle menu closing
   const handleCloseMenu = () => {
-    setMobileMenuOpen(false);
-    // Reset submenu states after animation completes
-    setTimeout(() => {
-      setActiveSubmenu(null);
-      setActiveGroup(null);
-    }, 300); // Match with menu closing animation duration
+    handleMobileMenuToggle(false); // Ensure menu state is updated when closing
   };
 
   // Update the menu backdrop click handler
@@ -841,8 +836,15 @@ const Header = () => {
     );
   };
 
+  const handleMobileMenuToggle = (isOpen) => {
+    setMobileMenuOpen(isOpen);
+    if (onMobileMenuToggle) {
+      onMobileMenuToggle(isOpen); // Notify parent component
+    }
+  };
+
   return (
-    <header className={`header ${isScrolled ? "scrolled" : ""}`}>
+    <header className={`header ${mobileMenuOpen ? "menu-open" : ""}`}>
       {/* Top Bar */}
       <div className="top-bar">
         <div className="contact-info">
@@ -961,7 +963,7 @@ const Header = () => {
             {/* Move mobile menu toggle here */}
             <button
               className="mobile-menu-toggle"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => handleMobileMenuToggle(!mobileMenuOpen)}
               aria-label="Menu"
             >
               <FiMenu />

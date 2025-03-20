@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, Outlet } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -10,22 +10,34 @@ import { HomeIndex } from "pages/User";
 
 const UserLayout = () => {
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // State to track mobile menu
   const isLoginPage = location.pathname === "/login";
   const isProductsPage = location.pathname.includes("/products");
   const isProductDetailsPage = location.pathname.includes("/seefulldetails");
   const isHomePage = location.pathname === "/";
 
   return (
-    <div className={`layout-container ${isProductsPage ? 'products-view' : ''} ${isHomePage ? 'home-view' : ''} ${isProductDetailsPage ? 'product-details-view' : ''}`}>
+    <div
+      className={`layout-container ${isProductsPage ? "products-view" : ""} ${
+        isHomePage ? "home-view" : ""
+      } ${isProductDetailsPage ? "product-details-view" : ""}`}
+    >
       <Snowfall />
-      {!isLoginPage && <Header className="layout-header" />}
+      {!isLoginPage && (
+        <Header
+          className="layout-header"
+          onMobileMenuToggle={(isOpen) => setMobileMenuOpen(isOpen)} // Pass callback to track menu state
+        />
+      )}
       {/* Only render HomeIndex on the home page */}
       {isHomePage && <HomeIndex />}
       <div className="layout-wrapper">
-        <main className={`layout-main ${isProductsPage ? 'products-main' : ''} ${isProductDetailsPage ? 'product-details-main' : ''}`}>
-          {/* Move breadcrumb outside content-wrapper for full-width background */}
+        <main
+          className={`layout-main ${
+            isProductsPage ? "products-main" : ""
+          } ${isProductDetailsPage ? "product-details-main" : ""}`}
+        >
           <div className="content-wrapper">
-            {/* Remove Slideshow from here as it's already included in HomeIndex */}
             <Outlet />
           </div>
         </main>
@@ -34,7 +46,8 @@ const UserLayout = () => {
         <>
           <Footer />
           <BackToTop />
-          <FeedbackModal />
+          {/* Only render FeedbackModal when mobile menu is not open */}
+          {isHomePage && !mobileMenuOpen && <FeedbackModal />}
         </>
       )}
     </div>
