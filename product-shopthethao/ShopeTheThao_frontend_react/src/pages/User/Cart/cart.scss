@@ -30,7 +30,7 @@ $breakpoint-mobile-s: 320px;
   
   // For 4K displays, increase the max-width
   @media (min-width: $breakpoint-laptop) {
-    max-width: 80%;
+    // max-width: 80%;
   }
   
   @media (min-width: $breakpoint-4k) {

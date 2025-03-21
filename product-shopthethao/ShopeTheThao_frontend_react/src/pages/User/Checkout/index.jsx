@@ -398,17 +398,26 @@ const Checkout = () => {
           <h2>Đơn hàng của bạn</h2>
 
           <div className="order-items">
+            <div className="order-items-header">
+              <span>Sản phẩm</span>
+              <span>Tổng</span>
+            </div>
             {cartItems.map((item) => (
               <div className="order-item" key={item.id}>
-                <div className="item-image">
-                  <img src={item.image} alt={item.name} />
-                  <span className="item-quantity">{item.quantity}</span>
-                </div>
-                <div className="item-details">
-                  <h4>{item.name}</h4>
-                  <p className="item-price">
-                    {item.price.toLocaleString("vi-VN")}₫ x {item.quantity}
-                  </p>
+                <div className="item-main">
+                  <div className="item-image-wrapper">
+                    <img src={item.image} alt={item.name} />
+                    <span className="item-quantity">{item.quantity}</span>
+                  </div>
+                  <div className="item-details">
+                    <h4 title={item.name}>{item.name}</h4>
+                    <div className="item-meta">
+                      <p className="item-price">
+                        {item.price.toLocaleString("vi-VN")}₫ x {item.quantity}
+                      </p>
+                      {item.size && <span className="item-size">Size: {item.size}</span>}
+                    </div>
+                  </div>
                 </div>
                 <div className="item-total">
                   {(item.price * item.quantity).toLocaleString("vi-VN")}₫

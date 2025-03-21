@@ -74,6 +74,7 @@
     "shopethethao_frontend_react": "file:",
     "slick-carousel": "^1.8.1",
     "styled-components": "^6.0.8",
+    "swiper": "^11.2.6",
     "web-vitals": "^2.1.4",
     "yup": "^1.6.1"
   },
