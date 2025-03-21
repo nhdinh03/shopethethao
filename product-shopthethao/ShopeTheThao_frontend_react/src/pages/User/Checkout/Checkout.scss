@@ -626,6 +626,137 @@ $transition: all 0.3s ease;
           background-color: darken($secondary-color, 5%);
         }
       }
+
+      .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 25px;
+
+        button {
+          padding: 12px 24px;
+          border-radius: $border-radius;
+          font-size: 15px;
+          cursor: pointer;
+          transition: $transition;
+          font-weight: 500;
+          min-width: 150px;
+
+          &.home-btn {
+            background-color: #fff;
+            color: $secondary-color;
+            border: 2px solid $secondary-color;
+
+            &:hover {
+              background-color: rgba($secondary-color, 0.1);
+            }
+          }
+
+          &.continue-btn {
+            background-color: $secondary-color;
+            color: white;
+            border: none;
+
+            &:hover {
+              background-color: darken($secondary-color, 5%);
+            }
+          }
+        }
+
+        @media (max-width: 480px) {
+          flex-direction: column;
+          
+          button {
+            width: 100%;
+          }
+        }
+      }
+
+      .success-content {
+        text-align: center;
+        margin-bottom: 25px;
+        
+        h2 {
+          color: $secondary-color;
+          font-size: 28px;
+          margin-bottom: 15px;
+          font-weight: 600;
+        }
+        
+        .thank-you-message {
+          color: $text-color;
+          font-size: 16px;
+          margin-bottom: 10px;
+          font-weight: 500;
+        }
+        
+        .support-message {
+          color: $light-text;
+          font-size: 14px;
+        }
+      }
+      
+      .order-info {
+        background: linear-gradient(to right bottom, #f8f9fa, #ffffff);
+        padding: 20px;
+        border-radius: $border-radius;
+        margin: 20px 0;
+        border: 1px solid rgba($secondary-color, 0.2);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        
+        .order-detail, .estimated-delivery {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 0;
+          border-bottom: 1px dashed rgba($border-color, 0.5);
+          
+          &:last-child {
+            border-bottom: none;
+          }
+          
+          span {
+            color: $light-text;
+            font-size: 14px;
+          }
+          
+          strong {
+            color: $text-color;
+            font-weight: 600;
+            font-size: 15px;
+          }
+        }
+        
+        .estimated-delivery {
+          margin-top: 5px;
+          padding-top: 15px;
+          border-top: 1px solid rgba($border-color, 0.5);
+          
+          strong {
+            color: $secondary-color;
+          }
+        }
+      }
+      
+      .modal-actions {
+        button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          font-weight: 500;
+          padding: 12px 28px;
+          
+          i {
+            font-size: 16px;
+          }
+          
+          &.home-btn:hover {
+            border-color: darken($secondary-color, 10%);
+            color: darken($secondary-color, 10%);
+          }
+        }
+      }
     }
   }
   

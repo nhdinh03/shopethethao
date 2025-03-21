@@ -16,7 +16,7 @@ $section-spacing: 5rem;
 $breakpoint-4k: 2560px;
 $breakpoint-laptop: 1024px;
 $breakpoint-tablet: 768px;
-$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-l: 850px;
 $breakpoint-mobile-m: 375px;
 $breakpoint-mobile-s: 320px;
 
@@ -2204,3 +2204,406 @@ $font-4xl: 40px;   // Large hero text
 }
 
 // ...existing code...
+
+.featured-products.compact {
+  padding: 3rem 0;
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+
+    .header-content {
+      h2 {
+        font-size: $font-xl;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: $secondary-color;
+        
+        &:after {
+          display: none;
+        }
+      }
+
+      p {
+        font-size: $font-base;
+        // color: $light-text;
+        margin: 0;
+      }
+    }
+
+    .view-more {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: $accent-color;
+      font-size: $font-base;
+      text-decoration: none;
+      transition: $transition;
+
+      &:hover {
+        color: darken($accent-color, 10%);
+        transform: translateX(5px);
+      }
+    }
+  }
+
+  .products-grid.top-five {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    padding: 0 1rem;
+    
+    .product-card {
+      max-width: 220px;
+      
+      .product-image {
+        height: 180px;
+      }
+      
+      .product-info {
+        padding: 1rem;
+        
+        .product-name {
+          font-size: $font-base;
+          margin-bottom: 0.5rem;
+          -webkit-line-clamp: 2;
+          height: 3.4em;
+        }
+        
+        .product-price {
+          font-size: $font-base;
+        }
+      }
+    }
+
+    @media (max-width: $breakpoint-laptop) {
+      grid-template-columns: repeat(4, 1fr);
+      
+      .product-card:nth-child(5) {
+        display: none;
+      }
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      
+      .product-card:nth-child(4) {
+        display: none;
+      }
+    }
+
+    @media (max-width: $breakpoint-mobile-l) {
+      grid-template-columns: repeat(2, 1fr);
+      
+      .product-card:nth-child(3) {
+        display: none;
+      }
+    }
+  }
+
+  .loading-spinner {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba($accent-color, 0.2);
+      border-top-color: $accent-color;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+}
+
+// ...existing code...
+
+.featured-products.compact {
+  // ...existing code...
+
+  // Add specific styles for new products section
+  &.new-products {
+    background: linear-gradient(to bottom, $light-bg, white);
+    margin-top: 3rem;
+    
+    .header-content {
+      h2 {
+        color: $accent-color;
+        
+        &:after {
+          background: linear-gradient(to right, $accent-color, lighten($accent-color, 20%));
+        }
+      }
+    }
+
+    .products-grid.top-five {
+      .product-card {
+        .product-image {
+          &:before {
+            content: 'New';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: $accent-color;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: $font-sm;
+            font-weight: 500;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba($accent-color, 0.3);
+          }
+        }
+
+        // Thêm hiệu ứng hover độc đáo cho sản phẩm mới
+        &:hover {
+          transform: translateY(-8px) scale(1.02);
+          
+          .product-image img {
+            transform: scale(1.12);
+          }
+        }
+      }
+    }
+
+    // Tùy chỉnh màu sắc cho nút xem thêm
+    .view-more {
+      &:hover {
+        color: $accent-color;
+        transform: translateX(8px);
+      }
+    }
+  }
+}
+
+// ...existing code...
+
+.categories-section.compact {
+  padding: 3rem 0;
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+    text-align: left;
+
+    .header-content {
+      h2 {
+        font-size: $font-xl;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        
+        &:after {
+          display: none;
+        }
+      }
+
+      p {
+        font-size: $font-base;
+        margin: 0;
+      }
+    }
+
+    .view-more {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: $accent-color;
+      font-size: $font-base;
+      text-decoration: none;
+      transition: $transition;
+
+      &:hover {
+        color: darken($accent-color, 10%);
+        transform: translateX(5px);
+      }
+    }
+  }
+
+  .categories-grid.compact {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+    padding: 0 1rem;
+    
+    .category-card {
+      height: 200px;
+      
+      .category-image {
+        height: 100%;
+        
+        img {
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+      
+      .category-content {
+        padding: 1rem;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4));
+        transform: none;
+        opacity: 1;
+        
+        h3 {
+          font-size: $font-md;
+          margin-bottom: 0.5rem;
+        }
+        
+        .category-link {
+          font-size: $font-sm;
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      &:hover {
+        transform: translateY(-5px);
+        
+        .category-image img {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    @media (max-width: $breakpoint-laptop) {
+      grid-template-columns: repeat(4, 1fr);
+      
+      .category-card:nth-child(5) {
+        display: none;
+      }
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      
+      .category-card:nth-child(4) {
+        display: none;
+      }
+    }
+
+    @media (max-width: $breakpoint-mobile-l) {
+      grid-template-columns: repeat(2, 1fr);
+      
+      .category-card:nth-child(3) {
+        display: none;
+      }
+    }
+  }
+}
+
+// ...existing code...
+
+@mixin mobile-scroll-grid {
+  @media (max-width: $breakpoint-mobile-l) {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1rem;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    gap: 12px;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    
+    > * {
+      scroll-snap-align: start;
+      flex: 0 0 auto;
+      width: calc(50% - 6px);
+      min-width: 160px;
+      max-width: 200px;
+    }
+  }
+}
+
+.categories-section.compact {
+  // ...existing code...
+  
+  .categories-grid.compact {
+    // ...existing code...
+    
+    @include mobile-scroll-grid;
+    
+    .category-card:nth-child(n) {
+      @media (max-width: $breakpoint-mobile-l) {
+        display: block;
+      }
+    }
+    
+    &:after {
+      @media (max-width: $breakpoint-mobile-l) {
+        content: '';
+        padding-right: 1rem;
+      }
+    }
+  }
+}
+
+.featured-products.compact {
+  // ...existing code...
+  
+  .products-grid.top-five {
+    // ...existing code...
+    
+    @include mobile-scroll-grid;
+    
+    .product-card:nth-child(n) {
+      @media (max-width: $breakpoint-mobile-l) {
+        display: block;
+      }
+    }
+    
+    &:after {
+      @media (max-width: $breakpoint-mobile-l) {
+        content: '';
+        padding-right: 1rem;
+      }
+    }
+  }
+}
+
+// Thêm indicator cho scroll
+.scroll-indicator {
+  display: none;
+  
+  @media (max-width: $breakpoint-mobile-l) {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1rem;
+    
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba($accent-color, 0.2);
+      transition: $transition;
+      
+      &.active {
+        width: 20px;
+        border-radius: 3px;
+        background: $accent-color;
+      }
+    }
+  }
+}

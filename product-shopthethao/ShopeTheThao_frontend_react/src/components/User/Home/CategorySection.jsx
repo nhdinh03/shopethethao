@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
@@ -80,36 +80,58 @@ const CategorySection = () => {
     },
   ];
 
+  const [scrollIndex, setScrollIndex] = useState(0);
+  const scrollContainerRef = useRef(null);
+
+  const handleScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const scrollLeft = scrollContainerRef.current.scrollLeft;
+      const itemWidth = scrollContainerRef.current.offsetWidth / 2;
+      const newIndex = Math.round(scrollLeft / itemWidth);
+      setScrollIndex(newIndex);
+    }
+  }, []);
+
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll);
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
+
   return (
-    <section className="categories-section">
-      <div className="container">
+    <section className="categories-section compact">
+      <div className="container" style={{ maxWidth: 1200 }}>
         <motion.div
           className="section-header"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
         >
-          <h2>DANH MỤC NỔI BẬT</h2>
-          <p>Khám phá các danh mục sản phẩm thể thao hàng đầu cho mọi hoạt động</p>
+          <div className="header-content">
+            <h2>DANH MỤC NỔI BẬT</h2>
+            <p>Top danh mục phổ biến</p>
+          </div>
+          <Link to="/categories" className="view-more">
+            Xem thêm <FiArrowRight />
+          </Link>
         </motion.div>
 
         <motion.div
-          className="categories-grid"
+          className="categories-grid compact"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true }}
+          ref={scrollContainerRef}
         >
           {categories.map((category) => (
             <motion.div
               key={category.id}
               className="category-card"
               variants={childVariants}
-              whileHover={{ 
-                scale: 1.05,
-                transition: { duration: 0.3 }
-              }}
             >
               <div className="category-image">
                 <img src={category.image} alt={category.name} />
@@ -119,7 +141,6 @@ const CategorySection = () => {
               </div>
               <div className="category-content">
                 <h3>{category.name}</h3>
-                <p>{category.description}</p>
                 <Link to={`/category/${category.slug}`} className="category-link">
                   Khám phá ngay <FiArrowRight />
                 </Link>
@@ -127,6 +148,15 @@ const CategorySection = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* <div className="scroll-indicator">
+          {[...Array(Math.ceil(categories.length / 2))].map((_, index) => (
+            <span
+              key={index}
+              className={`dot ${index === scrollIndex ? 'active' : ''}`}
+            />
+          ))}
+        </div> */}
       </div>
     </section>
   );

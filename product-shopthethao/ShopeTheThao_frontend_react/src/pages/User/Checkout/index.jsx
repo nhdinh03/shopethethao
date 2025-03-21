@@ -149,19 +149,39 @@ const Checkout = () => {
               <path fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
             </svg>
           </div>
-          <h2>Đặt hàng thành công!</h2>
-          <p>Cảm ơn bạn đã mua sắm tại ShopTheThao</p>
-          <div className="order-info">
-            <p>
-              Mã đơn hàng: <strong>{orderId}</strong>
+          <div className="success-content">
+            <h2>Đặt hàng thành công!</h2>
+            <p className="thank-you-message">
+              Cảm ơn quý khách đã tin tưởng và mua sắm tại ShopTheThao
             </p>
-            <p>
-              Tổng giá trị: <strong>{total.toLocaleString("vi-VN")}₫</strong>
+            <p className="support-message">
+              Chúng tôi sẽ gửi email xác nhận đơn hàng trong thời gian sớm nhất
             </p>
           </div>
-          <button onClick={closeSuccessModal} className="continue-btn">
-            Tiếp tục mua sắm
-          </button>
+          <div className="order-info">
+            <div className="order-detail">
+              <span>Mã đơn hàng:</span>
+              <strong>{orderId}</strong>
+            </div>
+            <div className="order-detail">
+              <span>Tổng giá trị:</span>
+              <strong>{total.toLocaleString("vi-VN")}₫</strong>
+            </div>
+            <div className="estimated-delivery">
+              <span>Thời gian giao hàng dự kiến:</span>
+              <strong>3-5 ngày làm việc</strong>
+            </div>
+          </div>
+          <div className="modal-actions">
+            <button onClick={() => navigate('/')} className="home-btn">
+              <i className="fas fa-home"></i>
+              Về trang chủ
+            </button>
+            <button onClick={closeSuccessModal} className="continue-btn">
+              <i className="fas fa-shopping-cart"></i>
+              Tiếp tục mua sắm
+            </button>
+          </div>
         </div>
       </div>
     );
