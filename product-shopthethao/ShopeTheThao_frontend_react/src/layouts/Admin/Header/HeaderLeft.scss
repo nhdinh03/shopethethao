@@ -1,0 +1,63 @@
+// Header Left Admin Component Styles
+.header-admin-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
+    
+    &-logo {
+      transition: all 0.3s ease;
+      
+      img {
+        object-fit: contain;
+      }
+    }
+    
+    &-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+  }
+  
+  &__divider {
+    width: 1px;
+    height: 2rem;
+    background-color: #e0e0e0;
+    transition: opacity 0.3s ease;
+  }
+  
+  &__admin-info {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4b5563;
+    transition: opacity 0.3s ease;
+    padding-left: 0.5rem;
+    
+    &::before {
+      content: 'Admin:';
+      font-weight: 400;
+      opacity: 0.7;
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 1024px) {
+  .header-admin-left__divider,
+  .header-admin-left__admin-info {
+    display: none;
+  }
+}

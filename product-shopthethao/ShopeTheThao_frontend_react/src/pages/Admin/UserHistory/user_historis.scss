@@ -1,3 +1,6 @@
+// Import variables from size.scss
+@import '../Sizes/size.scss';
+
 .user-history-page {
   padding: 24px;
 
@@ -46,11 +49,11 @@
   }
 
   .unread-row {
-    background-color: #fafaf0;
-    cursor: pointer;
+    background-color: #fafafa;
+    font-weight: 500;
     
     &:hover {
-      background-color: #f5f5eb;
+      background-color: #f0f0f0;
     }
   }
 
@@ -137,4 +140,49 @@
       }
     }
   }
+}
+
+.header-actions {
+  margin-bottom: 20px;
+  
+  .search-input {
+    height: 40px;
+    border-radius: 6px;
+    
+    .ant-input {
+      font-size: 14px;
+    }
+    
+    .search-icon {
+      color: #1677ff;
+      margin-right: 8px;
+    }
+    
+    &:hover, &:focus {
+      border-color: #1677ff;
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+    }
+  }
+  
+  .date-range-picker {
+    width: 100%;
+    height: 40px;
+    border-radius: 6px;
+    
+    .ant-picker-input {
+      font-size: 14px;
+    }
+    
+    &:hover {
+      border-color: #1677ff;
+    }
+  }
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
 }

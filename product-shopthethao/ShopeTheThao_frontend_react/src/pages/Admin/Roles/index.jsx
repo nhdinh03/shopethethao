@@ -8,6 +8,7 @@ import {
   Input,
   Select,
   Row,
+  Col,
   message,
 } from "antd";
 import {
@@ -15,11 +16,11 @@ import {
   FileTextOutlined,
   PlusOutlined,
   RedoOutlined,
-  UserOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { useRolesManagement } from "hooks/useRolesManagement";
 import PaginationComponent from "components/User/PaginationComponent";
-import "..//index.scss";
+import "./roles.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { useAvailableRoles } from 'hooks/useAvailableRoles';
 
@@ -27,6 +28,7 @@ const Roles = () => {
   const [open, setOpen] = useState(false);
   const [editRole, setEditRole] = useState(null);
   const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState("");
 
   const {
     roles,
@@ -69,7 +71,6 @@ const Roles = () => {
       if (success) {
         setOpen(false);
         handleResetForm();
-        // message.success(editRole ? 'Cập nhật vai trò thành công!' : 'Thêm vai trò mới thành công!');
       }
     } catch (error) {
       if (error.response?.data) {
@@ -80,6 +81,24 @@ const Roles = () => {
     }
   };
 
+  // Handle search input change
+  const handleSearch = (value) => {
+    setSearchText(value);
+  };
+
+  // Filter roles based on search text
+  const getFilteredRoles = () => {
+    if (!searchText) return roles;
+    
+    return roles.filter(role => 
+      role.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+      role.description?.toLowerCase().includes(searchText.toLowerCase()) ||
+      role.id?.toString().includes(searchText)
+    );
+  };
+
+  const filteredRoles = getFilteredRoles();
+
   const columns = [
     { title: "🆔 Danh sách", dataIndex: "id", key: "id" },
     { title: "📏 Tên Vai trò", dataIndex: "name", key: "name" },
@@ -88,10 +107,10 @@ const Roles = () => {
   ];
 
   return (
-    <div style={{ padding: 10 }}>
-      <Row>
-        <h2>Quản lý Vai trò</h2>
-        <div className="header-container">
+    <div className="size-page">
+      <div className="content-wrapper">
+        <Row justify="space-between" align="middle" className="header-container">
+          <h2 className="page-title">Quản lý Vai trò</h2>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -100,7 +119,20 @@ const Roles = () => {
           >
             Thêm Vai trò mới
           </Button>
-        </div>
+        </Row>
+
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={24} md={24} lg={24}>
+            <Input
+              placeholder="Tìm kiếm theo tên, mô tả vai trò..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="search-input"
+              allowClear
+            />
+          </Col>
+        </Row>
 
         <Modal
           title={
@@ -171,26 +203,18 @@ const Roles = () => {
             </Space>
           </Form>
         </Modal>
-      </Row>
-      <div className="table-container">
+
         <Table
           pagination={false}
           columns={columns}
           loading={loading}
-          scroll={{ x: "max-content" }}
-          dataSource={roles.map((role) => ({
+          dataSource={filteredRoles.map((role) => ({
             ...role,
             key: role.id,
           }))}
         />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: 10,
-            gap: 10,
-          }}
-        >
+        
+        <div className="pagination-container">
           <PaginationComponent
             totalPages={totalPages}
             currentPage={currentPage}
@@ -199,7 +223,7 @@ const Roles = () => {
           <Select
             value={pageSize}
             style={{ width: 120, marginTop: 20 }}
-            onChange={handlePageSizeChange} // Reset to page 1 when page size changes
+            onChange={handlePageSizeChange}
           >
             <Select.Option value={5}>5 hàng</Select.Option>
             <Select.Option value={10}>10 hàng</Select.Option>

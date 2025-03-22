@@ -1,11 +1,24 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { FiPackage, FiUsers, FiDollarSign, FiShoppingCart, FiTrendingUp, FiPieChart } from "react-icons/fi";
+import { 
+  FiPackage, FiUsers, FiDollarSign, FiShoppingCart, 
+  FiTrendingUp, FiTrendingDown, FiPieChart, FiClock, 
+  FiAlertCircle, FiCheckCircle, FiBell, FiShield, 
+  FiBarChart2, FiDatabase, FiClipboard
+} from "react-icons/fi";
+import { 
+  BiSolidDashboard, BiAnalyse, BiPackage, BiStore, 
+  BiShieldQuarter, BiCog, BiReceipt 
+} from "react-icons/bi";
+import { 
+  HiOutlineCurrencyDollar, HiOutlineShoppingBag, 
+  HiOutlineUserGroup, HiOutlineClipboardCheck 
+} from "react-icons/hi";
 import { Link } from "react-router-dom";
-import { message, Spin, notification } from "antd";
+import { message, Spin, notification, Badge, Tooltip, Progress } from "antd";
 import moment from "moment";
 import { userHistoryApi } from "api/Admin";
 import { userHistorySSE } from "api/Admin/UserHistory/userHistorySSE";
-
+import './HomeModule.scss';
 
 const AdminIndex = () => {
   const [adminHistories, setAdminHistories] = useState([]);
@@ -22,6 +35,9 @@ const AdminIndex = () => {
     auth: 0,
     admin: 0
   });
+  
+  // Refs for mouse position tracking
+  const cardRefs = useRef([]);
 
   const fetchAuthActivities = useCallback(async () => {
     try {
@@ -63,6 +79,7 @@ const AdminIndex = () => {
           message: `${newCount} hoạt động mới`,
           description: 'Có hoạt động đăng nhập/đăng xuất mới',
           placement: 'bottomRight',
+          icon: <FiBell className="text-blue-500" />,
         });
       }
       previousHistoriesCount.current.auth = data.content.length;
@@ -81,6 +98,7 @@ const AdminIndex = () => {
           message: `${newCount} hoạt động quản trị mới`,
           description: 'Có hoạt động quản trị mới',
           placement: 'bottomRight',
+          icon: <FiBell className="text-purple-500" />,
         });
       }
       previousHistoriesCount.current.admin = data.content.length;
@@ -116,34 +134,58 @@ const AdminIndex = () => {
     };
   }, [fetchAuthActivities, fetchAdminActivities, handleAuthActivitiesUpdate, handleAdminActivitiesUpdate]);
 
+  // Event handler for mouse move on action cards
+  const handleMouseMove = (e, element) => {
+    if (!element) return;
+    
+    const rect = element.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    element.style.setProperty('--mouse-x', `${x}px`);
+    element.style.setProperty('--mouse-y', `${y}px`);
+  };
+
   const statsData = [
     {
       title: "Tổng doanh thu",
       value: "126,560,000đ",
-      icon: <FiDollarSign className="w-10 h-10" />,
-      bgColor: "bg-blue-500",
-      change: "+12% so với tuần trước"
+      icon: <HiOutlineCurrencyDollar className="w-10 h-10" />,
+      bgColor: "bg-gradient-to-br from-blue-500 to-blue-600",
+      change: "+12% so với tuần trước",
+      positive: true,
+      trendIcon: <FiTrendingUp />,
+      progressValue: 72
     },
     {
       title: "Đơn hàng mới",
       value: "156",
-      icon: <FiShoppingCart className="w-8 h-8" />,
-      bgColor: "bg-green-500",
-      change: "+8% so với hôm qua"
+      icon: <HiOutlineShoppingBag className="w-10 h-10" />,
+      bgColor: "bg-gradient-to-br from-green-500 to-green-600",
+      change: "+8% so với hôm qua",
+      positive: true,
+      trendIcon: <FiTrendingUp />,
+      progressValue: 68
     },
     {
       title: "Khách hàng mới",
       value: "40",
-      icon: <FiUsers className="w-8 h-8" />,
-      bgColor: "bg-purple-500",
-      change: "+5% so với tuần trước"
+      icon: <HiOutlineUserGroup className="w-10 h-10" />,
+      bgColor: "bg-gradient-to-br from-purple-500 to-purple-600",
+      change: "+5% so với tuần trước",
+      positive: true,
+      trendIcon: <FiTrendingUp />,
+      progressValue: 55
     },
     {
       title: "Sản phẩm tồn kho",
       value: "1,234",
-      icon: <FiPackage className="w-8 h-8" />,
-      bgColor: "bg-orange-500",
-      change: "-3% so với tuần trước"
+      icon: <BiPackage className="w-10 h-10" />,
+      bgColor: "bg-gradient-to-br from-orange-500 to-amber-600",
+      change: "-3% so với tuần trước",
+      positive: false,
+      trendIcon: <FiTrendingDown />,
+      progressValue: 34
     }
   ];
 
@@ -153,49 +195,34 @@ const AdminIndex = () => {
       description: "Thêm sản phẩm mới vào kho",
       link: "/dashboard-management-sys/catalog/products",
       color: "bg-blue-100 text-blue-600",
-      icon: <FiPackage className="w-8 h-8 text-blue-500" />
+      icon: <BiPackage className="w-12 h-12" />,
+      gradient: "from-blue-500 to-blue-600"
     },
     {
       title: "Xử lý đơn hàng",
       description: "Quản lý đơn hàng mới",
       link: "/dashboard-management-sys/invoices",
       color: "bg-green-100 text-green-600",
-      icon: <FiShoppingCart className="w-8 h-8 text-green-500" />
+      icon: <BiReceipt className="w-12 h-12" />,
+      gradient: "from-green-500 to-green-600"
     },
     {
       title: "Quản lý kho",
       description: "Kiểm tra nhập kho",
       link: "/dashboard-management-sys/inventory/stock-receipts",
       color: "bg-orange-100 text-orange-600",
-      icon: <FiPieChart className="w-8 h-8 text-orange-500" />
+      icon: <BiStore className="w-12 h-12" />,
+      gradient: "from-orange-500 to-orange-600"
     },
     {
       title: "Báo cáo doanh thu",
       description: "Xem báo cáo chi tiết",
       link: "/dashboard-management-sys/charts",
       color: "bg-purple-100 text-purple-600",
-      icon: <FiTrendingUp className="w-8 h-8 text-purple-500" />
+      icon: <BiAnalyse className="w-12 h-12" />,
+      gradient: "from-purple-500 to-purple-600"
     }
   ];
-
-  const handleMouseMove = (e, index) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const rotateX = (y - centerY) / 10;
-    const rotateY = -(x - centerX) / 10;
-
-    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
-  };
-
-  const handleMouseLeave = (e) => {
-    e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
-  };
 
   //danh sách
   const getLatestFive = (items) => {
@@ -345,70 +372,78 @@ const AdminIndex = () => {
     <div
       key={history.idHistory}
       className={`
+        activity-item
         ${isAdminLog ? "border-l-8 border-purple-500" : "border-l-8 border-blue-500"} 
         bg-white/90 shadow-sm hover:shadow-md 
-        p-8 rounded-lg transition-all duration-200
+        p-6 rounded-lg transition-all duration-200
         hover:bg-white/100 group
       `}
     >
       {/* Action Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <div className={`p-4 rounded-xl ${getActionTypeBgColor(history.actionType)} bg-opacity-20`}>
-            <span className="text-4xl">{getActionTypeIcon(history.actionType)}</span>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`activity-icon p-4 rounded-xl ${getActionTypeBgColor(history.actionType)} bg-opacity-20`}>
+            <span className="text-2xl">{getActionTypeIcon(history.actionType)}</span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1">
             <span className={`
-              inline-flex items-center px-6 py-2 rounded-full 
-              text-lg font-bold tracking-wide
+              activity-badge
+              inline-flex items-center px-3 py-1 rounded-full 
+              tracking-wide
               ${getActionTypeBgColor(history.actionType)}
             `}>
               {history.actionType}
             </span>
-            <span className="block text-2xl font-medium text-gray-900">
+            <span className="block activity-message">
               {formatActionMessage(history)}
             </span>
           </div>
         </div>
-        <span className={`
-          px-4 py-2 rounded-lg text-base font-bold
-          ${history.userRole === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}
-        `}>
-          {history.userRole}
-        </span>
+        <Badge 
+          count={history.userRole} 
+          style={{ 
+            backgroundColor: history.userRole === 'ADMIN' ? '#9333ea' : '#3b82f6', 
+            fontSize: '12px', 
+            padding: '0 8px' 
+          }} 
+        />
       </div>
 
       {/* User Info */}
-      <div className="mb-6 pl-20">
-        <span className="font-bold text-2xl text-indigo-600">{history.username}</span>
+      <div className="mb-4 pl-16">
+        <Tooltip title="Tên người dùng">
+          <span className="activity-username flex items-center gap-2">
+            <FiUsers className="text-indigo-400" /> {history.username}
+          </span>
+        </Tooltip>
       </div>
 
       {/* Footer Info */}
-      <div className="flex flex-wrap items-center gap-4 text-base text-gray-500 bg-gray-50 p-4 rounded-lg">
-        <div className="flex items-center gap-2">
-          <span className="font-bold">ID:</span>
-          <span className="font-mono text-lg bg-white px-3 py-1 rounded-lg border-2 border-gray-200">
+      <div className="flex flex-wrap items-center gap-3 activity-meta pl-16 pr-4 py-3 rounded-lg">
+        <div className="flex items-center gap-1">
+          <span className="meta-label">ID:</span>
+          <span className="meta-value bg-white px-2 py-1 rounded-md border border-gray-200">
             {history.idHistory}
           </span>
         </div>
-        <span className="text-gray-300 text-xl">|</span>
-        <div className="flex items-center gap-2">
-          <span className="font-bold">Thời gian:</span>
-          <time className="font-mono text-lg">
+        <span className="text-gray-300">|</span>
+        <div className="flex items-center gap-1">
+          <FiClock className="text-gray-400" />
+          <time className="meta-value">
             {moment(history.historyDateTime).format('HH:mm:ss DD/MM/YYYY')}
           </time>
         </div>
         {history.deviceInfo && (
           <>
-            <span className="text-gray-300 text-xl">|</span>
-            <div className="flex items-center gap-2">
-              <span className="font-bold">IP:</span>
-              <span className="font-mono text-lg">{history.ipAddress}</span>
+            <span className="text-gray-300">|</span>
+            <div className="flex items-center gap-1">
+              <span className="meta-label">IP:</span>
+              <span className="meta-value">{history.ipAddress}</span>
             </div>
-            <span className="text-gray-300 text-xl">|</span>
-            <div className="flex items-center gap-2">
-              <span className="font-bold">Thiết bị:</span>
-              <span className="text-lg">{history.deviceInfo?.split('(')[0]}</span>
+            <span className="text-gray-300">|</span>
+            <div className="flex items-center gap-1 flex-grow">
+              <BiCog className="text-gray-400" />
+              <span className="meta-value truncate max-w-[200px]">{history.deviceInfo?.split('(')[0]}</span>
             </div>
           </>
         )}
@@ -417,14 +452,27 @@ const AdminIndex = () => {
   );
 
   const renderActivitySection = (title, data, isAdmin = false) => (
-    <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-lg">
-      <div className={`p-8 border-b ${isAdmin ? 'bg-purple-50' : 'bg-blue-50'}`}>
-        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 tracking-tight mb-2">
-          {title}
-        </h2>
-        <p className="text-lg text-gray-600 mt-3">
-          Hoạt động gần đây nhất
-        </p>
+    <div className="activity-section bg-white/80 backdrop-blur-lg rounded-xl shadow-lg overflow-hidden">
+      <div className={`section-header p-6 border-b ${isAdmin ? 'bg-purple-50' : 'bg-blue-50'}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="section-title flex items-center gap-2">
+              {isAdmin ? 
+                <BiShieldQuarter className="text-purple-600" /> : 
+                <FiShield className="text-blue-600" />
+              }
+              {title}
+            </h2>
+            <p className="section-subtitle">
+              Hoạt động gần đây nhất
+            </p>
+          </div>
+          <div className={`connection-status ${connectionStatus[isAdmin ? 'admin' : 'auth']}`}>
+            {connectionStatus[isAdmin ? 'admin' : 'auth'] === 'connected' ? 'Kết nối trực tiếp' : 
+             connectionStatus[isAdmin ? 'admin' : 'auth'] === 'connecting' ? 'Đang kết nối...' : 
+             'Lỗi kết nối'}
+          </div>
+        </div>
       </div>
 
       <div className="p-4">
@@ -434,12 +482,13 @@ const AdminIndex = () => {
             <span className="ml-3 text-gray-600">Đang tải dữ liệu...</span>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {data.length > 0 ? (
               getLatestFive(data).map(history => renderHistoryItem(history, isAdmin))
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                Không có dữ liệu
+              <div className="text-center py-8 text-gray-500 flex flex-col items-center justify-center">
+                <FiAlertCircle className="w-12 h-12 text-gray-400 mb-2" />
+                <span>Không có dữ liệu</span>
               </div>
             )}
           </div>
@@ -451,73 +500,110 @@ const AdminIndex = () => {
   const renderStatsCard = (stat, index) => (
     <div
       key={index}
-      className="bg-white/90 backdrop-blur-lg rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl group"
-      style={{
-        transformStyle: 'preserve-3d',
-        transition: 'transform 0.3s ease'
-      }}
-      onMouseMove={(e) => handleMouseMove(e, index)}
-      onMouseLeave={handleMouseLeave}
+      className="stat-card bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300"
+      ref={el => cardRefs.current[index] = el}
     >
       <div className="p-6">
-        <div className="flex justify-between items-start">
-          <div className="space-y-2">
-            <p className="text-gray-500 text-sm uppercase tracking-wider font-medium">{stat.title}</p>
-            <h3 className="text-4xl font-bold text-gray-800 font-mono tracking-tight">{stat.value}</h3>
-            <div className="flex items-center gap-2">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded text-sm ${
-                stat.change.startsWith('+') ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50'
-              }`}>
-                <FiTrendingUp className={`w-4 h-4 mr-1 ${
-                  stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                }`} />
-                {stat.change}
-              </span>
-            </div>
+        <div className="flex justify-between items-center mb-4">
+          <div className={`icon-wrapper ${stat.bgColor}`}>
+            {React.cloneElement(stat.icon, { className: "w-8 h-8 text-white" })}
           </div>
-          <div className={`${stat.bgColor} bg-opacity-10 p-3 rounded-xl group-hover:scale-110 transition-transform`}>
-            {React.cloneElement(stat.icon, { 
-              className: `w-8 h-8 ${stat.bgColor.replace('bg-', 'text-')}` 
-            })}
-          </div>
+          <span 
+            className={`
+              trend-indicator
+              ${stat.positive ? 'positive' : 'negative'}
+            `}
+          >
+            {React.cloneElement(stat.trendIcon, { className: "w-4 h-4" })}
+            {stat.change}
+          </span>
+        </div>
+        
+        <div className="space-y-2">
+          <p className="stat-title">{stat.title}</p>
+          <h3 className="stat-value">{stat.value}</h3>
+          <Progress 
+            percent={stat.progressValue} 
+            showInfo={false}
+            strokeColor={{
+              '0%': stat.bgColor.includes('blue') ? '#3b82f6' : 
+                     stat.bgColor.includes('green') ? '#22c55e' :
+                     stat.bgColor.includes('purple') ? '#8b5cf6' : '#f97316',
+              '100%': stat.bgColor.includes('blue') ? '#2563eb' : 
+                      stat.bgColor.includes('green') ? '#16a34a' :
+                      stat.bgColor.includes('purple') ? '#7c3aed' : '#ea580c',
+            }}
+            trailColor={
+              stat.bgColor.includes('blue') ? 'rgba(59, 130, 246, 0.1)' : 
+              stat.bgColor.includes('green') ? 'rgba(34, 197, 94, 0.1)' :
+              stat.bgColor.includes('purple') ? 'rgba(139, 92, 246, 0.1)' : 'rgba(249, 115, 22, 0.1)'
+            }
+          />
         </div>
       </div>
-      <div className={`h-1 ${stat.bgColor} transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left`} />
+      <div 
+        className={`h-1 ${stat.bgColor}`}
+        style={{ transform: 'scaleX(0)', transformOrigin: 'left' }}
+      />
     </div>
   );
 
   const renderQuickAction = (action, index) => (
-    <Link key={index} to={action.link}>
+    <Link 
+      key={index} 
+      to={action.link}
+      ref={el => {
+        if (!cardRefs.current) cardRefs.current = [];
+        cardRefs.current[index + 4] = el;  // + 4 because we have 4 stat cards
+      }}
+      onMouseMove={(e) => handleMouseMove(e, cardRefs.current[index + 4])}
+    >
       <div 
         className={`
-          ${action.color} rounded-xl p-6 hover:shadow-lg transition-all duration-300
-          transform hover:-translate-y-1 hover:scale-102 active:scale-98
-          backdrop-blur-lg shadow-sm h-full flex items-center gap-4
-          border border-opacity-10 hover:border-opacity-20 group
+          action-card h-full
+          bg-gradient-to-br ${action.color} rounded-xl p-6 
+          transition-all duration-300 border border-opacity-5
         `}
       >
-        {action.icon}
-        <div className="space-y-1">
-          <h3 className="font-semibold text-lg group-hover:text-opacity-80">{action.title}</h3>
-          <p className="text-sm opacity-75">{action.description}</p>
+        <div className="flex items-center gap-4">
+          <div className={`action-icon bg-gradient-to-br ${action.gradient} p-3`}>
+            {React.cloneElement(action.icon, { className: "w-8 h-8 text-white" })}
+          </div>
+          <div className="space-y-1">
+            <h3 className="action-title">{action.title}</h3>
+            <p className="action-description">{action.description}</p>
+          </div>
         </div>
       </div>
     </Link>
   );
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
-     
+    <div className="admin-dashboard p-6 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+      {/* Dashboard Header */}
+      <div className="admin-dashboard-header mb-8">
+        <h1 className="flex items-center gap-3">
+          <BiSolidDashboard className="w-10 h-10" />
+          Dashboard Quản Trị
+        </h1>
+        <p>
+          Hệ thống quản lý ShopTheThao - Theo dõi số liệu và hoạt động hệ thống trong thời gian thực
+        </p>
+      </div>
+
       <div className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Stats Section */}
+        <div className="admin-dashboard-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statsData.map(renderStatsCard)}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Quick Actions Section */}
+        <div className="admin-dashboard-quick-actions grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {quickActions.map(renderQuickAction)}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Activity Logs Section */}
+        <div className="admin-dashboard-activity grid grid-cols-1 lg:grid-cols-2 gap-8">
           {renderActivitySection('Nhật ký quản trị', adminHistories, true)}
           {renderActivitySection('Hoạt động tài khoản', recentHistories)}
         </div>

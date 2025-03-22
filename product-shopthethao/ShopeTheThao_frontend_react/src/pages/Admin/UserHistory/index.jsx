@@ -8,13 +8,15 @@ import {
   Col,
   Card,
   Input,
-  DatePicker
+  DatePicker,
+  Select
 } from "antd";
 import moment from 'moment';
 import { SearchOutlined, ClockCircleOutlined, EyeOutlined } from "@ant-design/icons";
 import "./user_historis.scss";
 import { userHistoryApi } from "api/Admin";
 import UserHistoryDetailModal from './UserHistoryDetailModal';
+import PaginationComponent from "components/User/PaginationComponent";
 
 const { RangePicker } = DatePicker;
 
@@ -24,6 +26,10 @@ const UserHistory = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [dateRange, setDateRange] = useState(null);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   
   useEffect(() => {
     fetchHistories();
@@ -34,6 +40,7 @@ const UserHistory = () => {
     try {
       const response = await userHistoryApi.getAll();
       setHistories(response.data);
+      setTotalItems(response.data.length);
     } catch (error) {
       message.error("Không thể tải lịch sử người dùng!");
     }
@@ -61,6 +68,64 @@ const UserHistory = () => {
     setIsModalVisible(false);
     setSelectedRecord(null);
   };
+
+  // Handle search input change
+  const handleSearch = (value) => {
+    setSearchText(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  // Handle date range change
+  const handleDateRangeChange = (dates) => {
+    setDateRange(dates);
+    setCurrentPage(1); // Reset to first page when changing date filter
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (value) => {
+    setPageSize(value);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
+  // Filter histories based on search text and date range
+  const getFilteredHistories = () => {
+    let filtered = [...histories];
+    
+    // Apply search text filter
+    if (searchText) {
+      filtered = filtered.filter(item => 
+        item.username?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.userId?.toString().includes(searchText) ||
+        item.userRole?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.actionType?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.note?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.deviceInfo?.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.ipAddress?.includes(searchText)
+      );
+    }
+    
+    // Apply date range filter
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      const startDate = dateRange[0].startOf('day');
+      const endDate = dateRange[1].endOf('day');
+      
+      filtered = filtered.filter(item => {
+        const historyDate = moment(item.historyDateTime);
+        return historyDate.isBetween(startDate, endDate, null, '[]');
+      });
+    }
+    
+    return filtered;
+  };
+  
+  const filteredHistories = getFilteredHistories();
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredHistories.length / pageSize);
+  const paginatedHistories = filteredHistories.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const getActionTypeColor = (type) => {
     const colors = {
@@ -180,30 +245,34 @@ const UserHistory = () => {
   ];
 
   return (
-    <div className="user-history-page">
-      <Card title="Lịch sử hoạt động người dùng" className="history-card">
-        <Row gutter={[16, 16]} className="filters">
-          <Col span={8}>
+    <div className="size-page">
+      <div className="content-wrapper">
+        <h2 className="page-title">Lịch sử hoạt động người dùng</h2>
+        
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} md={12} lg={12}>
             <Input
-              placeholder="Tìm kiếm..."
+              placeholder="Tìm kiếm theo tên, hành động, thiết bị..."
               prefix={<SearchOutlined />}
-              onChange={e => setSearchText(e.target.value)}
+              value={searchText}
+              onChange={e => handleSearch(e.target.value)}
+              className="search-input"
+              allowClear
             />
           </Col>
-          <Col span={8}>
+          <Col xs={24} md={12} lg={12}>
             <RangePicker
               showTime
               format="DD/MM/YYYY HH:mm:ss"
-              onChange={(dates) => {
-                // Handle date range filter
-              }}
+              onChange={handleDateRangeChange}
+              className="date-range-picker"
             />
           </Col>
         </Row>
         
         <Table
           columns={columns}
-          dataSource={histories}
+          dataSource={paginatedHistories}
           loading={loading}
           rowKey="idHistory"
           onRow={(record) => ({
@@ -211,18 +280,27 @@ const UserHistory = () => {
             className: record.readStatus === 0 ? 'unread-row' : ''
           })}
           scroll={{ x: 1200 }}
-          pagination={{
-            position: ['bottomCenter'],
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => 
-              `${range[0]}-${range[1]} của ${total} mục`,
-            size: 'default',
-            className: 'custom-pagination'
-          }}
+          pagination={false}
         />
-      </Card>
+        
+        <div className="pagination-container">
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+          <Select
+            value={pageSize}
+            style={{ width: 120, marginTop: 20 }}
+            onChange={handlePageSizeChange}
+          >
+            <Select.Option value={5}>5 hàng</Select.Option>
+            <Select.Option value={10}>10 hàng</Select.Option>
+            <Select.Option value={20}>20 hàng</Select.Option>
+            <Select.Option value={50}>50 hàng</Select.Option>
+          </Select>
+        </div>
+      </div>
 
       <UserHistoryDetailModal
         visible={isModalVisible}

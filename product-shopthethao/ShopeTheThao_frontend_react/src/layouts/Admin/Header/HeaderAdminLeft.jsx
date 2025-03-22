@@ -1,33 +1,41 @@
 import img from "assets/Img";
 import { Link } from "react-router-dom";
+import './HeaderLeft.scss';
+import { m } from "framer-motion";
+
 function HeaderAdminLeft({ collapsed }) {
   return (
-    <div className="flex items-center gap-4">
-      <Link to="/dashboard-management-sys/portal">
-        {/* ✅ Logo và chữ Shope - Giữ chữ Shope ngay cả khi thu nhỏ */}
-        <div className="flex items-center gap-2">
-          {!collapsed ? (
+    <div className="header-admin-left">
+      {/* Brand Section - Logo & Name */}
+      <Link 
+        to="/dashboard-management-sys/portal"
+        className="header-admin-left__brand"
+        title="Dashboard Portal"
+      >
+        <div className="header-admin-left__brand-logo">
+          {!collapsed && (
             <img
-              width={80}
+            style={{ width: '60px', height: '60px' , marginLeft: '10px', marginTop: '30px'}}
               src={img.logoAdmin}
-              alt="Admin Logo"
+              alt="Admin Dashboard"
               className="transition-all duration-300"
             />
-          ) : null}
-          {/* ✅ Luôn hiển thị chữ "Shope" */}
-          <span className="text-xl font-bold text-gray-900">Shope</span>
-          
+          )}
         </div>
+        
+        <span className="header-admin-left__brand-name">
+          Shope
+        </span>
       </Link>
 
-      {/* ✅ Ẩn đường phân cách khi sidebar thu nhỏ */}
+      {/* Divider between brand and admin info */}
       {!collapsed && (
-        <div className="w-[1px] bg-gray-300 h-8 hidden lg:block"></div>
+        <div className="header-admin-left__divider hidden lg:block"></div>
       )}
 
-      {/* ✅ Ẩn tên admin khi sidebar thu nhỏ */}
+      {/* Admin Information Section */}
       {!collapsed && (
-        <div className="hidden lg:block text-lg font-semibold text-gray-700">
+        <div className="header-admin-left__admin-info hidden lg:block">
           nhdinh
         </div>
       )}

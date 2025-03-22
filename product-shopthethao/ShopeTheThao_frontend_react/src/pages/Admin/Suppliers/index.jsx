@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Button, message, Modal, Form, Row } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Button, message, Modal, Form, Row, Col, Input } from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { suppliersApi } from "api/Admin";
-import "..//index.scss";
+import "./suppliers.scss";
 import styles from "..//modalStyles.module.scss";
 import { SupplierForm, SuppliersTable } from "components/Admin";
-
 
 const Suppliers = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -20,28 +19,6 @@ const Suppliers = () => {
   const [form] = Form.useForm();
 
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
-
-  useEffect(() => {
-    let isMounted = true;
-    const getList = async () => {
-      setLoading(true);
-      try {
-        const res = await suppliersApi.getByPage(currentPage, pageSize, searchText);
-        if (isMounted) {
-          setSuppliers(res.data);
-          setTotalItems(res.totalItems);
-          setLoading(false);
-        }
-      } catch (error) {
-        message.error("Không thể lấy danh sách sản phẩm. Vui lòng thử lại!");
-        setLoading(false);
-      }
-    };
-    getList();
-    return () => {
-      isMounted = false;
-    };
-  }, [currentPage, pageSize, searchText, workSomeThing]);
 
   const handleEditData = (supplier) => {
     setEditSuppliers(supplier);
@@ -96,20 +73,89 @@ const Suppliers = () => {
     setCurrentPage(1); // Reset page to 1 when page size changes
   };
 
+  // Improved search handler
+  const handleSearch = (value) => {
+    setSearchText(value);
+    // Reset to page 1 when searching
+    setCurrentPage(1);
+  };
+
+  // Enhanced data fetching with improved search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      let isMounted = true;
+      const getList = async () => {
+        setLoading(true);
+        try {
+          // Server-side search via API
+          const res = await suppliersApi.getByPage(currentPage, pageSize, searchText);
+          
+          if (isMounted) {
+            let filteredSuppliers = res.data;
+            
+            // Additional client-side filtering for more precise results
+            if (searchText) {
+              const searchLower = searchText.toLowerCase();
+              filteredSuppliers = filteredSuppliers.filter(supplier => 
+                // Search by ID
+                supplier.id?.toString().includes(searchText) ||
+                // Search by name
+                supplier.name?.toLowerCase().includes(searchLower) ||
+                // Search by email
+                supplier.email?.toLowerCase().includes(searchLower) ||
+                // Search by phone
+                supplier.phone?.includes(searchText) ||
+                // Search by address
+                supplier.address?.toLowerCase().includes(searchLower)
+              );
+            }
+            
+            setSuppliers(filteredSuppliers);
+            setTotalItems(res.totalItems);
+            setLoading(false);
+          }
+        } catch (error) {
+          message.error("Không thể lấy danh sách nhà cung cấp. Vui lòng thử lại!");
+          setLoading(false);
+        }
+      };
+      getList();
+      return () => {
+        isMounted = false;
+      };
+    }, 500); // 500ms delay for debounce
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [currentPage, pageSize, searchText, workSomeThing]);
+
   return (
-    <div style={{ padding: 10 }}>
-      <Row>
-        <h2>Quản lý Nhà cung cấp sản phẩm</h2>
-        <div className="header-container">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setOpen(true)}
-            className="add-btn"
-          >
-            Thêm Nhà cung cấp
-          </Button>
-        </div>
+    <div className="suppliers-page">
+      <div className="content-wrapper">
+        <h2 className="page-title">Quản lý Nhà cung cấp sản phẩm</h2>
+
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={14} md={16} lg={18}>
+            <Input
+              placeholder="Tìm kiếm theo ID, tên, email, điện thoại, địa chỉ..."
+              prefix={<SearchOutlined />}
+              className="search-input"
+              onChange={(e) => handleSearch(e.target.value)}
+              value={searchText}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={10} md={8} lg={6} className="add-button-container">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setOpen(true)}
+              className="add-btn"
+            >
+              Thêm Nhà cung cấp
+            </Button>
+          </Col>
+        </Row>
+        
         <Modal
           title={
             <div className={styles.modalTitle}>
@@ -126,18 +172,21 @@ const Suppliers = () => {
         >
           <SupplierForm form={form} />
         </Modal>
-      </Row>
-      <SuppliersTable
-        loading={loading}
-        suppliers={suppliers}
-        handleEditData={handleEditData}
-        handleDelete={handleDelete}
-        totalPages={totalPages}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        pageSize={pageSize}
-        handlePageSizeChange={handlePageSizeChange}
-      />
+        
+        <div className="table-container">
+          <SuppliersTable
+            loading={loading}
+            suppliers={suppliers}
+            handleEditData={handleEditData}
+            handleDelete={handleDelete}
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            handlePageSizeChange={handlePageSizeChange}
+          />
+        </div>
+      </div>
     </div>
   );
 };

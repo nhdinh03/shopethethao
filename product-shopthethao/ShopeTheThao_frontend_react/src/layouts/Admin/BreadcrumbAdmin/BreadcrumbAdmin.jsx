@@ -1,7 +1,7 @@
 import React from "react";
-import { Breadcrumb } from "antd";
+import { Breadcrumb, Badge } from "antd";
 import "./BreadcrumbAdmin.scss";
-import { HomeOutlined, RightOutlined } from "@ant-design/icons";
+import { HomeOutlined, RightOutlined, CrownOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { breadcrumbData } from './breadcrumbConfig';
 import PropTypes from 'prop-types';
@@ -30,7 +30,11 @@ const Bread = ({ path }) => {
         items.push({ 
             title: (
                 <span className="current-page">
+                    {matchingItem.icon ? matchingItem.icon : null}
                     {matchingItem.title}
+                    {matchingItem.premium && 
+                        <Badge style={{ backgroundColor: '#52c41a', marginLeft: '8px' }} />
+                    }
                 </span>
             ) 
         });
@@ -38,10 +42,15 @@ const Bread = ({ path }) => {
 
     return (
         <div className="admin-breadcrumb">
-            <Breadcrumb 
-                items={items}
-                separator={<RightOutlined />} 
-            />
+            <div className="breadcrumb-wrapper">
+                <div className="breadcrumb-content">
+                    <Breadcrumb 
+                        items={items}
+                        separator={<RightOutlined />} 
+                    />
+                </div>
+            
+            </div>
         </div>
     );
 };

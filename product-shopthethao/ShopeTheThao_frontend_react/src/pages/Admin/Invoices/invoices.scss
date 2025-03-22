@@ -1,3 +1,6 @@
+// Import variables from size.scss
+@import '../Sizes/size.scss';
+
 .invoice-detail-modal {
   .ant-modal-content {
     border-radius: 8px;
@@ -181,5 +184,104 @@
     background: #fff1f0;
     border-color: #ffa39e;
     color: #f5222d;
+  }
+}
+
+// New styles for search functionality
+.invoices-page {
+  padding: 10px;
+  
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    border-left: 4px solid #1677ff;
+    padding-left: 12px;
+    margin-bottom: 16px;
+  }
+
+  .search-container {
+    margin-bottom: 20px;
+    
+    .search-input {
+      height: 40px;
+      border-radius: 6px;
+      
+      .ant-input {
+        font-size: 14px;
+      }
+      
+      .search-icon {
+        color: #1677ff;
+        margin-right: 8px;
+      }
+      
+      &:hover, &:focus {
+        border-color: #1677ff;
+        box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+      }
+    }
+  }
+}
+
+// New tab content styling that matches size page
+.invoice-tabs {
+  width: 100%;
+  
+  .ant-tabs-nav {
+    margin-bottom: 20px;
+    
+    .ant-tabs-tab {
+      padding: 10px 16px;
+      
+      &.ant-tabs-tab-active {
+        .ant-tabs-tab-btn {
+          font-weight: 600;
+          color: #1677ff;
+        }
+      }
+    }
+  }
+  
+  .tab-content {
+    padding: 0;
+    
+    .header-actions {
+      margin-bottom: 20px;
+    }
+  }
+}
+
+// Use pagination styles from the size component
+.invoice-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .invoices-page {
+    .page-title {
+      font-size: 20px;
+    }
+    
+    .search-container {
+      .search-input {
+        margin-bottom: 10px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .invoices-page {
+    padding: 8px;
+    
+    .page-title {
+      font-size: 18px;
+    }
   }
 }

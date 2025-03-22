@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Table, message, Button, Row, Select, Modal, Form } from "antd";
+import { Table, message, Button, Row, Select, Modal, Form, Col, Input } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { SearchOutlined } from "@ant-design/icons";
 import { productsApi, suppliersApi, stock_ReceiptsAPi } from "api/Admin";
 import moment from "moment";
-import "..//index.scss";
+import "./stock_receipts.scss";
 import PaginationComponent from "components/User/PaginationComponent";
 import brandsApi from "api/Admin/Brands/Brands";
 import styles from "..//modalStyles.module.scss";
 import dayjs from "dayjs";
 import { PrintReceiptModal, StockReceiptForm, TableActions } from "components/Admin";
-
 
 const Stock_Receipts = () => {
   const printRef = useRef(null);
@@ -207,6 +207,62 @@ const Stock_Receipts = () => {
     }
   };
 
+  // Modify handleSearch function to be more robust
+  const handleSearch = (value) => {
+    setSearchText(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  // Improved data fetching with client-side filtering as well
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+          // Server-side search via API
+          const stockReceiptsRes = await stock_ReceiptsAPi.getByPage(
+            currentPage,
+            pageSize,
+            searchText
+          );
+          
+          let receipts = stockReceiptsRes.data.map((receipt) => ({
+            ...receipt,
+          }));
+          
+          // Additional client-side filtering
+          if (searchText) {
+            receipts = receipts.filter(receipt => 
+              // Search by ID
+              receipt.id?.toString().includes(searchText) ||
+              // Search by supplier name
+              receipt.supplierName?.toLowerCase().includes(searchText.toLowerCase()) ||
+              // Search by brand name
+              receipt.brandName?.toLowerCase().includes(searchText.toLowerCase()) ||
+              // Search by product names (if any product name contains the search text)
+              receipt.receiptProducts?.some(product => 
+                product.productName?.toLowerCase().includes(searchText.toLowerCase())
+              ) ||
+              // Search by date
+              moment(receipt.orderDate).format("DD/MM/YYYY").includes(searchText)
+            );
+          }
+          
+          setStockReceipts(receipts);
+          setTotalItems(stockReceiptsRes.totalItems);
+          setLoading(false);
+        } catch (error) {
+          setLoading(false);
+          message.error("Không thể lấy danh sách dữ liệu. Vui lòng thử lại!");
+        }
+      };
+
+      fetchData();
+    }, 500); // 500ms delay for debounce
+    
+    return () => clearTimeout(delayDebounceFn);
+  }, [currentPage, pageSize, searchText, workSomeThing]);
+
   const columns = [
     { title: "🆔 ID", dataIndex: "id", key: "id", align: "center" },
     {
@@ -257,18 +313,32 @@ const Stock_Receipts = () => {
   ];
 
   return (
-    <div style={{ padding: 10 }}>
-      <Row>
-        <h2>Phiếu Nhập Kho</h2>
-        <div className="header-container">
-          <Button
-            type="primary"
-            icon={<FontAwesomeIcon icon={faPlus} />}
-            onClick={handleAddNew}
-          >
-            Nhập Phiếu Mới
-    </Button>
-                  </div>
+    <div className="stock-receipts-page">
+      <div className="content-wrapper">
+        <h2 className="page-title">Phiếu Nhập Kho</h2>
+        
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={14} md={16} lg={18}>
+            <Input
+              placeholder="Tìm kiếm theo ID, nhà cung cấp, thương hiệu, sản phẩm, ngày..."
+              prefix={<SearchOutlined />}
+              className="search-input"
+              value={searchText}
+              onChange={(e) => handleSearch(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={10} md={8} lg={6} className="add-button-container">
+            <Button
+              type="primary"
+              icon={<FontAwesomeIcon icon={faPlus} />}
+              onClick={handleAddNew}
+              className="add-btn"
+            >
+              Nhập Phiếu Mới
+            </Button>
+          </Col>
+        </Row>
 
         <Modal
           title={editMode ? "Sửa Phiếu Nhập Kho" : "Thêm Phiếu Nhập Kho"}
@@ -292,34 +362,28 @@ const Stock_Receipts = () => {
           receipt={selectedReceipt}
           onPrint={handlePrint}
           printRef={printRef}
-              />
-                  </Row>
-
-      <div className="table-container">
-        <Table
-          columns={columns}
-          pagination={false}
-          loading={loading}
-          dataSource={stockReceipts.map((receipt) => ({
-            ...receipt,
-            key: receipt.id,
-            productNames: receipt.receiptProducts?.map(
-              (product) => product.productName
-            ),
-            totalAmount: receipt.receiptProducts?.map(
-              (product) =>
-                `${product.quantity} x ${product.price} = ${product.totalAmount}`
-            ),
-          }))}
         />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: 10,
-            gap: 10,
-          }}
-        >
+
+        <div className="table-container">
+          <Table
+            columns={columns}
+            pagination={false}
+            loading={loading}
+            dataSource={stockReceipts.map((receipt) => ({
+              ...receipt,
+              key: receipt.id,
+              productNames: receipt.receiptProducts?.map(
+                (product) => product.productName
+              ),
+              totalAmount: receipt.receiptProducts?.map(
+                (product) =>
+                  `${product.quantity} x ${product.price} = ${product.totalAmount}`
+              ),
+            }))}
+          />
+        </div>
+        
+        <div className="pagination-container">
           <PaginationComponent
             totalPages={totalPages}
             currentPage={currentPage}
@@ -327,7 +391,7 @@ const Stock_Receipts = () => {
           />
           <Select
             value={pageSize}
-            style={{ width: 120, marginTop: 20 }}
+            style={{ width: 120 }}
             onChange={handlePageSizeChange}
           >
             <Select.Option value={5}>5 hàng</Select.Option>

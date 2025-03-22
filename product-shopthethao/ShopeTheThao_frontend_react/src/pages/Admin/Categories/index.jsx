@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Button, Form, Row, message } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Button, Form, Row, message, Input, Col } from "antd";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import "..//index.scss";
 import {
   CategoryTable,
@@ -13,6 +13,7 @@ const Categories = () => {
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState("");
 
   const {
     categories,
@@ -65,45 +66,67 @@ const Categories = () => {
     setOpen(true);
   };
 
+  const handleSearch = (value) => {
+    setSearchText(value);
+    console.log("Searching for:", value);
+  };
+
+  // Filter categories based on search text
+  const filteredCategories = categories.filter(item => 
+    item.name.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
-    <div style={{ padding: 10 }}>
-      <Row>
-        <h2>Quản lý danh mục</h2>
-        <div className="header-container">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setOpen(true)}
-            className="add-btn"
-          >
-            Thêm danh mục
-          </Button>
-        </div>
-      </Row>
+    <div className="categories-page">
+      <div className="content-wrapper">
+        <h2 className="page-title">Quản lý danh mục</h2>
 
-      <CategoryModal
-        open={open}
-        setOpen={setOpen}
-        form={form}
-        handleModalOk={handleModalOk}
-        handleResetForm={() => form.resetFields()}
-        editingCategory={editingCategory}
-      />
-      
-      <CategoryTable
-        categories={categories}
-        loading={loading}
-        handleEditData={handleEditData}
-        handleDelete={deleteCategory}
-      />
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={14} md={16} lg={18}>
+            <Input
+              placeholder="Tìm kiếm danh mục..."
+              prefix={<SearchOutlined />}
+              className="search-input"
+              onChange={(e) => handleSearch(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={10} md={8} lg={6} className="add-button-container">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setOpen(true)}
+              className="add-btn"
+            >
+              Thêm danh mục
+            </Button>
+          </Col>
+        </Row>
 
-      <CategoryPagination
-        totalPages={totalPages}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        pageSize={pageSize}
-        handlePageSizeChange={handlePageSizeChange}
-      />
+        <CategoryModal
+          open={open}
+          setOpen={setOpen}
+          form={form}
+          handleModalOk={handleModalOk}
+          handleResetForm={() => form.resetFields()}
+          editingCategory={editingCategory}
+        />
+        
+        <CategoryTable
+          categories={filteredCategories}
+          loading={loading}
+          handleEditData={handleEditData}
+          handleDelete={deleteCategory}
+        />
+
+        <CategoryPagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          handlePageSizeChange={handlePageSizeChange}
+        />
+      </div>
     </div>
   );
 };

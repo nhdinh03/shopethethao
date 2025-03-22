@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu } from "antd";
+import { Menu, Divider } from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import * as solidIcons from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
@@ -19,28 +19,28 @@ function Sidebar({ onClose }) {
   // Cập nhật mapping với đường dẫn mới
   const findParentKey = (key) => {
     const parentMap = {
-      [`${ADMIN_PREFIX}/portal`]: "grHome",
+      [`${ADMIN_PREFIX}/portal`]: "grDashboard",
       
-      [`${ADMIN_PREFIX}/catalog/products`]: "grProducts",
-      [`${ADMIN_PREFIX}/inventory/sizes`]: "grProducts",
-      [`${ADMIN_PREFIX}/catalog/categories`]: "grProducts",
+      [`${ADMIN_PREFIX}/catalog/products`]: "grProductManagement",
+      [`${ADMIN_PREFIX}/inventory/sizes`]: "grProductManagement",
+      [`${ADMIN_PREFIX}/catalog/categories`]: "grProductManagement",
+      [`${ADMIN_PREFIX}/catalog/product-attributes`]: "grProductManagement",
 
-      [`${ADMIN_PREFIX}/inventory/suppliers`]: "grSuppliers",
-      [`${ADMIN_PREFIX}/inventory/brands`]: "grSuppliers",
-      [`${ADMIN_PREFIX}/inventory/stock-receipts`]: "grSuppliers",
+      [`${ADMIN_PREFIX}/inventory/suppliers`]: "grInventoryManagement",
+      [`${ADMIN_PREFIX}/inventory/brands`]: "grInventoryManagement",
+      [`${ADMIN_PREFIX}/inventory/stock-receipts`]: "grInventoryManagement",
 
-      [`${ADMIN_PREFIX}/invoices`]: "grInvoices",
-      [`${ADMIN_PREFIX}/invoices/detailed`]: "grInvoices",
+      [`${ADMIN_PREFIX}/invoices`]: "grSalesManagement",
+      [`${ADMIN_PREFIX}/invoices/detailed`]: "grSalesManagement",
 
-      [`${ADMIN_PREFIX}/users/accounts`]: "grAccounts",
-      [`${ADMIN_PREFIX}/users/staff`]: "grAccounts",
-      [`${ADMIN_PREFIX}/users/roles`]: "grAccounts",
+      [`${ADMIN_PREFIX}/users/accounts`]: "grUserManagement",
+      [`${ADMIN_PREFIX}/users/staff`]: "grUserManagement",
+      [`${ADMIN_PREFIX}/users/roles`]: "grUserManagement",
 
-      [`${ADMIN_PREFIX}/catalog/product-attributes`]: "grDistinctives",
-
-      [`${ADMIN_PREFIX}/charts`]: "grStatistics",
-      [`${ADMIN_PREFIX}/verification`]: "grStatistics",
-      [`${ADMIN_PREFIX}/users/history`]: "grStatistics",
+      [`${ADMIN_PREFIX}/charts`]: "grReportsAnalytics",
+      [`${ADMIN_PREFIX}/verification`]: "grReportsAnalytics",
+      [`${ADMIN_PREFIX}/users/history`]: "grReportsAnalytics",
+      [`${ADMIN_PREFIX}/statistics-documents`]: "grReportsAnalytics",
     };
     return parentMap[key];
   };
@@ -62,19 +62,21 @@ function Sidebar({ onClose }) {
   };
 
   const items = [
-    // Dashboard
+    // Dashboard Section
     getItem(
       <Link to={`${ADMIN_PREFIX}/portal`} onClick={onClose}>
-        <span className="menu-label">Trang chủ</span>
+        <span className="menu-label">Bảng Điều Khiển</span>
       </Link>,
       `${ADMIN_PREFIX}/portal`,
       <HomeFilled className="menu-icon dashboard-icon" />
     ),
+    
+    { type: 'divider', className: styles.menuDivider },
 
-    // Catalog Management
+    // Product Management Section
     getItem(
-      <span className="menu-group">Quản Lý Sản Phẩm</span>,
-      "grProducts",
+      <span className="menu-section-title">QUẢN LÝ SẢN PHẨM</span>,
+      "grProductManagement",
       <FontAwesomeIcon
         icon={solidIcons.faBoxOpen}
         className="menu-icon product-icon"
@@ -89,11 +91,21 @@ function Sidebar({ onClose }) {
         ),
         getItem(
           <Link to={`${ADMIN_PREFIX}/catalog/categories`} onClick={onClose}>
-            <span className="menu-item-label">Phân loại</span>
+            <span className="menu-item-label">Phân loại sản phẩm</span>
           </Link>,
           `${ADMIN_PREFIX}/catalog/categories`,
           <FontAwesomeIcon
             icon={solidIcons.faLayerGroup}
+            className="submenu-icon"
+          />
+        ),
+        getItem(
+          <Link to={`${ADMIN_PREFIX}/catalog/product-attributes`} onClick={onClose}>
+            <span className="menu-item-label">Thuộc tính sản phẩm</span>
+          </Link>,
+          `${ADMIN_PREFIX}/catalog/product-attributes`,
+          <FontAwesomeIcon
+            icon={solidIcons.faListAlt}
             className="submenu-icon"
           />
         ),
@@ -107,44 +119,22 @@ function Sidebar({ onClose }) {
       ]
     ),
 
-    // Product Features
+    // Inventory Management Section
     getItem(
-      <span className="menu-group">Đặc Trưng Sản Phẩm</span>,
-      "grDistinctives",
+      <span className="menu-section-title">QUẢN LÝ KHO HÀNG</span>,
+      "grInventoryManagement",
       <FontAwesomeIcon
-        icon={solidIcons.faTags}
-        className="menu-icon feature-icon"
-      />,
-      [
-        getItem(
-          <Link to={`${ADMIN_PREFIX}/catalog/product-attributes`} onClick={onClose}>
-            <span className="menu-item-label">Thuộc tính</span>
-          </Link>,
-          `${ADMIN_PREFIX}/catalog/product-attributes`,
-          <FontAwesomeIcon
-            icon={solidIcons.faListAlt}
-            className="submenu-icon"
-          />
-        ),
-      ]
-    ),
-
-    // Supplier Management
-    getItem(
-      <span className="menu-group">Quản Lý Nhà Cung Cấp</span>,
-      "grSuppliers",
-      <FontAwesomeIcon
-        icon={solidIcons.faHandshake}
-        className="menu-icon supplier-icon"
+        icon={solidIcons.faWarehouse}
+        className="menu-icon inventory-icon"
       />,
       [
         getItem(
           <Link to={`${ADMIN_PREFIX}/inventory/suppliers`} onClick={onClose}>
-            <span className="menu-item-label">Danh sách nhà cung cấp</span>
+            <span className="menu-item-label">Nhà cung cấp</span>
           </Link>,
           `${ADMIN_PREFIX}/inventory/suppliers`,
           <FontAwesomeIcon
-            icon={solidIcons.faBuilding}
+            icon={solidIcons.faHandshake}
             className="submenu-icon"
           />
         ),
@@ -160,7 +150,7 @@ function Sidebar({ onClose }) {
         ),
         getItem(
           <Link to={`${ADMIN_PREFIX}/inventory/stock-receipts`} onClick={onClose}>
-            <span className="menu-item-label">Nhập kho</span>
+            <span className="menu-item-label">Phiếu nhập kho</span>
           </Link>,
           `${ADMIN_PREFIX}/inventory/stock-receipts`,
           <FontAwesomeIcon
@@ -171,10 +161,12 @@ function Sidebar({ onClose }) {
       ]
     ),
 
-    // Sales Management
+    { type: 'divider', className: styles.menuDivider },
+
+    // Sales Management Section
     getItem(
-      <span className="menu-group">Quản Lý Bán Hàng</span>,
-      "grInvoices",
+      <span className="menu-section-title">QUẢN LÝ BÁN HÀNG</span>,
+      "grSalesManagement",
       <FontAwesomeIcon
         icon={solidIcons.faShoppingCart}
         className="menu-icon sales-icon"
@@ -182,7 +174,7 @@ function Sidebar({ onClose }) {
       [
         getItem(
           <Link to={`${ADMIN_PREFIX}/invoices`} onClick={onClose}>
-            <span className="menu-item-label">Hóa đơn bán</span>
+            <span className="menu-item-label">Hóa đơn bán hàng</span>
           </Link>,
           `${ADMIN_PREFIX}/invoices`,
           <FontAwesomeIcon
@@ -192,7 +184,7 @@ function Sidebar({ onClose }) {
         ),
         getItem(
           <Link to={`${ADMIN_PREFIX}/invoices/detailed`} onClick={onClose}>
-            <span className="menu-item-label">Chi tiết bán hàng</span>
+            <span className="menu-item-label">Chi tiết đơn hàng</span>
           </Link>,
           `${ADMIN_PREFIX}/invoices/detailed`,
           <FontAwesomeIcon
@@ -203,18 +195,18 @@ function Sidebar({ onClose }) {
       ]
     ),
 
-    // User Management
+    // User Management Section
     getItem(
-      <span className="menu-group">Quản Lý Tài Khoản</span>,
-      "grAccounts",
+      <span className="menu-section-title">QUẢN LÝ NGƯỜI DÙNG</span>,
+      "grUserManagement",
       <FontAwesomeIcon
-        icon={solidIcons.faUsers}
+        icon={solidIcons.faUsersCog}
         className="menu-icon user-icon"
       />,
       [
         getItem(
           <Link to={`${ADMIN_PREFIX}/users/roles`} onClick={onClose}>
-            <span className="menu-item-label">Phân quyền</span>
+            <span className="menu-item-label">Vai trò & Phân quyền</span>
           </Link>,
           `${ADMIN_PREFIX}/users/roles`,
           <FontAwesomeIcon
@@ -224,7 +216,7 @@ function Sidebar({ onClose }) {
         ),
         getItem(
           <Link to={`${ADMIN_PREFIX}/users/staff`} onClick={onClose}>
-            <span className="menu-item-label">Nhân viên</span>
+            <span className="menu-item-label">Quản lý nhân viên</span>
           </Link>,
           `${ADMIN_PREFIX}/users/staff`,
           <FontAwesomeIcon
@@ -234,7 +226,7 @@ function Sidebar({ onClose }) {
         ),
         getItem(
           <Link to={`${ADMIN_PREFIX}/users/accounts`} onClick={onClose}>
-            <span className="menu-item-label">Khách hàng</span>
+            <span className="menu-item-label">Tài khoản khách hàng</span>
           </Link>,
           `${ADMIN_PREFIX}/users/accounts`,
           <FontAwesomeIcon
@@ -245,45 +237,17 @@ function Sidebar({ onClose }) {
       ]
     ),
 
-    // Reports & Analytics
+    { type: 'divider', className: styles.menuDivider },
+
+    // Reports & Analytics Section
     getItem(
-      <span className="menu-group">Thống Kê & Báo Cáo</span>,
-      "grStatistics",
+      <span className="menu-section-title">BÁO CÁO & THỐNG KÊ</span>,
+      "grReportsAnalytics",
       <FontAwesomeIcon
         icon={solidIcons.faChartLine}
         className="menu-icon report-icon"
       />,
       [
-        getItem(
-          <Link to={`${ADMIN_PREFIX}/users/history`} onClick={onClose}>
-            <span className="menu-item-label">Phân tích hoạt động</span>
-          </Link>,
-          `${ADMIN_PREFIX}/users/history`,
-          <FontAwesomeIcon
-            icon={solidIcons.faUserClock}
-            className="submenu-icon"
-          />
-        ),
-        getItem(
-          <Link to={`${ADMIN_PREFIX}/verification`} onClick={onClose}>
-            <span className="menu-item-label">Thống kê tài khoản</span>
-          </Link>,
-          `${ADMIN_PREFIX}/verification`,
-          <FontAwesomeIcon
-            icon={solidIcons.faChartBar}
-            className="submenu-icon"
-          />
-        ),
-        getItem(
-          <Link to={`${ADMIN_PREFIX}/statistics-documents`} onClick={onClose}>
-            <span className="menu-item-label">Báo cáo thống kê</span>
-          </Link>,
-          `${ADMIN_PREFIX}/statistics-documents`,
-          <FontAwesomeIcon
-            icon={solidIcons.faFileLines}
-            className="submenu-icon"
-          />
-        ),
         getItem(
           <Link to={`${ADMIN_PREFIX}/charts`} onClick={onClose}>
             <span className="menu-item-label">Biểu đồ phân tích</span>
@@ -294,19 +258,53 @@ function Sidebar({ onClose }) {
             className="submenu-icon"
           />
         ),
+        getItem(
+          <Link to={`${ADMIN_PREFIX}/statistics-documents`} onClick={onClose}>
+            <span className="menu-item-label">Báo cáo doanh thu</span>
+          </Link>,
+          `${ADMIN_PREFIX}/statistics-documents`,
+          <FontAwesomeIcon
+            icon={solidIcons.faFileLines}
+            className="submenu-icon"
+          />
+        ),
+        getItem(
+          <Link to={`${ADMIN_PREFIX}/verification`} onClick={onClose}>
+            <span className="menu-item-label">Thống kê người dùng</span>
+          </Link>,
+          `${ADMIN_PREFIX}/verification`,
+          <FontAwesomeIcon
+            icon={solidIcons.faChartBar}
+            className="submenu-icon"
+          />
+        ),
+        getItem(
+          <Link to={`${ADMIN_PREFIX}/users/history`} onClick={onClose}>
+            <span className="menu-item-label">Lịch sử hoạt động</span>
+          </Link>,
+          `${ADMIN_PREFIX}/users/history`,
+          <FontAwesomeIcon
+            icon={solidIcons.faHistory}
+            className="submenu-icon"
+          />
+        ),
       ]
     ),
   ];
 
   return (
     <div className={styles.sidebar}>
+      <div className={styles.sidebarHeader}>
+        <h2 className={styles.sidebarTitle}>SHOPE THỂ THAO</h2>
+        <p className={styles.sidebarSubtitle}>Hệ thống quản lý</p>
+      </div>
       <Menu
         className={styles["sidebar-menu"]}
         mode="inline"
         items={items}
-        selectedKeys={[selectedKey]} // Highlight menu hiện tại
-        openKeys={openKeys} // Mở menu cha
-        onOpenChange={onOpenChange} // Xử lý mở/đóng menu cha
+        selectedKeys={[selectedKey]}
+        openKeys={openKeys}
+        onOpenChange={onOpenChange}
       />
     </div>
   );

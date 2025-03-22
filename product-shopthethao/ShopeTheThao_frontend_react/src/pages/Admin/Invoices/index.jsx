@@ -37,6 +37,7 @@ import {
   SyncOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 
 
@@ -44,6 +45,7 @@ import moment from "moment";
 import { invoicesApi } from "api/Admin";
 import cancelReasonApi from "api/Admin/cancelReason/CancelReasonApi";
 import PaginationComponent from "components/User/PaginationComponent";
+import "./invoices.scss";
 const { Text } = Typography;
 
 
@@ -59,6 +61,13 @@ const Invoices = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [cancelReasons, setCancelReasons] = useState([]); // Add this state
+  const [activeTab, setActiveTab] = useState("1");
+
+  // Search states for each tab
+  const [pendingSearchText, setPendingSearchText] = useState("");
+  const [shippingSearchText, setShippingSearchText] = useState("");
+  const [deliveredSearchText, setDeliveredSearchText] = useState("");
+  const [cancelledSearchText, setCancelledSearchText] = useState("");
 
   // Separate pagination states for each tab
   const [pendingPagination, setPendingPagination] = useState({
@@ -595,30 +604,100 @@ const columnsCancelled = [
   },
 ];
 
+  // Filter functions for each tab
+  const getFilteredPendingInvoices = () => {
+    if (!pendingSearchText) return pendingInvoices;
+    
+    return pendingInvoices.filter(invoice => 
+      invoice.invoiceId?.toLowerCase().includes(pendingSearchText.toLowerCase()) ||
+      invoice.customerName?.toLowerCase().includes(pendingSearchText.toLowerCase()) ||
+      invoice.address?.toLowerCase().includes(pendingSearchText.toLowerCase())
+    );
+  };
+
+  const getFilteredShippingInvoices = () => {
+    if (!shippingSearchText) return shippingInvoices;
+    
+    return shippingInvoices.filter(invoice => 
+      invoice.invoiceId?.toLowerCase().includes(shippingSearchText.toLowerCase()) ||
+      invoice.customerName?.toLowerCase().includes(shippingSearchText.toLowerCase()) ||
+      invoice.address?.toLowerCase().includes(shippingSearchText.toLowerCase())
+    );
+  };
+
+  const getFilteredDeliveredInvoices = () => {
+    if (!deliveredSearchText) return deliveredInvoices;
+    
+    return deliveredInvoices.filter(invoice => 
+      invoice.invoiceId?.toLowerCase().includes(deliveredSearchText.toLowerCase()) ||
+      invoice.customerName?.toLowerCase().includes(deliveredSearchText.toLowerCase()) ||
+      invoice.address?.toLowerCase().includes(deliveredSearchText.toLowerCase())
+    );
+  };
+
+  const getFilteredCancelledInvoices = () => {
+    if (!cancelledSearchText) return cancelledInvoices;
+    
+    return cancelledInvoices.filter(invoice => 
+      invoice.invoiceId?.toLowerCase().includes(cancelledSearchText.toLowerCase()) ||
+      invoice.customerName?.toLowerCase().includes(cancelledSearchText.toLowerCase()) ||
+      invoice.address?.toLowerCase().includes(cancelledSearchText.toLowerCase())
+    );
+  };
+
+  // Handle search for the active tab
+  const handleSearch = (value) => {
+    switch (activeTab) {
+      case "1":
+        setPendingSearchText(value);
+        break;
+      case "2":
+        setShippingSearchText(value);
+        break;
+      case "3":
+        setDeliveredSearchText(value);
+        break;
+      case "4":
+        setCancelledSearchText(value);
+        break;
+    }
+  };
+
+  // Clear search when changing tabs
+  const handleTabChange = (activeKey) => {
+    setActiveTab(activeKey);
+  };
+
   // Define tab items with the recommended format
   const items = [
     {
       key: "1",
       label: "Chờ xử lý",
       children: (
-        <>
+        <div className="tab-content">
+          <Row gutter={[16, 16]} className="header-actions">
+            <Col xs={24} sm={24} md={24} lg={24}>
+              <Input
+                placeholder="Tìm kiếm theo mã hóa đơn, tên khách hàng..."
+                prefix={<SearchOutlined />}
+                value={pendingSearchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="search-input"
+                allowClear
+              />
+            </Col>
+          </Row>
+          
           <Table
             loading={loading}
             columns={columnsPending}
-            dataSource={pendingInvoices.map((item, index) => ({
+            dataSource={getFilteredPendingInvoices().map((item, index) => ({
               ...item,
               key: item.id || index,
             }))}
             pagination={false}
           />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: 10,
-              gap: 10,
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 20, gap: 10 }}>
             <PaginationComponent
               totalPages={Math.ceil(pendingPagination.totalItems / pendingPagination.pageSize)}
               currentPage={pendingPagination.currentPage}
@@ -635,31 +714,37 @@ const columnsCancelled = [
               <Select.Option value={50}>50 hàng</Select.Option>
             </Select>
           </div>
-        </>
+        </div>
       ),
     },
     {
       key: "2",
       label: "Đang giao hàng",
       children: (
-        <>
+        <div className="tab-content">
+          <Row gutter={[16, 16]} className="header-actions">
+            <Col xs={24} sm={24} md={24} lg={24}>
+              <Input
+                placeholder="Tìm kiếm theo mã hóa đơn, tên khách hàng..."
+                prefix={<SearchOutlined />}
+                value={shippingSearchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="search-input"
+                allowClear
+              />
+            </Col>
+          </Row>
+          
           <Table
             loading={loading}
             columns={columnsShipping}
-            dataSource={shippingInvoices.map((item, index) => ({
+            dataSource={getFilteredShippingInvoices().map((item, index) => ({
               ...item,
               key: item.id || index,
             }))}
             pagination={false}
           />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: 10,
-              gap: 10,
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 20, gap: 10 }}>
             <PaginationComponent
               totalPages={Math.ceil(shippingPagination.totalItems / shippingPagination.pageSize)}
               currentPage={shippingPagination.currentPage}
@@ -676,31 +761,37 @@ const columnsCancelled = [
               <Select.Option value={50}>50 hàng</Select.Option>
             </Select>
           </div>
-        </>
+        </div>
       ),
     },
     {
       key: "3",
       label: "Đã giao hàng",
       children: (
-        <>
+        <div className="tab-content">
+          <Row gutter={[16, 16]} className="header-actions">
+            <Col xs={24} sm={24} md={24} lg={24}>
+              <Input
+                placeholder="Tìm kiếm theo mã hóa đơn, tên khách hàng..."
+                prefix={<SearchOutlined />}
+                value={deliveredSearchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="search-input"
+                allowClear
+              />
+            </Col>
+          </Row>
+          
           <Table
             loading={loading}
             columns={columnsDelivered}
-            dataSource={deliveredInvoices.map((item, index) => ({
+            dataSource={getFilteredDeliveredInvoices().map((item, index) => ({
               ...item,
               key: item.id || index,
             }))}
             pagination={false}
           />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: 10,
-              gap: 10,
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 20, gap: 10 }}>
             <PaginationComponent
               totalPages={Math.ceil(deliveredPagination.totalItems / deliveredPagination.pageSize)}
               currentPage={deliveredPagination.currentPage}
@@ -717,31 +808,37 @@ const columnsCancelled = [
               <Select.Option value={50}>50 hàng</Select.Option>
             </Select>
           </div>
-        </>
+        </div>
       ),
     },
     {
       key: "4",
       label: "Đã hủy",
       children: (
-        <>
+        <div className="tab-content">
+          <Row gutter={[16, 16]} className="header-actions">
+            <Col xs={24} sm={24} md={24} lg={24}>
+              <Input
+                placeholder="Tìm kiếm theo mã hóa đơn, tên khách hàng..."
+                prefix={<SearchOutlined />}
+                value={cancelledSearchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="search-input"
+                allowClear
+              />
+            </Col>
+          </Row>
+          
           <Table
             loading={loading}
             columns={columnsCancelled}
-            dataSource={cancelledInvoices.map((item, index) => ({
+            dataSource={getFilteredCancelledInvoices().map((item, index) => ({
               ...item,
               key: item.id || index,
             }))}
             pagination={false}
           />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: 10,
-              gap: 10,
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 20, gap: 10 }}>
             <PaginationComponent
               totalPages={Math.ceil(cancelledPagination.totalItems / cancelledPagination.pageSize)}
               currentPage={cancelledPagination.currentPage}
@@ -758,7 +855,7 @@ const columnsCancelled = [
               <Select.Option value={50}>50 hàng</Select.Option>
             </Select>
           </div>
-        </>
+        </div>
       ),
     },
   ];
@@ -1003,13 +1100,13 @@ const columnsCancelled = [
   };
 
   return (
-    <div style={{ padding: 10 }}>
-      <Row>
-        <h2>Quản lý Hóa Đơn</h2>
-      </Row>
-      <Tabs defaultActiveKey="1" items={items} />
-      {renderInvoiceDetails()}
-      {renderCancelModal()}
+    <div className="size-page">
+      <div className="content-wrapper">
+        <h2 className="page-title">Quản lý Hóa Đơn</h2>
+        <Tabs defaultActiveKey="1" items={items} onChange={handleTabChange} className="invoice-tabs" />
+        {renderInvoiceDetails()}
+        {renderCancelModal()}
+      </div>
     </div>
   );
 };

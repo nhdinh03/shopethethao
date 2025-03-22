@@ -1,37 +1,46 @@
+// Import variables from size.scss
+@import '../Sizes/size.scss';
+
 .header-container {
   display: flex;
-  justify-content: flex-end; // 🔹 Căn phải
+  justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 12px; // 🔹 Giảm margin cho gọn hơn
+  margin-bottom: 12px;
   
-  .add-btn{
+  .add-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px; // 🔹 Nhỏ lại một chút
-    font-weight: 600; // 🔹 Giữ độ đậm vừa phải
+    font-size: 13px;
+    font-weight: 600;
     background-color: #1890ff;
     border: none;
-    padding: 6px 12px; // 🔹 Thu nhỏ padding cho vừa tay
+    padding: 6px 12px;
     transition: all 0.2s ease-in-out;
-    border-radius: 6px; // 🔹 Bớt bo góc lại
+    border-radius: 6px;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
-    min-width: 130px; // 🔹 Giữ cho nút không bị quá nhỏ
-    height: 36px; // 🔹 Đặt chiều cao cố định để đồng bộ UI
+    min-width: 130px;
+    height: 36px;
 
     &:hover {
       background-color: #40a9ff;
-      transform: scale(1.03); // 🔥 Hiệu ứng hover nhẹ hơn
+      transform: scale(1.03);
     }
 
     &:active {
-      transform: scale(0.98); // 🔹 Hiệu ứng nhấn xuống mượt hơn
+      transform: scale(0.98);
     }
   }
 }
 
-
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
 
 .ellipsis-text {
   display: inline-block;
@@ -153,4 +162,24 @@ max-width: 200px;
   color: #8c8c8c;
   font-style: italic;
 }
+}
+
+// Add new tab styles
+.staff-tabs {
+  width: 100%;
+  
+  .ant-tabs-nav {
+    margin-bottom: 20px;
+    
+    .ant-tabs-tab {
+      padding: 10px 16px;
+      
+      &.ant-tabs-tab-active {
+        .ant-tabs-tab-btn {
+          font-weight: 600;
+          color: #1677ff;
+        }
+      }
+    }
+  }
 }

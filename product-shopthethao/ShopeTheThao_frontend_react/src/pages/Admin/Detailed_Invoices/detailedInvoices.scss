@@ -1,3 +1,95 @@
+// Import variables from size.scss
+@import '../Sizes/size.scss';
+
+$breakpoint-tablet: 768px;
+$breakpoint-mobile-l: 425px;
+$breakpoint-mobile-m: 375px;
+
+.detailed-invoices-page {
+  padding: 20px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  
+  @media (max-width: $breakpoint-mobile-l) {
+    padding: 10px;
+  }
+  
+  .content-wrapper {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    
+    @media (max-width: $breakpoint-mobile-l) {
+      padding: 16px;
+    }
+  }
+  
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #111827;
+    border-left: 4px solid #1677ff;
+    padding-left: 12px;
+    
+    @media (max-width: $breakpoint-tablet) {
+      font-size: 20px;
+    }
+    
+    @media (max-width: $breakpoint-mobile-l) {
+      font-size: 18px;
+    }
+  }
+  
+  .header-actions {
+    margin-bottom: 20px;
+    
+    .search-input {
+      height: 40px;
+      border-radius: 6px;
+      
+      .ant-input {
+        font-size: 14px;
+      }
+      
+      .search-icon {
+        color: #1677ff;
+        margin-right: 8px;
+      }
+      
+      &:hover, &:focus {
+        border-color: #1677ff;
+        box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+      }
+    }
+  }
+  
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 16px;
+    gap: 10px;
+    
+    .page-size-select {
+      width: 120px;
+      margin-top: 20px;
+    }
+  }
+  
+  .detailed-invoices-table {
+    .ant-table-thead > tr > th {
+      background: #f6f6f6;
+      font-weight: 600;
+    }
+
+    .ant-table-tbody > tr:hover > td {
+      background: #f8f8f8;
+    }
+  }
+}
+
 .product-info-cell {
   display: flex;
   align-items: center;
@@ -57,5 +149,45 @@
 
   .ant-table-tbody > tr:hover > td {
     background: #f8f8f8;
+  }
+}
+
+@media (max-width: 1200px) {
+  .detailed-invoices-page {
+    padding: 16px;
+    
+    .content-wrapper {
+      padding: 20px;
+    }
+  }
+}
+
+@media (max-width: 960px) {
+  .detailed-invoices-page {
+    padding: 12px;
+    
+    .content-wrapper {
+      padding: 16px;
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .detailed-invoices-page {
+    padding: 10px;
+    
+    .content-wrapper {
+      padding: 14px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .detailed-invoices-page {
+    padding: 8px;
+    
+    .content-wrapper {
+      padding: 12px;
+    }
   }
 }

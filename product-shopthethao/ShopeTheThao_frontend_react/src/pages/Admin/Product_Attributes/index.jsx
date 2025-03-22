@@ -11,15 +11,16 @@ import {
   Tooltip,
   Select,
   Row,
+  Col,
 } from "antd";
-import { PlusOutlined, SearchOutlined, UserOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   ProductAttributesModal,
   ProductAttributesPagination,
   ProductAttributesTable,
 } from "components/Admin";
 
-import "..//index.scss";
+import "./productattributes.scss";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { productattributesApi } from "api/Admin";
 
@@ -35,6 +36,7 @@ const ProductAttributes = () => {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [productattributes, setProductAttributes] = useState([]);
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -83,12 +85,13 @@ const ProductAttributes = () => {
   const handleDelete = async (id) => {
     try {
       await productattributesApi.delete(id);
-      message.success("Xóa kích thước thành công!");
+      message.success("Xóa thuộc tính thành công!");
       setWorkSomeThing([!workSomeThing]);
     } catch (error) {
-      message.error("Không thể xóa kích thước!");
+      message.error("Không thể xóa thuộc tính!");
     }
   };
+  
   const handleEditData = (ProductAttributes) => {
     setEditProductAttributes(ProductAttributes);
     form.setFieldsValue(ProductAttributes);
@@ -110,6 +113,18 @@ const ProductAttributes = () => {
     setCurrentPage(1);
   };
 
+  const handleSearch = (value) => {
+    setSearchText(value);
+    // Implement search functionality here
+    // For now, just log the search text
+    console.log("Searching for:", value);
+  };
+
+  // Filter product attributes based on search text
+  const filteredAttributes = productattributes.filter(item => 
+    item.name.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   const columns = [
     { title: "🆔 Danh sách", dataIndex: "id", key: "id" },
     { title: "📏 Tên Thuộc tính sản phẩm", dataIndex: "name", key: "name" },
@@ -119,20 +134,30 @@ const ProductAttributes = () => {
   return (
     <div className="product-attributes-page">
       <div className="content-wrapper">
-        <Row>
-          <h2 className="page-title">Thuộc tính sản phẩm</h2>
+        <h2 className="page-title">Thuộc tính sản phẩm</h2>
 
-          <div className="header-container">
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={14} md={16} lg={18}>
+            <Input
+              placeholder="Tìm kiếm thuộc tính sản phẩm..."
+              prefix={<SearchOutlined />}
+              className="search-input"
+              onChange={(e) => handleSearch(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={10} md={8} lg={6} className="add-button-container">
             <Button
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => setOpen(true)}
               className="add-btn"
             >
-              Thêm kích thước
+              Thêm thuộc tính
             </Button>
-          </div>
+          </Col>
         </Row>
+
         <ProductAttributesModal
           open={open}
           form={form}
@@ -143,7 +168,7 @@ const ProductAttributes = () => {
         />
         <ProductAttributesTable
           columns={columns}
-          productattributes={productattributes}
+          productattributes={filteredAttributes}
           loading={loading}
         />
         <ProductAttributesPagination

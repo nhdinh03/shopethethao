@@ -1,13 +1,13 @@
 import React from 'react';
 import { Tabs, Table } from 'antd';
 
-const AccountStaffTabs = ({ loading, staffList, lockedStaff, columns, lockedColumns, onChange }) => {
+const AccountTabs = ({ loading, user, lockedUser, columns, lockedColumns, onChange }) => {
   const items = [
     {
       key: '1',
-      label: `Đang hoạt động (${staffList.length})`,
+      label: `Đang hoạt động (${user.length})`,
       children: <Table 
-        dataSource={staffList} 
+        dataSource={user} 
         columns={columns} 
         loading={loading} 
         scroll={{ x: 1300 }}
@@ -16,9 +16,9 @@ const AccountStaffTabs = ({ loading, staffList, lockedStaff, columns, lockedColu
     },
     {
       key: '2',
-      label: `Đã khóa (${lockedStaff.length})`,
+      label: `Đã khóa (${lockedUser.length})`,
       children: <Table 
-        dataSource={lockedStaff} 
+        dataSource={lockedUser} 
         columns={lockedColumns} 
         loading={loading} 
         scroll={{ x: 800 }}
@@ -31,10 +31,10 @@ const AccountStaffTabs = ({ loading, staffList, lockedStaff, columns, lockedColu
     <Tabs 
       defaultActiveKey="1" 
       items={items} 
-      className="staff-tabs"
+      className="account-tabs"
       onChange={onChange}
     />
   );
 };
 
-export default AccountStaffTabs;
+export default AccountTabs;

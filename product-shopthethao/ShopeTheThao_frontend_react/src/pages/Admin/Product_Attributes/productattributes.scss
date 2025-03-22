@@ -55,14 +55,31 @@ $font-xxl: 24px;
 // Component styles
 .product-attributes-page {
   padding: 20px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
   
   @include responsive($breakpoint-mobile-l) {
     padding: 10px;
   }
   
+  .content-wrapper {
+    background: #fff;
+    border-radius: 8px;
+
+    padding: 24px;
+    
+    @include responsive($breakpoint-mobile-l) {
+      padding: 16px;
+    }
+  }
+  
   .page-title {
     @include heading-xl;
     margin-bottom: 16px;
+    color: #111827;
+    border-left: 4px solid #1677ff;
+    padding-left: 12px;
   }
   
   .header-container {
@@ -70,17 +87,68 @@ $font-xxl: 24px;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+   
+
+    
     
     @include responsive($breakpoint-mobile-l) {
       flex-direction: column;
       align-items: stretch;
       
-      .add-btn {
-        width: 100%;
-        margin-top: 10px;
-        height: auto;
-        padding: 10px;
+  
+    }
+  }
+  .add-btn {
+    // background: linear-gradient(to right, #1677ff, #4096ff);
+    border: none;
+    border-radius: 6px;
+    height: 40px;
+    padding: 0 20px;
+    font-weight: 500;
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+    
+    @include responsive($breakpoint-mobile-l) {
+      width: 100%;
+      height: auto;
+      padding: 10px;
+      font-size: $font-base;
+    }
+  }
+  .header-actions {
+    margin-bottom: 20px;
+    
+    .search-input {
+      height: 40px;
+      border-radius: 6px;
+      
+      .ant-input {
         font-size: $font-base;
+      }
+      
+      .ant-input-prefix {
+        color: #1677ff;
+        margin-right: 8px;
+      }
+      
+      &:hover, &:focus {
+        border-color: #1677ff;
+        box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+      }
+
+      @include responsive($breakpoint-mobile-l) {
+        margin-bottom: 10px;
+      }
+    }
+    
+    .add-button-container {
+      display: flex;
+      justify-content: flex-end;
+      
+      @include responsive($breakpoint-mobile-l) {
+        justify-content: center;
       }
     }
   }
@@ -88,6 +156,34 @@ $font-xxl: 24px;
   .table-container {
     overflow-x: auto;
     margin-bottom: 20px;
+    border-radius: 8px;
+    border-inline-start: 1px solid #f0f0f0;
+    border-top: 1px solid #f0f0f0;
+    overflow: auto hidden;
+    
+    .ant-table-wrapper {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .ant-table-thead > tr > th {
+      background-color: #f0f5ff;
+      color: #1677ff;
+      font-weight: 600;
+      border-right: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
+    
+    .ant-table-tbody > tr > td {
+      border-right: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
     
     @include responsive($breakpoint-tablet) {
       font-size: $font-sm;
@@ -144,12 +240,18 @@ $font-xxl: 24px;
 // Modal styles
 .product-attributes-modal {
   .ant-modal-content {
+    border-radius: 8px;
+    
     @include responsive($breakpoint-mobile-l) {
       padding: 16px;
     }
   }
   
   .ant-modal-header {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    
     @include responsive($breakpoint-mobile-l) {
       padding: 0 0 16px 0;
       
@@ -160,16 +262,77 @@ $font-xxl: 24px;
   }
   
   .ant-form-item-label > label {
+    font-weight: 500;
+    
     @include responsive($breakpoint-mobile-l) {
       font-size: $font-sm;
     }
   }
   
   .ant-btn {
+    border-radius: 6px;
+    
     @include responsive($breakpoint-mobile-l) {
       font-size: $font-sm;
       padding: 4px 15px;
       height: auto;
+    }
+  }
+}
+
+/* Specific Responsive Breakpoints */
+@media (max-width: 1600px) {
+  .product-attributes-page {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .product-attributes-page {
+    padding: 14px;
+    
+    .content-wrapper {
+      padding: 20px;
+    }
+  }
+}
+
+@media (max-width: 960px) {
+  .product-attributes-page {
+    padding: 12px;
+    
+    .content-wrapper {
+      padding: 16px;
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .product-attributes-page {
+    padding: 10px;
+    
+    .content-wrapper {
+      padding: 14px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .product-attributes-page {
+    padding: 8px;
+    
+    .content-wrapper {
+      padding: 12px;
+    }
+  }
+}
+
+@media (max-width: 320px) {
+  .product-attributes-page {
+    padding: 6px;
+    
+    .content-wrapper {
+      padding: 10px;
     }
   }
 }

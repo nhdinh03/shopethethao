@@ -10,6 +10,8 @@ import {
   Tooltip,
   Popconfirm,
   Alert,
+  Col,
+  Input,
 } from "antd";
 import {
   PlusOutlined,
@@ -19,11 +21,12 @@ import {
   DeleteOutlined,
   LockOutlined,
   EyeOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 
 import PaginationComponent from "components/User/PaginationComponent";
 import { accountsUserApi, lockreasonsApi } from "api/Admin";
-import "../index.scss";
+import "./accounts.scss";
 import uploadApi from "api/service/uploadApi";
 import dayjs from "dayjs";
 import { AccountModal, AccountTabs } from "components/Admin";
@@ -46,6 +49,9 @@ const Accounts = () => {
   const [statusChecked, setStatusChecked] = useState(editUser?.status === 1);
   const [isStatusEditable, setIsStatusEditable] = useState(false);
   const [showLockReason, setShowLockReason] = useState(true);
+  const [searchText, setSearchText] = useState("");
+  const [activeTab, setActiveTab] = useState("1");
+
   useEffect(() => {
     let isMounted = true;
     const getList = async () => {
@@ -243,6 +249,44 @@ const Accounts = () => {
   const handlePageSizeChange = (value) => {
     setPageSize(value);
     setCurrentPage(1);
+  };
+
+  const handleSearch = (value) => {
+    setSearchText(value);
+  };
+
+  const getFilteredUsers = () => {
+    if (!searchText) return user;
+
+    return user.filter(
+      (account) =>
+        account.fullname?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.phone?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.address?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.id?.toString().includes(searchText)
+    );
+  };
+
+  const getFilteredLockedUsers = () => {
+    if (!searchText) return lockedUser;
+
+    return lockedUser.filter(
+      (account) =>
+        account.fullname?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.phone?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.address?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.id?.toString().includes(searchText) ||
+        account.lockReasons?.some((reason) =>
+          reason.reason?.toLowerCase().includes(searchText.toLowerCase())
+        )
+    );
+  };
+
+  const handleTabChange = (activeKey) => {
+    setActiveTab(activeKey);
+    setSearchText(""); // Clear search when changing tabs
   };
 
   const columns = [
@@ -452,70 +496,74 @@ const Accounts = () => {
   ];
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <Row
-        justify="space-between"
-        align="middle"
-        style={{ marginBottom: "20px" }}
-      >
-        <h2>Quản lý tài khoản</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setOpen(true)}
-          className="add-btn"
-        >
-          Thêm tài khoản
-        </Button>
-      </Row>
+    <div className="size-page">
+      <div className="content-wrapper">
+        <Row justify="space-between" align="middle" className="header-container">
+          <h2 className="page-title">Quản lý tài khoản</h2>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setOpen(true)}
+            className="add-btn"
+          >
+            Thêm tài khoản
+          </Button>
+        </Row>
 
-      <AccountModal
-        open={open}
-        editUser={editUser}
-        form={form}
-        FileList={FileList}
-        statusChecked={statusChecked}
-        isStatusEditable={isStatusEditable}
-        handleCancel={handleCancel}
-        handleChange={handleChange}
-        onPreview={onPreview}
-        handleStatus={handleStatus}
-        handleStatusChange={handleStatusChange}
-        handleResetForm={handleResetForm}
-        handleModalOk={handleModalOk}
-      />
-
-      <AccountTabs
-        loading={loading}
-        user={user}
-        lockedUser={lockedUser}
-        columns={columns}
-        lockedColumns={lockedColumns}
-      />
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: "10px",
-          gap: "10px",
-        }}
-      >
-        <PaginationComponent
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
+        <AccountModal
+          open={open}
+          editUser={editUser}
+          form={form}
+          FileList={FileList}
+          statusChecked={statusChecked}
+          isStatusEditable={isStatusEditable}
+          handleCancel={handleCancel}
+          handleChange={handleChange}
+          onPreview={onPreview}
+          handleStatus={handleStatus}
+          handleStatusChange={handleStatusChange}
+          handleResetForm={handleResetForm}
+          handleModalOk={handleModalOk}
         />
-        <Select
-          value={pageSize}
-          style={{ width: 120, marginTop: 20 }}
-          onChange={handlePageSizeChange}
-        >
-          <Select.Option value={5}>5 hàng</Select.Option>
-          <Select.Option value={10}>10 hàng</Select.Option>
-          <Select.Option value={20}>20 hàng</Select.Option>
-        </Select>
+
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={24} md={24} lg={24}>
+            <Input
+              placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="search-input"
+              allowClear
+            />
+          </Col>
+        </Row>
+
+        <AccountTabs
+          loading={loading}
+          user={getFilteredUsers()}
+          lockedUser={getFilteredLockedUsers()}
+          columns={columns}
+          lockedColumns={lockedColumns}
+          onChange={handleTabChange}
+        />
+
+        <div className="pagination-container">
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+          <Select
+            value={pageSize}
+            style={{ width: 120, marginTop: 20 }}
+            onChange={handlePageSizeChange}
+          >
+            <Select.Option value={5}>5 hàng</Select.Option>
+            <Select.Option value={10}>10 hàng</Select.Option>
+            <Select.Option value={20}>20 hàng</Select.Option>
+          </Select>
+        </div>
       </div>
     </div>
   );

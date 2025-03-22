@@ -8,10 +8,13 @@ import {
   Select,
   Table,
   Row,
+  Col,
+  Input
 } from "antd";
 import {
   PlusOutlined,
   EditOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
 
 import uploadApi from "api/service/uploadApi";
@@ -21,6 +24,7 @@ import { productsApi } from "api/Admin";
 import "../index.scss";
 import styles from "../modalStyles.module.scss";
 import { ProductColumns, ProductForm } from "components/Admin";
+import "./Products.scss"; // Updated import for the CSS
 
 
 const Products = () => {
@@ -40,6 +44,7 @@ const Products = () => {
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
   const [isFormChanged, setIsFormChanged] = useState(false);
   const originalProductRef = useRef(null);
+  const [searchText, setSearchText] = useState("");
 
   //api
   const sizes = useSizes();
@@ -372,25 +377,48 @@ const Products = () => {
   // Sử dụng component ProductColumns
   const columns = ProductColumns(handleEditData, handleDelete);
 
+  // Handle search functionality
+  const handleSearch = (value) => {
+    setSearchText(value);
+    console.log("Searching for:", value);
+  };
+
+  // Filter products based on search text
+  const filteredProducts = products.filter(item =>
+    item.name.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
-    <div style={{ padding: 10 }}>
-      <Row>
-        <h2>Quản lý Sản phẩm</h2>
-        <div className="header-container">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setOpen(true);
-              setTimeout(() => {
-                form.setFieldsValue({ sizes: [] });
-              }, 0);
-            }}
-            className="add-btn"
-          >
-            Thêm sản phẩm
-          </Button>
-        </div>
+    <div className="products-page">
+      <div className="content-wrapper">
+        <h2 className="page-title">Quản lý Sản phẩm</h2>
+
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={14} md={16} lg={18}>
+            <Input
+              placeholder="Tìm kiếm sản phẩm..."
+              prefix={<SearchOutlined />}
+              className="search-input"
+              onChange={(e) => handleSearch(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={10} md={8} lg={6} className="add-button-container">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setOpen(true);
+                setTimeout(() => {
+                  form.setFieldsValue({ sizes: [] });
+                }, 0);
+              }}
+              className="add-btn"
+            >
+              Thêm sản phẩm
+            </Button>
+          </Col>
+        </Row>
 
         <Modal
           title={
@@ -460,47 +488,41 @@ const Products = () => {
             />
           </Modal>
         </Modal>
-      </Row>
 
-      <Table
-        pagination={false}
-        columns={columns}
-        loading={loading}
-        scroll={{ x: "max-content" }}
-        dataSource={products.map((product, index) => ({
-          ...product,
-          key: product.id ?? `product-${index}`,
-          totalQuantity: calculateTotalQuantity(product.sizes),
-        }))}
-      />
+        <div className="table-container">
+          <Table
+            pagination={false}
+            columns={columns}
+            loading={loading}
+            scroll={{ x: "max-content" }}
+            dataSource={filteredProducts.map((product, index) => ({
+              ...product,
+              key: product.id ?? `product-${index}`,
+              totalQuantity: calculateTotalQuantity(product.sizes),
+            }))}
+          />
+        </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: 10,
-          gap: 10,
-        }}
-      >
-        {/* Gọi component phân trang */}
-        <PaginationComponent
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
+        <div className="pagination-container">
+          {/* Gọi component phân trang */}
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
 
-        {/* Dropdown chọn số lượng hàng */}
-        <Select
-          value={pageSize}
-          style={{ width: 120, marginTop: 20 }}
-          onChange={handlePageProductsChange} // ✅ Gọi hàm mới để reset trang về 1
-        >
-          <Select.Option value={5}>5 hàng</Select.Option>
-          <Select.Option value={10}>10 hàng</Select.Option>
-          <Select.Option value={20}>20 hàng</Select.Option>
-          <Select.Option value={50}>50 hàng</Select.Option>
-        </Select>
+          {/* Dropdown chọn số lượng hàng */}
+          <Select
+            value={pageSize}
+            style={{ width: 120 }}
+            onChange={handlePageProductsChange}
+          >
+            <Select.Option value={5}>5 hàng</Select.Option>
+            <Select.Option value={10}>10 hàng</Select.Option>
+            <Select.Option value={20}>20 hàng</Select.Option>
+            <Select.Option value={50}>50 hàng</Select.Option>
+          </Select>
+        </div>
       </div>
     </div>
   );

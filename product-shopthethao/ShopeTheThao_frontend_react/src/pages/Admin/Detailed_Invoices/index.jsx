@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Table, Typography, Tag, Select, message } from 'antd';
+import { Table, Typography, Tag, Select, message, Input, Row, Col } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import detailedInvoicesAPI from 'api/Admin/DetailedInvoices/detailedInvoicesAPI';
 import './detailedInvoices.scss';
 import PaginationComponent from 'components/User/PaginationComponent';
@@ -12,6 +13,7 @@ const Detailed_Invoices = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [searchText, setSearchText] = useState('');
 
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
@@ -40,6 +42,24 @@ const Detailed_Invoices = () => {
   const handlePageSizeChange = (value) => {
     setPageSize(value);
     setCurrentPage(1); // Reset page to 1 when page size changes
+  };
+
+  const handleSearch = (value) => {
+    setSearchText(value);
+  };
+
+  // Filter the invoice details based on search text
+  const getFilteredInvoiceDetails = () => {
+    if (!searchText) return detailedInvoices;
+    
+    return detailedInvoices.filter(detail => 
+      (detail.product?.name?.toLowerCase().includes(searchText.toLowerCase())) ||
+      (detail.size?.name?.toLowerCase().includes(searchText.toLowerCase())) ||
+      (detail.product?.categorie?.name?.toLowerCase().includes(searchText.toLowerCase())) ||
+      (detail.id?.toString().includes(searchText)) ||
+      (detail.quantity?.toString().includes(searchText)) ||
+      (detail.unitPrice?.toString().includes(searchText))
+    );
   };
 
   const columns = [
@@ -117,39 +137,49 @@ const Detailed_Invoices = () => {
   ];
 
   return (
-    <div style={{ padding: '20px' }}>
-      <Title level={2}>Quản Lý Hóa Đơn Chi Tiết</Title>
-      <Table
-        columns={columns}
-        dataSource={detailedInvoices}
-        rowKey="id"
-        loading={loading}
-        pagination={false}
-      />
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: 10,
-          gap: 10,
-        }}
-      >
-        <PaginationComponent
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
+    <div className="size-page">
+      <div className="content-wrapper">
+        <h2 className="page-title">Quản Lý Hóa Đơn Chi Tiết</h2>
+        
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={24} md={24} lg={24}>
+            <Input
+              placeholder="Tìm kiếm theo tên sản phẩm, kích thước, danh mục..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="search-input"
+              allowClear
+            />
+          </Col>
+        </Row>
+        
+        <Table
+          columns={columns}
+          dataSource={getFilteredInvoiceDetails()}
+          rowKey="id"
+          loading={loading}
+          pagination={false}
+          className="detailed-invoices-table"
         />
-        <Select
-          value={pageSize}
-          style={{ width: 120, marginTop: 20 }}
-          onChange={handlePageSizeChange}
-        >
-          <Select.Option value={5}>5 hàng</Select.Option>
-          <Select.Option value={10}>10 hàng</Select.Option>
-          <Select.Option value={20}>20 hàng</Select.Option>
-          <Select.Option value={50}>50 hàng</Select.Option>
-        </Select>
+
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 20, gap: 10 }}>
+          <PaginationComponent
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+          <Select
+            value={pageSize}
+            style={{ width: 120, marginTop: 20 }}
+            onChange={handlePageSizeChange}
+          >
+            <Select.Option value={5}>5 hàng</Select.Option>
+            <Select.Option value={10}>10 hàng</Select.Option>
+            <Select.Option value={20}>20 hàng</Select.Option>
+            <Select.Option value={50}>50 hàng</Select.Option>
+          </Select>
+        </div>
       </div>
     </div>
   );

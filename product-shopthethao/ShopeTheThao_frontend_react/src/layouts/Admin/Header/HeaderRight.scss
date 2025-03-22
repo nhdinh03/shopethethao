@@ -1,0 +1,248 @@
+// Variables
+$primary-color: #1890ff;
+$hover-color: #40a9ff;
+$dark-color: #001529;
+$light-color: #ffffff;
+$text-primary: #262626;
+$text-secondary: #8c8c8c;
+$trophy-color: #faad14;
+$notification-color: #ff4d4f;
+
+// Header styles
+.flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
+  padding: 0.75rem 1.5rem;
+  height: 64px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 250, 252, 0.95)
+  );
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  // User profile section
+  .flex.items-center.gap-4 {
+    .ant-avatar {
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        border-color: $primary-color;
+        transform: scale(1.05);
+      }
+    }
+
+    .font-semibold {
+      background: linear-gradient(90deg, $dark-color, $primary-color);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .text-gray-500 {
+      opacity: 0.8;
+      font-style: italic;
+    }
+  }
+
+  // Search section
+  .flex.flex-1.justify-center.px-4 {
+    .ant-input-affix-wrapper {
+      border-radius: 20px;
+      padding: 8px 12px;
+      transition: all 0.3s;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+
+      &:hover,
+      &:focus,
+      &.ant-input-affix-wrapper-focused {
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      }
+
+      .ant-input {
+        background: transparent;
+      }
+
+      .anticon-search {
+        color: $text-secondary;
+      }
+    }
+  }
+
+  // Controls section
+  .flex.items-center.gap-7 {
+    .cursor-pointer {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: rgba(24, 144, 255, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .text-xl {
+        font-size: 1.25rem;
+      }
+    }
+
+    // Trophy icon specific styles
+    span:has(.fa-trophy) {
+      &:hover {
+        .text-xl {
+          color: $trophy-color !important;
+          animation: pulse 1.5s infinite;
+        }
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 8px;
+        height: 8px;
+        background-color: $trophy-color;
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+      }
+    }
+
+    // Settings icon specific styles
+    span:has(.fa-gear) {
+      &:hover {
+        .text-xl {
+          animation: rotate 2s infinite linear;
+        }
+      }
+    }
+
+    // Language dropdown
+    img.w-9.h-6 {
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      width: 30px;
+      height: 20px;
+
+      &:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+}
+
+// NotificationDropdown styles
+.ant-badge {
+  .ant-badge-count {
+    box-shadow: 0 0 0 1px $light-color;
+    font-weight: bold;
+  }
+}
+
+// Animations
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
+    padding: 0.5rem 1rem;
+    flex-wrap: wrap;
+    height: auto;
+
+    .flex.items-center.gap-4 {
+      order: 1;
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .flex.flex-1.justify-center.px-4 {
+      order: 3;
+      width: 100%;
+      padding: 0.5rem 0;
+    }
+
+    .flex.items-center.gap-7 {
+      order: 2;
+      width: 100%;
+      justify-content: center;
+      gap: 1rem !important;
+    }
+  }
+}
+
+// Custom dropdown menu styles
+.ant-dropdown {
+  .ant-dropdown-menu {
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+
+    .ant-dropdown-menu-item {
+      border-radius: 6px;
+      padding: 8px 12px;
+
+      &:hover {
+        background-color: rgba(24, 144, 255, 0.1);
+      }
+
+      .flex {
+        align-items: center;
+
+        .anticon,
+        img {
+          margin-right: 8px;
+        }
+      }
+    }
+  }
+}
+
+// Dark mode preparation (commented out but ready for future implementation)
+// [data-theme='dark'] {
+//   .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
+//     background: linear-gradient(to right, rgba(22, 28, 36, 0.95), rgba(33, 43, 54, 0.95));
+//     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+//
+//     .text-gray-800 {
+//       color: rgba(255, 255, 255, 0.9);
+//     }
+//
+//     .text-gray-500 {
+//       color: rgba(255, 255, 255, 0.6);
+//     }
+//   }
+// }

@@ -53,7 +53,7 @@ $font-xxl: 24px;
 }
 
 // Component styles
-.brands-page {
+.products-page {
   padding: 20px;
   max-width: 1600px;
   width: 100%;
@@ -125,7 +125,7 @@ $font-xxl: 24px;
   }
   
   .add-btn {
-
+    // background: linear-gradient(to right, #1677ff, #4096ff);
     border: none;
     border-radius: 6px;
     height: 40px;
@@ -145,7 +145,6 @@ $font-xxl: 24px;
   }
   
   .table-container {
-    width: 100%;
     overflow-x: auto;
     margin-bottom: 20px;
     border-radius: 8px;
@@ -182,7 +181,6 @@ $font-xxl: 24px;
       
       .ant-table {
         font-size: $font-sm;
-        min-width: 600px; // Đảm bảo không bị co bảng quá mức
       }
     }
     
@@ -221,15 +219,43 @@ $font-xxl: 24px;
   }
 }
 
+// Maintain some original styles from Products.module.scss
+.ellipsis-text {
+  display: inline-block;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: color 0.1s ease-in-out;
+
+  @include responsive($breakpoint-tablet) {
+    max-width: 200px;
+  }
+
+  @include responsive($breakpoint-mobile-l) {
+    max-width: 150px;
+    font-size: $font-sm;
+  }
+}
+
+.space-vertical {
+  margin-bottom: 10px;
+  
+  @include responsive($breakpoint-mobile-l) {
+    margin-bottom: 8px;
+  }
+}
+
 /* Specific Responsive Breakpoints */
 @media (max-width: 1600px) {
-  .brands-page {
+  .products-page {
     padding: 16px;
   }
 }
 
 @media (max-width: 1200px) {
-  .brands-page {
+  .products-page {
     padding: 14px;
     
     .content-wrapper {
@@ -239,7 +265,7 @@ $font-xxl: 24px;
 }
 
 @media (max-width: 960px) {
-  .brands-page {
+  .products-page {
     padding: 12px;
     
     .content-wrapper {
@@ -249,7 +275,7 @@ $font-xxl: 24px;
 }
 
 @media (max-width: 760px) {
-  .brands-page {
+  .products-page {
     padding: 10px;
     
     .content-wrapper {
@@ -259,7 +285,7 @@ $font-xxl: 24px;
 }
 
 @media (max-width: 480px) {
-  .brands-page {
+  .products-page {
     padding: 8px;
     
     .content-wrapper {
@@ -269,11 +295,31 @@ $font-xxl: 24px;
 }
 
 @media (max-width: 320px) {
-  .brands-page {
+  .products-page {
     padding: 6px;
     
     .content-wrapper {
       padding: 10px;
     }
+  }
+}
+
+// Row dragging styles from original file
+.row-dragging {
+  background: #fafafa;
+  border: 1px solid #ccc;
+  z-index: 100;
+
+  td {
+    padding: 16px;
+    visibility: hidden;
+
+    @include responsive($breakpoint-mobile-l) {
+      padding: 8px;
+    }
+  }
+
+  .drag-visible {
+    visibility: visible;
   }
 }

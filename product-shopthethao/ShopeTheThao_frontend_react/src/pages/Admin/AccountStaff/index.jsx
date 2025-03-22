@@ -10,6 +10,8 @@ import {
   Space,
   Popconfirm,
   Alert,
+  Col,
+  Input,
 } from "antd";
 import {
   DeleteOutlined,
@@ -19,6 +21,7 @@ import {
   LockOutlined,
   PhoneOutlined,
   PlusOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import PaginationComponent from "components/User/PaginationComponent";
 import { accountsstaffApi, lockreasonsApi } from "api/Admin";
@@ -53,6 +56,8 @@ const AccountStaff = () => {
   });
 
   const [form] = Form.useForm();
+  const [searchText, setSearchText] = useState("");
+  const [activeTab, setActiveTab] = useState("1");
 
   const totalPages = useMemo(() => {
     return pagination.totalItems > 0
@@ -496,74 +501,117 @@ const AccountStaff = () => {
     },
   ];
 
+  const handleSearch = (value) => {
+    setSearchText(value);
+  };
+
+  const getFilteredStaff = () => {
+    if (!searchText) return staffState.accountsStaff;
+    
+    return staffState.accountsStaff.filter(staff => 
+      staff.fullname?.toLowerCase().includes(searchText.toLowerCase()) ||
+      staff.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+      staff.phone?.toLowerCase().includes(searchText.toLowerCase()) ||
+      staff.address?.toLowerCase().includes(searchText.toLowerCase()) ||
+      staff.id?.toString().includes(searchText) ||
+      staff.roles?.some(role => 
+        role.name?.toLowerCase().includes(searchText.toLowerCase())
+      )
+    );
+  };
+
+  const getFilteredLockedStaff = () => {
+    if (!searchText) return staffState.lockedUser;
+    
+    return staffState.lockedUser.filter(staff => 
+      staff.fullname?.toLowerCase().includes(searchText.toLowerCase()) ||
+      staff.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+      staff.phone?.toLowerCase().includes(searchText.toLowerCase()) ||
+      staff.address?.toLowerCase().includes(searchText.toLowerCase()) ||
+      staff.id?.toString().includes(searchText) ||
+      staff.lockReasons?.some(reason => 
+        reason.reason?.toLowerCase().includes(searchText.toLowerCase())
+      )
+    );
+  };
+
+  const handleTabChange = (activeKey) => {
+    setActiveTab(activeKey);
+    setSearchText("");  // Clear search when changing tabs
+  };
+
   return (
     <ErrorBoundary fallback={<div>Đã xảy ra lỗi. Vui lòng thử lại.</div>}>
-      <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-        <Row
-          justify="space-between"
-          align="middle"
-          style={{ marginBottom: "20px" }}
-        >
-          <h2>Quản lý nhân viên</h2>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setModalState((prev) => ({ ...prev, open: true }))}
-            className="add-btn"
-          >
-            Thêm nhân viên
-          </Button>
-        </Row>
+      <div className="size-page">
+        <div className="content-wrapper">
+          <Row justify="space-between" align="middle" className="header-container">
+            <h2 className="page-title">Quản lý nhân viên</h2>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setModalState((prev) => ({ ...prev, open: true }))}
+              className="add-btn"
+            >
+              Thêm nhân viên
+            </Button>
+          </Row>
 
-        <AccountStaffModal
-          open={modalState.open}
-          editUser={modalState.editUser}
-          form={form}
-          FileList={modalState.FileList}
-          statusChecked={modalState.statusChecked}
-          isStatusEditable={modalState.isStatusEditable}
-          handleCancel={handleCancel}
-          handleChange={handleChange}
-          onPreview={onPreview}
-          handleStatus={handleStatus}
-          handleStatusChange={handleStatusChange}
-          handleResetForm={handleCancel}
-          handleModalOk={handleModalOk}
-        />
-
-        <AccountStaffTabs
-          loading={staffState.loading}
-          staffList={staffState.accountsStaff}
-          lockedStaff={staffState.lockedUser}
-          columns={columns}
-          lockedColumns={lockedColumns}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: "10px",
-            gap: "10px",
-          }}
-        >
-          <PaginationComponent
-            totalPages={totalPages}
-            currentPage={pagination.currentPage}
-            setCurrentPage={(page) =>
-              setPagination((prev) => ({ ...prev, currentPage: page }))
-            }
+          <AccountStaffModal
+            open={modalState.open}
+            editUser={modalState.editUser}
+            form={form}
+            FileList={modalState.FileList}
+            statusChecked={modalState.statusChecked}
+            isStatusEditable={modalState.isStatusEditable}
+            handleCancel={handleCancel}
+            handleChange={handleChange}
+            onPreview={onPreview}
+            handleStatus={handleStatus}
+            handleStatusChange={handleStatusChange}
+            handleResetForm={handleCancel}
+            handleModalOk={handleModalOk}
           />
-          <Select
-            value={pagination.pageSize}
-            style={{ width: 120, marginTop: 20 }}
-            onChange={handlePageSizeChange}
-          >
-            <Select.Option value={5}>5 hàng</Select.Option>
-            <Select.Option value={10}>10 hàng</Select.Option>
-            <Select.Option value={20}>20 hàng</Select.Option>
-          </Select>
+
+          <Row gutter={[16, 16]} className="header-actions">
+            <Col xs={24} sm={24} md={24} lg={24}>
+              <Input
+                placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="search-input"
+                allowClear
+              />
+            </Col>
+          </Row>
+
+          <AccountStaffTabs
+            loading={staffState.loading}
+            staffList={getFilteredStaff()}
+            lockedStaff={getFilteredLockedStaff()}
+            columns={columns}
+            lockedColumns={lockedColumns}
+            onChange={handleTabChange}
+          />
+
+          <div className="pagination-container">
+            <PaginationComponent
+              totalPages={totalPages}
+              currentPage={pagination.currentPage}
+              setCurrentPage={(page) =>
+                setPagination((prev) => ({ ...prev, currentPage: page }))
+              }
+            />
+            <Select
+              value={pagination.pageSize}
+              style={{ width: 120, marginTop: 20 }}
+              onChange={handlePageSizeChange}
+            >
+              <Select.Option value={5}>5 hàng</Select.Option>
+              <Select.Option value={10}>10 hàng</Select.Option>
+              <Select.Option value={20}>20 hàng</Select.Option>
+            </Select>
+          </div>
         </div>
       </div>
     </ErrorBoundary>

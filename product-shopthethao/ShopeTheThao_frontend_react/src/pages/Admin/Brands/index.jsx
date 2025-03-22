@@ -4,21 +4,26 @@ import {
   Button,
   Form,
   Row,
+  Col,
+  Input
 } from "antd";
 import {
   PlusOutlined,
+  SearchOutlined
 } from "@ant-design/icons";
 
 import brandsApi from "api/Admin/Brands/Brands";
 import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { BrandsModal, BrandsPagination, BrandsTable } from "components/Admin";
+import "./brands.scss";
+
 const Brands = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
-  // const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState("");
   const [brands, setBrands] = useState([]);
   const [open, setOpen] = useState(false);
   const [editBrand, setEditBrand] = useState(null);
@@ -104,10 +109,16 @@ const Brands = () => {
     setCurrentPage(1);
   };
 
-  // const handleSearch = (value) => {
-  //   setSearchText(value);
-  //   setCurrentPage(1);
-  // };
+  const handleSearch = (value) => {
+    setSearchText(value);
+    setCurrentPage(1);
+    console.log("Searching for:", value);
+  };
+
+  // Filter brands based on search text
+  const filteredBrands = brands.filter(item => 
+    item.name.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const columns = [
     { title: "🆔 ID", dataIndex: "id", key: "id", width: 80 },
@@ -123,37 +134,52 @@ const Brands = () => {
   ];
 
   return (
-    <div style={{ padding: 10 }}>
-      <Row>
-        <h2>Quản lý Thương hiệu sản phẩm</h2>
+    <div className="brands-page">
+      <div className="content-wrapper">
+        <h2 className="page-title">Quản lý Thương hiệu sản phẩm</h2>
 
-        <div className="header-container">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setOpen(true)}
-            className="add-btn"
-          >
-            Thêm Thương hiệu
-          </Button>
+        <Row gutter={[16, 16]} className="header-actions">
+          <Col xs={24} sm={14} md={16} lg={18}>
+            <Input
+              placeholder="Tìm kiếm thương hiệu..."
+              prefix={<SearchOutlined />}
+              className="search-input"
+              onChange={(e) => handleSearch(e.target.value)}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} sm={10} md={8} lg={6} className="add-button-container">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setOpen(true)}
+              className="add-btn"
+            >
+              Thêm Thương hiệu
+            </Button>
+          </Col>
+        </Row>
+
+        <div className="table-container">
+          <BrandsTable brands={filteredBrands} loading={loading} columns={columns} />
         </div>
-      </Row>
-      <BrandsTable brands={brands} loading={loading} columns={columns} />
 
-      <BrandsModal
-        open={open}
-        editBrand={editBrand}
-        handleModalCancel={handleModalCancel}
-        handleModalOk={handleModalOk}
-        form={form}
-      />
-      <BrandsPagination
-        totalPages={totalPages}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        pageSize={pageSize}
-        handlePageSizeChange={handlePageSizeChange}
-      />
+        <BrandsModal
+          open={open}
+          editBrand={editBrand}
+          handleModalCancel={handleModalCancel}
+          handleModalOk={handleModalOk}
+          form={form}
+        />
+        
+        <BrandsPagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          handlePageSizeChange={handlePageSizeChange}
+        />
+      </div>
     </div>
   );
 };
