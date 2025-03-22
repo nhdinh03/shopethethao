@@ -118,41 +118,42 @@ const ProductAttributes = () => {
 
   return (
     <div className="product-attributes-page">
-      <Row>
-        <h2 className="page-title">Thuộc tính sản phẩm</h2>
+      <div className="content-wrapper">
+        <Row>
+          <h2 className="page-title">Thuộc tính sản phẩm</h2>
 
-        <div className="header-container">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setOpen(true)}
-            className="add-btn"
-          >
-            Thêm kích thước
-          </Button>
-        </div>
-      </Row>
-      <ProductAttributesModal
-        open={open}
-        form={form}
-        handleModalOk={handleModalOk}
-        handleCancel={handleCancel}
-        editProductAttributes={editProductAttributes}
-        handleResetForm={handleResetForm}
-      />
-      <ProductAttributesTable
-        columns={columns}
-        productattributes={productattributes}
-        loading={loading}
-  
-      />
-      <ProductAttributesPagination
-        totalPages={totalPages}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        pageSize={pageSize}
-        handlePageSizeChange={handlePageSizeChange}
-      />
+          <div className="header-container">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setOpen(true)}
+              className="add-btn"
+            >
+              Thêm kích thước
+            </Button>
+          </div>
+        </Row>
+        <ProductAttributesModal
+          open={open}
+          form={form}
+          handleModalOk={handleModalOk}
+          handleCancel={handleCancel}
+          editProductAttributes={editProductAttributes}
+          handleResetForm={handleResetForm}
+        />
+        <ProductAttributesTable
+          columns={columns}
+          productattributes={productattributes}
+          loading={loading}
+        />
+        <ProductAttributesPagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          pageSize={pageSize}
+          handlePageSizeChange={handlePageSizeChange}
+        />
+      </div>
     </div>
   );
 };

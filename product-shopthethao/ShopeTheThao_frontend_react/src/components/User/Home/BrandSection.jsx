@@ -62,16 +62,16 @@ const BrandSection = () => {
 
   return (
     <section className="brands-section">
-      <div className="container">
+      <div className="container" style={{ maxWidth: '1600px' }}>
         <motion.div
-          className="section-header"
+          className="section-header responsive-header"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
           viewport={{ once: true, margin: "-100px" }}
         >
-          <h2>THƯƠNG HIỆU NỔI BẬT</h2>
-          <p>
+          <h2 className="title-highlight">THƯƠNG HIỆU NỔI BẬT</h2>
+          <p className="subtitle-responsive">
             Chúng tôi hợp tác với các thương hiệu thể thao hàng đầu thế giới để mang đến sản phẩm chất lượng cao
           </p>
         </motion.div>

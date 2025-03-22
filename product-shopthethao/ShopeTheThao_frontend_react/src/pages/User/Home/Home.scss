@@ -2607,3 +2607,154 @@ $font-4xl: 40px;   // Large hero text
     }
   }
 }
+
+// Enhanced responsive headers
+.responsive-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  
+  .title-highlight {
+    position: relative;
+    display: inline-block;
+    font-weight: 700;
+    color: $secondary-color;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 4px;
+      background: linear-gradient(to right, $accent-color, lighten($accent-color, 20%));
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+  }
+  
+  .subtitle-responsive {
+    font-weight: 400;
+    color: rgba($text-color, 0.8);
+    margin: 0 auto;
+    max-width: 800px;
+    line-height: 1.6;
+  }
+}
+
+// Container width constraints
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  max-width: 1600px;
+  
+  @media (min-width: 1601px) {
+    max-width: 1600px;
+  }
+}
+
+// Responsive typography and spacing
+@media (min-width: 1280px) {
+  .responsive-header {
+    .title-highlight {
+      font-size: $font-4xl; // 40px
+      &:after {
+        width: 120px;
+      }
+    }
+    .subtitle-responsive {
+      font-size: $font-xl; // 20px
+    }
+  }
+}
+
+@media (min-width: 960px) and (max-width: 1279px) {
+  .responsive-header {
+    .title-highlight {
+      font-size: $font-3xl; // 32px
+      &:after {
+        width: 100px;
+      }
+    }
+    .subtitle-responsive {
+      font-size: $font-lg; // 18px
+    }
+  }
+}
+
+@media (min-width: 760px) and (max-width: 959px) {
+  .responsive-header {
+    .title-highlight {
+      font-size: $font-2xl; // 24px
+      &:after {
+        width: 80px;
+      }
+    }
+    .subtitle-responsive {
+      font-size: $font-md; // 16px
+    }
+  }
+}
+
+@media (min-width: 480px) and (max-width: 759px) {
+  .responsive-header {
+    .title-highlight {
+      font-size: $font-xl; // 20px
+      &:after {
+        width: 60px;
+      }
+    }
+    .subtitle-responsive {
+      font-size: $font-base; // 14px
+    }
+  }
+}
+
+@media (max-width: 479px) {
+  .responsive-header {
+    .title-highlight {
+      font-size: $font-lg; // 18px
+      &:after {
+        width: 50px;
+      }
+    }
+    .subtitle-responsive {
+      font-size: $font-sm; // 13px
+    }
+  }
+}
+
+@media (max-width: 320px) {
+  .responsive-header {
+    margin-bottom: 2rem;
+    
+    .title-highlight {
+      font-size: $font-md; // 16px
+      &:after {
+        width: 40px;
+        height: 3px;
+      }
+    }
+    .subtitle-responsive {
+      font-size: $font-xs; // 12px
+    }
+  }
+  
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+// Hover effects for larger screens
+@media (min-width: 960px) {
+  .responsive-header {
+    .title-highlight {
+      &:hover:after {
+        width: 140px;
+      }
+    }
+  }
+}
