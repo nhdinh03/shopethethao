@@ -406,10 +406,18 @@ const Invoices = () => {
   // Common column configurations
 const commonColumns = {
   invoiceId: {
-    title: "Mã hóa đơn",
+    title: "🆔 Mã hóa đơn",
     dataIndex: "invoiceId",
     key: "invoiceId",
     width: 150,
+    onHeaderCell: () => ({
+      style: {
+        backgroundColor: "#f0f5ff",
+        color: "#1677ff",
+        fontWeight: 600,
+        borderRight: "1px solid #f0f0f0"
+      }
+    }),
     render: (id) => (
       <Tag color="blue" style={{ fontSize: '14px', padding: '4px 8px' }}>
         {id}
@@ -417,10 +425,18 @@ const commonColumns = {
     ),
   },
   orderDate: {
-    title: "Ngày đặt hàng",
+    title: "📅 Ngày đặt hàng",
     dataIndex: "orderDate",
     key: "orderDate",
     width: 180,
+    onHeaderCell: () => ({
+      style: {
+        backgroundColor: "#f0f5ff",
+        color: "#1677ff",
+        fontWeight: 600,
+        borderRight: "1px solid #f0f0f0"
+      }
+    }),
     render: (date) => (
       <span>
         <CalendarOutlined style={{ marginRight: 8 }} />
@@ -429,10 +445,18 @@ const commonColumns = {
     ),
   },
   status: {
-    title: "Trạng thái",
+    title: "📊 Trạng thái",
     dataIndex: "status",
     key: "status",
     width: 150,
+    onHeaderCell: () => ({
+      style: {
+        backgroundColor: "#f0f5ff",
+        color: "#1677ff",
+        fontWeight: 600,
+        borderRight: "1px solid #f0f0f0"
+      }
+    }),
     render: (status) => {
       const statusConfig = {
         "Chờ xử lý": { color: "gold", icon: <ClockCircleOutlined /> },
@@ -449,10 +473,18 @@ const commonColumns = {
     },
   },
   customerName: {
-    title: "Tên khách hàng",
+    title: "👤 Tên khách hàng",
     dataIndex: "customerName",
     key: "customerName",
     width: 200,
+    onHeaderCell: () => ({
+      style: {
+        backgroundColor: "#f0f5ff",
+        color: "#1677ff",
+        fontWeight: 600,
+        borderRight: "1px solid #f0f0f0"
+      }
+    }),
     render: (name) => (
       <span>
         <UserOutlined style={{ marginRight: 8 }} />
@@ -461,11 +493,19 @@ const commonColumns = {
     ),
   },
   totalAmount: {
-    title: "Giá đơn hàng",
+    title: "💰 Giá đơn hàng",
     dataIndex: "totalAmount",
     key: "totalAmount",
     width: 180,
     align: 'right',
+    onHeaderCell: () => ({
+      style: {
+        backgroundColor: "#f0f5ff",
+        color: "#1677ff",
+        fontWeight: 600,
+        borderRight: "1px solid #f0f0f0"
+      }
+    }),
     render: (value) => (
       <Text strong style={{ color: '#f50' }}>
         {new Intl.NumberFormat("vi-VN", {
@@ -547,6 +587,22 @@ const getActionButtons = (record, type) => {
   );
 };
 
+// Thêm style cho cột action trong các bảng
+const getActionColumn = (type) => ({
+  title: "⚙️ Thao tác",
+  key: "actions",
+  width: type === 'pending' ? 300 : type === 'delivered' ? 120 : 250,
+  onHeaderCell: () => ({
+    style: {
+      backgroundColor: "#f0f5ff",
+      color: "#1677ff",
+      fontWeight: 600,
+      borderRight: "1px solid #f0f0f0"
+    }
+  }),
+  render: (_, record) => getActionButtons(record, type)
+});
+
 // Updated column definitions
 const columnsPending = [
   commonColumns.invoiceId,
@@ -554,12 +610,7 @@ const columnsPending = [
   commonColumns.status,
   commonColumns.customerName,
   commonColumns.totalAmount,
-  {
-    title: "Thao tác",
-    key: "actions",
-    width: 300,
-    render: (_, record) => getActionButtons(record, 'pending'),
-  },
+  getActionColumn('pending'),
 ];
 
 const columnsShipping = [
@@ -568,12 +619,7 @@ const columnsShipping = [
   commonColumns.status,
   commonColumns.customerName,
   commonColumns.totalAmount,
-  {
-    title: "Thao tác",
-    key: "actions",
-    width: 250,
-    render: (_, record) => getActionButtons(record, 'shipping'),
-  },
+  getActionColumn('shipping'),
 ];
 
 const columnsDelivered = [
@@ -582,12 +628,7 @@ const columnsDelivered = [
   commonColumns.status,
   commonColumns.customerName,
   commonColumns.totalAmount,
-  {
-    title: "Thao tác",
-    key: "actions",
-    width: 120,
-    render: (_, record) => getActionButtons(record, 'delivered'),
-  },
+  getActionColumn('delivered'),
 ];
 
 const columnsCancelled = [
@@ -596,12 +637,7 @@ const columnsCancelled = [
   commonColumns.status,
   commonColumns.customerName,
   commonColumns.totalAmount,
-  {
-    title: "Thao tác",
-    key: "actions",
-    width: 250,
-    render: (_, record) => getActionButtons(record, 'cancelled'),
-  },
+  getActionColumn('cancelled'),
 ];
 
   // Filter functions for each tab

@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {
-  Table,
   message,
   Button,
-  Space,
-  Modal,
   Form,
   Input,
-  Popconfirm,
-  Tooltip,
-  Select,
   Row,
   Col,
 } from "antd";
@@ -21,7 +15,6 @@ import {
 } from "components/Admin";
 
 import "./productattributes.scss";
-import ActionColumn from "components/Admin/tableColumns/ActionColumn";
 import { productattributesApi } from "api/Admin";
 
 const ProductAttributes = () => {
@@ -125,12 +118,6 @@ const ProductAttributes = () => {
     item.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const columns = [
-    { title: "🆔 Danh sách", dataIndex: "id", key: "id" },
-    { title: "📏 Tên Thuộc tính sản phẩm", dataIndex: "name", key: "name" },
-    ActionColumn(handleEditData, handleDelete),
-  ];
-
   return (
     <div className="product-attributes-page">
       <div className="content-wrapper">
@@ -166,11 +153,14 @@ const ProductAttributes = () => {
           editProductAttributes={editProductAttributes}
           handleResetForm={handleResetForm}
         />
+        
         <ProductAttributesTable
-          columns={columns}
           productattributes={filteredAttributes}
           loading={loading}
+          handleEditData={handleEditData}
+          handleDelete={handleDelete}
         />
+        
         <ProductAttributesPagination
           totalPages={totalPages}
           currentPage={currentPage}

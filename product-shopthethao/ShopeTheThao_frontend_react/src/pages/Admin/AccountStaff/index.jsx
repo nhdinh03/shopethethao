@@ -293,22 +293,36 @@ const AccountStaff = () => {
     }
   };
 
+  // Add header style configuration
+  const headerStyle = {
+    backgroundColor: "#f0f5ff",
+    color: "#1677ff",
+    fontWeight: 600,
+    borderRight: "1px solid #f0f0f0"
+  };
+
   const columns = [
     {
       title: "Thông tin cơ bản",
       children: [
         {
-          title: "ID",
+          title: "🆔 ID",
           dataIndex: "id",
           key: "id",
           width: 80,
           className: "column-id",
+          onHeaderCell: () => ({
+            style: headerStyle
+          })
         },
         {
-          title: "Họ tên",
+          title: "👤 Họ tên",
           dataIndex: "fullname",
           key: "fullname",
           width: 180,
+          onHeaderCell: () => ({
+            style: headerStyle
+          }),
           render: (text, record) => (
             <div className="user-info-cell">
               <div className="avatar">
@@ -333,13 +347,16 @@ const AccountStaff = () => {
       ],
     },
     {
-      title: "Thông tin liên hệ",
+      title: "📞 Thông tin liên hệ",
       children: [
         {
-          title: "Số điện thoại",
+          title: "📱 Số điện thoại",
           dataIndex: "phone",
           key: "phone",
           width: 140,
+          onHeaderCell: () => ({
+            style: headerStyle
+          }),
           render: (phone) => (
             <Tag icon={<PhoneOutlined />} color="blue">
               {phone}
@@ -347,10 +364,13 @@ const AccountStaff = () => {
           ),
         },
         {
-          title: "Địa chỉ",
+          title: "📍 Địa chỉ",
           dataIndex: "address",
           key: "address",
           width: 200,
+          onHeaderCell: () => ({
+            style: headerStyle
+          }),
           render: (address) => (
             <Tooltip title={address}>
               <div className="address-cell">
@@ -362,11 +382,14 @@ const AccountStaff = () => {
       ],
     },
     {
-      title: "Thông tin chi tiết",
+      title: "ℹ️ Thông tin chi tiết",
       children: [
         {
-          title: "Trạng thái",
+          title: "📊 Trạng thái",
           width: 150,
+          onHeaderCell: () => ({
+            style: headerStyle
+          }),
           render: (_, record) => (
             <Space direction="vertical" size={4}>
               <Tag color={record.verified ? "green" : "red"}>
@@ -379,10 +402,13 @@ const AccountStaff = () => {
           ),
         },
         {
-          title: "Vai trò",
+          title: "👥 Vai trò",
           dataIndex: "roles",
           key: "roles",
           width: 150,
+          onHeaderCell: () => ({
+            style: headerStyle
+          }),
           render: (roles) => (
             <Space size={[0, 4]} wrap>
               {Array.isArray(roles) && roles.length > 0 ? (
@@ -400,9 +426,12 @@ const AccountStaff = () => {
       ],
     },
     {
-      title: "Hành động",
+      title: "⚙️ Hành động",
       fixed: "right",
       width: 120,
+      onHeaderCell: () => ({
+        style: headerStyle
+      }),
       render: (_, record) => (
         <Space size="middle" className="action-buttons">
           <Button

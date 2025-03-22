@@ -15,14 +15,14 @@ const SizeTable = ({
 
   const columns = [
     {
-      title: "🆔 Mã số",
+      title: <div className="column-header"><span className="emoji">🆔</span>Mã số</div>,
       dataIndex: "id",
       key: "id",
       sorter: (a, b) => a.id - b.id,
       width: "15%",
     },
     {
-      title: "📏 Tên Kích Thước",
+      title: <div className="column-header"><span className="emoji">📏</span>Tên Kích Thước</div>,
       dataIndex: "name",
       key: "name",
       sorter: (a, b) => a.name.localeCompare(b.name),
@@ -45,7 +45,7 @@ const SizeTable = ({
       width: "30%",
     },
     {
-      title: "📝 Mô tả",
+      title: <div className="column-header"><span className="emoji">📝</span>Mô tả</div>,
       dataIndex: "description",
       key: "description",
       width: "30%",
@@ -62,6 +62,7 @@ const SizeTable = ({
     },
     {
       ...ActionColumn(handleEditData, handleDelete),
+      title: <div className="column-header"><span className="emoji">⚡</span>Thao tác</div>,
       width: "25%",
       fixed: 'right'
     }

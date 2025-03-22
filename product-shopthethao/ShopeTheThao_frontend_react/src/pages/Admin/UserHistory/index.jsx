@@ -144,13 +144,13 @@ const UserHistory = () => {
 
   const columns = [
     {
-      title: 'ID',
+      title: <div className="column-header"><span className="emoji">🆔</span>ID</div>,
       dataIndex: 'idHistory',
       key: 'idHistory',
       width: 80,
     },
     {
-      title: 'Người dùng',
+      title: <div className="column-header"><span className="emoji">👤</span>Người dùng</div>,
       dataIndex: 'username',
       key: 'username',
       render: (text, record) => (
@@ -162,7 +162,7 @@ const UserHistory = () => {
       ),
     },
     {
-      title: 'Hành động',
+      title: <div className="column-header"><span className="emoji">⚡</span>Hành động</div>,
       dataIndex: 'actionType',
       key: 'actionType',
       render: (text) => (
@@ -172,13 +172,13 @@ const UserHistory = () => {
       ),
     },
     {
-      title: 'Ghi chú',
+      title: <div className="column-header"><span className="emoji">📝</span>Ghi chú</div>,
       dataIndex: 'note',
       key: 'note',
       width: 200,
     },
     {
-      title: 'Thời gian',
+      title: <div className="column-header"><span className="emoji">🕒</span>Thời gian</div>,
       dataIndex: 'historyDateTime',
       key: 'historyDateTime',
       render: (text) => (
@@ -189,7 +189,7 @@ const UserHistory = () => {
       ),
     },
     {
-      title: 'Thiết bị',
+      title: <div className="column-header"><span className="emoji">💻</span>Thiết bị</div>,
       dataIndex: 'deviceInfo',
       key: 'deviceInfo',
       render: (text, record) => {  // Add record parameter
@@ -203,7 +203,7 @@ const UserHistory = () => {
       },
     },
     {
-      title: 'Trạng thái',
+      title: <div className="column-header"><span className="emoji">🔄</span>Trạng thái</div>,
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
@@ -213,7 +213,7 @@ const UserHistory = () => {
       ),
     },
     {
-      title: 'Trạng thái xem',
+      title: <div className="column-header"><span className="emoji">👁️</span>Trạng thái xem</div>,
       dataIndex: 'readStatus',
       key: 'readStatus',
       render: (status) => (
@@ -223,7 +223,7 @@ const UserHistory = () => {
       ),
     },
     {
-      title: 'Hành động',
+      title: <div className="column-header"><span className="emoji">⚡</span>Thao tác</div>,
       key: 'actions',
       width: 80,
       render: (_, record) => (

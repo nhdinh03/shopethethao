@@ -49,12 +49,15 @@ const Sizes = () => {
 
   const handleSearch = (value) => {
     setSearchText(value);
-    console.log("Searching for:", value);
+    // Reset to page 1 when searching
+    setCurrentPage(1);
   };
 
   // Filter sizes based on search text
   const filteredSizes = size.filter(item => 
-    item.name.toLowerCase().includes(searchText.toLowerCase())
+    item.name.toLowerCase().includes(searchText.toLowerCase()) || 
+    item.id?.toString().includes(searchText) || 
+    item.description?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -65,10 +68,11 @@ const Sizes = () => {
         <Row gutter={[16, 16]} className="header-actions">
           <Col xs={24} sm={14} md={16} lg={18}>
             <Input
-              placeholder="Tìm kiếm kích thước sản phẩm..."
+              placeholder="Tìm kiếm theo ID, tên, mô tả..."
               prefix={<SearchOutlined />}
               className="search-input"
               onChange={(e) => handleSearch(e.target.value)}
+              value={searchText}
               allowClear
             />
           </Col>
@@ -89,24 +93,32 @@ const Sizes = () => {
           open={open}
           handleModalOk={handleModalOk}
           handleResetForm={() => form.resetFields()}
-          handleCancel={() => setOpen(false)}
+          handleCancel={() => {
+            setOpen(false);
+            form.resetFields();
+            setEditSize(null);
+          }}
           editSize={editSize}
         />
 
-        <SizeTable
-          sizeData={filteredSizes}
-          handleEditData={handleEditData}
-          handleDelete={deleteSize}
-          loading={loading}
-        />
+        <div className="table-container">
+          <SizeTable
+            sizeData={filteredSizes}
+            handleEditData={handleEditData}
+            handleDelete={deleteSize}
+            loading={loading}
+          />
+        </div>
 
-        <SizePagination
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          pageSize={pageSize}
-          handlePageSizeChange={handlePageSizeChange}
-        />
+        <div className="pagination-container">
+          <SizePagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            pageSize={pageSize}
+            handlePageSizeChange={handlePageSizeChange}
+          />
+        </div>
       </div>
     </div>
   );

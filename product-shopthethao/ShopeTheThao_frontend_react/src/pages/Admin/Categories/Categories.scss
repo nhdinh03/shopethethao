@@ -123,6 +123,8 @@ $font-xxl: 24px;
       }
     }
   }
+
+  
   
   .add-btn {
 
@@ -144,6 +146,17 @@ $font-xxl: 24px;
     }
   }
 }
+.ant-table-thead > tr > th {
+  background-color: #f0f5ff;
+  color: #1677ff;
+  font-weight: 600;
+  border-right: 1px solid #f0f0f0;
+  
+  &:last-child {
+    border-right: none;
+  }
+}
+
 
 // Maintaining legacy styles from the original file
 .ellipsis-text {
@@ -160,6 +173,64 @@ $font-xxl: 24px;
 .table-container {
   width: 100%;
   overflow-x: auto;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border-inline-start: 1px solid #f0f0f0;
+  border-top: 1px solid #f0f0f0;
+  overflow: auto hidden;
+  
+  .ant-table-wrapper {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .ant-table-thead > tr > th {
+    background-color: #f0f5ff;
+    color: #1677ff;
+    font-weight: 600;
+    border-right: 1px solid #f0f0f0;
+    
+    &:last-child {
+      border-right: none;
+    }
+    
+    // Custom column header styles
+    .column-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #1677ff;
+      font-weight: 600;
+    }
+  }
+  
+  .ant-table-tbody > tr > td {
+    border-right: 1px solid #f0f0f0;
+    
+    &:last-child {
+      border-right: none;
+    }
+  }
+  
+  @include responsive($breakpoint-tablet) {
+    font-size: $font-sm;
+    
+    .ant-table {
+      font-size: $font-sm;
+      min-width: 600px; // Ensure table doesn't shrink too much
+    }
+  }
+  
+  @include responsive($breakpoint-mobile-l) {
+    .ant-table-cell {
+      padding: 8px 4px;
+    }
+    
+    .ant-btn {
+      padding: 4px 8px;
+      font-size: $font-xs;
+    }
+  }
 }
 
 // ✅ Điều chỉnh hiển thị cột trên màn hình nhỏ

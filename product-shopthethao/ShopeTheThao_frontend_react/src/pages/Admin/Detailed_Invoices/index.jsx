@@ -64,17 +64,33 @@ const Detailed_Invoices = () => {
 
   const columns = [
     {
-      title: 'ID',
+      title: "🆔 ID",
       dataIndex: 'id',
       key: 'id',
       width: 80,
       className: 'column-id',
+      onHeaderCell: () => ({
+        style: {
+          backgroundColor: "#f0f5ff",
+          color: "#1677ff",
+          fontWeight: 600,
+          borderRight: "1px solid #f0f0f0"
+        }
+      })
     },
     {
-      title: 'Thông tin sản phẩm',
+      title: "📦 Thông tin sản phẩm",
       dataIndex: 'product',
       key: 'product',
       width: 300,
+      onHeaderCell: () => ({
+        style: {
+          backgroundColor: "#f0f5ff",
+          color: "#1677ff",
+          fontWeight: 600,
+          borderRight: "1px solid #f0f0f0"
+        }
+      }),
       render: (product) => (
         <div className="product-info-cell">
           <div className="product-image">
@@ -95,28 +111,52 @@ const Detailed_Invoices = () => {
       ),
     },
     {
-      title: 'Kích thước',
+      title: "📏 Kích thước",
       dataIndex: 'size',
       key: 'size',
       width: 100,
+      onHeaderCell: () => ({
+        style: {
+          backgroundColor: "#f0f5ff",
+          color: "#1677ff",
+          fontWeight: 600,
+          borderRight: "1px solid #f0f0f0"
+        }
+      }),
       render: (size) => (
         <Tag color="blue">{size.name}</Tag>
       ),
     },
     {
-      title: 'Số lượng',
+      title: "📊 Số lượng",
       dataIndex: 'quantity',
       key: 'quantity',
       width: 100,
+      onHeaderCell: () => ({
+        style: {
+          backgroundColor: "#f0f5ff",
+          color: "#1677ff",
+          fontWeight: 600,
+          borderRight: "1px solid #f0f0f0"
+        }
+      }),
       render: (quantity) => (
         <Tag color="green">{quantity}</Tag>
       ),
     },
     {
-      title: 'Đơn giá',
+      title: "💰 Đơn giá",
       dataIndex: 'unitPrice',
       key: 'unitPrice',
       width: 150,
+      onHeaderCell: () => ({
+        style: {
+          backgroundColor: "#f0f5ff",
+          color: "#1677ff",
+          fontWeight: 600,
+          borderRight: "1px solid #f0f0f0"
+        }
+      }),
       render: (price) => (
         <span className="price-tag">
           {price.toLocaleString('vi-VN')} VNĐ
@@ -124,10 +164,18 @@ const Detailed_Invoices = () => {
       ),
     },
     {
-      title: 'Phương thức thanh toán',
+      title: "💳 Phương thức thanh toán",
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
       width: 200,
+      onHeaderCell: () => ({
+        style: {
+          backgroundColor: "#f0f5ff",
+          color: "#1677ff",
+          fontWeight: 600,
+          borderRight: "1px solid #f0f0f0"
+        }
+      }),
       render: (method) => (
         <Tag color={method === 'Tiền mặt' ? 'orange' : 'purple'}>
           {method}

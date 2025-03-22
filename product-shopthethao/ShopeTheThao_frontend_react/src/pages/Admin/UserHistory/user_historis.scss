@@ -186,3 +186,13 @@
   margin-top: 20px;
   gap: 10px;
 }
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .emoji {
+    font-size: 16px;
+  }
+}

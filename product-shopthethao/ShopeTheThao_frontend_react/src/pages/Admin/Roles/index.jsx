@@ -99,11 +99,50 @@ const Roles = () => {
 
   const filteredRoles = getFilteredRoles();
 
+  // Add header style configuration
+  const headerStyle = {
+    backgroundColor: "#f0f5ff",
+    color: "#1677ff",
+    fontWeight: 600,
+    borderRight: "1px solid #f0f0f0"
+  };
+
   const columns = [
-    { title: "🆔 Danh sách", dataIndex: "id", key: "id" },
-    { title: "📏 Tên Vai trò", dataIndex: "name", key: "name" },
-    { title: "📝 Mô tả vai trò", dataIndex: "description", key: "description" },
-    ActionColumn(handleEditData, deleteRole),
+    { 
+      title: "🆔 ID", 
+      dataIndex: "id", 
+      key: "id",
+      width: "10%",
+      onHeaderCell: () => ({
+        style: headerStyle
+      })
+    },
+    { 
+      title: "👥 Tên Vai trò", 
+      dataIndex: "name", 
+      key: "name",
+      width: "35%",
+      onHeaderCell: () => ({
+        style: headerStyle
+      })
+    },
+    { 
+      title: "📝 Mô tả vai trò", 
+      dataIndex: "description", 
+      key: "description",
+      width: "35%",
+      onHeaderCell: () => ({
+        style: headerStyle
+      })
+    },
+    {
+      ...ActionColumn(handleEditData, deleteRole),
+      title: "⚙️ Thao tác",
+      width: "20%",
+      onHeaderCell: () => ({
+        style: headerStyle
+      })
+    },
   ];
 
   return (

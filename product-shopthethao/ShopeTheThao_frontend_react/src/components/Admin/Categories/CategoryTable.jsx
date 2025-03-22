@@ -1,9 +1,17 @@
 import React from 'react';
 import { Table, Tooltip, Input } from 'antd';
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, IdcardOutlined, FolderOutlined, FileTextOutlined, SettingOutlined } from "@ant-design/icons";
 import ActionColumn from '../tableColumns/ActionColumn';
 
 const CategoryTable = ({ categories, loading, handleEditData, handleDelete }) => {
+  // Custom styles for the header cells
+  const headerStyle = {
+    backgroundColor: "#f0f5ff",
+    color: "#1677ff",
+    fontWeight: 600,
+    borderRight: "1px solid #f0f0f0"
+  };
+
   const columns = [
     { 
       title: "🆔 ID", 
@@ -11,6 +19,9 @@ const CategoryTable = ({ categories, loading, handleEditData, handleDelete }) =>
       key: "id",
       width: "10%",
       sorter: (a, b) => a.id - b.id,
+      onHeaderCell: () => ({
+        style: headerStyle
+      })
     },
     {
       title: "📂 Tên danh mục",
@@ -43,6 +54,9 @@ const CategoryTable = ({ categories, loading, handleEditData, handleDelete }) =>
           </span>
         </Tooltip>
       ),
+      onHeaderCell: () => ({
+        style: headerStyle
+      })
     },
     {
       title: "📝 Mô tả danh mục",
@@ -72,11 +86,18 @@ const CategoryTable = ({ categories, loading, handleEditData, handleDelete }) =>
           </span>
         </Tooltip>
       ),
+      onHeaderCell: () => ({
+        style: headerStyle
+      })
     },
     {
+      title: "⚙️ Thao tác",
       ...ActionColumn(handleEditData, handleDelete),
       width: "20%",
-      fixed: 'right'
+      fixed: 'right',
+      onHeaderCell: () => ({
+        style: headerStyle
+      })
     },
   ];
 

@@ -52,6 +52,55 @@
   .table-container {
     width: 100%;
     overflow-x: auto;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border-inline-start: 1px solid #f0f0f0;
+    border-top: 1px solid #f0f0f0;
+    overflow: auto hidden;
+  
+    .ant-table-wrapper {
+      border-radius: 8px;
+      overflow: hidden;
+    }
+  
+    .ant-table-thead > tr > th {
+      background-color: #f0f5ff !important;
+      color: #1677ff !important;
+      font-weight: 600;
+      border-right: 1px solid #f0f0f0;
+      padding: 12px 16px;
+      
+      &:last-child {
+        border-right: none;
+      }
+  
+      // Column header styles with emojis
+      .column-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        color: #1677ff;
+        font-weight: 600;
+        font-size: 14px;
+        
+        .emoji {
+          font-size: 16px;
+          margin-right: 4px;
+          background: rgba(22, 119, 255, 0.1);
+          padding: 2px 4px;
+          border-radius: 4px;
+        }
+      }
+    }
+  
+    .ant-table-tbody > tr > td {
+      border-right: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
   }
   
   // ✅ Điều chỉnh hiển thị cột trên màn hình nhỏ
@@ -92,4 +141,3 @@
       gap: 8px;
     }
   }
-  
