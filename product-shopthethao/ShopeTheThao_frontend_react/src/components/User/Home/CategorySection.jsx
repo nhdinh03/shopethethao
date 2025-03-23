@@ -111,7 +111,7 @@ const CategorySection = () => {
           viewport={{ once: true }}
         >
           <div className="header-content">
-            <h2>DANH MỤC NỔI BẬT</h2>
+            <h2 style={{color: "#ff4400" }}>DANH MỤC NỔI BẬT</h2>
             <p>Top danh mục phổ biến</p>
           </div>
           <Link to="/categories" className="view-more">

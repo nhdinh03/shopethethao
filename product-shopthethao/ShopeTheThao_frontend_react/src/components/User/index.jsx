@@ -13,7 +13,7 @@ export { default as Slideshow } from "./Slideshow/Slideshow";
 export { default as ActionButtons } from "./Table/ActionButtons";
 
 
-export { default as BrandSection } from "./Home/BrandSection";
+
 
 
 
@@ -22,4 +22,10 @@ export { default as BackToTop } from "components/BackToTop";
 export { default as FeedbackModal } from "components/FeedbackModal";
 
 
+
+
+export { default as BrandSection } from "./Home/BrandSection";
 export { default as CategorySection } from "./Home/CategorySection";
+
+
+export { default as ProductShowcase } from "./Home/ProductShowcase";

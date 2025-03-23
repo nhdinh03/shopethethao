@@ -1,9 +1,10 @@
 import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
-import { FaArrowRight, FaRegPaperPlane, FaStar, FaRegStar, FaHeart, FaShoppingCart } from "react-icons/fa";
+import { FaArrowRight, FaRegPaperPlane, FaStar, FaRegStar, FaHeart, FaShoppingCart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { motion } from "framer-motion";
 import "./Home.scss";
-import { BrandSection, Slideshow, CategorySection } from "components/User";
+import { BrandSection, Slideshow, CategorySection ,ProductShowcase } from "components/User";
+
 import Loading from "pages/Loading/loading";
 import { mockProducts } from "data/mockData";
 import { noibatdata } from "data/noibatdata";
@@ -22,36 +23,84 @@ const HomeIndex = () => {
   const [newScrollIndex, setNewScrollIndex] = useState(0);
   const featuredScrollRef = useRef(null);
   const newScrollRef = useRef(null);
+  const [showLeftArrows, setShowLeftArrows] = useState({ featured: false, new: false });
+  const [showRightArrows, setShowRightArrows] = useState({ featured: true, new: true });
 
-  const handleScroll = (ref, setIndex) => {
+  const handleScroll = useCallback((ref, setIndex) => {
     if (ref.current) {
       const scrollLeft = ref.current.scrollLeft;
-      const itemWidth = ref.current.offsetWidth / 2;
+      const itemWidth = ref.current.offsetWidth / 3; // Adjusted for visible items
       const newIndex = Math.round(scrollLeft / itemWidth);
       setIndex(newIndex);
     }
+  }, []);
+
+  const checkScrollPosition = (ref, section) => {
+    if (!ref.current) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = ref.current;
+    
+    setShowLeftArrows(prev => ({
+      ...prev,
+      [section]: scrollLeft > 0
+    }));
+    
+    setShowRightArrows(prev => ({
+      ...prev,
+      [section]: scrollLeft < scrollWidth - clientWidth - 5
+    }));
+  };
+
+  const scroll = (direction, ref, section) => {
+    if (!ref.current) return;
+    
+    const scrollAmount = direction === 'left' ? -280 : 280;
+    ref.current.scrollBy({
+      left: scrollAmount,
+      behavior: 'smooth'
+    });
+    
+    setTimeout(() => checkScrollPosition(ref, section), 300);
   };
 
   useEffect(() => {
     const featuredContainer = featuredScrollRef.current;
     const newContainer = newScrollRef.current;
 
+    const handleFeaturedScroll = () => {
+      handleScroll(featuredScrollRef, setFeaturedScrollIndex);
+      checkScrollPosition(featuredScrollRef, 'featured');
+    };
+
+    const handleNewScroll = () => {
+      handleScroll(newScrollRef, setNewScrollIndex);
+      checkScrollPosition(newScrollRef, 'new');
+    };
+
     if (featuredContainer) {
-      featuredContainer.addEventListener('scroll', () => handleScroll(featuredScrollRef, setFeaturedScrollIndex));
+      featuredContainer.addEventListener('scroll', handleFeaturedScroll);
     }
     if (newContainer) {
-      newContainer.addEventListener('scroll', () => handleScroll(newScrollRef, setNewScrollIndex));
+      newContainer.addEventListener('scroll', handleNewScroll);
     }
 
     return () => {
       if (featuredContainer) {
-        featuredContainer.removeEventListener('scroll', () => handleScroll(featuredScrollRef, setFeaturedScrollIndex));
+        featuredContainer.removeEventListener('scroll', handleFeaturedScroll);
       }
       if (newContainer) {
-        newContainer.removeEventListener('scroll', () => handleScroll(newScrollRef, setNewScrollIndex));
+        newContainer.removeEventListener('scroll', handleNewScroll);
       }
     };
-  }, []);
+  }, [handleScroll]);
+
+  useEffect(() => {
+    // Initial check for scroll buttons
+    setTimeout(() => {
+      checkScrollPosition(featuredScrollRef, 'featured');
+      checkScrollPosition(newScrollRef, 'new');
+    }, 100);
+  }, [featuredProducts, displayedProducts]);
 
   // Format price to VND
   const formatPrice = (price) => {
@@ -208,25 +257,39 @@ const HomeIndex = () => {
               <div className="spinner"></div>
             </div>
           ) : (
-            <motion.div 
-              className="products-grid top-five"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              ref={featuredScrollRef}
-            >
-              {featuredProducts.map(renderProductCard)}
-            </motion.div>
+            <div className="products-slider-container">
+              {showLeftArrows.featured && (
+                <button 
+                  className="slider-arrow arrow-left" 
+                  onClick={() => scroll('left', featuredScrollRef, 'featured')}
+                  aria-label="Previous products"
+                >
+                  <FaChevronLeft />
+                </button>
+              )}
+              
+              <motion.div 
+                className="products-grid top-five"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                ref={featuredScrollRef}
+              >
+                {featuredProducts.map(renderProductCard)}
+              </motion.div>
+
+              {showRightArrows.featured && (
+                <button 
+                  className="slider-arrow arrow-right" 
+                  onClick={() => scroll('right', featuredScrollRef, 'featured')}
+                  aria-label="Next products"
+                >
+                  <FaChevronRight />
+                </button>
+              )}
+            </div>
           )}
-          {/* <div className="scroll-indicator">
-            {[...Array(Math.ceil(featuredProducts.length / 2))].map((_, index) => (
-              <span
-                key={index}
-                className={`dot ${index === featuredScrollIndex ? 'active' : ''}`}
-              />
-            ))}
-          </div> */}
         </div>
       </section>
 
@@ -255,8 +318,13 @@ const HomeIndex = () => {
         </div>
       </motion.section>
 
+      {/* Product Showcase Section with Category Tabs */}
+      <Suspense fallback={<Loading />}>
+        <ProductShowcase />
+      </Suspense>
+
       {/* New Arrivals Section */}
-      <section className="featured-products compact">
+      <section className="featured-products compact new-products">
         <div className="container">
           <motion.div
             className="section-header"
@@ -276,28 +344,42 @@ const HomeIndex = () => {
           
           {loading ? (
             <div className="loading-spinner">
-              <div className="spinner"></div>
+              <div class="spinner"></div>
             </div>
           ) : (
-            <motion.div 
-              className="products-grid top-five"
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              ref={newScrollRef}
-            >
-              {displayedProducts.map(renderProductCard)}
-            </motion.div>
+            <div className="products-slider-container">
+              {showLeftArrows.new && (
+                <button 
+                  className="slider-arrow arrow-left" 
+                  onClick={() => scroll('left', newScrollRef, 'new')}
+                  aria-label="Previous products"
+                >
+                  <FaChevronLeft />
+                </button>
+              )}
+              
+              <motion.div 
+                className="products-grid top-five"
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                ref={newScrollRef}
+              >
+                {displayedProducts.map(renderProductCard)}
+              </motion.div>
+
+              {showRightArrows.new && (
+                <button 
+                  className="slider-arrow arrow-right" 
+                  onClick={() => scroll('right', newScrollRef, 'new')}
+                  aria-label="Next products"
+                >
+                  <FaChevronRight />
+                </button>
+              )}
+            </div>
           )}
-          {/* <div className="scroll-indicator">
-            {[...Array(Math.ceil(displayedProducts.length / 2))].map((_, index) => (
-              <span
-                key={index}
-                className={`dot ${index === newScrollIndex ? 'active' : ''}`}
-              />
-            ))}
-          </div> */}
         </div>
       </section>
 
