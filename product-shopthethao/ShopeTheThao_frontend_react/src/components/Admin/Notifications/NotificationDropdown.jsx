@@ -384,28 +384,92 @@ const NotificationDropdown = () => {
     };
   }, []);
 
+  // Update refs when activities change
+  useEffect(() => {
+    authActivitiesRef.current = authActivities;
+  }, [authActivities]);
+
+  useEffect(() => {
+    adminActivitiesRef.current = adminActivities;
+  }, [adminActivities]);
+
+  const handleNotificationClick = async (item) => {
+    setSelectedNotification(item);
+    setDetailModalVisible(true);
+    setDropdownOpen(false);
+
+    if (item.readStatus === 0) {
+      try {
+        // Optimistic update
+        const updateReadStatus = (activities) =>
+          activities.map((activity) =>
+            activity.idHistory === item.idHistory
+              ? { ...activity, readStatus: 1 }
+              : activity
+          );
+
+        // Update both state and refs immediately
+        const updatedAuthActivities = updateReadStatus(authActivities);
+        const updatedAdminActivities = updateReadStatus(adminActivities);
+        
+        setAuthActivities(updatedAuthActivities);
+        setAdminActivities(updatedAdminActivities);
+        
+        // Update refs
+        authActivitiesRef.current = updatedAuthActivities;
+        adminActivitiesRef.current = updatedAdminActivities;
+
+        // Update counts
+        const isAuthNotification = ['LOGIN', 'LOGOUT', 'LOGIN_FAILED'].includes(item.actionType);
+        if (isAuthNotification) {
+          setUnreadAuthCount(prev => Math.max(0, prev - 1));
+        } else {
+          setUnreadAdminCount(prev => Math.max(0, prev - 1));
+        }
+
+        // API call
+        await markAsRead(item.idHistory);
+        
+        // Refresh notifications to ensure sync
+        await fetchNotifications();
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+        toast.error("Không thể cập nhật trạng thái thông báo", {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
+      }
+    }
+  };
+
   const markAsRead = async (historyId) => {
     try {
       await userHistoryApi.markAsRead(historyId);
+      
+      // Update both state and refs
+      const updateReadStatus = (activities) =>
+        activities.map((activity) =>
+          activity.idHistory === historyId
+            ? { ...activity, readStatus: 1 }
+            : activity
+        );
 
-      // Update local state for auth activities
-      setAuthActivities((prev) =>
-        prev.map((item) =>
-          item.idHistory === historyId ? { ...item, readStatus: 1 } : item
-        )
-      );
+      setAuthActivities(prev => {
+        const updated = updateReadStatus(prev);
+        authActivitiesRef.current = updated;
+        return updated;
+      });
 
-      // Update local state for admin activities
-      setAdminActivities((prev) =>
-        prev.map((item) =>
-          item.idHistory === historyId ? { ...item, readStatus: 1 } : item
-        )
-      );
+      setAdminActivities(prev => {
+        const updated = updateReadStatus(prev);
+        adminActivitiesRef.current = updated;
+        return updated;
+      });
 
-      // Update unread counts
-      fetchUnreadCounts();
+      await fetchUnreadCounts();
     } catch (error) {
       console.error("Error marking notification as read:", error);
+      throw error;
     }
   };
 
@@ -438,57 +502,9 @@ const NotificationDropdown = () => {
     }
   };
 
-  const handleNotificationClick = async (item) => {
-    // Mark as read if not already
-    if (item.readStatus === 0) {
-      await markAsRead(item.idHistory);
-    }
-
-    // Show notification details modal first
-    setSelectedNotification(item);
-    setDetailModalVisible(true);
-
-    // Keep the dropdown open while viewing details
-    // Don't close the dropdown here: setDropdownOpen(false);
-  };
-
   const handleDetailModalClose = () => {
     setDetailModalVisible(false);
-    // Don't immediately navigate or close dropdown when modal closes
-    // This gives a better UX, letting the user see the transition
-
-    // Small delay before potentially navigating to ensure modal transition completes
-    setTimeout(() => {
-      if (selectedNotification) {
-        handleActionAfterViewingDetails(selectedNotification);
-      }
-    }, 100);
-  };
-
-  const handleActionAfterViewingDetails = (item) => {
-    // Close dropdown
-    setDropdownOpen(false);
-
-    // Navigate based on action type
-    switch (item.actionType) {
-      case "UPDATE_CATEGORIE":
-      case "CREATE_CATEGORIE":
-      case "DELETE_CATEGORIE":
-        // navigate(`/admin/categories/history/${item.idHistory}`);
-        break;
-      case "UPDATE_PRODUCT":
-      case "CREATE_PRODUCT":
-      case "DELETE_PRODUCT":
-        // navigate(`/admin/products/history/${item.idHistory}`);
-        break;
-      case "LOGIN_FAILED":
-        navigate("/admin/security-alerts");
-        break;
-      default:
-        // For most notifications, just show the detail modal
-        // We've already done this, so just close the dropdown
-        setDropdownOpen(false);
-    }
+    setSelectedNotification(null);
   };
 
   const renderActionIcon = (actionType) => {
@@ -776,9 +792,10 @@ const NotificationDropdown = () => {
           if (visible) {
             fetchNotifications();
           }
-          // If dropdown is closed, also ensure modal is closed
-          if (!visible && detailModalVisible) {
+          // Close modal if dropdown is closed
+          if (!visible) {
             setDetailModalVisible(false);
+            setSelectedNotification(null);
           }
         }}
         placement="bottomRight"

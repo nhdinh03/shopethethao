@@ -82,21 +82,25 @@ const Suppliers = () => {
 
   // Enhanced data fetching with improved search
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      let isMounted = true;
-      const getList = async () => {
-        setLoading(true);
-        try {
-          // Server-side search via API
-          const res = await suppliersApi.getByPage(currentPage, pageSize, searchText);
-          
-          if (isMounted) {
-            let filteredSuppliers = res.data;
-            
-            // Additional client-side filtering for more precise results
-            if (searchText) {
-              const searchLower = searchText.toLowerCase();
-              filteredSuppliers = filteredSuppliers.filter(supplier => 
+    let isMounted = true;
+    const getList = async () => {
+      setLoading(true);
+      try {
+        // Server-side search via API
+        const res = await suppliersApi.getByPage(
+          currentPage,
+          pageSize,
+          searchText
+        );
+
+        if (isMounted) {
+          let filteredSuppliers = res.data;
+
+          // Additional client-side filtering for more precise results
+          if (searchText) {
+            const searchLower = searchText.toLowerCase();
+            filteredSuppliers = filteredSuppliers.filter(
+              (supplier) =>
                 // Search by ID
                 supplier.id?.toString().includes(searchText) ||
                 // Search by name
@@ -107,25 +111,24 @@ const Suppliers = () => {
                 supplier.phone?.includes(searchText) ||
                 // Search by address
                 supplier.address?.toLowerCase().includes(searchLower)
-              );
-            }
-            
-            setSuppliers(filteredSuppliers);
-            setTotalItems(res.totalItems);
-            setLoading(false);
+            );
           }
-        } catch (error) {
-          message.error("Không thể lấy danh sách nhà cung cấp. Vui lòng thử lại!");
+
+          setSuppliers(filteredSuppliers);
+          setTotalItems(res.totalItems);
           setLoading(false);
         }
-      };
-      getList();
-      return () => {
-        isMounted = false;
-      };
-    }, 500); // 500ms delay for debounce
-
-    return () => clearTimeout(delayDebounceFn);
+      } catch (error) {
+        message.error(
+          "Không thể lấy danh sách nhà cung cấp. Vui lòng thử lại!"
+        );
+        setLoading(false);
+      }
+    };
+    getList();
+    return () => {
+      isMounted = false;
+    };
   }, [currentPage, pageSize, searchText, workSomeThing]);
 
   return (
@@ -155,7 +158,7 @@ const Suppliers = () => {
             </Button>
           </Col>
         </Row>
-        
+
         <Modal
           title={
             <div className={styles.modalTitle}>
@@ -172,7 +175,7 @@ const Suppliers = () => {
         >
           <SupplierForm form={form} />
         </Modal>
-        
+
         <div className="table-container">
           <SuppliersTable
             loading={loading}

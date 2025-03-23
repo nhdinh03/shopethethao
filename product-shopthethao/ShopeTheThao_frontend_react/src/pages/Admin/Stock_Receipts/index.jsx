@@ -1,5 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Table, message, Button, Row, Select, Modal, Form, Col, Input } from "antd";
+import {
+  Table,
+  message,
+  Button,
+  Row,
+  Select,
+  Modal,
+  Form,
+  Col,
+  Input,
+} from "antd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { SearchOutlined } from "@ant-design/icons";
@@ -10,7 +20,11 @@ import PaginationComponent from "components/User/PaginationComponent";
 import brandsApi from "api/Admin/Brands/Brands";
 import styles from "..//modalStyles.module.scss";
 import dayjs from "dayjs";
-import { PrintReceiptModal, StockReceiptForm, TableActions } from "components/Admin";
+import {
+  PrintReceiptModal,
+  StockReceiptForm,
+  TableActions,
+} from "components/Admin";
 
 const Stock_Receipts = () => {
   const printRef = useRef(null);
@@ -105,30 +119,31 @@ const Stock_Receipts = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      const { receiptProducts, supplierId, brandId, orderDate, ...restValues } = values;
-  
+      const { receiptProducts, supplierId, brandId, orderDate, ...restValues } =
+        values;
+
       const parsedSupplierId = parseInt(supplierId, 10);
       const parsedBrandId = parseInt(brandId, 10);
-  
+
       if (isNaN(parsedSupplierId) || isNaN(parsedBrandId)) {
         message.error("Supplier ID và Brand ID phải là số nguyên!");
         return;
       }
-  
+
       if (moment(orderDate).isBefore(moment(), "day")) {
         message.error("Ngày nhập kho không được ở trong quá khứ!");
         return;
       }
-  
+
       const invalidProducts = receiptProducts.filter((product) => {
         return product.quantity <= 0 || product.price <= 0;
       });
-  
+
       if (invalidProducts.length > 0) {
         message.error("Số lượng và giá sản phẩm phải lớn hơn 0!");
         return;
       }
-  
+
       const processedProducts = receiptProducts.map((product) => ({
         productId: product.productId,
         sizeId: product.sizeId,
@@ -136,28 +151,30 @@ const Stock_Receipts = () => {
         price: product.price,
         totalAmount: product.quantity * product.price,
       }));
-  
+
       const res = {
         ...restValues,
         supplierId: parsedSupplierId,
         brandId: parsedBrandId,
-        orderDate: values.orderDate ? values.orderDate.format("YYYY-MM-DD") : null,
+        orderDate: values.orderDate
+          ? values.orderDate.format("YYYY-MM-DD")
+          : null,
         receiptProducts: processedProducts,
       };
-  
+
       console.log("Sending request payload:", res);
-  
+
       let response;
       if (editMode) {
         response = await stock_ReceiptsAPi.update(editMode.id, res);
       } else {
         response = await stock_ReceiptsAPi.create(res);
       }
-  
+
       if (response.data?.validationErrors) {
         // Handle validation errors from backend
         const errors = response.data.validationErrors;
-        errors.forEach(error => {
+        errors.forEach((error) => {
           const productName = error.productName;
           Object.entries(error.errors).forEach(([field, message]) => {
             message.error(`${productName}: ${message}`);
@@ -165,28 +182,31 @@ const Stock_Receipts = () => {
         });
         return;
       }
-  
-      message.success(editMode ? 
-        "Cập nhật phiếu nhập kho thành công!" : 
-        "Thêm phiếu nhập kho thành công!"
+
+      message.success(
+        editMode
+          ? "Cập nhật phiếu nhập kho thành công!"
+          : "Thêm phiếu nhập kho thành công!"
       );
-      
+
       setWorkSomeThing(!workSomeThing);
       setEditMode(null);
       setModalVisible(false);
       form.resetFields();
-  
     } catch (error) {
       if (error.response?.data?.validationErrors) {
         const errors = error.response.data.validationErrors;
-        errors.forEach(errorItem => {
+        errors.forEach((errorItem) => {
           const errorMessage = Object.entries(errorItem.errors)
             .map(([field, msg]) => `${field}: ${msg}`)
-            .join(', ');
+            .join(", ");
           message.error(`${errorItem.productName}: ${errorMessage}`);
         });
       } else {
-        message.error("Lỗi khi lưu phiếu nhập kho: " + (error.response?.data || error.message));
+        message.error(
+          "Lỗi khi lưu phiếu nhập kho: " +
+            (error.response?.data || error.message)
+        );
       }
     }
   };
@@ -215,52 +235,58 @@ const Stock_Receipts = () => {
 
   // Improved data fetching with client-side filtering as well
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      const fetchData = async () => {
-        setLoading(true);
-        try {
-          // Server-side search via API
-          const stockReceiptsRes = await stock_ReceiptsAPi.getByPage(
-            currentPage,
-            pageSize,
-            searchText
-          );
-          
-          let receipts = stockReceiptsRes.data.map((receipt) => ({
-            ...receipt,
-          }));
-          
-          // Additional client-side filtering
-          if (searchText) {
-            receipts = receipts.filter(receipt => 
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Server-side search via API
+        const stockReceiptsRes = await stock_ReceiptsAPi.getByPage(
+          currentPage,
+          pageSize,
+          searchText
+        );
+
+        let receipts = stockReceiptsRes.data.map((receipt) => ({
+          ...receipt,
+        }));
+
+        // Additional client-side filtering
+        if (searchText) {
+          receipts = receipts.filter(
+            (receipt) =>
               // Search by ID
               receipt.id?.toString().includes(searchText) ||
               // Search by supplier name
-              receipt.supplierName?.toLowerCase().includes(searchText.toLowerCase()) ||
+              receipt.supplierName
+                ?.toLowerCase()
+                .includes(searchText.toLowerCase()) ||
               // Search by brand name
-              receipt.brandName?.toLowerCase().includes(searchText.toLowerCase()) ||
+              receipt.brandName
+                ?.toLowerCase()
+                .includes(searchText.toLowerCase()) ||
               // Search by product names (if any product name contains the search text)
-              receipt.receiptProducts?.some(product => 
-                product.productName?.toLowerCase().includes(searchText.toLowerCase())
+              receipt.receiptProducts?.some((product) =>
+                product.productName
+                  ?.toLowerCase()
+                  .includes(searchText.toLowerCase())
               ) ||
               // Search by date
-              moment(receipt.orderDate).format("DD/MM/YYYY").includes(searchText)
-            );
-          }
-          
-          setStockReceipts(receipts);
-          setTotalItems(stockReceiptsRes.totalItems);
-          setLoading(false);
-        } catch (error) {
-          setLoading(false);
-          message.error("Không thể lấy danh sách dữ liệu. Vui lòng thử lại!");
+              moment(receipt.orderDate)
+                .format("DD/MM/YYYY")
+                .includes(searchText)
+          );
         }
-      };
 
-      fetchData();
-    }, 500); // 500ms delay for debounce
-    
-    return () => clearTimeout(delayDebounceFn);
+        setStockReceipts(receipts);
+        setTotalItems(stockReceiptsRes.totalItems);
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+        message.error("Không thể lấy danh sách dữ liệu. Vui lòng thử lại!");
+      }
+    };
+
+    fetchData();
+
   }, [currentPage, pageSize, searchText, workSomeThing]);
 
   const columns = [
@@ -307,8 +333,8 @@ const Stock_Receipts = () => {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onView={handleViewReceipt}
-            />
-                ),
+        />
+      ),
     },
   ];
 
@@ -316,7 +342,7 @@ const Stock_Receipts = () => {
     <div className="stock-receipts-page">
       <div className="content-wrapper">
         <h2 className="page-title">Phiếu Nhập Kho</h2>
-        
+
         <Row gutter={[16, 16]} className="header-actions">
           <Col xs={24} sm={14} md={16} lg={18}>
             <Input
@@ -355,7 +381,7 @@ const Stock_Receipts = () => {
             editMode={editMode}
           />
         </Modal>
-        
+
         <PrintReceiptModal
           visible={printModalVisible}
           onClose={() => setPrintModalVisible(false)}
@@ -382,7 +408,7 @@ const Stock_Receipts = () => {
             }))}
           />
         </div>
-        
+
         <div className="pagination-container">
           <PaginationComponent
             totalPages={totalPages}

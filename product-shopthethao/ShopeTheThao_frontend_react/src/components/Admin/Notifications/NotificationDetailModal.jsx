@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect } from 'react';
 import { Modal, Typography, Descriptions, Badge, Divider, Tag, Card, Row, Col, Tooltip } from 'antd';
 import { ClockCircleOutlined, UserOutlined, LaptopOutlined, GlobalOutlined } from '@ant-design/icons';
 
@@ -6,7 +6,7 @@ const { Text, Title, Paragraph } = Typography;
 
 const NotificationDetailModal = forwardRef(({ visible, notification, onClose }, ref) => {
   if (!notification) return null;
-  
+
   const getStatusBadge = () => {
     switch (notification.status) {
       case 1:

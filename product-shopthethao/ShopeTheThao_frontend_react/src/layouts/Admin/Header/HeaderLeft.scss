@@ -3,6 +3,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  max-width: 1600px;
+  width: 100%;
 
   &__brand {
     display: flex;
@@ -54,7 +56,104 @@
   }
 }
 
-// Responsive adjustments
+// Typography font sizes
+.very-small-text {
+  font-size: 12px;
+}
+
+.small-text {
+  font-size: 13px;
+}
+
+.base-text {
+  font-size: 14px;
+}
+
+.medium-text {
+  font-size: 16px;
+}
+
+.large-heading {
+  font-size: 18px;
+}
+
+.xl-heading {
+  font-size: 20px;
+}
+
+// Responsive breakpoints
+// 320px - Mobile Small
+@media (min-width: 320px) {
+  .header-admin-left {
+    gap: 0.5rem;
+    
+    &__brand {
+      &-name {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// 480px - Mobile Large
+@media (min-width: 480px) {
+  .header-admin-left {
+    gap: 0.75rem;
+    
+    &__brand {
+      &-name {
+        font-size: 1.1rem;
+      }
+    }
+  }
+}
+
+// 760px - Tablet
+@media (min-width: 760px) {
+  .header-admin-left {
+    gap: 1rem;
+    
+    &__brand {
+      &-name {
+        font-size: 1.2rem;
+      }
+    }
+  }
+}
+
+// 960px - Small Desktop
+@media (min-width: 960px) {
+  .header-admin-left {
+    &__brand {
+      &-name {
+        font-size: 2.25rem;
+      }
+    }
+    
+    &__divider,
+    &__admin-info {
+      display: block;
+    }
+  }
+}
+
+// 1200px - Desktop
+@media (min-width: 1200px) {
+  .header-admin-left {
+    &__admin-info {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// 1280px - Large Desktop
+@media (min-width: 1280px) {
+  .header-admin-left {
+    gap: 1.5rem;
+  }
+}
+
+// Legacy responsive code
 @media (max-width: 1024px) {
   .header-admin-left__divider,
   .header-admin-left__admin-info {

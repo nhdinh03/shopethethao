@@ -8,6 +8,13 @@ $text-secondary: #8c8c8c;
 $trophy-color: #faad14;
 $notification-color: #ff4d4f;
 
+// Global max-width constraint
+.main-container {
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
 // Header styles
 .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
   padding: 0.75rem 1.5rem;
@@ -19,6 +26,9 @@ $notification-color: #ff4d4f;
     rgba(248, 250, 252, 0.95)
   );
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
 
   // User profile section
   .flex.items-center.gap-4 {
@@ -86,7 +96,7 @@ $notification-color: #ff4d4f;
 
       &:hover {
         background-color: rgba(24, 144, 255, 0.1);
-        transform: translateY(-2px);
+        transform: translateY(-1px);
       }
 
       .text-xl {
@@ -99,20 +109,21 @@ $notification-color: #ff4d4f;
       &:hover {
         .text-xl {
           color: $trophy-color !important;
-          animation: pulse 1.5s infinite;
+          transition: color 0.3s ease;
         }
       }
 
       &::after {
         content: "";
         position: absolute;
-        top: -2px;
-        right: -2px;
+        top: 0;
+        right: 0;
         width: 8px;
         height: 8px;
         background-color: $trophy-color;
         border-radius: 50%;
-        animation: pulse 1.5s infinite;
+        border: 1px solid $light-color;
+        animation: gentle-pulse 3s ease infinite;
       }
     }
 
@@ -120,7 +131,8 @@ $notification-color: #ff4d4f;
     span:has(.fa-gear) {
       &:hover {
         .text-xl {
-          animation: rotate 2s infinite linear;
+          transition: transform 0.5s ease;
+          transform: rotate(90deg);
         }
       }
     }
@@ -147,22 +159,27 @@ $notification-color: #ff4d4f;
   .ant-badge-count {
     box-shadow: 0 0 0 1px $light-color;
     font-weight: bold;
+    font-size: 12px; // Very small text for labels
+    
+    &:not(:empty) {
+      // animation: gentle-pulse 3s ease infinite;
+    }
   }
 }
 
-// Animations
-@keyframes pulse {
+// More modern, subtle animations
+@keyframes gentle-pulse {
   0% {
+    opacity: 0.9;
     transform: scale(1);
-    opacity: 1;
   }
   50% {
-    transform: scale(1.1);
-    opacity: 0.8;
+    opacity: 1;
+    transform: scale(1.05);
   }
   100% {
+    opacity: 0.9;
     transform: scale(1);
-    opacity: 1;
   }
 }
 
@@ -171,35 +188,141 @@ $notification-color: #ff4d4f;
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate(90deg);
   }
 }
 
-// Responsive styles
-@media (max-width: 768px) {
+// Typography font sizes
+.very-small-text {
+  font-size: 12px;
+}
+
+.small-text {
+  font-size: 13px;
+}
+
+.base-text {
+  font-size: 14px;
+}
+
+.medium-text {
+  font-size: 16px;
+}
+
+.large-heading {
+  font-size: 18px;
+}
+
+.xl-heading {
+  font-size: 20px;
+}
+
+// Responsive styles - Mobile first approach
+// Base mobile styles (320px+)
+@media (min-width: 320px) {
+  .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
+    padding: 0.5rem;
+    
+    .flex.items-center.gap-4 {
+      .font-semibold {
+        font-size: 13px; // Small text for mobile
+      }
+      
+      .text-gray-500 {
+        font-size: 12px; // Very small text for mobile
+      }
+    }
+    
+    .flex.flex-1.justify-center.px-4 {
+      display: none; // Hide search on smallest screens
+    }
+    
+    .flex.items-center.gap-7 {
+      gap: 0.5rem !important;
+      
+      .cursor-pointer {
+        width: 32px;
+        height: 32px;
+        
+        .text-xl {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}
+
+// Small phones (480px+)
+@media (min-width: 480px) {
   .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
     padding: 0.5rem 1rem;
-    flex-wrap: wrap;
-    height: auto;
-
-    .flex.items-center.gap-4 {
-      order: 1;
-      width: 100%;
-      justify-content: center;
-      margin-bottom: 0.5rem;
-    }
-
+    
     .flex.flex-1.justify-center.px-4 {
-      order: 3;
-      width: 100%;
-      padding: 0.5rem 0;
+      display: flex;
+      padding: 0 0.5rem;
     }
+  }
+}
 
+// Tablets (760px+)
+@media (min-width: 760px) {
+  .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
+    padding: 0.75rem 1.25rem;
+    
+    .flex.items-center.gap-4 {
+      .font-semibold {
+        font-size: 14px; // Base text
+      }
+      
+      .text-gray-500 {
+        font-size: 13px; // Small text
+      }
+    }
+    
     .flex.items-center.gap-7 {
-      order: 2;
-      width: 100%;
-      justify-content: center;
       gap: 1rem !important;
+    }
+  }
+}
+
+// Medium screens (960px+)
+@media (min-width: 960px) {
+  .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
+    padding: 0.75rem 1.5rem;
+    
+    .flex.items-center.gap-7 {
+      gap: 1.25rem !important;
+      
+      .cursor-pointer {
+        width: 36px;
+        height: 36px;
+        
+        .text-xl {
+             font-size: 1.8rem;
+        }
+      }
+    }
+  }
+}
+
+// Large screens (1200px+)
+@media (min-width: 1200px) {
+  .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
+    padding: 0.75rem 2rem;
+    
+    .flex.items-center.gap-4 {
+      .font-semibold {
+        font-size: 16px; // Medium text
+      }
+    }
+  }
+}
+
+// Extra large screens (1280px+)
+@media (min-width: 1280px) {
+  .flex.items-center.justify-between.w-full.bg-white.shadow-md.px-6 {
+    .flex.items-center.gap-7 {
+      gap: 1.75rem !important;
     }
   }
 }

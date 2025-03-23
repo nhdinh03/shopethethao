@@ -127,10 +127,10 @@ function HeaderAdminRight() {
       icon={!userData?.image && <FontAwesomeIcon icon={faUser} />}
     />
     <div className="flex flex-col text-center md:text-left">
-      <span className="font-semibold text-gray-800 text-lg">
+      <span className="font-semibold text-gray-800 text-lg" >
         {userData?.fullname || 'User'}
       </span>
-      <span className="text-gray-500 text-sm">{userData?.id || 'Unknown ID'}</span>
+      <span className="text-gray-500 text-sm" style={{   marginTop: 5}}>{userData?.id || 'Unknown ID'}</span>
     </div>
   </div>
 
