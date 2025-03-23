@@ -3405,3 +3405,952 @@ body {
 .search-bar .container {
   @include container-width;
 }
+
+.header {
+  // ...existing code...
+
+  .desktop-nav {
+    // ...existing code...
+
+    ul {
+      // ...existing code...
+
+      li {
+        // ...existing code...
+
+        &.has-mega-menu {
+          position: static;
+
+          .mega-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s linear 0.25s, opacity 0.25s;
+            pointer-events: none;
+            display: block;
+
+            &::before {
+              content: '';
+              position: absolute;
+          
+              left: 0;
+              width: 100%;
+              height: 20px;
+            }
+          }
+
+          &:hover {
+            .mega-menu {
+              visibility: visible;
+              opacity: 1;
+              transition-delay: 0s;
+              pointer-events: auto;
+            }
+          }
+        }
+
+        > a {
+          position: relative;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--color-accent);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+          }
+
+          &:hover::after,
+          &.active::after {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+
+  .mega-menu {
+    // ...existing code...
+
+    .mega-menu-inner {
+      position: relative;
+      padding: 30px 20px;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: 0;
+        right: 0;
+        height: 10px;
+        background: transparent;
+      }
+
+      .mega-menu-categories {
+        // ...existing code...
+
+        .category-column {
+          // ...existing code...
+
+          ul {
+            li {
+              a {
+                position: relative;
+                padding: 8px 0;
+                transition: all 0.2s ease;
+                
+                &:hover {
+                  color: var(--color-accent);
+                  transform: translateX(5px);
+                }
+
+                &::before {
+                  content: '';
+                  position: absolute;
+                  left: 0;
+                  top: 50%;
+                  width: 0;
+                  height: 1px;
+                  background: var(--color-accent);
+                  transition: width 0.2s ease;
+                  transform: translateY(-50%);
+                }
+
+                &:hover::before {
+                  width: 15px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Thêm overlay khi mega menu hiển thị
+.mega-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 998;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+// Tối ưu hiệu suất với GPU acceleration
+.mega-menu,
+.mega-menu-inner,
+.category-column {
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+// Thêm smooth scroll cho mega menu
+.mega-menu {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.desktop-nav {
+  ul {
+    li {
+      &.has-mega-menu {
+        position: static;
+
+        .mega-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          width: 100%;
+          background: white;
+          visibility: hidden;
+          opacity: 0;
+          transform: translateY(0);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          pointer-events: none;
+          z-index: 999;
+          
+          // Thêm padding top để tạo khoảng đệm an toàn
+
+          // Vùng đệm để ngăn mất hover
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: transparent;
+          }
+
+          .mega-menu-inner {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+        }
+
+        &:hover {
+          .mega-menu {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+
+            .mega-menu-inner {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        }
+
+        > a {
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--color-accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            transform-origin: right;
+          }
+
+          &:hover::after,
+          &.active::after {
+            transform: scaleX(1);
+            transform-origin: left;
+          }
+        }
+      }
+    }
+  }
+}
+
+.mega-menu {
+  .mega-menu-inner {
+    .mega-menu-categories {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      .category-column {
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition-delay: calc(var(--column-index, 0) * 0.05s);
+
+        ul {
+          li {
+            a {
+              position: relative;
+              padding: 8px 0 8px 20px;
+              transition: all 0.2s ease;
+              
+              &::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 50%;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: transparent;
+                border: 1px solid var(--color-accent);
+                transform: translateY(-50%) scale(0);
+                transition: all 0.2s ease;
+              }
+
+              &:hover {
+                color: var(--color-accent);
+                transform: translateX(5px);
+
+                &::before {
+                  transform: translateY(-50%) scale(1);
+                  background: var(--color-accent);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &.active {
+    .mega-menu-inner {
+      .mega-menu-categories {
+        opacity: 1;
+        transform: translateY(0);
+
+        .category-column {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+  }
+}
+
+// Thêm backdrop blur khi mega menu active
+.header::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 998;
+  pointer-events: none;
+}
+
+.header.has-active-mega-menu::after {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+// Tối ưu performance
+.mega-menu,
+.mega-menu-inner,
+.mega-menu-categories,
+.category-column {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mega-menu,
+  .mega-menu-inner,
+  .mega-menu-categories,
+  .category-column {
+    transition: none !important;
+  }
+}
+
+// MEGA MENU OVERLAY & BACKDROP
+// This section controls the background overlay that appears when mega menu is active
+// It creates a semi-transparent backdrop with blur effect for better focus on the menu
+.mega-menu-overlay,
+.header::after {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 998;
+  pointer-events: none;
+}
+
+// When mega menu is active, show the overlay
+.mega-menu-overlay.active,
+.header.has-active-mega-menu::after {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+// Apply backdrop blur only to the header's after element
+.header::after {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+// PERFORMANCE OPTIMIZATION
+// These properties help with smoother animations by using GPU acceleration
+// and preventing layout recalculations during transitions
+.mega-menu,
+.mega-menu-inner,
+.mega-menu-categories,
+.category-column,
+.submenu-view,
+.mobile-menu {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+// Apply smooth scrolling to scrollable containers
+.mega-menu,
+.mobile-menu,
+.menu-content,
+.submenu-content {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+// Accessibility: Respect user's motion preferences
+@media (prefers-reduced-motion: reduce) {
+  // Disable transitions for users who prefer reduced motion
+  .mega-menu,
+  .mega-menu-inner,
+  .mega-menu-categories,
+  .category-column,
+  .mobile-menu,
+  .dropdown-menu,
+  .profile-dropdown {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  // Immediately show content without animations
+  .mega-menu.active,
+  .mobile-menu.active,
+  .dropdown-menu.active {
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
+
+// MERGED MEGA MENU STYLES
+// This consolidates all mega menu styles to avoid duplicates
+.mega-menu,
+.header .mega-menu,
+.desktop-nav ul li .mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100vw;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  z-index: 999;
+  pointer-events: none;
+  padding: 20px 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  
+  // Safe padding for hover area
+  &::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    background: transparent;
+  }
+  
+  // When scrolled, adjust position
+  &.scrolled {
+    top: 60px;
+    max-height: calc(100vh - 60px);
+  }
+  
+  // Active state
+  &.active {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+  }
+  
+  // Inner container
+  .mega-menu-inner {
+    max-width: var(--container-width);
+    width: 100%;
+    margin: 0 auto;
+    padding: 30px 20px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    // Add safe area at top
+    &::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background: transparent;
+    }
+    
+    // Responsive adjustments
+    @media (min-width: $breakpoint-4k) {
+      max-width: var(--container-4k);
+      padding: 40px;
+    }
+
+    @media (max-width: $breakpoint-laptop) {
+      max-width: var(--container-laptop);
+      padding: 30px 20px;
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+      padding: 20px 15px;
+    }
+  }
+  
+  // Categories grid
+  .mega-menu-categories {
+    display: grid;
+    grid-template-columns: 3fr 3fr 3fr 3fr 4fr;
+    gap: 30px;
+    margin-bottom: 20px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    // Responsive adjustments
+    @media (max-width: $breakpoint-laptop) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: $breakpoint-tablet) {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+    
+    // Category column styles
+    .category-column {
+      position: relative;
+      padding: 0 15px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: calc(var(--column-index, 0) * 0.05s);
+      
+      // Divider between columns
+      &:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: -15px;
+        height: 100%;
+        width: 1px;
+        background: var(--color-gray-light);
+      }
+      
+      // Category header
+      h4 {
+        font-size: 16px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--color-primary);
+        margin: 0 0 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--color-gray-light);
+        
+        &.highlight {
+          color: var(--color-accent);
+          border-bottom-color: var(--color-accent);
+        }
+      }
+      
+      // Category links
+      ul {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        height: auto;
+        
+        li {
+          height: auto;
+          margin: 2px 0;
+          
+          a {
+            display: block;
+            padding: 8px 0 8px 20px;
+            font-size: 14px;
+            font-weight: normal;
+            text-transform: none;
+            letter-spacing: normal;
+            height: auto;
+            color: var(--color-text);
+            position: relative;
+            transition: all 0.2s ease;
+            
+            &::before {
+              content: '';
+              position: absolute;
+              left: 0;
+              top: 50%;
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              background: transparent;
+              border: 1px solid var(--color-accent);
+              transform: translateY(-50%) scale(0);
+              transition: all 0.2s ease;
+            }
+            
+            &:hover {
+              color: var(--color-accent);
+              transform: translateX(5px);
+              padding-left: 20px;
+              
+              &::before {
+                transform: translateY(-50%) scale(1);
+                background: var(--color-accent);
+              }
+            }
+            
+            &.new-item::after {
+              content: "Mới";
+              margin-left: 8px;
+              font-size: 11px;
+              padding: 2px 6px;
+              border-radius: 10px;
+              background: var(--color-accent);
+              color: white;
+            }
+          }
+        }
+      }
+      
+      // Featured column specific styles
+      &.featured-column {
+        grid-column: 5;
+        padding-left: 30px;
+        
+        @media (max-width: $breakpoint-laptop) {
+          grid-column: auto;
+          grid-row: 1;
+        }
+        
+        @media (max-width: $breakpoint-tablet) {
+          grid-column: auto;
+          grid-row: auto;
+        }
+        
+        .featured-image {
+          height: 100%;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          margin-top: 15px;
+          position: relative;
+          
+          @media (max-width: $breakpoint-laptop) {
+            height: 200px;
+          }
+          
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+          }
+          
+          &:hover img {
+            transform: scale(1.05);
+          }
+          
+          .featured-content,
+          .featured-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(
+              to top,
+              rgba(0, 0, 0, 0.8),
+              transparent
+            );
+            color: white;
+            
+            h3, h5 {
+              font-size: 18px;
+              font-weight: 600;
+              margin: 0 0 8px;
+              text-transform: uppercase;
+            }
+            
+            p {
+              font-size: 14px;
+              margin: 0 0 15px;
+              opacity: 0.8;
+            }
+            
+            .btn-featured,
+            .featured-btn {
+              display: inline-block;
+              padding: 8px 16px;
+              background: var(--color-accent);
+              color: white;
+              border-radius: 4px;
+              text-decoration: none;
+              font-size: 13px;
+              font-weight: 500;
+              transition: var(--transition);
+              
+              &:hover {
+                background: darken(#ff4400, 10%);
+                transform: translateY(-2px);
+              }
+            }
+          }
+        }
+      }
+      
+      // Brands column specific styles
+      &.brands-column {
+        .brands-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+          
+          .brand-item {
+            padding: 10px;
+            border: 1px solid var(--color-gray-light);
+            border-radius: 5px;
+            text-align: center;
+            transition: var(--transition);
+            
+            img {
+              max-width: 100%;
+              height: auto;
+            }
+            
+            &:hover {
+              border-color: var(--color-accent);
+              box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Quick links section
+  .quick-links {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-gray-light);
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    
+    .quick-link {
+      color: var(--color-accent);
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 14px;
+      transition: var(--transition);
+      
+      &::after {
+        content: "→";
+        margin-left: 4px;
+        transition: var(--transition);
+      }
+      
+      &:hover {
+        text-decoration: underline;
+        
+        &::after {
+          margin-left: 8px;
+        }
+      }
+    }
+  }
+}
+
+// For activated mega menu states
+.mega-menu.active .mega-menu-inner,
+.has-mega-menu:hover .mega-menu .mega-menu-inner {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mega-menu.active .mega-menu-categories,
+.has-mega-menu:hover .mega-menu .mega-menu-categories {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mega-menu.active .category-column,
+.has-mega-menu:hover .mega-menu .category-column {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+// MERGED BACKDROP AND OVERLAY STYLES
+// This consolidates all backdrop-related styles
+.mega-menu-overlay,
+.header::after,
+.mobile-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 998;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+// Blur effect only for certain backdrops
+.header::after,
+.mobile-menu-backdrop {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+// Active states for all backdrops
+.mega-menu-overlay.active,
+.header.has-active-mega-menu::after,
+.mobile-menu.active + .mobile-menu-backdrop {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+// CONSOLIDATED PERFORMANCE OPTIMIZATIONS
+// All elements that benefit from GPU acceleration
+.mega-menu,
+.mega-menu-inner,
+.mega-menu-categories,
+.category-column,
+.submenu-view,
+.mobile-menu,
+.dropdown-menu,
+.user-dropdown,
+.profile-dropdown,
+.header {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+// All scrollable containers
+.mega-menu,
+.mobile-menu,
+.menu-content,
+.submenu-content,
+.mobile-nav {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+// CONSOLIDATED MEGA MENU HOVER BEHAVIOR
+.desktop-nav ul li.has-mega-menu {
+  position: static;
+  
+  &:hover .mega-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  
+  .dropdown-icon {
+    margin-left: 4px;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover .dropdown-icon {
+    transform: rotate(180deg);
+  }
+  
+  > a {
+    &.active-menu-item {
+      color: var(--color-accent);
+      position: relative;
+      
+      &:after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: var(--color-accent);
+      }
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--color-accent);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+      transform-origin: right;
+    }
+    
+    &:hover::after,
+    &.active::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+}
+
+// CONSOLIDATED REDUCED MOTION PREFERENCES
+@media (prefers-reduced-motion: reduce) {
+  .mega-menu,
+  .mega-menu-inner,
+  .mega-menu-categories,
+  .category-column,
+  .mobile-menu,
+  .dropdown-menu,
+  .profile-dropdown,
+  .submenu-view,
+  .user-dropdown,
+  .header,
+  .header::after,
+  .mega-menu-overlay {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .mega-menu.active,
+  .mobile-menu.active,
+  .dropdown-menu.active,
+  .profile-dropdown:hover,
+  .user-dropdown:hover {
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+}
