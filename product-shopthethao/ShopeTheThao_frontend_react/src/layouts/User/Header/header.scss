@@ -577,7 +577,7 @@ html {
       justify-content: space-between;
       align-items: center;
       height: 100%;
-      padding: 10px 0;
+
       transition: all 0.3s ease;
 
       @media (min-width: var(--breakpoint-4k)) {
@@ -701,7 +701,7 @@ html {
     .desktop-nav {
       justify-content: center;
       display: flex;
-      height: 100%;
+      height: 58px;
       flex: 1;
 
       ul {
@@ -735,10 +735,8 @@ html {
             text-transform: var(--gl-body-font-case-functional-2);
             transition: var(--transition);
 
-            &:hover,
-            &.active {
-              color: var(--color-accent);
-            }
+   
+   
 
             svg {
               margin-left: 4px;
@@ -1289,9 +1287,9 @@ html {
     will-change: transform; // Tối ưu GPU
     transform: translateX(-100%); // Ban đầu ẩn về bên trái
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); // Timing function mượt
-    transform: translateZ(0);
+
     backface-visibility: hidden;
-    transition: none; // Remove SCSS transition
+
 
     @media (min-width: var(--breakpoint-4k)) {
       width: 500px;
@@ -1821,7 +1819,7 @@ html {
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .header {
     .top-bar {
       .brand-desc {
@@ -1932,7 +1930,7 @@ html {
         a {
           &.active-menu-item {
             color: var(--color-accent);
-            font-weight: 700;
+
             position: relative;
 
             &:after {
@@ -2123,7 +2121,7 @@ html {
     .featured-column {
       grid-column: auto;
       grid-row: 1;
-      grid-column: span 2;
+
 
       .featured-image {
         height: 200px;
@@ -2191,9 +2189,7 @@ html {
   }
 }
 
-.has-mega-menu {
-  position: relative;
-}
+
 
 .mega-menu-wrapper {
   position: static;
@@ -2917,36 +2913,6 @@ body.menu-open {
       }
     }
   }
-}
-
-// Add this new CSS rule to handle hiding the mobile-menu-header when submenu is active
-.mobile-menu {
-  // ...existing code...
-
-  // Hide mobile-menu-header when submenu is active
-  &.has-active-submenu {
-    .mobile-menu-header {
-      display: none;
-    }
-  }
-}
-
-// Optimize animations
-@keyframes slideOut {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
-
-// ... existing code ...
-
-.mobile-nav {
-  // ... existing code ...
-
-  // Common mixin for list items
   @mixin mobile-list-item {
     width: 100%;
     padding: 14px;
@@ -2967,7 +2933,6 @@ body.menu-open {
       transform: translateX(2px);
     }
   }
-
   .submenu-groups {
     list-style: none;
     padding: 0;
@@ -2998,9 +2963,7 @@ body.menu-open {
         }
       }
     }
-  }
-
-  .mobile-quick-links {
+  }.mobile-quick-links {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -3031,11 +2994,6 @@ body.menu-open {
     }
   }
 
-  .main-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-
     li {
       // margin-bottom: 8px;
 
@@ -3055,8 +3013,22 @@ body.menu-open {
         }
       }
     }
+
+
+}
+
+
+
+// Optimize animations
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
   }
 }
+
 
 // Responsive adjustments
 @media (max-width: 360px) {
@@ -3266,6 +3238,7 @@ $border-color: #e8e8e8;
 
       @media (max-width: #{$breakpoint-tablet}) {
         padding: 12px 0;
+        
       }
 
       @media (max-width: #{$breakpoint-mobile-l}) {
@@ -3277,16 +3250,19 @@ $border-color: #e8e8e8;
     .logo {
       h1 {
         font-size: 2rem;
-
+    
         @media (min-width: #{$breakpoint-4k}) {
           font-size: 2.5rem;
+
         }
 
         @media (max-width: #{$breakpoint-laptop}) {
           font-size: 1.8rem;
+  
         }
 
         @media (max-width: #{$breakpoint-tablet}) {
+          
           font-size: 1.6rem;
         }
 
@@ -3362,11 +3338,7 @@ $border-color: #e8e8e8;
     }
   }
 
-  // Update background colors
-  &.scrolled {
-    background-color: $card-bg;
-    border-bottom: 1px solid $border-color;
-  }
+
 }
 
 // Update dropdown and modal backgrounds

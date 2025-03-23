@@ -205,8 +205,8 @@ const ProductShowcase = () => {
           viewport={{ once: true }}
         >
           <div className="header-content" >
-            <h2 style={{right: 40}}>SẢN PHẨM TIÊU BIỂU</h2>
-            <p style={{right: 10}}>Khám phá các sản phẩm đa dạng của chúng tôi</p>
+            <h2>SẢN PHẨM TIÊU BIỂU</h2>
+            <p>Khám phá các sản phẩm đa dạng của chúng tôi</p>
           </div>
           <Link to="/products" className="view-more">
             Xem tất cả <FaArrowRight />
