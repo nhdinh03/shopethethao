@@ -34,6 +34,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         error.put("message", "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
         error.put("path", request.getServletPath());
         error.put("timestamp", System.currentTimeMillis());
+        error.put("requireLogin", true);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getOutputStream(), error);

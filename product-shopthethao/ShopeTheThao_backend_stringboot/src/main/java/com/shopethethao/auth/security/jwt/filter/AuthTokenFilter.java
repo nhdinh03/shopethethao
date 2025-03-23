@@ -47,7 +47,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
       String jwt = parseJwt(request);
       if (jwt != null) {
-        boolean isValid = jwtUtils.validateJwtToken(jwt);
+        Map<String, Object> tokenValidation = jwtUtils.validateJwtTokenWithDetails(jwt);
+        boolean isValid = (boolean) tokenValidation.get("valid");
+        
         if (isValid) {
           String username = jwtUtils.getUserNameFromJwtToken(jwt);
           UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -58,9 +60,16 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
           SecurityContextHolder.getContext().setAuthentication(authentication);
         } else {
-          // Only send error for API requests
+          // Check if it's an API request or other request that needs redirection
           if (request.getServletPath().startsWith("/api/")) {
-            sendErrorResponse(response, "Token không hợp lệ hoặc đã hết hạn", "TOKEN_EXPIRED");
+            boolean requireLogin = (boolean) tokenValidation.getOrDefault("requireLogin", false);
+            String message = (String) tokenValidation.getOrDefault("message", "Token không hợp lệ hoặc đã hết hạn");
+            
+            if (requireLogin) {
+              sendAuthErrorResponse(response, message, "TOKEN_EXPIRED", true);
+            } else {
+              sendAuthErrorResponse(response, message, "TOKEN_INVALID", false);
+            }
             return;
           }
         }
@@ -72,7 +81,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
   }
 
-  private void sendErrorResponse(HttpServletResponse response, String message, String code) throws IOException {
+  private void sendAuthErrorResponse(HttpServletResponse response, String message, String code, boolean requireLogin) throws IOException {
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
@@ -81,6 +90,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     errorResponse.put("success", false);
     errorResponse.put("message", message);
     errorResponse.put("code", code);
+    errorResponse.put("requireLogin", requireLogin);
     errorResponse.put("timestamp", System.currentTimeMillis());
     errorResponse.put("status", HttpServletResponse.SC_UNAUTHORIZED);
 

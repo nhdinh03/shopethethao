@@ -3229,7 +3229,7 @@ $border-color: #e8e8e8;
       // ...existing code...
 
       @media (min-width: #{$breakpoint-4k}) {
-        padding: 20px 0;
+        // padding: 20px 0;
       }
 
       @media (max-width: #{$breakpoint-laptop}) {

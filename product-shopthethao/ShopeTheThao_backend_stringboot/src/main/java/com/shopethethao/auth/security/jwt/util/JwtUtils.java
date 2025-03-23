@@ -2,6 +2,8 @@ package com.shopethethao.auth.security.jwt.util;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,8 +126,91 @@ public class JwtUtils {
         }
     }
 
-    // Xác thực token
+    // Xác thực token và trả về thông tin chi tiết về trạng thái token
+    public Map<String, Object> validateJwtTokenWithDetails(String authToken) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("valid", false);
+        result.put("requireLogin", false);
+        
+        try {
+            logger.debug("Bắt đầu kiểm tra tính hợp lệ của JWT");
+
+            var parser = Jwts.parserBuilder()
+                    .setSigningKey(key())
+                    .setAllowedClockSkewSeconds(clockSkewSeconds)
+                    .build();
+
+            var claims = parser.parseClaimsJws(authToken);
+            String userId = claims.getBody().getSubject();
+            result.put("userId", userId);
+
+            logger.debug("Token hợp lệ cho người dùng: {}", userId);
+
+            // Kiểm tra token trong store
+            String storedToken = tokenManager.getToken(userId);
+            if (storedToken == null) {
+                // Token không có trong store
+                Date expiration = claims.getBody().getExpiration();
+                if (expiration != null && expiration.after(new Date())) {
+                    logger.info("Valid token found for user {} but not in store. Re-registering.", userId);
+                    tokenManager.saveToken(userId, authToken, expiration.getTime());
+                    result.put("valid", true);
+                    return result;
+                }
+                logger.warn("Token not found in store for user: {}", userId);
+                result.put("requireLogin", true);
+                result.put("message", "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+                return result;
+            }
+            
+            Date expiration = claims.getBody().getExpiration();
+            Date now = new Date();
+            long skewMillis = clockSkewSeconds * 1000;
+
+            logger.debug("Kiểm tra thời gian hết hạn token - Hiện tại: {}, Hết hạn: {}, Sai số: {} ms",
+                    now, expiration, skewMillis);
+
+            if (expiration.before(new Date(now.getTime() - skewMillis))) {
+                logger.warn("Token đã hết hạn cho người dùng: {}. Hết hạn vào: {}", userId, expiration);
+                tokenManager.removeToken(userId);
+                result.put("requireLogin", true);
+                result.put("message", "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+                return result;
+            }
+
+            logger.info("Token hợp lệ cho người dùng: {}. Thời gian còn lại: {} ms",
+                    userId, (expiration.getTime() - now.getTime()));
+            result.put("valid", true);
+            return result;
+
+        } catch (ExpiredJwtException e) {
+            logger.error("JWT đã hết hạn: {}", e.getMessage());
+            try {
+                String userId = e.getClaims().getSubject();
+                tokenManager.removeToken(userId);
+                result.put("userId", userId);
+            } catch (Exception ex) {
+                logger.error("Lỗi khi xóa token hết hạn: {}", ex.getMessage());
+            }
+            result.put("requireLogin", true);
+            result.put("message", "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+            return result;
+        } catch (Exception e) {
+            logger.error("Lỗi xác thực JWT: {}", e.getMessage());
+            result.put("requireLogin", true);
+            result.put("message", "Lỗi xác thực, vui lòng đăng nhập lại");
+            return result;
+        }
+    }
+
+    // Xác thực token (phương thức ban đầu giữ nguyên để tương thích)
     public boolean validateJwtToken(String authToken) {
+        Map<String, Object> details = validateJwtTokenWithDetails(authToken);
+        return (boolean) details.get("valid");
+    }
+
+    // Xác thực token
+    public boolean validateJwtTokenOld(String authToken) {
         try {
             logger.debug("Bắt đầu kiểm tra tính hợp lệ của JWT");
 
