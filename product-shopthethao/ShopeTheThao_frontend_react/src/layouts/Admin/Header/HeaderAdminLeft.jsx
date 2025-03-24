@@ -2,7 +2,7 @@ import img from "assets/Img";
 import { Link } from "react-router-dom";
 import './HeaderLeft.scss';
 import { m } from "framer-motion";
-import { ADMIN_ROUTES } from "router/routeConstants";
+import { ADMIN_ROUTES } from "constants/routeConstants";
 
 function HeaderAdminLeft({ collapsed }) {
   return (

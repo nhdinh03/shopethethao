@@ -5,7 +5,7 @@ import * as solidIcons from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.scss";
 import { HomeFilled } from "@ant-design/icons";
-import { ADMIN_ROUTES } from '../../../router/routeConstants';
+import { ADMIN_ROUTES } from '../../../constants/routeConstants';
 
 function getItem(label, key, icon, children, type) {
   return { key, icon, children, label, type };

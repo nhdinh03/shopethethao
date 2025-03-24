@@ -1,4 +1,4 @@
-import { ADMIN_ROUTES } from "router/routeConstants";
+import { ADMIN_ROUTES } from "constants/routeConstants";
 
 export const ROLES = {
   ADMIN: 'ADMIN',

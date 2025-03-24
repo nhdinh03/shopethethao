@@ -10,7 +10,7 @@ import {
 import "./cart.scss";
 import Loading from "pages/Loading/loading";
 import debounce from "lodash/debounce";
-import { ROUTES } from "router/routeConstants";
+import { ROUTES } from "constants/routeConstants";
 
 // Define breakpoints for responsive logic
 const BREAKPOINTS = {

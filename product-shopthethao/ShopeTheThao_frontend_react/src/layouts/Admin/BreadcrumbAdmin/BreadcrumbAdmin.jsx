@@ -5,7 +5,7 @@ import { HomeOutlined, RightOutlined, CrownOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { breadcrumbData } from "./breadcrumbConfig";
 import PropTypes from "prop-types";
-import { ADMIN_ROUTES}  from 'router/routeConstants';
+import { ADMIN_ROUTES}  from 'constants/routeConstants';
 
 const Bread = ({ path }) => {
   const isHomePage = path === ADMIN_ROUTES.PORTAL;

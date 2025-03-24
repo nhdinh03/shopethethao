@@ -7,10 +7,10 @@ import {
 import * as PageAdmin from "../pages/Admin";
 import * as PageUser from "../pages/User";
 import NotFound from "../pages/NotFound/notFound";
-import { ROUTES, ADMIN_ROUTES } from './routeConstants';
+import { ROUTES, ADMIN_ROUTES } from '../constants/routeConstants';
 
 // Export routes first
-export { ROUTES, ADMIN_ROUTES } from './routeConstants';
+export { ROUTES, ADMIN_ROUTES } from '../constants/routeConstants';
 
 export const publicRoutes = [
   { path: ROUTES.HOME, component: PageUser.HomeIndex, layout: UserLayout },

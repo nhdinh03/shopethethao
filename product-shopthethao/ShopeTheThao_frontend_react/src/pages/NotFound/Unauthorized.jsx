@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Result } from 'antd';
 import { Link } from 'react-router-dom';
-import { ROUTES } from 'router/routeConstants';
+import { ROUTES } from 'constants/routeConstants';
 const Unauthorized = () => (
     <Result
         status="404"

@@ -1,4 +1,4 @@
-import { ROUTES } from 'router/routeConstants';
+import { ROUTES } from 'constants/routeConstants';
 
 export const breadcrumbDataUser = [
   { url: ROUTES.HOME, title: "Trang chủ" },

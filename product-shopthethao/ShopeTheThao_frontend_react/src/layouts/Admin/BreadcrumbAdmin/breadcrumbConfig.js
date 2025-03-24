@@ -15,7 +15,7 @@ import {
     BarChartOutlined,
     SafetyCertificateOutlined
 } from '@ant-design/icons';
-import { ADMIN_ROUTES } from '../../../router/routeConstants';
+import { ADMIN_ROUTES } from '../../../constants/routeConstants';
 
 export const breadcrumbData = [
     // Catalog Management

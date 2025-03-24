@@ -25,7 +25,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./NotificationDropdown.css";
 import NotificationDetailModal from "./NotificationDetailModal";
-import { ADMIN_ROUTES } from "router/routeConstants";
+import { ADMIN_ROUTES } from "constants/routeConstants";
 
 const { Text, Title } = Typography;
 
