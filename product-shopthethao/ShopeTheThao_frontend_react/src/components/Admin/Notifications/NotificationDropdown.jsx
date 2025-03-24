@@ -25,6 +25,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./NotificationDropdown.css";
 import NotificationDetailModal from "./NotificationDetailModal";
+import { ADMIN_ROUTES } from "router/routeConstants";
 
 const { Text, Title } = Typography;
 
@@ -762,7 +763,7 @@ const NotificationDropdown = () => {
           type="link"
           onClick={() => {
             setDropdownOpen(false);
-            navigate("/dashboard-management-sys/users/history");
+            navigate(ADMIN_ROUTES.USERS.HISTORY);
           }}
         >
           Xem tất cả

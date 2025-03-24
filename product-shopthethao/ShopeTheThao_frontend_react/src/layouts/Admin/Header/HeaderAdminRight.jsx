@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import NotificationDropdown from "components/Admin/Notifications/NotificationDropdown";
 import authApi from "api/Admin/Auth/auth";
 import './HeaderRight.scss'
+import { ROUTES } from "router/routeConstants";
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);
@@ -43,7 +44,7 @@ function HeaderAdminRight() {
   const handleLogout = async () => {
     try {
       authApi.logout();
-      navigate('/v1/auth/login');
+      navigate(ROUTES.AUTH.LOGIN);
       message.success("Đăng xuất thành công!");
     } catch (error) {
       message.error("Đăng xuất thất bại!");

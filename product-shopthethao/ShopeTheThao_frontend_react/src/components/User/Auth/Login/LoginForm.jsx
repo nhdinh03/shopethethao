@@ -14,6 +14,7 @@ import { validateId, validatePassword } from "../Custom";
 import { InputField, CustomCheckbox, SocialButton } from "../Common/FormFields";
 import ForgotPasswordForm from "../ForgotPassword/ForgotPasswordForm";
 import RegisterForm from "../Register/RegisterForm";
+import { ROUTES } from "router";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ const LoginForm = () => {
 
       if (errorMessage.startsWith("Tài khoản chưa được xác thực:")) {
         message.info(errorMessage.split(":")[1]);
-        navigate("/v1/auth/otp", { state: { id: formData.id.trim() } });
+        navigate(ROUTES.AUTH.OTP, { state: { id: formData.id.trim() } });
         return;
       }
 
@@ -120,7 +121,7 @@ const LoginForm = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate(ROUTES.HOME);
     }
   }, [isAuthenticated, navigate]);
 
@@ -128,7 +129,7 @@ const LoginForm = () => {
     // Check if user is already authenticated
     const token = localStorage.getItem("token"); // or however you store your auth token
     if (token || isAuthenticated) {
-      navigate("/");
+      navigate(ROUTES.HOME);
     }
   }, [isAuthenticated, navigate]);
 

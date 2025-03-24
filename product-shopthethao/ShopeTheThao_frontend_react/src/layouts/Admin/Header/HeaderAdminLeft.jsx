@@ -2,13 +2,14 @@ import img from "assets/Img";
 import { Link } from "react-router-dom";
 import './HeaderLeft.scss';
 import { m } from "framer-motion";
+import { ADMIN_ROUTES } from "router/routeConstants";
 
 function HeaderAdminLeft({ collapsed }) {
   return (
     <div className="header-admin-left">
       {/* Brand Section - Logo & Name */}
       <Link 
-        to="/dashboard-management-sys/portal"
+        to={ADMIN_ROUTES.PORTAL}
         className="header-admin-left__brand"
         title="Dashboard Portal"
       >

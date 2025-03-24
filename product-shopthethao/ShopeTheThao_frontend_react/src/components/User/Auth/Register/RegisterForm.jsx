@@ -14,6 +14,7 @@ import {
 import { FaMars, FaVenus, FaUserAlt } from "react-icons/fa";
 import { InputField, EmailField } from "../Common/FormFields";
 import authApi from "api/Admin/Auth/auth";
+import { ROUTES } from "router";
 
 const RegisterForm = ({ onLoginClick }) => {
   const [formData, setFormData] = useState({
@@ -211,7 +212,7 @@ const RegisterForm = ({ onLoginClick }) => {
       message.success(
         "Đăng ký thành công! Kiểm tra email nhập mã để xác nhận tài khoản."
       );
-      navigate("/v1/auth/otp", { state: { id: formData.id } });
+      navigate(ROUTES.AUTH.OTP, { state: { id: formData.id } });
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại!";

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { FiMail, FiUser, FiLock } from "react-icons/fi";
 import authApi from 'api/Admin/Auth/auth';
 import "./otpForm.scss";
+import { ROUTES } from 'router';
 
 const OtpForm = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const OtpForm = () => {
       
       localStorage.removeItem('pendingVerification');
       message.success('Xác thực tài khoản thành công!');
-      navigate('/v1/auth/login');
+      navigate(ROUTES.AUTH.LOGIN);
     } catch (error) {
       message.error(error.response?.data?.message || 'Xác thực thất bại. Vui lòng thử lại!');
     } finally {

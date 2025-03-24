@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import "./Checkout.scss";
 import Loading from "pages/Loading/loading";
+import { ROUTES } from "router/routeConstants";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -470,7 +471,7 @@ const Checkout = () => {
           </div>
 
           <div className="checkout-actions">
-            <Link to="/v1/user/cart" className="back-to-cart">
+            <Link to={ROUTES.USER.CART} lassName="back-to-cart">
               <FaAngleLeft /> Quay lại giỏ hàng
             </Link>
             <button

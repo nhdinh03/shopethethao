@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Result } from 'antd';
 import { Link } from 'react-router-dom';
+import { ROUTES } from 'router/routeConstants';
 const NotFound = () => (
     <Result
         status="404"
@@ -12,7 +13,7 @@ const NotFound = () => (
           </>
         }
         extra={
-            <Link to={'/'} type="">
+            <Link to={ROUTES.HOME} type="">
                 <Button>Về trang chủ</Button>
             </Link>
         }

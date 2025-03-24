@@ -10,6 +10,7 @@ import {
 import "./cart.scss";
 import Loading from "pages/Loading/loading";
 import debounce from "lodash/debounce";
+import { ROUTES } from "router/routeConstants";
 
 // Define breakpoints for responsive logic
 const BREAKPOINTS = {
@@ -456,7 +457,7 @@ function Cart() {
 
               <div className="checkout-actions">
                 <Link
-                  to={selectedCartItems.length > 0 ? "/v1/user/checkout" : "#"}
+                  to={selectedCartItems.length > 0 ?  ROUTES.USER.CHECKOUT: "#"}
                   className={`checkout-btn ${
                     selectedCartItems.length === 0 ? "disabled" : ""
                   }`}
@@ -469,7 +470,7 @@ function Cart() {
                 >
                   Tiến hành thanh toán
                 </Link>
-                <Link to="/v1/shop/products" className="continue-shopping">
+                <Link to={ROUTES.SHOP.PRODUCTS} className="continue-shopping">
                   Tiếp tục mua sắm
                 </Link>
               </div>

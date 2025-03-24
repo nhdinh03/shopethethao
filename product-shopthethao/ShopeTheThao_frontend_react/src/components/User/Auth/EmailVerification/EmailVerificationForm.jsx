@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Routes } from "react-router-dom";
 import { motion } from "framer-motion";
 import { message } from "antd";
 import { FiMail, FiCheck, FiRefreshCw } from "react-icons/fi";
 // Make sure to use the correct path to import InputField
 import { InputField } from "../Common/FormFields";
 import authApi from "api/Admin/Auth/auth";
+import { ROUTES } from "router";
 
 const EmailVerificationForm = () => {
   const [otp, setOtp] = useState("");
@@ -18,7 +19,7 @@ const EmailVerificationForm = () => {
 
   useEffect(() => {
     if (!userId) {
-      navigate('/v1/auth/login');
+      navigate(ROUTES.AUTH.LOGIN);
       message.error("Không tìm thấy thông tin người dùng.");
       return;
     }

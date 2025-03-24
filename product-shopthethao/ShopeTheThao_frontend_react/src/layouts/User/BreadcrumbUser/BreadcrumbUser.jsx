@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Breadcrumb } from "antd";
 import { Link } from "react-router-dom";
 import { HomeOutlined, RightOutlined } from "@ant-design/icons";
@@ -6,7 +6,12 @@ import './BreadcrumbUser.scss';
 import { breadcrumbDataUser } from './BreadcrumbUserConfig';
 
 const BreadcrumbUser = ({ path = "" }) => {
-  const currentPage = breadcrumbDataUser.find(item => item.url !== "/" && path?.includes(item.url));
+  const currentPage = useMemo(() => 
+    breadcrumbDataUser.find(item => 
+      item.url !== "/" && path?.includes(item.url)
+    ),
+    [path]
+  );
   
   return (
     <div className="user-breadcrumb">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Result } from 'antd';
 import { Link } from 'react-router-dom';
+import { ROUTES } from 'router/routeConstants';
 const Unauthorized = () => (
     <Result
         status="404"
@@ -12,7 +13,7 @@ const Unauthorized = () => (
           </>
         }
         extra={
-            <Link to={'/v1/auth/login'} type="">
+            <Link to={ROUTES.AUTH.LOGIN} type="">
                 <Button>Về Đăng nhập</Button>
             </Link>
         }

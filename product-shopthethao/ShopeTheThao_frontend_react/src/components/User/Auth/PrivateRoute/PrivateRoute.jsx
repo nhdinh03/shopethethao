@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { hasPermission, isAdminRole } from 'utils/roleManager';
 import { Spin } from 'antd';
+import { ROUTES } from 'router';
 
 const PrivateRoute = ({ children, requiredPermission }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +36,7 @@ const PrivateRoute = ({ children, requiredPermission }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/v1/auth/login" />;
+    return <Navigate to={ROUTES.AUTH.LOGIN} />;
   }
 
   // Kiểm tra quyền truy cập đường dẫn admin

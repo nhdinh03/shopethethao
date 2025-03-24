@@ -17,6 +17,7 @@ import {
 import { AiOutlineHeart } from "react-icons/ai";
 import { message } from "antd";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
+import { ROUTES } from 'router';
 
 import "./header.scss";
 import authApi from "api/Admin/Auth/auth";
@@ -739,11 +740,11 @@ const Header = ({ onMobileMenuToggle }) => {
 
     return (
       <div className="auth-buttons">
-        <Link to="/v1/auth/login" className="btn-login">
+        <Link to={ROUTES.AUTH.LOGIN} className="btn-login">
           Đăng nhập
         </Link>
         <Link
-          to="/v1/auth/login"
+          to={ROUTES.AUTH.LOGIN}
           className="btn-register"
           state={{ activeTab: "register" }} // Add state to set active tab
         >
@@ -762,7 +763,7 @@ const Header = ({ onMobileMenuToggle }) => {
       await authApi.logout();
       localStorage.removeItem("token"); // Clean up token storage
       setIsAuthenticated(false);
-      navigate("/v1/auth/login");
+      navigate(ROUTES.AUTH.LOGIN);
       message.success("Đăng xuất thành công!");
     } catch (error) {
       message.error("Đăng xuất thất bại!");
@@ -1125,7 +1126,7 @@ const Header = ({ onMobileMenuToggle }) => {
                 {searchOpen ? <FiX /> : <FiSearch />}
               </button>
               <Link
-                to="/v1/user/wishlist"
+                to={ROUTES.USER.WISHLIST}
                 className="action-icon wishlist-icon"
               >
                 <AiOutlineHeart />
@@ -1134,7 +1135,7 @@ const Header = ({ onMobileMenuToggle }) => {
                 )}
               </Link>
 
-              <Link to="/v1/user/cart" className="action-icon cart-icon">
+              <Link to={ROUTES.USER.CART} className="action-icon cart-icon">
                 <FiShoppingBag />
                 {cartCount > 0 && (
                   <span className="count-badge">{cartCount}</span>
@@ -1170,7 +1171,7 @@ const Header = ({ onMobileMenuToggle }) => {
                       aria-orientation="vertical"
                     >
                       <Link
-                        to="/v1/user/profile"
+                        to={ROUTES.USER.PROFILE}
                         className="dropdown-item"
                         role="menuitem"
                         tabIndex={0}
@@ -1178,7 +1179,7 @@ const Header = ({ onMobileMenuToggle }) => {
                         <FiUser /> Tài khoản của tôi
                       </Link>
                       <Link
-                        to="/v1/user/checkorders"
+                        to={ROUTES.USER.ORDERS}
                         className="dropdown-item"
                         role="menuitem"
                         tabIndex={0}
@@ -1425,7 +1426,7 @@ const Header = ({ onMobileMenuToggle }) => {
               <div className="mobile-menu-footer">
                 <div className="user-actions-mobile compact-actions">
                   <Link
-                    to="/v1/user/profile"
+                    to={ROUTES.USER.PROFILE}
                     className="action-btn"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -1433,7 +1434,7 @@ const Header = ({ onMobileMenuToggle }) => {
                     <span>Tài khoản</span>
                   </Link>
                   <Link
-                    to="/v1/user/wishlist"
+                    to={ROUTES.USER.WISHLIST}
                     className="action-btn"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -1444,7 +1445,7 @@ const Header = ({ onMobileMenuToggle }) => {
                     )}
                   </Link>
                   <Link
-                    to="/v1/user/cart"
+                    to={ROUTES.USER.CART}
                     className="action-btn"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -1455,7 +1456,7 @@ const Header = ({ onMobileMenuToggle }) => {
                     )}
                   </Link>
                   <Link
-                    to="/v1/user/checkorders"
+                    to={ROUTES.USER.ORDERS}
                     className="action-btn"
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -1467,7 +1468,7 @@ const Header = ({ onMobileMenuToggle }) => {
                 {isAuthenticated ? (
                   <div className="mobile-auth-buttons">
                     <Link
-                      to="/v1/user/profile"
+                      to={ROUTES.USER.PROFILE}
                       className="mobile-btn"
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -1486,14 +1487,14 @@ const Header = ({ onMobileMenuToggle }) => {
                 ) : (
                   <div className="mobile-auth-buttons">
                     <Link
-                      to="/v1/auth/login"
+                      to={ROUTES.AUTH.LOGIN}
                       className="mobile-btn"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Đăng nhập
                     </Link>
                     <Link
-                      to="/v1/auth/login"
+                      to={ROUTES.AUTH.LOGIN}
                       className="mobile-btn accent"
                       state={{ activeTab: "register" }}
                       onClick={() => setMobileMenuOpen(false)}

@@ -7,150 +7,137 @@ import {
 import * as PageAdmin from "../pages/Admin";
 import * as PageUser from "../pages/User";
 import NotFound from "../pages/NotFound/notFound";
+import { ROUTES, ADMIN_ROUTES } from './routeConstants';
 
-// Constants for route paths
-const API_VERSION = "v1";
-const ADMIN_PREFIX = "/dashboard-management-sys"; // Thay đổi /admin thành tên phức tạp hơn
+// Export routes first
+export { ROUTES, ADMIN_ROUTES } from './routeConstants';
 
 export const publicRoutes = [
-  { path: "/", component: PageUser.HomeIndex, layout: UserLayout },
+  { path: ROUTES.HOME, component: PageUser.HomeIndex, layout: UserLayout },
+  { path: ROUTES.SHOP.PRODUCTS, component: PageUser.Products, layout: LayoutPageDefaultUser },
   {
-    path: `/${API_VERSION}/shop/products`, // Thêm version và phân cấp rõ ràng
-    component: PageUser.Products,
-    layout: LayoutPageDefaultUser,
-  },
-  {
-    path: `/${API_VERSION}/shop/seefulldetails/:productId`, // Chuẩn hóa format URL
+    path: ROUTES.SHOP.DETAILS(":productId"),
     component: PageUser.Seefulldetails,
     layout: LayoutPageDefaultUser,
   },
   {
-    path: `/${API_VERSION}/user/wishlist`, // Nhóm các route theo chức năng
+    path: ROUTES.USER.WISHLIST,
     component: PageUser.Wishlist,
     layout: LayoutPageDefaultUser,
   },
   {
-    path: `/${API_VERSION}/user/checkout`,
+    path: ROUTES.USER.CHECKOUT,
     component: PageUser.Checkout,
     layout: LayoutPageDefaultUser,
   },
   {
-    path: `/${API_VERSION}/user/cart`,
+    path: ROUTES.USER.CART,
     component: PageUser.Cart,
     layout: LayoutPageDefaultUser,
   },
   {
-    path: `/${API_VERSION}/user/profile`,
+    path: ROUTES.USER.PROFILE,
     component: PageUser.UserProfile,
     layout: LayoutPageDefaultUser,
   },
   {
-    path: `/${API_VERSION}/auth/login`,
+    path: ROUTES.AUTH.LOGIN,
     component: PageUser.LoginForm,
     layout: LayoutPageDefault,
   },
   {
-    path: `/${API_VERSION}/user/checkorders`,
+    path: ROUTES.USER.ORDERS,
     component: PageUser.Checkorders,
     layout: LayoutPageDefaultUser,
   },
   {
-    path: `/${API_VERSION}/auth/otp`,
+    path: ROUTES.AUTH.OTP,
     component: PageUser.OtpForm,
     layout: LayoutPageDefault,
     requiresUnverified: true, // Add this flag to check auth status
   },
-
   {
-    path: `/${API_VERSION}/404`,
+    path: ROUTES.ERROR.NOT_FOUND,
     component: NotFound,
     layout: LayoutPageDefault,
   },
 ];
 
 export const privateRoutes = [
+  { path: ADMIN_ROUTES.PORTAL, component: PageAdmin.AdminIndex, layout: AdminLayout },
+  { path: ADMIN_ROUTES.CATALOG.PRODUCTS, component: PageAdmin.Products, layout: AdminLayout },
   {
-    path: `${ADMIN_PREFIX}/portal`, // Thay đổi /admin/index
-    component: PageAdmin.AdminIndex,
-    layout: AdminLayout,
-  },
-  {
-    path: `${ADMIN_PREFIX}/catalog/products`, // Nhóm theo chức năng
-    component: PageAdmin.Products,
-    layout: AdminLayout,
-  },
-  {
-    path: `${ADMIN_PREFIX}/catalog/categories`,
+    path: ADMIN_ROUTES.CATALOG.CATEGORIES,
     component: PageAdmin.Categories,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/inventory/sizes`,
+    path: ADMIN_ROUTES.INVENTORY.SIZES,
     component: PageAdmin.Sizes,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/inventory/brands`,
+    path: ADMIN_ROUTES.INVENTORY.BRANDS,
     component: PageAdmin.Brands,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/users/accounts`, // Nhóm quản lý user
+    path: ADMIN_ROUTES.USERS.ACCOUNTS,
     component: PageAdmin.Accounts,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/users/comments`,
+    path: ADMIN_ROUTES.USERS.COMMENTS,
     component: PageAdmin.Comments,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/invoices/detailed`,
+    path: ADMIN_ROUTES.INVOICES.DETAILS,
     component: PageAdmin.Detailed_Invoices,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/catalog/product-attributes`,
+    path: ADMIN_ROUTES.CATALOG.ATTRIBUTES,
     component: PageAdmin.ProductAttributes,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/invoices`,
+    path: ADMIN_ROUTES.INVOICES.LIST,
     component: PageAdmin.Invoices,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/users/roles`,
+    path: ADMIN_ROUTES.USERS.ROLES,
     component: PageAdmin.Roles,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/users/staff`,
+    path: ADMIN_ROUTES.USERS.STAFF,
     component: PageAdmin.AccountStaff,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/inventory/stock-receipts`,
+    path: ADMIN_ROUTES.INVENTORY.STOCK_RECEIPTS,
     component: PageAdmin.Stock_Receipts,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/inventory/suppliers`,
+    path: ADMIN_ROUTES.INVENTORY.SUPPLIERS,
     component: PageAdmin.Suppliers,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/verification`,
+    path: ADMIN_ROUTES.ANALYTICS.VERIFICATION,
     component: PageAdmin.Verification,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/charts`,
+    path: ADMIN_ROUTES.CHARTS,
     component: PageAdmin.Charts,
     layout: AdminLayout,
   },
   {
-    path: `${ADMIN_PREFIX}/users/history`,
+    path: ADMIN_ROUTES.USERS.HISTORY,
     component: PageAdmin.UserHistory,
     layout: AdminLayout,
   },

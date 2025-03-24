@@ -1,12 +1,12 @@
-const API_VERSION = "v1";
+import { ROUTES } from 'router/routeConstants';
 
 export const breadcrumbDataUser = [
-  { url: "/", title: "Trang chủ" },
-  { url: `/${API_VERSION}/shop/products`, title: "Sản phẩm" },
-  { url: `/${API_VERSION}/shop/seefulldetails`, title: "Chi tiết sản phẩm" },
-  { url: `/${API_VERSION}/user/wishlist`, title: "Danh sách yêu thích" },
-  { url: `/${API_VERSION}/user/checkout`, title: "Thanh toán" },
-  { url: `/${API_VERSION}/user/cart`, title: "Giỏ hàng" },
-  { url: `/${API_VERSION}/user/profile`, title: "Thông tin tài khoản" },
-  { url: `/${API_VERSION}/user/checkorders`, title: "Kiểm tra đơn hàng" },
+  { url: ROUTES.HOME, title: "Trang chủ" },
+  { url: ROUTES.SHOP.PRODUCTS, title: "Sản phẩm" },
+  { url: ROUTES.SHOP.DETAILS(""), title: "Chi tiết sản phẩm" },
+  { url: ROUTES.USER.WISHLIST, title: "Danh sách yêu thích" },
+  { url: ROUTES.USER.CHECKOUT, title: "Thanh toán" },
+  { url: ROUTES.USER.CART, title: "Giỏ hàng" },
+  { url: ROUTES.USER.PROFILE, title: "Thông tin tài khoản" },
+  { url: ROUTES.USER.ORDERS, title: "Kiểm tra đơn hàng" },
 ];

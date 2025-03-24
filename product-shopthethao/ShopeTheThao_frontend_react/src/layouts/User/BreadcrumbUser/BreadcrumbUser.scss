@@ -34,7 +34,7 @@ $font-xl: 20px;
 .user-breadcrumb {
   background: #ffffff;
   border-bottom: 1px solid #f0f0f0;
-  min-height: 64px; // Thêm chiều cao tối thiểu
+  min-height: 64px;
   display: flex;
   align-items: center;
   
@@ -47,75 +47,58 @@ $font-xl: 20px;
     display: flex;
     align-items: center;
     
-    @include responsive(4k) {
-      padding: 0 24px;
-    }
+    @include responsive(4k) { padding: 0 24px; }
+    @include responsive(tablet) { padding: 0 12px; }
+    @include responsive(mobile-l) { padding: 0 10px; }
+  }
+
+  .ant-breadcrumb {
+    font-size: $font-sm;
     
-    @include responsive(tablet) {
-      padding: 0 12px;
-    }
+    @include responsive(4k) { font-size: $font-md; }
+    @include responsive(mobile-m) { font-size: $font-xs; }
     
-    @include responsive(mobile-l) {
-      padding: 0 10px;
-    }
-    
-    .ant-breadcrumb {
-      font-size: $font-sm;
+    a {
+      display: inline-flex;
+      align-items: center;
+      color: #ee4d2d;
+      transition: color 0.2s ease;
       
-      @include responsive(4k) {
-        font-size: $font-md;
-      }
-      
-      @include responsive(mobile-m) {
-        font-size: $font-xs;
-      }
-      
-      a {
-        display: inline-flex;
-        align-items: center;
-        color: #ee4d2d;
-        transition: color 0.2s ease;
-        
-        .anticon {
-          margin-right: 6px;
-          font-size: 15px;
-          
-          @include responsive(4k) {
-            font-size: 18px;
-            margin-right: 8px;
-          }
-          
-          @include responsive(mobile-l) {
-            font-size: 14px;
-            margin-right: 4px;
-          }
-        }
-        
-        &:hover {
-          color: #f57158;
-        }
-      }
-      
-      .anticon-right {
-        font-size: 9px;
-        color: #929292;
-        margin: 0 8px;
+      &:hover { color: #f57158; }
+
+      .anticon {
+        margin-right: 6px;
+        font-size: 15px;
         
         @include responsive(4k) {
-          font-size: 12px;
-          margin: 0 12px;
+          font-size: 18px;
+          margin-right: 8px;
         }
         
         @include responsive(mobile-l) {
-          font-size: 8px;
-          margin: 0 6px;
+          font-size: 14px;
+          margin-right: 4px;
         }
       }
+    }
+    
+    .anticon-right {
+      font-size: 9px;
+      color: #929292;
+      margin: 0 8px;
       
-      span {
-        color: #212121;
+      @include responsive(4k) {
+        font-size: 12px;
+        margin: 0 12px;
+      }
+      
+      @include responsive(mobile-l) {
+        font-size: 8px;
+        margin: 0 6px;
       }
     }
+    
+    span { color: #212121; }
   }
 }
 

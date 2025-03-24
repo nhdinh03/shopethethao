@@ -1,3 +1,5 @@
+import { ADMIN_ROUTES } from "router/routeConstants";
+
 export const ROLES = {
   ADMIN: 'ADMIN',
   MANAGER: 'MANAGER',
@@ -7,10 +9,10 @@ export const ROLES = {
 };
 
 export const ROLE_ROUTES = {
-  [ROLES.ADMIN]: '/dashboard-management-sys/portal',
-  [ROLES.MANAGER]: '/dashboard-management-sys/portal',
-  [ROLES.SUPPLIER]: '/dashboard-management-sys/portal',
-  [ROLES.STAFF]: '/dashboard-management-sys/portal',
+  [ROLES.ADMIN]: ADMIN_ROUTES.PORTAL,
+  [ROLES.MANAGER]: ADMIN_ROUTES.PORTAL,
+  [ROLES.SUPPLIER]: ADMIN_ROUTES.PORTAL,
+  [ROLES.STAFF]: ADMIN_ROUTES.PORTAL,
   [ROLES.USER]: '/'
 };
 
