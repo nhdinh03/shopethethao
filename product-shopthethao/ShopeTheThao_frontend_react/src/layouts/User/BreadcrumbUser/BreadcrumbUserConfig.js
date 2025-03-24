@@ -9,4 +9,5 @@ export const breadcrumbDataUser = [
   { url: ROUTES.USER.CART, title: "Giỏ hàng" },
   { url: ROUTES.USER.PROFILE, title: "Thông tin tài khoản" },
   { url: ROUTES.USER.ORDERS, title: "Kiểm tra đơn hàng" },
+  { url: ROUTES.USER.ORDERHISTORY, title: "Lịch sử đơn hàng" },
 ];

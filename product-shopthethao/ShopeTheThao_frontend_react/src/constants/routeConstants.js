@@ -1,5 +1,5 @@
-export const API_VERSION = "v2sssssssssssss";
-export const ADMIN_PREFIX = "dashboard-management-sysssssssssssssss";
+export const API_VERSION = "QQQQQQQQQTTTTTT";
+export const ADMIN_PREFIX = "dashboard-management-DDDDDUUUUUUU";
 
 export const ROUTES = {
   HOME: "/",
@@ -10,6 +10,7 @@ export const ROUTES = {
   USER: {
     PROFILE: `/${API_VERSION}/user/profile`,
     WISHLIST: `/${API_VERSION}/user/wishlist`,
+    ORDERHISTORY: `/${API_VERSION}/user/ordershistory`,
     CART: `/${API_VERSION}/user/cart`,
     CHECKOUT: `/${API_VERSION}/user/checkout`,
     ORDERS: `/${API_VERSION}/user/checkorders`,

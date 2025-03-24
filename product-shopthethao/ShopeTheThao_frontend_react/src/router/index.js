@@ -9,8 +9,7 @@ import * as PageUser from "../pages/User";
 import NotFound from "../pages/NotFound/notFound";
 import { ROUTES, ADMIN_ROUTES } from '../constants/routeConstants';
 
-// Export routes first
-export { ROUTES, ADMIN_ROUTES } from '../constants/routeConstants';
+
 
 export const publicRoutes = [
   { path: ROUTES.HOME, component: PageUser.HomeIndex, layout: UserLayout },
@@ -28,6 +27,11 @@ export const publicRoutes = [
   {
     path: ROUTES.USER.CHECKOUT,
     component: PageUser.Checkout,
+    layout: LayoutPageDefaultUser,
+  },
+  {
+    path: ROUTES.USER.ORDERHISTORY,
+    component: PageUser.Ordershistory,
     layout: LayoutPageDefaultUser,
   },
   {
@@ -142,3 +146,5 @@ export const privateRoutes = [
     layout: AdminLayout,
   },
 ];
+// Export routes first
+export { ROUTES, ADMIN_ROUTES } from '../constants/routeConstants';

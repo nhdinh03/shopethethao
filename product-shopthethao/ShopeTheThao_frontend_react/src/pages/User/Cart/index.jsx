@@ -519,8 +519,4 @@ function Cart() {
   );
 }
 
-// Use React.memo with custom comparison for better performance
-export default React.memo(Cart, (prevProps, nextProps) => {
-  // Custom comparison logic if needed
-  return true;
-});
+export default Cart;

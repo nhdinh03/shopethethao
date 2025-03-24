@@ -18,5 +18,7 @@ export { default as Checkout } from "./Checkout";
 
 export { default as Checkorders } from "./Checkorders";
 
+export { default as Ordershistory } from "./Ordershistory";
+
 
 

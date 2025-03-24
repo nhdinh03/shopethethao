@@ -939,7 +939,7 @@ const Header = ({ onMobileMenuToggle }) => {
 
             <ul className="_header_top_svty4_1">
               <li>
-                <a href="/wishlists" data-tracking="header-wishlist">
+                <a href={ROUTES.USER.WISHLIST} data-tracking="header-wishlist">
                   <i className="fas fa-heart" />
                   Danh sách yêu thích
                 </a>
@@ -950,11 +950,11 @@ const Header = ({ onMobileMenuToggle }) => {
                   Theo dõi đơn hàng
                 </button>
                 <div className="top-dropdown">
-                  <a href="/order-tracking" className="dropdown-item">
+                  <a href={ROUTES.USER.ORDERS}className="dropdown-item">
                     <i className="fas fa-truck" />
                     Tra cứu đơn hàng
                   </a>
-                  <a href="/orders/history" className="dropdown-item">
+                  <a href={ROUTES.USER.ORDERHISTORY} className="dropdown-item">
                     <i className="fas fa-history" />
                     Lịch sử đơn hàng
                   </a>
