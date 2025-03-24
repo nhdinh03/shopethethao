@@ -17,7 +17,7 @@ import {
 import { AiOutlineHeart } from "react-icons/ai";
 import { message } from "antd";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
-import { ROUTES } from 'router';
+import { ROUTES } from "router";
 
 import "./header.scss";
 import authApi from "api/Admin/Auth/auth";
@@ -850,7 +850,7 @@ const Header = ({ onMobileMenuToggle }) => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       // Set scrolled state
       setIsScrolled(currentScrollY > 10);
 
@@ -866,12 +866,16 @@ const Header = ({ onMobileMenuToggle }) => {
       lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
-    <header className={`header ${isScrolled ? 'scrolled' : ''} ${isVisible ? 'visible' : ''} ${mobileMenuOpen ? "menu-open" : ""}`}>
+    <header
+      className={`header ${isScrolled ? "scrolled" : ""} ${
+        isVisible ? "visible" : ""
+      } ${mobileMenuOpen ? "menu-open" : ""}`}
+    >
       {/* Top Bar */}
       <div className="top-bar">
         <div className="contact-info">
@@ -934,30 +938,48 @@ const Header = ({ onMobileMenuToggle }) => {
                 </a>
               </div>
               <div className="divider"></div>
-          
             </div>
 
             <ul className="_header_top_svty4_1">
               <li>
-                <a href={ROUTES.USER.WISHLIST} data-tracking="header-wishlist">
-                  <i className="fas fa-heart" />
-                  Danh sách yêu thích
-                </a>
+                <Link
+                  to={ROUTES.USER.WISHLIST}
+                  className="header-link"
+                  data-tracking="header-wishlist"
+                >
+                  {/* <FiHeart className="icon" /> */}
+                  <span style={{ fontSize: 11 }}>Danh sách yêu thích</span>
+                </Link>
               </li>
-              <li>
-                <button className="has-dropdown">
-                  <i className="fas fa-map-marker-alt" />
-                  Theo dõi đơn hàng
+              <li className="dropdown-wrapper">
+                <button
+                  type="button"
+                  className="header-link has-dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  {/* <FiMapPin className="icon" /> */}
+                  <span style={{ fontSize: 11 }}>Theo dõi đơn hàng</span>
                 </button>
-                <div className="top-dropdown">
-                  <a href={ROUTES.USER.ORDERS}className="dropdown-item">
-                    <i className="fas fa-truck" />
-                    Tra cứu đơn hàng
-                  </a>
-                  <a href={ROUTES.USER.ORDERHISTORY} className="dropdown-item">
-                    <i className="fas fa-history" />
-                    Lịch sử đơn hàng
-                  </a>
+
+                <div className="top-dropdown" role="menu">
+                  <Link
+                    to={ROUTES.USER.ORDERS}
+                    className="dropdown-item"
+                    role="menuitem"
+                  >
+                    {/* <FiTruck className="icon" /> */}
+                    <span style={{ fontSize: 11 }}>Tra cứu đơn hàng</span>
+                  </Link>
+
+                  <Link
+                    to={ROUTES.USER.ORDERHISTORY}
+                    className="dropdown-item"
+                    role="menuitem"
+                  >
+                    {/* <FiClock className="icon" /> */}
+                    <span style={{ fontSize: 11 }}>Lịch sử đơn hàng</span>
+                  </Link>
                 </div>
               </li>
               <li className="_language_selector_svty4_40">
@@ -974,14 +996,14 @@ const Header = ({ onMobileMenuToggle }) => {
                   <span>Tiếng Việt</span>
                 </button>
                 <div className="top-dropdown">
-                  <a href="#" className="dropdown-item">
-                    <img src="/flags/en.svg" alt="English" />
+                  <Link className="dropdown-item">
+                    {/* <img src="/flags/en.svg" alt="English" /> */}
                     English
-                  </a>
-                  <a href="#" className="dropdown-item">
-                    <img src="/flags/vn.svg" alt="Tiếng Việt" />
+                  </Link>
+                  <Link className="dropdown-item">
+                    {/* <img src="/flags/vn.svg" alt="Tiếng Việt" /> */}
                     Tiếng Việt
-                  </a>
+                  </Link>
                 </div>
               </li>
             </ul>
