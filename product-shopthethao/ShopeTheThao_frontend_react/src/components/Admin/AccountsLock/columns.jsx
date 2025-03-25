@@ -18,10 +18,10 @@ export const createColumns = (showUnlockModal) => [
     onHeaderCell: () => ({ style: headerStyle }),
     children: [
       {
-        title: "ID",
+        title: "Tên tài khoản",
         dataIndex: "id",
         key: "id",
-        width: 70,
+        width: 150,
         onHeaderCell: () => ({ style: headerStyle }),
       },
       {

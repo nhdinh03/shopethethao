@@ -317,7 +317,10 @@ const AccountsLock = () => {
         <Modal
           title={
             <div className="unlock-modal-title">
-              <UnlockOutlined /> Mở khóa tài khoản
+              <UnlockOutlined style={{ color: "#1677ff", fontSize: "20px" }} />
+              <span style={{ marginLeft: "8px", fontWeight: "600" }}>
+                Mở khóa tài khoản
+              </span>
             </div>
           }
           open={unlockModal.visible}
@@ -338,6 +341,7 @@ const AccountsLock = () => {
                   loading: false,
                 })
               }
+              size="large"
             >
               Hủy
             </Button>,
@@ -347,31 +351,58 @@ const AccountsLock = () => {
               icon={<UnlockOutlined />}
               loading={unlockModal.loading}
               onClick={handleUnlockAccount}
+              size="large"
             >
               Mở khóa
             </Button>,
           ]}
-          width={600}
+          width={650}
+          centered
         >
           {unlockModal.accountData && (
             <div className="unlock-modal-content">
+              {/* Account Information Section */}
               <div className="account-info">
                 <div className="account-avatar">
                   {unlockModal.accountData.image ? (
                     <img
                       src={`http://localhost:8081/api/upload/${unlockModal.accountData.image}`}
                       alt={unlockModal.accountData.fullname}
+                      style={{
+                        width: "80px",
+                        height: "80px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
                     />
                   ) : (
-                    <div className="avatar-placeholder large">
+                    <div
+                      className="avatar-placeholder large"
+                      style={{
+                        width: "80px",
+                        height: "80px",
+                        borderRadius: "50%",
+                        backgroundColor: "#1677ff",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "32px",
+                        fontWeight: "600",
+                      }}
+                    >
                       {unlockModal.accountData.fullname?.[0]?.toUpperCase() ||
                         "?"}
                     </div>
                   )}
                 </div>
-                <div className="account-details">
-                  <h3>{unlockModal.accountData.fullname}</h3>
-                  <p>{unlockModal.accountData.email}</p>
+                <div className="account-details" style={{ marginLeft: "16px" }}>
+                  <h3 style={{ margin: "0 0 4px", fontWeight: "600" }}>
+                    {unlockModal.accountData.fullname}
+                  </h3>
+                  <p style={{ margin: "0 0 8px", color: "#666" }}>
+                    {unlockModal.accountData.email}
+                  </p>
                   <Tag
                     color={
                       unlockModal.accountData.roles?.some(
@@ -389,7 +420,9 @@ const AccountsLock = () => {
                   </Tag>
                 </div>
               </div>
-              <div className="unlock-warning">
+
+              {/* Unlock Warning Section */}
+              <div className="unlock-warning" style={{ marginTop: "24px" }}>
                 <Alert
                   message="Thông báo mở khóa tài khoản"
                   description={
@@ -398,13 +431,14 @@ const AccountsLock = () => {
                         Bạn đang chuẩn bị mở khóa tài khoản này. Sau khi mở
                         khóa:
                       </p>
-                      <ul>
+                      <ul style={{ paddingLeft: "20px" }}>
                         <li>
-                          Tài khoản sẽ được đặt lại trạng thái "Đang hoạt động"
+                          Tài khoản sẽ được đặt lại trạng thái{" "}
+                          <Tag color="green">Đang hoạt động</Tag>
                         </li>
                         <li>Lý do khóa sẽ bị xóa khỏi hệ thống</li>
                         <li>
-                          Người dùng có thể đăng nhập và sử dụng tài khoản bình
+                          Tài khoản có thể đăng nhập và sử dụng tài khoản bình
                           thường
                         </li>
                       </ul>
@@ -414,8 +448,12 @@ const AccountsLock = () => {
                   showIcon
                 />
               </div>
-              <div className="lock-reason-section">
-                <h4>Lý do khóa:</h4>
+
+              {/* Lock Reason Section */}
+              <div className="lock-reason-section" style={{ marginTop: "24px" }}>
+                <h4 style={{ fontWeight: "600", marginBottom: "8px" }}>
+                  Lý do khóa:
+                </h4>
                 {renderLockReasons(unlockModal.accountData)}
               </div>
             </div>

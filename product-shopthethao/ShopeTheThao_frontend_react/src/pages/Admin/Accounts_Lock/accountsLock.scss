@@ -374,6 +374,36 @@ $font-xxl: 24px;
     }
   }
 
+  .unlock-modal-title {
+    display: flex;
+    align-items: center;
+    font-size: $font-lg;
+    color: #1e293b;
+  }
+
+  .unlock-modal-content {
+    .account-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .unlock-warning {
+      .ant-alert {
+        border-radius: 6px;
+      }
+    }
+
+    .lock-reason-section {
+      h4 {
+        font-size: $font-md;
+        color: #1e293b;
+      }
+    }
+  }
+
   @include responsive($breakpoint-tablet) {
     .content-wrapper {
       padding: 16px;
