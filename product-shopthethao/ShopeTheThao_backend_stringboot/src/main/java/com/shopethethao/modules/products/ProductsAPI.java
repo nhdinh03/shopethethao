@@ -99,19 +99,38 @@ public class ProductsAPI {
 
     // Lấy danh sách sản phẩm có phân trang
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-            @RequestParam("limit") Optional<Integer> limit) {
+    public ResponseEntity<?> findAll(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
                 return new ResponseEntity<>("Trang không tồn tại", HttpStatus.NOT_FOUND);
             }
-            Sort sort = Sort.by(Sort.Order.desc("id"));
+
+            // Create sort object based on parameters
+            Sort sort = sortDir.equalsIgnoreCase("asc") ? 
+                Sort.by(sortBy).ascending() : 
+                Sort.by(sortBy).descending();
+
             Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
-            Page<Product> page = productsDAO.findAll(pageable);
+            Page<Product> page;
+
+            if (search != null && !search.trim().isEmpty()) {
+                // Search by name, description, or category name (case-insensitive)
+                page = productsDAO.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrCategorie_NameContainingIgnoreCase(
+                    search.trim(), search.trim(), search.trim(), pageable);
+            } else {
+                page = productsDAO.findAll(pageable);
+            }
+
             ResponseDTO<Product> responseDTO = new ResponseDTO<>();
             responseDTO.setData(page.getContent());
             responseDTO.setTotalItems(page.getTotalElements());
             responseDTO.setTotalPages(page.getTotalPages());
+
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -158,17 +177,17 @@ public class ProductsAPI {
             }
 
             // Validate image URLs
-            if (product.getImages() != null) {
-                for (ProductImages img : product.getImages()) {
-                    if (img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
-                        return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
-                    }
-                    if (!img.getImageUrl().startsWith("http://localhost:8081/api/upload/")) {
-                        return new ResponseEntity<>("URL hình ảnh không hợp lệ! URL phải bắt đầu bằng 'http://localhost:8081/api/upload/'", 
-                            HttpStatus.BAD_REQUEST);
-                    }
-                }
-            }
+            // if (product.getImages() != null) {
+            //     for (ProductImages img : product.getImages()) {
+            //         if (img.getImageUrl() == null || img.getImageUrl().trim().isEmpty()) {
+            //             return new ResponseEntity<>("URL hình ảnh không hợp lệ!", HttpStatus.BAD_REQUEST);
+            //         }
+            //         // Append base URL if not present
+            //         if (!img.getImageUrl().startsWith("http://")) {
+            //             img.setImageUrl("http://localhost:8081/api/upload/" + img.getImageUrl());
+            //         }
+            //     }
+            // }
 
             // Save product first
             Product savedProduct = productsDAO.save(product);

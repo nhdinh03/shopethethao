@@ -1,6 +1,5 @@
 import BaseApi from "api/global/baseApi";
 
-
 class ProductsApi extends BaseApi {
   constructor() {
     super("products");
@@ -16,7 +15,7 @@ class ProductsApi extends BaseApi {
     }
   }
 
- async getProductDetails(productsId) {
+  async getProductDetails(productsId) {
     try {
       const response = await this.getById(productsId);  
       return response.data;  
@@ -26,7 +25,6 @@ class ProductsApi extends BaseApi {
     }
   }
 
-  
 }
 
 const productsApi = new ProductsApi();

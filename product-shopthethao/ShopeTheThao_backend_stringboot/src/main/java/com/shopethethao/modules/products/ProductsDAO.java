@@ -3,6 +3,8 @@ package com.shopethethao.modules.products;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,4 +32,7 @@ public interface ProductsDAO extends JpaRepository<Product, Integer> {
 
     @Query("SELECT p FROM Product p WHERE LOWER(p.name) = LOWER(?1)")
     Optional<Product> findByNameIgnoreCase(String name);
+
+    Page<Product> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrCategorie_NameContainingIgnoreCase(
+            String name, String description, String categoryName, Pageable pageable);
 }

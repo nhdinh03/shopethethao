@@ -9,13 +9,9 @@ import {
   Table,
   Row,
   Col,
-  Input
+  Input,
 } from "antd";
-import {
-  PlusOutlined,
-  EditOutlined,
-  SearchOutlined
-} from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 
 import uploadApi from "api/service/uploadApi";
 import PaginationComponent from "components/User/PaginationComponent";
@@ -25,7 +21,6 @@ import "../index.scss";
 import styles from "../modalStyles.module.scss";
 import { ProductColumns, ProductForm } from "components/Admin";
 import "./Products.scss"; // Updated import for the CSS
-
 
 const Products = () => {
   const [open, setOpen] = useState(false);
@@ -54,7 +49,11 @@ const Products = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const resProducts = await productsApi.getByPage(currentPage, pageSize);
+        const resProducts = await productsApi.getByPage(
+          currentPage,
+          pageSize,
+          searchText
+        );
         setProducts(resProducts.data);
         setTotalItems(resProducts.totalItems);
       } catch (error) {
@@ -65,7 +64,7 @@ const Products = () => {
       }
     };
     fetchData();
-  }, [currentPage, pageSize, workSomeThing]);
+  }, [currentPage, pageSize, workSomeThing, searchText]);
 
   // Thêm hàm xử lý URL ảnh
   const processImageUrls = (images) => {
@@ -98,14 +97,14 @@ const Products = () => {
     // Kiểm tra thay đổi trong sizes
     const currentSizes = currentValues.sizes || [];
     const originalSizes = original.sizes || [];
-    
+
     if (currentSizes.length !== originalSizes.length) return true;
-    
+
     // So sánh từng size
     for (let i = 0; i < currentSizes.length; i++) {
       const curr = currentSizes[i];
       const orig = originalSizes[i];
-      
+
       if (!curr || !orig) return true;
       if (curr.size !== orig.size.id) return true;
       if (parseInt(curr.quantity) !== orig.quantity) return true;
@@ -121,10 +120,12 @@ const Products = () => {
     // So sánh từng ảnh
     for (const currImg of currentImages) {
       if (currImg.originFileObj) return true; // Có ảnh mới
-      
+
       // Kiểm tra xem ảnh có trong ảnh gốc không
-      const imgUrl = currImg.imageUrl || currImg.url?.split('/').pop();
-      const exists = originalImages.some(origImg => origImg.imageUrl === imgUrl);
+      const imgUrl = currImg.imageUrl || currImg.url?.split("/").pop();
+      const exists = originalImages.some(
+        (origImg) => origImg.imageUrl === imgUrl
+      );
       if (!exists) return true;
     }
 
@@ -139,7 +140,7 @@ const Products = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      
+
       // Nếu đang cập nhật và không có thay đổi, đóng modal và không làm gì cả
       if (editingProduct && !isFormChanged) {
         setOpen(false);
@@ -158,10 +159,10 @@ const Products = () => {
           imagesFileList.map(async (file) => {
             // Nếu là ảnh đã tồn tại (có imageUrl hoặc url)
             if (file.imageUrl || (file.url && !file.originFileObj)) {
-              const imageUrl = file.imageUrl || file.url.split('/').pop();
+              const imageUrl = file.imageUrl || file.url.split("/").pop();
               return {
                 imageUrl: imageUrl,
-                isExisting: true
+                isExisting: true,
               };
             }
             // Nếu là ảnh mới (có originFileObj)
@@ -169,7 +170,7 @@ const Products = () => {
               const uploadedUrl = await uploadApi.post(file.originFileObj);
               return {
                 imageUrl: uploadedUrl,
-                isExisting: false
+                isExisting: false,
               };
             }
             return null;
@@ -183,7 +184,7 @@ const Products = () => {
               const uploadedUrl = await uploadApi.post(file.originFileObj);
               return {
                 imageUrl: uploadedUrl,
-                isExisting: false
+                isExisting: false,
               };
             }
             return null;
@@ -192,14 +193,14 @@ const Products = () => {
       }
 
       // Lọc bỏ các giá trị null
-      uploadedImages = uploadedImages.filter(img => img !== null);
+      uploadedImages = uploadedImages.filter((img) => img !== null);
 
       const newProduct = {
         name: values.name,
         description: values.description,
         totalQuantity: values.totalQuantity,
         categorie: { id: values.categorie },
-        images: uploadedImages.map(img => ({ imageUrl: img.imageUrl })),
+        images: uploadedImages.map((img) => ({ imageUrl: img.imageUrl })),
         price: parseFloat(values.price),
         sizes: values.sizes.map((size) => ({
           size: { id: size.size },
@@ -235,10 +236,10 @@ const Products = () => {
     setOpen(true);
     setEditingProduct(record);
     console.log(record);
-    
+
     // Lưu bản gốc của sản phẩm để so sánh sau này
     originalProductRef.current = JSON.parse(JSON.stringify(record));
-    
+
     form.setFieldsValue({
       ...record,
       categorie: record.categorie?.id,
@@ -248,12 +249,12 @@ const Products = () => {
         price: size.price,
       })),
       // Đảm bảo cấu trúc dữ liệu images được đặt đúng
-      images: { fileList: processedImages }
+      images: { fileList: processedImages },
     });
 
     const totalQuantity = calculateTotalQuantity(record.sizes);
     setTotalQuantity(totalQuantity);
-    
+
     // Reset trạng thái isFormChanged
     setIsFormChanged(false);
   };
@@ -380,13 +381,8 @@ const Products = () => {
   // Handle search functionality
   const handleSearch = (value) => {
     setSearchText(value);
-    console.log("Searching for:", value);
+    setCurrentPage(1);
   };
-
-  // Filter products based on search text
-  const filteredProducts = products.filter(item =>
-    item.name.toLowerCase().includes(searchText.toLowerCase())
-  );
 
   return (
     <div className="products-page">
@@ -396,7 +392,7 @@ const Products = () => {
         <Row gutter={[16, 16]} className="header-actions">
           <Col xs={24} sm={14} md={16} lg={18}>
             <Input
-              placeholder="Tìm kiếm sản phẩm..."
+              placeholder="Tìm kiếm sản phẩm theo tên, mô tả, tên danh mục..."
               prefix={<SearchOutlined />}
               className="search-input"
               onChange={(e) => handleSearch(e.target.value)}
@@ -454,15 +450,15 @@ const Products = () => {
           }
           okButtonProps={{
             style: {
-              backgroundColor: editingProduct ? '#faad14' : '#1890ff',
-              borderColor: editingProduct ? '#faad14' : '#1890ff'
+              backgroundColor: editingProduct ? "#faad14" : "#1890ff",
+              borderColor: editingProduct ? "#faad14" : "#1890ff",
             },
-            disabled: editingProduct && !isFormChanged
+            disabled: editingProduct && !isFormChanged,
           }}
           cancelText="Hủy"
         >
-          <ProductForm 
-            form={form} 
+          <ProductForm
+            form={form}
             categories={categories}
             sizes={sizes}
             totalQuantity={totalQuantity}
@@ -495,7 +491,7 @@ const Products = () => {
             columns={columns}
             loading={loading}
             scroll={{ x: "max-content" }}
-            dataSource={filteredProducts.map((product, index) => ({
+            dataSource={products.map((product, index) => ({
               ...product,
               key: product.id ?? `product-${index}`,
               totalQuantity: calculateTotalQuantity(product.sizes),
