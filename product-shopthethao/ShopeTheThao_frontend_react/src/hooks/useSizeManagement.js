@@ -10,6 +10,7 @@ export const useSizeManagement = () => {
   const [size, setSize] = useState([]);
   const [loading, setLoading] = useState(false);
   const [workSomeThing, setWorkSomeThing] = useState(false);
+  const [searchText, setSearchText] = useState('');
 
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
@@ -18,7 +19,7 @@ export const useSizeManagement = () => {
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await sizeApi.getByPage(currentPage, pageSize);
+        const res = await sizeApi.getByPage(currentPage, pageSize, searchText);
         if (isMounted) {
           setSize(res.data);
           setTotalItems(res.totalItems);
@@ -33,7 +34,7 @@ export const useSizeManagement = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, workSomeThing]);
+  }, [currentPage, pageSize, workSomeThing, searchText]);
 
   const createSize = async (values) => {
     try {
@@ -76,6 +77,11 @@ export const useSizeManagement = () => {
     setCurrentPage(1);
   };
 
+  const handleSearch = (value) => {
+    setSearchText(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   return {
     size,
     loading,
@@ -86,6 +92,8 @@ export const useSizeManagement = () => {
     handlePageSizeChange,
     createSize,
     updateSize,
-    deleteSize
+    deleteSize,
+    searchText,
+    handleSearch,
   };
 };

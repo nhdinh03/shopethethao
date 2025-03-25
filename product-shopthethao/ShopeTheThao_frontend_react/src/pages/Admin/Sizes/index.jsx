@@ -9,7 +9,6 @@ const Sizes = () => {
   const [open, setOpen] = useState(false);
   const [editSize, setEditSize] = useState(null);
   const [form] = Form.useForm();
-  const [searchText, setSearchText] = useState("");
 
   const {
     size,
@@ -21,7 +20,9 @@ const Sizes = () => {
     handlePageSizeChange,
     createSize,
     updateSize,
-    deleteSize
+    deleteSize,
+    searchText,
+    handleSearch
   } = useSizeManagement();
 
   const handleModalOk = async () => {
@@ -46,19 +47,6 @@ const Sizes = () => {
     form.setFieldsValue(category);
     setOpen(true);
   };
-
-  const handleSearch = (value) => {
-    setSearchText(value);
-    // Reset to page 1 when searching
-    setCurrentPage(1);
-  };
-
-  // Filter sizes based on search text
-  const filteredSizes = size.filter(item => 
-    item.name.toLowerCase().includes(searchText.toLowerCase()) || 
-    item.id?.toString().includes(searchText) || 
-    item.description?.toLowerCase().includes(searchText.toLowerCase())
-  );
 
   return (
     <div className="size-page">
@@ -103,7 +91,7 @@ const Sizes = () => {
 
         <div className="table-container">
           <SizeTable
-            sizeData={filteredSizes}
+            sizeData={size} // Use the API filtered data directly
             handleEditData={handleEditData}
             handleDelete={deleteSize}
             loading={loading}

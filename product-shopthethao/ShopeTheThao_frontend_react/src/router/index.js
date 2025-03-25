@@ -43,6 +43,7 @@ export const publicRoutes = [
     path: ROUTES.USER.PROFILE,
     component: PageUser.UserProfile,
     layout: LayoutPageDefaultUser,
+    requiresAuth: true
   },
   {
     path: ROUTES.AUTH.LOGIN,

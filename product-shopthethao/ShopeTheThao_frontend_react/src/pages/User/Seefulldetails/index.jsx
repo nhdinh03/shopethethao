@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -25,6 +25,7 @@ import "./Seefulldetails.scss";
 import { mockProducts } from "data/mockData";
 import { ProductCard } from "../../../components/User";
 import Loading from "pages/Loading/loading";
+import RelatedProducts from "components/User/RelatedProducts";
 
 const Seefulldetails = () => {
   const { productId } = useParams();
@@ -1033,6 +1034,11 @@ const Seefulldetails = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+             <Suspense fallback={<Loading />}>
+                <RelatedProducts />
+                
+              </Suspense>
 
         {/* Add Video Modal */}
         {showVideo && (

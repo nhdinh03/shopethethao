@@ -1,13 +1,34 @@
-import React, { useState, useEffect, Suspense, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  Suspense,
+  useCallback,
+  useRef,
+} from "react";
 import { Link } from "react-router-dom";
-import { FaArrowRight, FaRegPaperPlane, FaStar, FaRegStar, FaHeart, FaShoppingCart, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaArrowRight,
+  FaRegPaperPlane,
+  FaStar,
+  FaRegStar,
+  FaHeart,
+  FaShoppingCart,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 import { motion } from "framer-motion";
 import "./Home.scss";
-import { BrandSection, Slideshow, CategorySection ,ProductShowcase } from "components/User";
+import {
+  BrandSection,
+  Slideshow,
+  CategorySection,
+  ProductShowcase,
+} from "components/User";
 
 import Loading from "pages/Loading/loading";
 import { mockProducts } from "data/mockData";
 import { noibatdata } from "data/noibatdata";
+import RelatedProducts from "components/User/RelatedProducts";
 
 const HomeIndex = () => {
   const [loading, setLoading] = useState(true);
@@ -23,8 +44,14 @@ const HomeIndex = () => {
   const [newScrollIndex, setNewScrollIndex] = useState(0);
   const featuredScrollRef = useRef(null);
   const newScrollRef = useRef(null);
-  const [showLeftArrows, setShowLeftArrows] = useState({ featured: false, new: false });
-  const [showRightArrows, setShowRightArrows] = useState({ featured: true, new: true });
+  const [showLeftArrows, setShowLeftArrows] = useState({
+    featured: false,
+    new: false,
+  });
+  const [showRightArrows, setShowRightArrows] = useState({
+    featured: true,
+    new: true,
+  });
 
   const handleScroll = useCallback((ref, setIndex) => {
     if (ref.current) {
@@ -37,29 +64,29 @@ const HomeIndex = () => {
 
   const checkScrollPosition = (ref, section) => {
     if (!ref.current) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = ref.current;
-    
-    setShowLeftArrows(prev => ({
+
+    setShowLeftArrows((prev) => ({
       ...prev,
-      [section]: scrollLeft > 0
+      [section]: scrollLeft > 0,
     }));
-    
-    setShowRightArrows(prev => ({
+
+    setShowRightArrows((prev) => ({
       ...prev,
-      [section]: scrollLeft < scrollWidth - clientWidth - 5
+      [section]: scrollLeft < scrollWidth - clientWidth - 5,
     }));
   };
 
   const scroll = (direction, ref, section) => {
     if (!ref.current) return;
-    
-    const scrollAmount = direction === 'left' ? -280 : 280;
+
+    const scrollAmount = direction === "left" ? -280 : 280;
     ref.current.scrollBy({
       left: scrollAmount,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
-    
+
     setTimeout(() => checkScrollPosition(ref, section), 300);
   };
 
@@ -69,27 +96,27 @@ const HomeIndex = () => {
 
     const handleFeaturedScroll = () => {
       handleScroll(featuredScrollRef, setFeaturedScrollIndex);
-      checkScrollPosition(featuredScrollRef, 'featured');
+      checkScrollPosition(featuredScrollRef, "featured");
     };
 
     const handleNewScroll = () => {
       handleScroll(newScrollRef, setNewScrollIndex);
-      checkScrollPosition(newScrollRef, 'new');
+      checkScrollPosition(newScrollRef, "new");
     };
 
     if (featuredContainer) {
-      featuredContainer.addEventListener('scroll', handleFeaturedScroll);
+      featuredContainer.addEventListener("scroll", handleFeaturedScroll);
     }
     if (newContainer) {
-      newContainer.addEventListener('scroll', handleNewScroll);
+      newContainer.addEventListener("scroll", handleNewScroll);
     }
 
     return () => {
       if (featuredContainer) {
-        featuredContainer.removeEventListener('scroll', handleFeaturedScroll);
+        featuredContainer.removeEventListener("scroll", handleFeaturedScroll);
       }
       if (newContainer) {
-        newContainer.removeEventListener('scroll', handleNewScroll);
+        newContainer.removeEventListener("scroll", handleNewScroll);
       }
     };
   }, [handleScroll]);
@@ -97,8 +124,8 @@ const HomeIndex = () => {
   useEffect(() => {
     // Initial check for scroll buttons
     setTimeout(() => {
-      checkScrollPosition(featuredScrollRef, 'featured');
-      checkScrollPosition(newScrollRef, 'new');
+      checkScrollPosition(featuredScrollRef, "featured");
+      checkScrollPosition(newScrollRef, "new");
     }, 100);
   }, [featuredProducts, displayedProducts]);
 
@@ -112,7 +139,7 @@ const HomeIndex = () => {
     return [...Array(size)].map((_, index) => {
       const filled = index < Math.floor(rating);
       const half = !filled && index < Math.ceil(rating) && rating % 1 !== 0;
-      
+
       return filled ? (
         <FaStar key={index} className="filled" />
       ) : half ? (
@@ -128,8 +155,8 @@ const HomeIndex = () => {
     const loadData = async () => {
       try {
         // Simulate API loading with a small delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
         // Load featured products from noibatdata
         if (noibatdata && noibatdata.length > 0) {
           setFeaturedProducts(noibatdata.slice(0, 5));
@@ -139,20 +166,20 @@ const HomeIndex = () => {
             .slice(0, 5);
           setFeaturedProducts(featured);
         }
-        
+
         // Load new arrivals (display the latest products)
         const newArrivals = [...mockProducts]
           .sort((a, b) => b.id - a.id)
           .slice(0, 5);
         setDisplayedProducts(newArrivals);
-        
+
         setLoading(false);
       } catch (error) {
         console.error("Error loading product data:", error);
         setLoading(false);
       }
     };
-    
+
     loadData();
   }, []);
 
@@ -179,8 +206,8 @@ const HomeIndex = () => {
   };
 
   const renderProductCard = (product) => (
-    <motion.div 
-      className="product-card" 
+    <motion.div
+      className="product-card"
       key={product.id}
       variants={childVariants}
       whileHover={{ y: -10, transition: { duration: 0.3 } }}
@@ -211,11 +238,15 @@ const HomeIndex = () => {
             <>
               <span className="discounted-price">
                 {formatPrice(
-                  Math.round(product.price * (1 - product.discountPercentage / 100))
+                  Math.round(
+                    product.price * (1 - product.discountPercentage / 100)
+                  )
                 )}
                 đ
               </span>
-              <span className="original-price">{formatPrice(product.price)}đ</span>
+              <span className="original-price">
+                {formatPrice(product.price)}đ
+              </span>
             </>
           ) : (
             <span className="current-price">{formatPrice(product.price)}đ</span>
@@ -251,7 +282,7 @@ const HomeIndex = () => {
               Xem thêm <FaArrowRight />
             </Link>
           </motion.div>
-          
+
           {loading ? (
             <div className="loading-spinner">
               <div className="spinner"></div>
@@ -259,16 +290,16 @@ const HomeIndex = () => {
           ) : (
             <div className="products-slider-container">
               {showLeftArrows.featured && (
-                <button 
-                  className="slider-arrow arrow-left" 
-                  onClick={() => scroll('left', featuredScrollRef, 'featured')}
+                <button
+                  className="slider-arrow arrow-left"
+                  onClick={() => scroll("left", featuredScrollRef, "featured")}
                   aria-label="Previous products"
                 >
                   <FaChevronLeft />
                 </button>
               )}
-              
-              <motion.div 
+
+              <motion.div
                 className="products-grid top-five"
                 variants={containerVariants}
                 initial="hidden"
@@ -280,9 +311,9 @@ const HomeIndex = () => {
               </motion.div>
 
               {showRightArrows.featured && (
-                <button 
-                  className="slider-arrow arrow-right" 
-                  onClick={() => scroll('right', featuredScrollRef, 'featured')}
+                <button
+                  className="slider-arrow arrow-right"
+                  onClick={() => scroll("right", featuredScrollRef, "featured")}
                   aria-label="Next products"
                 >
                   <FaChevronRight />
@@ -294,7 +325,7 @@ const HomeIndex = () => {
       </section>
 
       {/* Promotional Banner */}
-      <motion.section 
+      <motion.section
         className="promo-banner"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -302,7 +333,7 @@ const HomeIndex = () => {
         viewport={{ once: true }}
       >
         <div className="container">
-          <motion.div 
+          <motion.div
             className="promo-content"
             initial={{ y: 30, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -310,7 +341,10 @@ const HomeIndex = () => {
             viewport={{ once: true }}
           >
             <h2>Khuyến Mãi Đặc Biệt</h2>
-            <p>Giảm giá lên đến 50% cho các sản phẩm thể thao cao cấp. Thời gian có hạn!</p>
+            <p>
+              Giảm giá lên đến 50% cho các sản phẩm thể thao cao cấp. Thời gian
+              có hạn!
+            </p>
             <Link to="/products" className="shop-now-btn">
               Mua Ngay
             </Link>
@@ -341,7 +375,7 @@ const HomeIndex = () => {
               Xem thêm <FaArrowRight />
             </Link>
           </motion.div>
-          
+
           {loading ? (
             <div className="loading-spinner">
               <div class="spinner"></div>
@@ -349,16 +383,16 @@ const HomeIndex = () => {
           ) : (
             <div className="products-slider-container">
               {showLeftArrows.new && (
-                <button 
-                  className="slider-arrow arrow-left" 
-                  onClick={() => scroll('left', newScrollRef, 'new')}
+                <button
+                  className="slider-arrow arrow-left"
+                  onClick={() => scroll("left", newScrollRef, "new")}
                   aria-label="Previous products"
                 >
                   <FaChevronLeft />
                 </button>
               )}
-              
-              <motion.div 
+
+              <motion.div
                 className="products-grid top-five"
                 variants={containerVariants}
                 initial="hidden"
@@ -370,9 +404,9 @@ const HomeIndex = () => {
               </motion.div>
 
               {showRightArrows.new && (
-                <button 
-                  className="slider-arrow arrow-right" 
-                  onClick={() => scroll('right', newScrollRef, 'new')}
+                <button
+                  className="slider-arrow arrow-right"
+                  onClick={() => scroll("right", newScrollRef, "new")}
                   aria-label="Next products"
                 >
                   <FaChevronRight />
@@ -384,7 +418,7 @@ const HomeIndex = () => {
       </section>
 
       {/* Newsletter Section */}
-      <motion.section 
+      <motion.section
         className="newsletter-section"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -406,9 +440,10 @@ const HomeIndex = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            Nhận thông tin về sản phẩm mới, khuyến mãi độc quyền và lời khuyên từ chuyên gia thể thao
+            Nhận thông tin về sản phẩm mới, khuyến mãi độc quyền và lời khuyên
+            từ chuyên gia thể thao
           </motion.p>
-          <motion.form 
+          <motion.form
             className="email-form"
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -426,7 +461,7 @@ const HomeIndex = () => {
           </motion.form>
         </div>
       </motion.section>
-
+ 
       <Suspense fallback={<Loading />}>
         <BrandSection />
       </Suspense>

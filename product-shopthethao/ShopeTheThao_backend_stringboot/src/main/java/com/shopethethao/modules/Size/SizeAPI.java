@@ -51,10 +51,12 @@ public class SizeAPI {
         return ResponseEntity.ok(sizes);
     }
 
-    // Fetch sizes with pagination
+    // Fetch sizes with pagination and search functionality
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-                                     @RequestParam("limit") Optional<Integer> limit) {
+    public ResponseEntity<?> findAll(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit,
+            @RequestParam(value = "search", required = false) String search) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
                 return new ResponseEntity<>("Page not found", HttpStatus.NOT_FOUND);
@@ -62,7 +64,15 @@ public class SizeAPI {
 
             Sort sort = Sort.by(Sort.Order.desc("id"));
             Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
-            Page<Size> page = sizeDAO.findAll(pageable);
+            Page<Size> page;
+
+            if (search != null && !search.trim().isEmpty()) {
+                // Search by name or description containing the search term (case-insensitive)
+                page = sizeDAO.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                    search.trim(), search.trim(), pageable);
+            } else {
+                page = sizeDAO.findAll(pageable);
+            }
 
             ResponseDTO<Size> responseDTO = new ResponseDTO<>();
             responseDTO.setData(page.getContent());

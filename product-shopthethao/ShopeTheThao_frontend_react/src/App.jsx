@@ -4,6 +4,7 @@ import { publicRoutes, privateRoutes } from "./router";
 import LayoutPageDefault from "./layouts/LayoutPageDefault";
 import NotFound from "./pages/NotFound/notFound";
 import { PrivateRoute } from "components/User";
+import Unauthorized from "./pages/NotFound/Unauthorized";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -17,7 +18,7 @@ function ScrollToTop() {
 
 const App = () => {
   const renderPublicRoutes = (routes) => {
-    return routes.map(({ path, component: Component, layout: Layout, requiresUnverified }, index) => {
+    return routes.map(({ path, component: Component, layout: Layout, requiresUnverified, requiresAuth }, index) => {
       const LayoutWrapper = Layout || LayoutPageDefault;
       
       const RouteComponent = () => {
@@ -28,6 +29,16 @@ const App = () => {
           
           if (token && user) {
             return <Navigate to="/" replace />;
+          }
+        }
+
+        // Check authentication for protected user routes
+        if (requiresAuth) {
+          const token = localStorage.getItem('token');
+          const user = localStorage.getItem('user');
+          
+          if (!token || !user) {
+            return <Unauthorized />;
           }
         }
 

@@ -1,5 +1,6 @@
 package com.shopethethao.auth.security;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.shopethethao.auth.security.jwt.filter.AuthTokenFilter;
 import com.shopethethao.auth.security.jwt.handler.AuthEntryPointJwt;
 import com.shopethethao.auth.security.user.service.UserDetailsServiceImpl;
-
 
 @Configuration
 @EnableMethodSecurity
@@ -87,30 +87,28 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Allow more origins, including development and production URLs
-        config.setAllowedOrigins(List.of(
-            "http://localhost:3000", 
-            "http://localhost:8080",
-            "http://127.0.0.1:3000", 
-            "http://127.0.0.1:5173",
-            "http://localhost:5173"
-            // Add your production domain when needed
+        
+        // Allow IPv6 addresses
+        config.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000",
+            "http://192.168.1.21:3000",
+            "http://[2405:4802:a6b3:ea10:d2b9:7439:11d9:759c]:3000",
+            "http://[2405:4802:a6b3:ea10:59fc:e9fc:cb77:5159]:3000",
+            "capacitor://localhost",
+            "ionic://localhost"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of(
-            "Content-Type", 
-            "X-Requested-With", 
-            "accept", 
-            "Origin", 
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers", 
-            "Last-Event-ID",
-            "Authorization"
+        
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setExposedHeaders(Arrays.asList(
+            "Content-Type",
+            "Authorization",
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials"
         ));
         config.setAllowCredentials(true);
-        config.setMaxAge(3600L); // Cache preflight request for 1 hour
-
+        config.setMaxAge(3600L);
+    
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

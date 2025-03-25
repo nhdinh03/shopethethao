@@ -29,3 +29,4 @@ export { default as CategorySection } from "./Home/CategorySection";
 
 
 export { default as ProductShowcase } from "./Home/ProductShowcase";
+export { default as RelatedProducuts } from "./RelatedProducts";
