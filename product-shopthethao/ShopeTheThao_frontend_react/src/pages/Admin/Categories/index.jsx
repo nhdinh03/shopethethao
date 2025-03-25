@@ -13,19 +13,21 @@ const Categories = () => {
   const [open, setOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [form] = Form.useForm();
-  const [searchText, setSearchText] = useState("");
+
 
   const {
     categories,
     loading,
     currentPage,
-    setCurrentPage,
     pageSize,
     totalPages,
+    searchText,
     createCategory,
     updateCategory,
     deleteCategory,
     handlePageSizeChange,
+    setCurrentPage,
+    handleSearch,
   } = useCategories();
 
   const handleModalOk = async () => {
@@ -66,14 +68,9 @@ const Categories = () => {
     setOpen(true);
   };
 
-  const handleSearch = (value) => {
-    setSearchText(value);
-    console.log("Searching for:", value);
-  };
-
-  // Filter categories based on search text
+  // Filter categories using optional chaining
   const filteredCategories = categories.filter(item => 
-    item.name.toLowerCase().includes(searchText.toLowerCase())
+    item?.name?.toLowerCase().includes((searchText || '').toLowerCase())
   );
 
   return (
@@ -84,7 +81,7 @@ const Categories = () => {
         <Row gutter={[16, 16]} className="header-actions">
           <Col xs={24} sm={14} md={16} lg={18}>
             <Input
-              placeholder="Tìm kiếm danh mục..."
+              placeholder="Tìm kiếm danh mục theo tên..."
               prefix={<SearchOutlined />}
               className="search-input"
               onChange={(e) => handleSearch(e.target.value)}

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { message } from 'antd';
-import { categoriesApi } from 'api/Admin';
+import { useState, useEffect } from "react";
+import { message } from "antd";
+import { categoriesApi } from "api/Admin";
 
 const useCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -9,6 +9,7 @@ const useCategories = () => {
   const [pageSize, setPageSize] = useState(5);
   const [loading, setLoading] = useState(false);
   const [workSomeThing, setWorkSomeThing] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
@@ -17,13 +18,20 @@ const useCategories = () => {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const res = await categoriesApi.getByPage(currentPage, pageSize);
+        const res = await categoriesApi.getByPage(
+          currentPage,
+          pageSize,
+          searchText
+        );
         if (isMounted) {
-          setCategories(res.data);
-          setTotalItems(res.totalItems);
+          setCategories(res.data || []); // Ensure we always have an array
+          setTotalItems(res.totalItems || 0);
         }
       } catch (error) {
         message.error("Không thể lấy danh sách danh mục. Vui lòng thử lại!");
+        if (isMounted) {
+          setCategories([]); // Set empty array on error
+        }
       } finally {
         setLoading(false);
       }
@@ -32,13 +40,13 @@ const useCategories = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, workSomeThing]);
+  }, [currentPage, pageSize, searchText, workSomeThing]);
 
   const createCategory = async (values) => {
     try {
       await categoriesApi.create(values);
       message.success("Thêm danh mục thành công!");
-      setWorkSomeThing(prev => !prev);
+      setWorkSomeThing((prev) => !prev);
       return true;
     } catch (error) {
       message.error("Không thể thêm danh mục. Vui lòng thử lại!");
@@ -50,7 +58,7 @@ const useCategories = () => {
     try {
       await categoriesApi.update(id, values);
       message.success("Cập nhật danh mục thành công!");
-      setWorkSomeThing(prev => !prev);
+      setWorkSomeThing((prev) => !prev);
       return true;
     } catch (error) {
       message.error("Không thể cập nhật danh mục. Vui lòng thử lại!");
@@ -62,11 +70,14 @@ const useCategories = () => {
     try {
       const response = await categoriesApi.delete(id);
       message.success(response.data || "Xóa danh mục thành công!");
-      setWorkSomeThing(prev => !prev);
+      setWorkSomeThing((prev) => !prev);
     } catch (error) {
       if (error.response) {
         if (error.response.status === 409) {
-          message.error(error.response.data || "Không thể xóa danh mục do dữ liệu tham chiếu!");
+          message.error(
+            error.response.data ||
+              "Không thể xóa danh mục do dữ liệu tham chiếu!"
+          );
         } else if (error.response.status === 404) {
           message.error("Danh mục không tồn tại hoặc đã bị xóa!");
         } else {
@@ -77,7 +88,10 @@ const useCategories = () => {
       }
     }
   };
-
+  const handleSearch = (value) => {
+    setSearchText(value);
+    setCurrentPage(1);
+  };
   const handlePageSizeChange = (value) => {
     setPageSize(value);
     setCurrentPage(1);
@@ -91,10 +105,13 @@ const useCategories = () => {
     pageSize,
     loading,
     totalPages,
+    searchText,
+    setSearchText,
     createCategory,
     updateCategory,
     deleteCategory,
-    handlePageSizeChange
+    handlePageSizeChange,
+    handleSearch,
   };
 };
 

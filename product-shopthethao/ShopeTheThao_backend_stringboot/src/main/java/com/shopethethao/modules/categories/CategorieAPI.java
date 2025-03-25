@@ -60,15 +60,24 @@ public class CategorieAPI {
 
     // Lấy danh sách danh mục có phân trang
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-            @RequestParam("limit") Optional<Integer> limit) {
+    public ResponseEntity<?> findAll(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit,
+            @RequestParam("search") Optional<String> search) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
                 return new ResponseEntity<>("Trang không tồn tại", HttpStatus.NOT_FOUND);
             }
             Sort sort = Sort.by(Sort.Order.desc("id"));
             Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
-            Page<Categorie> page = dao.findAll(pageable);
+            
+            Page<Categorie> page;
+            if (search.isPresent() && !search.get().trim().isEmpty()) {
+                page = dao.searchByName(search.get().trim(), pageable);
+            } else {
+                page = dao.findAll(pageable);
+            }
+            
             ResponseDTO<Categorie> responseDTO = new ResponseDTO<>();
             responseDTO.setData(page.getContent());
             responseDTO.setTotalItems(page.getTotalElements());
