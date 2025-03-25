@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.shopethethao.auth.payload.response.MessageResponse;
 import com.shopethethao.dto.AccountServiceDTO;
 import com.shopethethao.dto.AccountsUserDto;
+import com.shopethethao.dto.PAGEAUTHDTO;
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.lock_reasons.LockReasons;
 import com.shopethethao.modules.lock_reasons.LockReasonsDAO;
@@ -98,18 +99,32 @@ public class AccountAPI {
             ERole roleEnum = ERole.fromString(roleName);           
             Role role = roleDAO.findByName(roleEnum)
                     .orElseThrow(() -> new RuntimeException("Error: Role " + roleName + " không tìm thấy"));
+                    
+            // Count total items first
+            long totalItems = accountDao.countByRolesAndStatus(role, 1);
+            
+            // Calculate total pages
+            int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+            
+            // Adjust page number if current page would be empty
+            if (page > totalPages && totalPages > 0) {
+                page = totalPages;
+            }
+            
             Sort sort = Sort.by(
                 Sort.Order.desc("createdDate"),
                 Sort.Order.desc("id")
             );   
+            
             Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
-            Page<Account> accountPage = accountDao.findByRoles(role, pageable);
+            Page<Account> accountPage = accountDao.findByRolesAndStatus(role, 1, pageable);
             List<Account> accounts = accountPage.getContent();
-            long totalItems = accountPage.getTotalElements();            
-            ResponseDTO<Account> responseDTO = new ResponseDTO<>();
+                        
+            PAGEAUTHDTO<Account> responseDTO = new PAGEAUTHDTO<>();
             responseDTO.setData(accounts);
             responseDTO.setTotalItems(totalItems);
-            responseDTO.setTotalPages(accountPage.getTotalPages());
+            responseDTO.setTotalPages(totalPages);
+            responseDTO.setCurrentPage(page);
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

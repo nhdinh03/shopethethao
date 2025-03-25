@@ -1,0 +1,26 @@
+package com.shopethethao.dto;
+
+import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class PAGEAUTHDTO<T> {
+    private Integer totalPages;
+    private Long totalItems;
+    private List<T> data;
+    private int currentPage;
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
+    }
+}

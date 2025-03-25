@@ -29,7 +29,6 @@ const AccountStaffModal = ({
   form,
   FileList,
   statusChecked,
-  isStatusEditable,
   handleCancel,
   handleChange,
   onPreview,

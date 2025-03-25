@@ -20,7 +20,6 @@ export { default as BrandsTable } from "./Brands/BrandsTable";
 export { default as BrandsPagination } from "./Brands/BrandsPagination";
 
 export { default as AccountModal } from "./Accounts/AccountModal";
-export { default as AccountTabs } from "./Accounts/AccountTabs";
 
 export { default as PrintReceiptModal } from "./Stock_Receipts/PrintReceiptModal";
 export { default as StockReceiptForm } from "./Stock_Receipts/StockReceiptForm";

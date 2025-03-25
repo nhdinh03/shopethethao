@@ -5,6 +5,7 @@ export { default as ProductSizes } from "./ProductSizes";
 export { default as Sizes } from "./Sizes";
 export { default as Brands } from "./Brands";
 export { default as Accounts } from "./Accounts";
+export { default as AccountsLock } from "./Accounts_Lock";
 export { default as Comments } from "./Comments";
 export { default as AccountStaff } from "./AccountStaff";
 export { default as Verification } from "./Verification";

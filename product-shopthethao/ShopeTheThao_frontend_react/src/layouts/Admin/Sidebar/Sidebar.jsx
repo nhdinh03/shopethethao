@@ -5,7 +5,7 @@ import * as solidIcons from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
 import styles from "./Sidebar.module.scss";
 import { HomeFilled } from "@ant-design/icons";
-import { ADMIN_ROUTES } from '../../../constants/routeConstants';
+import { ADMIN_ROUTES } from "../../../constants/routeConstants";
 
 function getItem(label, key, icon, children, type) {
   return { key, icon, children, label, type };
@@ -19,7 +19,7 @@ function Sidebar({ onClose }) {
   const findParentKey = (key) => {
     const parentMap = {
       [ADMIN_ROUTES.PORTAL]: "grDashboard",
-      
+
       [ADMIN_ROUTES.CATALOG.PRODUCTS]: "grProductManagement",
       [ADMIN_ROUTES.INVENTORY.SIZES]: "grProductManagement",
       [ADMIN_ROUTES.CATALOG.CATEGORIES]: "grProductManagement",
@@ -34,6 +34,7 @@ function Sidebar({ onClose }) {
 
       [ADMIN_ROUTES.USERS.ACCOUNTS]: "grUserManagement",
       [ADMIN_ROUTES.USERS.STAFF]: "grUserManagement",
+      [ADMIN_ROUTES.USERS.ACCOUNTSLOCK]: "grUserManagement",
       [ADMIN_ROUTES.USERS.ROLES]: "grUserManagement",
 
       [ADMIN_ROUTES.ANALYTICS.CHARTS]: "grReportsAnalytics",
@@ -68,14 +69,17 @@ function Sidebar({ onClose }) {
       ADMIN_ROUTES.PORTAL,
       <HomeFilled className="menu-icon dashboard-icon" />
     ),
-    
-    { type: 'divider', className: styles.menuDivider },
+
+    { type: "divider", className: styles.menuDivider },
 
     // Product Management Section
     getItem(
       <span className="menu-section-title">QUẢN LÝ SẢN PHẨM</span>,
       "grProductManagement",
-      <FontAwesomeIcon icon={solidIcons.faBoxOpen} className="menu-icon product-icon" />,
+      <FontAwesomeIcon
+        icon={solidIcons.faBoxOpen}
+        className="menu-icon product-icon"
+      />,
       [
         getItem(
           <Link to={ADMIN_ROUTES.CATALOG.PRODUCTS} onClick={onClose}>
@@ -156,7 +160,7 @@ function Sidebar({ onClose }) {
       ]
     ),
 
-    { type: 'divider', className: styles.menuDivider },
+    { type: "divider", className: styles.menuDivider },
 
     // Sales Management Section
     getItem(
@@ -192,7 +196,7 @@ function Sidebar({ onClose }) {
 
     // User Management Section
     getItem(
-      <span className="menu-section-title">QUẢN LÝ NGƯỜI DÙNG</span>,
+      <span className="menu-section-title">QUẢN LÝ TÀI KHOẢN</span>,
       "grUserManagement",
       <FontAwesomeIcon
         icon={solidIcons.faUsersCog}
@@ -200,12 +204,12 @@ function Sidebar({ onClose }) {
       />,
       [
         getItem(
-          <Link to={ADMIN_ROUTES.USERS.ROLES} onClick={onClose}>
-            <span className="menu-item-label">Vai trò & Phân quyền</span>
+          <Link to={ADMIN_ROUTES.USERS.ACCOUNTS} onClick={onClose}>
+            <span className="menu-item-label">Tài khoản khách hàng</span>
           </Link>,
-          ADMIN_ROUTES.USERS.ROLES,
+          ADMIN_ROUTES.USERS.ACCOUNTS,
           <FontAwesomeIcon
-            icon={solidIcons.faUserShield}
+            icon={solidIcons.faUserFriends}
             className="submenu-icon"
           />
         ),
@@ -219,20 +223,31 @@ function Sidebar({ onClose }) {
             className="submenu-icon"
           />
         ),
+
         getItem(
-          <Link to={ADMIN_ROUTES.USERS.ACCOUNTS} onClick={onClose}>
-            <span className="menu-item-label">Tài khoản khách hàng</span>
+          <Link to={ADMIN_ROUTES.USERS.ACCOUNTSLOCK} onClick={onClose}>
+            <span className="menu-item-label">Quản lý tài khoản bị khóa</span>
           </Link>,
-          ADMIN_ROUTES.USERS.ACCOUNTS,
+          ADMIN_ROUTES.USERS.ACCOUNTSLOCK,
           <FontAwesomeIcon
             icon={solidIcons.faUserFriends}
+            className="submenu-icon"
+          />
+        ),
+        getItem(
+          <Link to={ADMIN_ROUTES.USERS.ROLES} onClick={onClose}>
+            <span className="menu-item-label">Vai trò & Phân quyền</span>
+          </Link>,
+          ADMIN_ROUTES.USERS.ROLES,
+          <FontAwesomeIcon
+            icon={solidIcons.faUserShield}
             className="submenu-icon"
           />
         ),
       ]
     ),
 
-    { type: 'divider', className: styles.menuDivider },
+    { type: "divider", className: styles.menuDivider },
 
     // Reports & Analytics Section
     getItem(

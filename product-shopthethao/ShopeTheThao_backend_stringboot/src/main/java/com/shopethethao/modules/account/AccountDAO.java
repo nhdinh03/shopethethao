@@ -46,6 +46,9 @@ public interface AccountDAO extends JpaRepository<Account, String> {
     @Query("SELECT a FROM Account a JOIN a.roles r WHERE r = :role")
     Page<Account> findByRoles(@Param("role") Role role, Pageable pageable);
 
+    Page<Account> findByRolesAndStatus(Role role, int status, Pageable pageable);
+    long countByRolesAndStatus(Role role, int status);
+
     // jwt
 
     List<Account> findByStatus(int status);
@@ -67,5 +70,10 @@ public interface AccountDAO extends JpaRepository<Account, String> {
     Boolean existsByPhone(String phone);
 
     Account findByIdAndPassword(String id, String password);
+
+    Page<Account> findByStatus(int status, Pageable pageable);
+    
+    @Query("SELECT a FROM Account a WHERE a.status = 0 AND (a.fullname LIKE %?1% OR a.email LIKE %?1% OR a.phone LIKE %?1%)")
+    Page<Account> searchLockedAccounts(String keyword, Pageable pageable);
 
 }

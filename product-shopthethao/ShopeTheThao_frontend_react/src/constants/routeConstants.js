@@ -40,6 +40,7 @@ export const ADMIN_ROUTES = {
   USERS: {
     ACCOUNTS: `/${ADMIN_PREFIX}/users/accounts`,
     STAFF: `/${ADMIN_PREFIX}/users/staff`,
+    ACCOUNTSLOCK: `/${ADMIN_PREFIX}/users/accounts/lock`,
     ROLES: `/${ADMIN_PREFIX}/users/roles`,
     HISTORY: `/${ADMIN_PREFIX}/users/history`
   },

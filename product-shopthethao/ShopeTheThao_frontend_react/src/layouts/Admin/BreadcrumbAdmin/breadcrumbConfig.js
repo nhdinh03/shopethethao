@@ -13,9 +13,11 @@ import {
     FileTextOutlined,
     FileSearchOutlined,
     BarChartOutlined,
-    SafetyCertificateOutlined
+    SafetyCertificateOutlined,
+    LockFilled
 } from '@ant-design/icons';
 import { ADMIN_ROUTES } from '../../../constants/routeConstants';
+import { Lock } from 'lucide-react';
 
 export const breadcrumbData = [
     // Catalog Management
@@ -70,6 +72,11 @@ export const breadcrumbData = [
         url: ADMIN_ROUTES.USERS.STAFF, 
         title: "Quản lý nhân viên", 
         icon: <IdcardOutlined /> 
+    },
+    { 
+        url: ADMIN_ROUTES.USERS.ACCOUNTSLOCK, 
+        title: "Quản lý tài khoản bị khóa", 
+        icon: <LockFilled /> 
     },
     { 
         url: ADMIN_ROUTES.USERS.ROLES, 

@@ -9,9 +9,10 @@ import {
   Space,
   Tooltip,
   Popconfirm,
-  Alert,
+
   Col,
   Input,
+  Table,
 } from "antd";
 import {
   PlusOutlined,
@@ -19,8 +20,6 @@ import {
   EnvironmentOutlined,
   EditOutlined,
   DeleteOutlined,
-  LockOutlined,
-  EyeOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 
@@ -29,7 +28,7 @@ import { accountsUserApi, lockreasonsApi } from "api/Admin";
 import "./accounts.scss";
 import uploadApi from "api/service/uploadApi";
 import dayjs from "dayjs";
-import { AccountModal, AccountTabs } from "components/Admin";
+import { AccountModal } from "components/Admin";
 
 const Accounts = () => {
   const [totalItems, setTotalItems] = useState(0);
@@ -43,14 +42,11 @@ const Accounts = () => {
   const [refresh, setRefresh] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
-  const [workSomeThing, setWorkSomeThing] = useState(false);
+const [workSomeThing, setWorkSomeThing] = useState(false);
   const [FileList, setFileList] = useState([]);
-  const [lockedUser, setLockedUser] = useState([]);
   const [statusChecked, setStatusChecked] = useState(editUser?.status === 1);
   const [isStatusEditable, setIsStatusEditable] = useState(false);
-  const [showLockReason, setShowLockReason] = useState(true);
   const [searchText, setSearchText] = useState("");
-  const [activeTab, setActiveTab] = useState("1");
 
   useEffect(() => {
     let isMounted = true;
@@ -63,10 +59,10 @@ const Accounts = () => {
           if (res.data && Array.isArray(res.data)) {
             setUser(res.data);
             setTotalItems(res.totalItems);
-            const lockedAccounts = res.data.filter((user) => user.status === 0);
-            setUser(res.data.filter((user) => user.status === 1));
-            setLockedUser(res.data.filter((user) => user.status === 0));
-            setLockedUser(lockedAccounts);
+            // Kiểm tra và điều chỉnh trang hiện tại nếu cần
+            if (currentPage > res.totalPages && res.totalPages > 0) {
+              setCurrentPage(res.totalPages);
+            }
           } else {
             message.error("Dữ liệu không hợp lệ từ API!");
           }
@@ -81,7 +77,7 @@ const Accounts = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, refresh, workSomeThing]);
+  }, [currentPage, pageSize, refresh]);
 
   const handleChange = async ({ fileList }) => {
     setFileList(fileList);
@@ -135,7 +131,7 @@ const Accounts = () => {
   const handleStatus = (e) => {
     const isChecked = e.target.checked;
     setStatusChecked(isChecked); // Cập nhật trạng thái khi người dùng chọn hoặc bỏ chọn checkbox
-    setShowLockReason(!isChecked); // Nếu "Đang hoạt động" (status 1), ẩn lý do khóa, ngược lại thì hiển thị
+
   };
   const onPreview = async (file) => {
     let src = file.url;
@@ -190,7 +186,7 @@ const Accounts = () => {
         status: 1, // Mark as active
         lockReasons: [], // Remove lock reason
       }));
-      setShowLockReason(false); // Hide the lock reason field
+  
       setStatusChecked(true); // Set status to active
       message.success(
         "Xóa lý do khóa thành công! Vui lòng bấm cập nhật để lưu thay đổi."
@@ -204,45 +200,65 @@ const Accounts = () => {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-
       let image = FileList.length > 0 ? FileList[0].url.split("/").pop() : null;
 
+      // Format the data according to the API requirements
       const newUserData = {
         ...values,
         image: image,
         birthday: values.birthday ? values.birthday.format("YYYY-MM-DD") : null,
-        roles:
-          values.roles?.map((role) =>
-            typeof role === "object" ? role.id : role
-          ) || [],
+        // Ensure roles is an array of objects with id and name
+        roles: values.roles ? values.roles.map(role => {
+          return typeof role === 'object' ? role : { id: role, name: 'USER' }
+        }) : [{ id: 1, name: 'USER' }], // Default role if none selected
         status: statusChecked ? 1 : 0,
-        lockReasons:
-          showLockReason && !statusChecked && values.lockReasons
-            ? [{ reason: values.lockReasons }]
-            : [], // Nếu tài khoản đang hoạt động thì không gửi lockReasons
+        // If adding lock reason, make it an array of objects
+        lockReasons: values.lockReasons ? [{
+          reason: values.lockReasons
+        }] : []
       };
 
       let res;
-      if (editUser) {
-        res = await accountsUserApi.update(editUser.id, newUserData);
-        message.success("Cập nhật tài khoản thành công!");
-      } else {
-        res = await accountsUserApi.create(newUserData);
-        message.success("Thêm tài khoản thành công!");
-      }
+      try {
+        if (editUser) {
+          // For updating existing user
+          res = await accountsUserApi.update(editUser.id, newUserData);
+          message.success("Cập nhật tài khoản thành công!");
+        } else {
+          // For creating new user
+          // Ensure required fields for new users
+          if (!newUserData.password) {
+            throw new Error("Mật khẩu là bắt buộc cho tài khoản mới!");
+          }
+          res = await accountsUserApi.create(newUserData);
+          message.success("Thêm tài khoản thành công!");
+        }
 
-      if (res.status === 200) {
-        setOpen(false);
-        form.resetFields();
-        setFileList([]);
-        setRefresh((prev) => !prev);
-        setWorkSomeThing(!workSomeThing);
-      } else {
-        throw new Error(`Lỗi API: ${res.statusText}`);
+        if (res.status === 200 || res.status === 201) {
+          setOpen(false);
+          form.resetFields();
+          setFileList([]);
+          setRefresh((prev) => !prev);
+          setWorkSomeThing(!workSomeThing);
+        }
+      } catch (apiError) {
+        // Handle specific API errors
+        if (apiError.response?.status === 401) {
+          message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+          // You might want to redirect to login page here
+        } else if (apiError.response?.status === 400) {
+          message.error(apiError.response.data.message || "Dữ liệu không hợp lệ!");
+        } else {
+          throw apiError; // Re-throw other errors
+        }
       }
     } catch (error) {
       console.error("🚨 Lỗi khi thêm/cập nhật tài khoản:", error);
-      message.error(error.message || "Không thể thêm/cập nhật tài khoản!");
+      if (error.message) {
+        message.error(error.message);
+      } else {
+        message.error("Không thể thêm/cập nhật tài khoản! Vui lòng thử lại.");
+      }
     }
   };
 
@@ -266,27 +282,6 @@ const Accounts = () => {
         account.address?.toLowerCase().includes(searchText.toLowerCase()) ||
         account.id?.toString().includes(searchText)
     );
-  };
-
-  const getFilteredLockedUsers = () => {
-    if (!searchText) return lockedUser;
-
-    return lockedUser.filter(
-      (account) =>
-        account.fullname?.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.email?.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.phone?.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.address?.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.id?.toString().includes(searchText) ||
-        account.lockReasons?.some((reason) =>
-          reason.reason?.toLowerCase().includes(searchText.toLowerCase())
-        )
-    );
-  };
-
-  const handleTabChange = (activeKey) => {
-    setActiveTab(activeKey);
-    setSearchText(""); // Clear search when changing tabs
   };
 
   // Add header style configuration
@@ -458,90 +453,6 @@ const Accounts = () => {
     },
   ];
 
-  const lockedColumns = [
-    {
-      title: "👤 Thông tin người dùng",
-      onHeaderCell: () => ({
-        style: headerStyle
-      }),
-      children: [
-        {
-          title: "🆔 ID",
-          dataIndex: "id",
-          width: 80,
-          onHeaderCell: () => ({
-            style: headerStyle
-          })
-        },
-        {
-          title: "📝 Họ tên & Email",
-          dataIndex: "fullname",
-          width: 250,
-          onHeaderCell: () => ({
-            style: headerStyle
-          }),
-          render: (text, record) => (
-            <div className="locked-user-info">
-              <div className="name">{text}</div>
-              <div className="email">{record.email}</div>
-            </div>
-          ),
-        },
-      ],
-    },
-    {
-      title: "Thông tin khóa",
-      children: [
-        {
-          title: "Trạng thái",
-          width: 120,
-          render: () => (
-            <Tag icon={<LockOutlined />} color="red">
-              Đã khóa
-            </Tag>
-          ),
-        },
-        {
-          title: "Lý do khóa",
-          dataIndex: "lockReasons",
-          width: 300,
-          render: (lockReasons) => (
-            <div className="lock-reason">
-              {lockReasons && lockReasons.length > 0 ? (
-                lockReasons.map((reason) => (
-                  <Alert
-                    key={reason.id}
-                    message={reason.reason}
-                    type="warning"
-                    showIcon
-                    style={{ marginBottom: 8 }}
-                  />
-                ))
-              ) : (
-                <span className="no-reason">Không có lý do</span>
-              )}
-            </div>
-          ),
-        },
-      ],
-    },
-    {
-      title: "Hành động",
-      fixed: "right",
-      width: 100,
-      render: (_, record) => (
-        <Button
-          type="primary"
-          icon={<EyeOutlined />}
-          onClick={() => handleEditData(record)}
-          size="small"
-        >
-          Chi tiết
-        </Button>
-      ),
-    },
-  ];
-
   return (
     <div className="size-page">
       <div className="content-wrapper">
@@ -568,7 +479,6 @@ const Accounts = () => {
           handleChange={handleChange}
           onPreview={onPreview}
           handleStatus={handleStatus}
-          handleStatusChange={handleStatusChange}
           handleResetForm={handleResetForm}
           handleModalOk={handleModalOk}
         />
@@ -586,13 +496,15 @@ const Accounts = () => {
           </Col>
         </Row>
 
-        <AccountTabs
-          loading={loading}
-          user={getFilteredUsers()}
-          lockedUser={getFilteredLockedUsers()}
+        <Table
+          pagination={false}
           columns={columns}
-          lockedColumns={lockedColumns}
-          onChange={handleTabChange}
+          loading={loading}
+          dataSource={getFilteredUsers().map((user, index) => ({
+            ...user,
+            key: user.id || index,
+          }))}
+          scroll={{ x: "max-content" }}
         />
 
         <div className="pagination-container">

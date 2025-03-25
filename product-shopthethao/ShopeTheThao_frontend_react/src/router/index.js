@@ -122,6 +122,11 @@ export const privateRoutes = [
     layout: AdminLayout,
   },
   {
+    path: ADMIN_ROUTES.USERS.ACCOUNTSLOCK,
+    component: PageAdmin.AccountsLock,
+    layout: AdminLayout,
+  },
+  {
     path: ADMIN_ROUTES.INVENTORY.STOCK_RECEIPTS,
     component: PageAdmin.Stock_Receipts,
     layout: AdminLayout,

@@ -9,16 +9,15 @@ import {
   Tooltip,
   Space,
   Popconfirm,
-  Alert,
+
   Col,
   Input,
+  Table,
 } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
   EnvironmentOutlined,
-  EyeOutlined,
-  LockOutlined,
   PhoneOutlined,
   PlusOutlined,
   SearchOutlined,
@@ -29,7 +28,6 @@ import "./accountsStaff.scss";
 import uploadApi from "api/service/uploadApi";
 import dayjs from "dayjs";
 import AccountStaffModal from "components/Admin/AccountStaff/AccountStaffModal";
-import AccountStaffTabs from "components/Admin/AccountStaff/AccountStaffTabs";
 import ErrorBoundary from "antd/es/alert/ErrorBoundary";
 
 const AccountStaff = () => {
@@ -41,7 +39,6 @@ const AccountStaff = () => {
 
   const [staffState, setStaffState] = useState({
     accountsStaff: [],
-    lockedUser: [],
     loading: false,
     refresh: false,
   });
@@ -57,7 +54,6 @@ const AccountStaff = () => {
 
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState("");
-  const [activeTab, setActiveTab] = useState("1");
 
   const totalPages = useMemo(() => {
     return pagination.totalItems > 0
@@ -76,14 +72,21 @@ const AccountStaff = () => {
       if (res.data && Array.isArray(res.data)) {
         setStaffState((prev) => ({
           ...prev,
-          accountsStaff: res.data.filter((staff) => staff.status === 1),
-          lockedUser: res.data.filter((staff) => staff.status === 0),
+          accountsStaff: res.data,
           loading: false,
         }));
         setPagination((prev) => ({
           ...prev,
           totalItems: res.totalItems,
         }));
+        
+        // Adjust current page if needed
+        if (pagination.currentPage > res.totalPages && res.totalPages > 0) {
+          setPagination(prev => ({
+            ...prev,
+            currentPage: res.totalPages
+          }));
+        }
       }
     } catch (error) {
       message.error("Không thể lấy danh sách nhân viên!");
@@ -453,83 +456,6 @@ const AccountStaff = () => {
     },
   ];
 
-  const lockedColumns = [
-    {
-      title: "Thông tin người dùng",
-      children: [
-        {
-          title: "ID",
-          dataIndex: "id",
-          width: 80,
-        },
-        {
-          title: "Họ tên & Email",
-          dataIndex: "fullname",
-          width: 250,
-          render: (text, record) => (
-            <div className="locked-user-info">
-              <div className="name">{text}</div>
-              <div className="email">{record.email}</div>
-            </div>
-          ),
-        },
-      ],
-    },
-    {
-      title: "Thông tin khóa",
-      children: [
-        {
-          title: "Trạng thái",
-          width: 120,
-          render: () => (
-            <Tag icon={<LockOutlined />} color="red">
-              Đã khóa
-            </Tag>
-          ),
-        },
-        {
-          title: "Lý do khóa",
-          dataIndex: "lockReasons",
-          width: 300,
-          render: (lockReasons) => (
-            <div className="lock-reason">
-              {lockReasons && lockReasons.length > 0 ? (
-                lockReasons.map((reason) => (
-                  <Alert
-                    key={reason.id}
-                    message={reason.reason}
-                    type="warning"
-                    showIcon
-                    style={{ marginBottom: 8 }}
-                  />
-                ))
-              ) : (
-                <span className="no-reason">Không có lý do</span>
-              )}
-            </div>
-          ),
-        },
-      ],
-    },
-    {
-      title: "Hành động",
-      fixed: "right",
-      width: 150,
-      render: (_, record) => (
-        <Space size="middle">
-          <Button
-            type="primary"
-            icon={<EyeOutlined />}
-            onClick={() => handleEditData(record)}
-            size="small"
-          >
-            Chi tiết
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
   const handleSearch = (value) => {
     setSearchText(value);
   };
@@ -547,26 +473,6 @@ const AccountStaff = () => {
         role.name?.toLowerCase().includes(searchText.toLowerCase())
       )
     );
-  };
-
-  const getFilteredLockedStaff = () => {
-    if (!searchText) return staffState.lockedUser;
-    
-    return staffState.lockedUser.filter(staff => 
-      staff.fullname?.toLowerCase().includes(searchText.toLowerCase()) ||
-      staff.email?.toLowerCase().includes(searchText.toLowerCase()) ||
-      staff.phone?.toLowerCase().includes(searchText.toLowerCase()) ||
-      staff.address?.toLowerCase().includes(searchText.toLowerCase()) ||
-      staff.id?.toString().includes(searchText) ||
-      staff.lockReasons?.some(reason => 
-        reason.reason?.toLowerCase().includes(searchText.toLowerCase())
-      )
-    );
-  };
-
-  const handleTabChange = (activeKey) => {
-    setActiveTab(activeKey);
-    setSearchText("");  // Clear search when changing tabs
   };
 
   return (
@@ -614,13 +520,12 @@ const AccountStaff = () => {
             </Col>
           </Row>
 
-          <AccountStaffTabs
+          <Table
             loading={staffState.loading}
-            staffList={getFilteredStaff()}
-            lockedStaff={getFilteredLockedStaff()}
+            dataSource={getFilteredStaff()}
             columns={columns}
-            lockedColumns={lockedColumns}
-            onChange={handleTabChange}
+            pagination={false}
+            scroll={{ x: 1300 }}
           />
 
           <div className="pagination-container">
