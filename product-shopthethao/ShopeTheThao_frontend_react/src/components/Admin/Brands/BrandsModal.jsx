@@ -10,7 +10,6 @@ import styles from "pages/Admin/modalStyles.module.scss"; // Giả sử có file
 
 const BrandsModal = ({
   open,
-  setOpen,
   editBrand,
   form,
   handleModalOk,

@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,18 +50,26 @@ public class SupplierAPI {
         return ResponseEntity.ok(suppliers);
     }
 
-    // Fetch suppliers with pagination
+    // Fetch suppliers with pagination and search
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-            @RequestParam("limit") Optional<Integer> limit) {
+    public ResponseEntity<?> findAll(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit,
+            @RequestParam("search") Optional<String> search) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
-                return new ResponseEntity<>("Page not found", HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>("Trang không tồn tại", HttpStatus.NOT_FOUND);
             }
 
             Sort sort = Sort.by(Sort.Order.desc("id"));
             Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
-            Page<Supplier> page = supplierDao.findAll(pageable);
+            
+            Page<Supplier> page;
+            if (search.isPresent() && !search.get().trim().isEmpty()) {
+                page = supplierDao.searchSuppliers(search.get().trim(), pageable);
+            } else {
+                page = supplierDao.findAll(pageable);
+            }
 
             ResponseDTO<Supplier> responseDTO = new ResponseDTO<>();
             responseDTO.setData(page.getContent());
@@ -71,8 +78,8 @@ public class SupplierAPI {
 
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
-
-            return new ResponseEntity<>("Server error, please try again later!", HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error fetching suppliers", e);
+            return new ResponseEntity<>("Lỗi server, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

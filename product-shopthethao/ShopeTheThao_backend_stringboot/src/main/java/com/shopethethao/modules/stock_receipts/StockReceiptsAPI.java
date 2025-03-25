@@ -47,7 +47,7 @@ import com.shopethethao.modules.suppliers.SupplierDAO;
 import com.shopethethao.modules.userHistory.UserActionType;
 import com.shopethethao.service.UserHistoryService;
 
-import jakarta.persistence.EntityManager;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -82,32 +82,40 @@ public class StockReceiptsAPI {
     }
 
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-            @RequestParam("limit") Optional<Integer> limit) {
+    public ResponseEntity<?> findAll(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit,
+            @RequestParam("search") Optional<String> search) {
         try {
-            int page = pageNo.orElse(1) - 1;
-            int size = limit.orElse(10);
-            if (page < 0) {
-                return handleError("Trang không hợp lệ, phải bắt đầu từ trang 1.", HttpStatus.BAD_REQUEST);
+            if (pageNo.isPresent() && pageNo.get() == 0) {
+                return handleError("Trang không tồn tại", HttpStatus.NOT_FOUND);
             }
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("id")));
-            Page<StockReceipt> pageResult = stockReceiptsDAO.findAll(pageable);
+            
+            Pageable pageable = PageRequest.of(
+                pageNo.orElse(1) - 1, 
+                limit.orElse(10), 
+                Sort.by(Sort.Order.desc("id"))
+            );
+            
+            Page<StockReceipt> pageResult = search
+                .filter(s -> !s.trim().isEmpty())
+                .map(s -> stockReceiptsDAO.searchStockReceipts(s.trim(), pageable))
+                .orElseGet(() -> stockReceiptsDAO.findAll(pageable));
 
-            List<StockReceiptDTO> stockReceiptDTOs = pageResult.getContent().stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
-
-            // Tạo đối tượng ResponseDTO chứa dữ liệu phân trang
             ResponseDTO<StockReceiptDTO> responseDTO = new ResponseDTO<>();
-            responseDTO.setData(stockReceiptDTOs);
+            responseDTO.setData(pageResult.getContent().stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList()));
             responseDTO.setTotalItems(pageResult.getTotalElements());
             responseDTO.setTotalPages(pageResult.getTotalPages());
 
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
+            logger.error("Error fetching stock receipts", e);
             return handleError("Lỗi máy chủ, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
 
     // Phương thức chuyển đổi StockReceipt thành StockReceiptDTO
     private StockReceiptDTO convertToDTO(StockReceipt stockReceipt) {

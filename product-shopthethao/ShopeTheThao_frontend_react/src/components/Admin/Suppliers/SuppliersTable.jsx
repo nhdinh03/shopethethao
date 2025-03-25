@@ -48,8 +48,8 @@ const SuppliersTable = ({
     },
     {
       title: 'Số điện thoại',
-      dataIndex: 'phone',
-      key: 'phone',
+      dataIndex: 'phoneNumber',
+      key: 'phoneNumber',
       width: 130,
     },
     {

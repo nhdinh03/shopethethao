@@ -40,7 +40,7 @@ const Brands = () => {
         const res = await brandsApi.getByPage(
           currentPage,
           pageSize,
-          // searchText
+          searchText
         );
         if (isMounted) {
           setBrands(res.data);
@@ -56,7 +56,7 @@ const Brands = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, workSomeThing]);
+  }, [currentPage, pageSize, searchText, workSomeThing]);
 
   const handleEditData = (brand) => {
     setEditBrand(brand);
@@ -115,11 +115,6 @@ const Brands = () => {
     console.log("Searching for:", value);
   };
 
-  // Filter brands based on search text
-  const filteredBrands = brands.filter(item => 
-    item.name.toLowerCase().includes(searchText.toLowerCase())
-  );
-
   const columns = [
     { title: "🆔 ID", dataIndex: "id", key: "id", width: 80 },
     {
@@ -161,7 +156,7 @@ const Brands = () => {
         </Row>
 
         <div className="table-container">
-          <BrandsTable brands={filteredBrands} loading={loading} columns={columns} />
+          <BrandsTable brands={brands} loading={loading} columns={columns} />
         </div>
 
         <BrandsModal

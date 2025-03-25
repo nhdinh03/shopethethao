@@ -54,22 +54,33 @@ public class BrandAPI {
 
     // Fetch brands with pagination
     @GetMapping
-    public ResponseEntity<?> findAll(@RequestParam("page") Optional<Integer> pageNo,
-            @RequestParam("limit") Optional<Integer> limit) {
+    public ResponseEntity<?> findAll(
+            @RequestParam("page") Optional<Integer> pageNo,
+            @RequestParam("limit") Optional<Integer> limit,
+            @RequestParam("search") Optional<String> search) {
         try {
             if (pageNo.isPresent() && pageNo.get() == 0) {
                 return new ResponseEntity<>("Trang không tồn tại", HttpStatus.NOT_FOUND);
             }
             Sort sort = Sort.by(Sort.Order.desc("id"));
             Pageable pageable = PageRequest.of(pageNo.orElse(1) - 1, limit.orElse(10), sort);
-            Page<Brand> page = brandsDAO.findAll(pageable);
+            
+            Page<Brand> page;
+            if (search.isPresent() && !search.get().trim().isEmpty()) {
+                page = brandsDAO.searchBrands(search.get().trim(), pageable);
+            } else {
+                page = brandsDAO.findAll(pageable);
+            }
+
             ResponseDTO<Brand> responseDTO = new ResponseDTO<>();
             responseDTO.setData(page.getContent());
             responseDTO.setTotalItems(page.getTotalElements());
             responseDTO.setTotalPages(page.getTotalPages());
+
             return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
-            return new ResponseEntity<>("Server error, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Error fetching brands", e);
+            return new ResponseEntity<>("Lỗi server, vui lòng thử lại sau!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

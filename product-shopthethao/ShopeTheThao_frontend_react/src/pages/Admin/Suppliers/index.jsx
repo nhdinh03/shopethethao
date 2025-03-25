@@ -20,6 +20,42 @@ const Suppliers = () => {
 
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
 
+
+  
+  // Enhanced data fetching with improved search
+  useEffect(() => {
+    let isMounted = true;
+    const getList = async () => {
+      setLoading(true);
+      try {
+        // Server-side search via API
+        const res = await suppliersApi.getByPage(
+          currentPage,
+          pageSize,
+          searchText
+        );
+
+        if (isMounted) {
+          let filteredSuppliers = res.data;
+
+          setSuppliers(filteredSuppliers);
+          setTotalItems(res.totalItems);
+          setLoading(false);
+        }
+      } catch (error) {
+        message.error(
+          "Không thể lấy danh sách nhà cung cấp. Vui lòng thử lại!"
+        );
+        setLoading(false);
+      }
+    };
+    getList();
+    return () => {
+      isMounted = false;
+    };
+  }, [currentPage, pageSize, searchText, workSomeThing]);
+
+
   const handleEditData = (supplier) => {
     setEditSuppliers(supplier);
     form.setFieldsValue(supplier);
@@ -79,57 +115,6 @@ const Suppliers = () => {
     // Reset to page 1 when searching
     setCurrentPage(1);
   };
-
-  // Enhanced data fetching with improved search
-  useEffect(() => {
-    let isMounted = true;
-    const getList = async () => {
-      setLoading(true);
-      try {
-        // Server-side search via API
-        const res = await suppliersApi.getByPage(
-          currentPage,
-          pageSize,
-          searchText
-        );
-
-        if (isMounted) {
-          let filteredSuppliers = res.data;
-
-          // Additional client-side filtering for more precise results
-          if (searchText) {
-            const searchLower = searchText.toLowerCase();
-            filteredSuppliers = filteredSuppliers.filter(
-              (supplier) =>
-                // Search by ID
-                supplier.id?.toString().includes(searchText) ||
-                // Search by name
-                supplier.name?.toLowerCase().includes(searchLower) ||
-                // Search by email
-                supplier.email?.toLowerCase().includes(searchLower) ||
-                // Search by phone
-                supplier.phone?.includes(searchText) ||
-                // Search by address
-                supplier.address?.toLowerCase().includes(searchLower)
-            );
-          }
-
-          setSuppliers(filteredSuppliers);
-          setTotalItems(res.totalItems);
-          setLoading(false);
-        }
-      } catch (error) {
-        message.error(
-          "Không thể lấy danh sách nhà cung cấp. Vui lòng thử lại!"
-        );
-        setLoading(false);
-      }
-    };
-    getList();
-    return () => {
-      isMounted = false;
-    };
-  }, [currentPage, pageSize, searchText, workSomeThing]);
 
   return (
     <div className="suppliers-page">

@@ -36,7 +36,7 @@ const ProductAttributes = () => {
     const getList = async () => {
       setLoading(true);
       try {
-        const res = await productattributesApi.getByPage(currentPage, pageSize);
+        const res = await productattributesApi.getByPage(currentPage, pageSize ,searchText);
         if (isMounted) {
           setProductAttributes(res.data);
           setTotalItems(res.totalItems);
@@ -51,7 +51,7 @@ const ProductAttributes = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, pageSize, workSomeThing]);
+  }, [currentPage, pageSize,searchText, workSomeThing]);
 
   const handleModalOk = async () => {
     try {
@@ -108,8 +108,6 @@ const ProductAttributes = () => {
 
   const handleSearch = (value) => {
     setSearchText(value);
-    // Implement search functionality here
-    // For now, just log the search text
     console.log("Searching for:", value);
   };
 

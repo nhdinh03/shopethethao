@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   Table,
   message,
@@ -25,6 +25,7 @@ import {
   StockReceiptForm,
   TableActions,
 } from "components/Admin";
+import debounce from 'lodash/debounce';
 
 const Stock_Receipts = () => {
   const printRef = useRef(null);
@@ -227,67 +228,20 @@ const Stock_Receipts = () => {
     }
   };
 
-  // Modify handleSearch function to be more robust
-  const handleSearch = (value) => {
-    setSearchText(value);
-    setCurrentPage(1); // Reset to first page when searching
+  // Add debounced search function
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      setSearchText(value);
+      setCurrentPage(1);
+    }, 500),
+    []
+  );
+
+  // Simplify handleSearch function
+  const handleSearch = (e) => {
+    const searchValue = e.target.value.trim();
+    debouncedSearch(searchValue);
   };
-
-  // Improved data fetching with client-side filtering as well
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Server-side search via API
-        const stockReceiptsRes = await stock_ReceiptsAPi.getByPage(
-          currentPage,
-          pageSize,
-          searchText
-        );
-
-        let receipts = stockReceiptsRes.data.map((receipt) => ({
-          ...receipt,
-        }));
-
-        // Additional client-side filtering
-        if (searchText) {
-          receipts = receipts.filter(
-            (receipt) =>
-              // Search by ID
-              receipt.id?.toString().includes(searchText) ||
-              // Search by supplier name
-              receipt.supplierName
-                ?.toLowerCase()
-                .includes(searchText.toLowerCase()) ||
-              // Search by brand name
-              receipt.brandName
-                ?.toLowerCase()
-                .includes(searchText.toLowerCase()) ||
-              // Search by product names (if any product name contains the search text)
-              receipt.receiptProducts?.some((product) =>
-                product.productName
-                  ?.toLowerCase()
-                  .includes(searchText.toLowerCase())
-              ) ||
-              // Search by date
-              moment(receipt.orderDate)
-                .format("DD/MM/YYYY")
-                .includes(searchText)
-          );
-        }
-
-        setStockReceipts(receipts);
-        setTotalItems(stockReceiptsRes.totalItems);
-        setLoading(false);
-      } catch (error) {
-        setLoading(false);
-        message.error("Không thể lấy danh sách dữ liệu. Vui lòng thử lại!");
-      }
-    };
-
-    fetchData();
-
-  }, [currentPage, pageSize, searchText, workSomeThing]);
 
   const columns = [
     { title: "🆔 ID", dataIndex: "id", key: "id", align: "center" },
@@ -345,14 +299,15 @@ const Stock_Receipts = () => {
 
         <Row gutter={[16, 16]} className="header-actions">
           <Col xs={24} sm={14} md={16} lg={18}>
-            <Input
-              placeholder="Tìm kiếm theo ID, nhà cung cấp, thương hiệu, sản phẩm, ngày..."
-              prefix={<SearchOutlined />}
-              className="search-input"
-              value={searchText}
-              onChange={(e) => handleSearch(e.target.value)}
-              allowClear
-            />
+            <Form.Item style={{ marginBottom: 0 }}>
+              <Input
+                placeholder="Tìm kiếm theo ID, nhà cung cấp, thương hiệu, sản phẩm, ngày (dd/mm/yyyy)..."
+                allowClear
+                prefix={<SearchOutlined />}
+                onChange={handleSearch}
+                className="search-input"
+              />
+            </Form.Item>
           </Col>
           <Col xs={24} sm={10} md={8} lg={6} className="add-button-container">
             <Button
