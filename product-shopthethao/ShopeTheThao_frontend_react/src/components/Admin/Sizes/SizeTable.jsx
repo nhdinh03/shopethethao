@@ -68,6 +68,21 @@ const SizeTable = ({
     }
   ];
 
+  
+SizeTable.propTypes = {
+  sizeData: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      description: PropTypes.string
+      
+    })
+  ).isRequired,
+  handleEditData: PropTypes.func.isRequired,
+  handleDelete: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
+};
+
   return (
     <div className="size-table-container">
 
@@ -83,18 +98,5 @@ const SizeTable = ({
   );
 };
 
-SizeTable.propTypes = {
-  sizeData: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      description: PropTypes.string
-      
-    })
-  ).isRequired,
-  handleEditData: PropTypes.func.isRequired,
-  handleDelete: PropTypes.func.isRequired,
-  loading: PropTypes.bool,
-};
 
 export default SizeTable;

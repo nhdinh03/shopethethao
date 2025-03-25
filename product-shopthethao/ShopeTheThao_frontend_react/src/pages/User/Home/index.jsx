@@ -29,6 +29,7 @@ import Loading from "pages/Loading/loading";
 import { mockProducts } from "data/mockData";
 import { noibatdata } from "data/noibatdata";
 import RelatedProducts from "components/User/RelatedProducts";
+import { ROUTES } from "router";
 
 const HomeIndex = () => {
   const [loading, setLoading] = useState(true);
@@ -278,7 +279,7 @@ const HomeIndex = () => {
               <h2>SẢN PHẨM NỔI BẬT</h2>
               <p>Top 5 sản phẩm bán chạy nhất</p>
             </div>
-            <Link to="/products" className="view-more">
+            <Link to={ROUTES.SHOP.PRODUCTS} className="view-more">
               Xem thêm <FaArrowRight />
             </Link>
           </motion.div>

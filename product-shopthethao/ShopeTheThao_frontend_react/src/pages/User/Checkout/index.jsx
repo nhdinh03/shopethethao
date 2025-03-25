@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import "./Checkout.scss";
 import Loading from "pages/Loading/loading";
-import { ROUTES } from "constants/routeConstants";
+import { ROUTES } from "router";
 
 const Checkout = () => {
   const navigate = useNavigate();

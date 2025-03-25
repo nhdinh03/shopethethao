@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import NotificationDropdown from "components/Admin/Notifications/NotificationDropdown";
 import authApi from "api/Admin/Auth/auth";
 import './HeaderRight.scss'
-import { ROUTES } from "constants/routeConstants";
+import { ROUTES } from "router";
 
 function HeaderAdminRight() {
   const [userData, setUserData] = useState(null);
