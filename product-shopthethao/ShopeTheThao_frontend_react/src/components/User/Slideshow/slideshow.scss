@@ -1,3 +1,5 @@
+@import "../../../scss/responsive";
+
 .slideshow-section {
   max-width: 1900px;
   margin: auto;
@@ -7,21 +9,9 @@
     max-width: 100%;
     margin: 0 auto;
     padding: 0;
-  }
-}
 
-@media (max-resolution: 0.75dppx) {
-  .slideshow-section {
-    .container {
-      max-width: 1600px;
-      padding: 0 15px;
+    @include media-up(laptop) {
       margin: 0 auto;
-    }
-
-    .slide-container {
-      .each-slide > div {
-        overflow: hidden;
-      }
     }
   }
 }
@@ -37,7 +27,7 @@
       justify-content: center;
       background-size: cover;
       background-position: center;
-      height: 500px;
+      height: 600px;
       position: relative;
 
       &::before {
@@ -50,19 +40,19 @@
         background: linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
       }
 
-      @media (max-width: 992px) {
+      @include media-down(laptop) {
         height: 450px;
       }
 
-      @media (max-width: 768px) {
+      @include media-down(tablet) {
         height: 400px;
       }
 
-      @media (max-width: 576px) {
+      @include media-down(mobile-l) {
         height: 350px;
       }
 
-      @media (max-width: 480px) {
+      @include media-down(mobile-m) {
         height: 300px;
       }
     }
@@ -83,21 +73,21 @@
         text-transform: uppercase;
         letter-spacing: 2px;
 
-        @media (max-width: 992px) {
+        @include media-down(laptop) {
           font-size: 2.5rem;
           margin-bottom: 15px;
         }
 
-        @media (max-width: 768px) {
+        @include media-down(tablet) {
           font-size: 2rem;
           margin-bottom: 10px;
         }
 
-        @media (max-width: 576px) {
+        @include media-down(mobile-l) {
           font-size: 1.75rem;
         }
 
-        @media (max-width: 480px) {
+        @include media-down(mobile-m) {
           font-size: 1.5rem;
         }
       }
@@ -112,18 +102,19 @@
         font-weight: 500;
         cursor: pointer;
         transition: all 0.3s ease;
+        @include touch-device-optimize;
 
         &:hover {
           background: darken(#ff4400, 10%);
           transform: translateY(-2px);
         }
 
-        @media (max-width: 576px) {
+        @include media-down(mobile-l) {
           padding: 10px 25px;
           font-size: 15px;
         }
 
-        @media (max-width: 480px) {
+        @include media-down(mobile-m) {
           padding: 8px 20px;
           font-size: 14px;
         }
@@ -138,6 +129,7 @@
       height: 40px;
       background: rgba(255, 255, 255, 0.8);
       border-radius: 50%;
+      @include gpu-accelerate;
 
       &:hover {
         background: white;
@@ -172,66 +164,33 @@
       &.active {
         background: white;
       }
-    }
-  }
-}
 
-// Responsive styles
-@media (max-width: 768px) {
-  .slide-container {
-    .each-slide {
-      > div {
-        height: 300px;
-      }
-
-      .slide-caption {
-        text-align: center;
-
-        h2 {
-          font-size: 2rem;
-        }
+      @include media-down(mobile-l) {
+        width: 8px;
+        height: 8px;
+        margin: 0 3px;
       }
     }
   }
 }
 
-
-
-@media (max-width: 480px) {
-  .slide-container {
-    .each-slide {
-      > div {
-        height: 300px;
-      }
-
-      .slide-caption {
-        h2 {
-          font-size: 1.5rem;
-        }
-
-        .shop-now {
-          padding: 10px 20px;
-          font-size: 14px;
-        }
-      }
+// Tablet specific styles
+@include tablet-only {
+  .slide-container .each-slide {
+    .slide-caption {
+      text-align: center;
     }
   }
 }
 
-@media (max-width: 320px) {
-  .slide-container {
-    .each-slide {
-      > div {
-        width: 100%;
-        height: 300px;
-      }
+// Mobile specific styles
+@include mobile-only {
+  .slide-container .each-slide {
+    .slide-caption {
+      text-align: center;
 
-      .slide-caption {
-        text-align: center;
-
-        h2 {
-          font-size: 2rem;
-        }
+      h2 {
+        font-size: 1.5rem;
       }
     }
   }
