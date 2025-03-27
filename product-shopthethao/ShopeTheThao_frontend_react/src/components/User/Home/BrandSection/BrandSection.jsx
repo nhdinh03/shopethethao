@@ -1,10 +1,9 @@
-import React, { useState, useRef } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 
 const BrandSection = () => {
-  // Simplified brand data with additional items for slider functionality
   const brands = [
     {
       name: "Adidas",
@@ -66,54 +65,68 @@ const BrandSection = () => {
   const sliderRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
-  
-  // Scroll handling
-  const checkScrollPosition = () => {
-    if (!sliderRef.current) return;
-    
-    const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
-    
-    // Show/hide left arrow based on scroll position
-    setShowLeftArrow(scrollLeft > 0);
-    
-    // Show/hide right arrow based on whether we can scroll further right
-    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
-  };
+  const [isVisible, setIsVisible] = useState(false);
 
-  // Scroll the slider left or right
-  const scroll = (direction) => {
+  const checkScrollPosition = useCallback(() => {
     if (!sliderRef.current) return;
-    
-    const scrollAmount = direction === 'left' ? -280 : 280;
-    sliderRef.current.scrollBy({
-      left: scrollAmount,
-      behavior: 'smooth'
+    const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
+    setShowLeftArrow(scrollLeft > 0);
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
+  }, []);
+
+  const scroll = useCallback((direction) => {
+    if (!sliderRef.current) return;
+    const scrollAmount = direction === "left" ? -280 : 280;
+    sliderRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    setTimeout(checkScrollPosition, 300);
+  }, [checkScrollPosition]);
+
+  useEffect(() => {
+    const handleIntersection = (entries) => {
+      if (entries[0].isIntersecting) {
+        setIsVisible(true);
+      }
+    };
+
+    const observer = new IntersectionObserver(handleIntersection, {
+      threshold: 0.1,
     });
     
-    // Check scroll position after scrolling
-    setTimeout(checkScrollPosition, 300);
-  };
+    if (sliderRef.current) {
+      observer.observe(sliderRef.current);
+      checkScrollPosition();
+      sliderRef.current.addEventListener("scroll", checkScrollPosition);
+    }
+    
+    return () => {
+      if (sliderRef.current) {
+        observer.unobserve(sliderRef.current);
+        sliderRef.current.removeEventListener("scroll", checkScrollPosition);
+      }
+    };
+  }, [checkScrollPosition]);
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
+    visible: { 
+      opacity: 1, 
+      transition: { 
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
+      } 
     },
   };
 
   const childVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
+    visible: { 
+      opacity: 1, 
+      y: 0, 
       transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      },
+        type: "spring",
+        damping: 12,
+        stiffness: 200,
+      }
     },
   };
 
@@ -124,34 +137,40 @@ const BrandSection = () => {
           className="section-header"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 100, 
+            damping: 15 
+          }}
           viewport={{ once: true, margin: "-100px" }}
         >
           <h2 className="title-highlight">THƯƠNG HIỆU NỔI BẬT</h2>
-          <p className="subtitle-text">
-            Đối tác chính thức với các thương hiệu thể thao hàng đầu thế giới
-          </p>
+          <p className="subtitle-text">Đối tác chính thức với các thương hiệu thể thao hàng đầu thế giới</p>
         </motion.div>
 
         <div className="brands-slider-container">
-          {showLeftArrow && (
-            <button 
-              className="slider-arrow arrow-left" 
-              onClick={() => scroll('left')}
-              aria-label="Scroll left"
-            >
-              <FaChevronLeft />
-            </button>
-          )}
-          
+          <AnimatePresence>
+            {showLeftArrow && (
+              <motion.button 
+                className="slider-arrow arrow-left" 
+                onClick={() => scroll("left")} 
+                aria-label="Scroll left"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <FaChevronLeft />
+              </motion.button>
+            )}
+          </AnimatePresence>
+
           <motion.div
             className="brands-slider"
             variants={containerVariants}
             initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
+            animate={isVisible ? "visible" : "hidden"}
             ref={sliderRef}
-            onScroll={checkScrollPosition}
           >
             {brands.map((brand, index) => (
               <motion.div
@@ -161,63 +180,77 @@ const BrandSection = () => {
                 onMouseEnter={() => setHoveredBrand(index)}
                 onMouseLeave={() => setHoveredBrand(null)}
                 whileHover={{ 
-                  y: -5,
-                  transition: { duration: 0.2 }
+                  y: -10,
+                  boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)" 
                 }}
               >
                 <Link to={brand.link} className="brand-card-link">
-                  <div className="logo-container">
+                  <motion.div 
+                    className="logo-container"
+                    animate={hoveredBrand === index ? {
+                      scale: 1.1,
+                      transition: { duration: 0.3 }
+                    } : {}}
+                  >
                     <img 
                       src={brand.logo} 
                       alt={brand.name} 
-                      className={hoveredBrand === index ? 'logo-hover' : ''}
+                      className={hoveredBrand === index ? "logo-hover" : ""} 
+                      loading="lazy"
                     />
-                  </div>
-                  
+                  </motion.div>
                   <div className="brand-info">
                     <h3>{brand.name}</h3>
                     <p>{brand.description}</p>
-                    
                     <div className="brand-popular-products">
-                      <span className="product-tag">{brand.bestsellers[0]}</span>
-                      <span className="product-tag">{brand.bestsellers[1]}</span>
+                      {brand.bestsellers.slice(0, 2).map((item, i) => (
+                        <span key={i} className="product-tag">{item}</span>
+                      ))}
                     </div>
-                    
-                    <div className="view-brand">
+                    <motion.div 
+                      className="view-brand"
+                      animate={hoveredBrand === index ? {
+                        x: 5,
+                        transition: { duration: 0.3 }
+                      } : {}}
+                    >
                       <span>Xem thêm</span>
                       <FaChevronRight className="icon-arrow" />
-                    </div>
+                    </motion.div>
                   </div>
                 </Link>
               </motion.div>
             ))}
           </motion.div>
-          
-          {showRightArrow && (
-            <button 
-              className="slider-arrow arrow-right" 
-              onClick={() => scroll('right')}
-              aria-label="Scroll right"
-            >
-              <FaChevronRight />
-            </button>
-          )}
+
+          <AnimatePresence>
+            {showRightArrow && (
+              <motion.button 
+                className="slider-arrow arrow-right" 
+                onClick={() => scroll("right")} 
+                aria-label="Scroll right"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <FaChevronRight />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
-        
-        {/* <div className="slider-indicator">
-          {brands.map((_, index) => (
-            <span 
-              key={index} 
-              className={`indicator-dot ${index < 3 ? 'active' : ''}`}
-            />
-          ))}
-        </div> */}
-        
-        <div className="view-all-brands">
+
+        <motion.div 
+          className="view-all-brands"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          viewport={{ once: true }}
+        >
           <Link to="/brands" className="view-all-link">
             Xem tất cả thương hiệu <FaChevronRight className="arrow-icon" />
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -1,36 +1,88 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap");
+@import "responsive";
 
 :root {
-    --primary-color: #5d87ff;
-    --primary-background-color: #053b50;
-    --primany-text-background-color: #eeeeee;
-    --primany-text-hover-color: #64ccc5;
-    --primary--text-color: #176b87;
-    --font-family: 'Roboto', sans-serif;
+  --primary-color: #5d87ff;
+  --primary-background-color: #053b50;
+  --primany-text-background-color: #eeeeee;
+  --primany-text-hover-color: #64ccc5;
+  --primary--text-color: #176b87;
+  --font-family: "Roboto", sans-serif;
 }
 
 * {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-
-    
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
 }
 html {
-    font-size: 45%;
-    
+  font-size: 45%;
+
+  @include media-up(tablet) {
+    font-size: 50%;
+  }
+
+  @include media-up(laptop) {
+    font-size: 62.5%;
+  }
 }
 a {
-    text-decoration: none;
+  text-decoration: none;
 }
 ul {
-    list-style-type: none;
+  list-style-type: none;
 }
 body {
-    font-size: 1.6rem;
-    line-height: 1.5;
-    text-rendering: optimizeSpeed;
-    
+  font-size: 1.6rem;
+  line-height: 1.5;
+  text-rendering: optimizeSpeed;
+  @include respect-motion-preferences;
+}
+
+// Add base container classes
+.container {
+  @include container;
+}
+
+.container-fluid {
+  @include container-fluid;
+}
+
+// Add responsive utility classes
+.text-center-mobile {
+  @include mobile-only {
+    text-align: center;
+  }
+}
+
+.d-none {
+  display: none !important;
+}
+
+.d-block {
+  display: block !important;
+}
+
+// Responsive display classes
+@each $breakpoint in (mobile-s, mobile-m, mobile-l, tablet, laptop, desktop, 4k)
+{
+  .d-#{$breakpoint}-none {
+    @include media-up($breakpoint) {
+      display: none !important;
+    }
+  }
+
+  .d-#{$breakpoint}-block {
+    @include media-up($breakpoint) {
+      display: block !important;
+    }
+  }
+
+  .d-#{$breakpoint}-flex {
+    @include media-up($breakpoint) {
+      display: flex !important;
+    }
+  }
 }

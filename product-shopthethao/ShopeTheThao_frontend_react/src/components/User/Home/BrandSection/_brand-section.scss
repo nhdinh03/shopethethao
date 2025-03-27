@@ -1,0 +1,147 @@
+@import "..//..//..//..//scss//responsive";
+
+.brands-section {
+  padding: 4rem 0;
+  background: white;
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 0.75rem;
+      position: relative;
+
+      &:after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: #ff4400;
+        border-radius: 2px;
+      }
+    }
+
+    p {
+      font-size: 1rem;
+      color: rgba(51, 51, 51, 0.7);
+    }
+  }
+
+  .brands-slider-container {
+    position: relative;
+
+    .slider-arrow {
+      @include flex-center;
+      width: 40px;
+      height: 40px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #ff4400;
+        color: white;
+      }
+
+      &.arrow-left {
+        left: -20px;
+      }
+
+      &.arrow-right {
+        right: -20px;
+      }
+
+      @include media-down(mobile-l) {
+        width: 32px;
+        height: 32px;
+      }
+    }
+  }
+
+  .brands-slider {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .brand-slide-card {
+    flex: 0 0 auto;
+    width: 280px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+
+    .brand-card-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #333;
+      padding: 1rem;
+
+      .logo-container {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+
+        img {
+          max-width: 100%;
+          max-height: 100%;
+        }
+      }
+
+      .brand-info {
+        text-align: center;
+
+        h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+        }
+
+        p {
+          font-size: 0.875rem;
+          color: rgba(51, 51, 51, 0.7);
+        }
+
+        .brand-popular-products {
+          margin-top: 0.5rem;
+
+          .product-tag {
+            display: inline-block;
+            background: #ff4400;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-right: 0.25rem;
+          }
+        }
+      }
+    }
+  }
+}

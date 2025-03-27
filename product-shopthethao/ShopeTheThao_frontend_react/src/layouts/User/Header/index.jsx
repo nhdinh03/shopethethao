@@ -20,6 +20,7 @@ import { FaFacebook, FaInstagram } from "react-icons/fa";
 import { ROUTES } from "router";
 
 import "./header.scss";
+import "./header_responsive.scss";
 import authApi from "api/Admin/Auth/auth";
 
 const Header = ({ onMobileMenuToggle }) => {
@@ -650,16 +651,18 @@ const Header = ({ onMobileMenuToggle }) => {
   const mobileMenuVariants = {
     closed: {
       x: "-100%",
+      opacity: 0,
       transition: {
-        duration: 0.15, // Faster animation
-        ease: [0.4, 0, 0.2, 1],
+        duration: 0.1,
+        ease: "easeInOut",
       },
     },
     open: {
       x: 0,
+      opacity: 1,
       transition: {
-        duration: 0.15, // Faster animation
-        ease: [0.4, 0, 0.2, 1],
+        duration: 0.1,
+        ease: "easeInOut",
       },
     },
   };
@@ -668,11 +671,13 @@ const Header = ({ onMobileMenuToggle }) => {
   const backdropVariants = {
     closed: {
       opacity: 0,
+      visibility: "hidden",
       transition: { duration: 0.1 },
     },
     open: {
       opacity: 1,
-      transition: { duration: 0.15 },
+      visibility: "visible",
+      transition: { duration: 0.1 },
     },
   };
 
@@ -839,6 +844,7 @@ const Header = ({ onMobileMenuToggle }) => {
 
   const handleMobileMenuToggle = (isOpen) => {
     setMobileMenuOpen(isOpen);
+    document.body.style.overflow = isOpen ? "hidden" : "auto"; // Lock scroll when menu is open
     if (onMobileMenuToggle) {
       onMobileMenuToggle(isOpen); // Notify parent component
     }

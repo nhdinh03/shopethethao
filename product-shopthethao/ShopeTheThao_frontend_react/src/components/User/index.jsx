@@ -24,9 +24,9 @@ export { default as FeedbackModal } from "components/FeedbackModal";
 
 
 
-export { default as BrandSection } from "./Home/BrandSection";
-export { default as CategorySection } from "./Home/CategorySection";
+export { default as BrandSection } from "./Home/BrandSection/BrandSection";
+export { default as CategorySection } from "./Home/CategorySection/CategorySection";
 
 
-export { default as ProductShowcase } from "./Home/ProductShowcase";
+export { default as ProductShowcase } from "./Home/ProductShowcase/ProductShowcase";
 export { default as RelatedProducuts } from "./RelatedProducts";

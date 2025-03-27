@@ -1,0 +1,503 @@
+// ============================================
+// RESPONSIVE UTILITIES
+// ============================================
+// This file contains all responsive breakpoints, mixins, and utility classes
+// Import this file in your SCSS to ensure consistent responsive behavior
+
+// ===========================================
+// BREAKPOINTS
+// ===========================================
+// Standard breakpoints for various device sizes
+
+$breakpoint-4k: 2560px; // 4K screens and large displays
+$breakpoint-desktop: 1440px; // Large desktop screens
+$breakpoint-laptop-l: 1200px; // Standard laptop screens
+$breakpoint-laptop: 1024px; // Small laptop screens
+$breakpoint-tablet: 768px; // Tablets (portrait)
+$breakpoint-mobile-l: 425px; // Large smartphones
+$breakpoint-mobile-m: 375px; // Medium smartphones
+$breakpoint-mobile-s: 320px; // Small smartphones
+
+// ===========================================
+// CONTAINER WIDTHS
+// ===========================================
+// Standard widths for container elements
+
+$container-4k: 2000px;
+$container-desktop: 1400px;
+$container-laptop: 1200px;
+$container-tablet: 720px;
+$container-mobile: 100%;
+
+// ===========================================
+// RESPONSIVE MIXINS (MEDIA QUERIES)
+// ===========================================
+// Usage: @include respond-to(desktop) { ... }
+
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 4k {
+    @media (min-width: $breakpoint-4k) {
+      @content;
+    }
+  } @else if $breakpoint == desktop {
+    @media (min-width: $breakpoint-laptop-l) and (max-width: #{$breakpoint-4k - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == laptop-l {
+    @media (min-width: $breakpoint-laptop) and (max-width: #{$breakpoint-laptop-l - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == laptop {
+    @media (min-width: $breakpoint-tablet) and (max-width: #{$breakpoint-laptop - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == tablet {
+    @media (min-width: $breakpoint-mobile-l) and (max-width: #{$breakpoint-tablet - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == mobile-l {
+    @media (min-width: $breakpoint-mobile-m) and (max-width: #{$breakpoint-mobile-l - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == mobile-m {
+    @media (min-width: $breakpoint-mobile-s) and (max-width: #{$breakpoint-mobile-m - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == mobile-s {
+    @media (max-width: #{$breakpoint-mobile-s - 1px}) {
+      @content;
+    }
+  }
+}
+
+// ===========================================
+// SIMPLER MEDIA QUERY MIXINS
+// ===========================================
+// For up and down behavior that's easier to use
+
+// Media of at least the minimum breakpoint width
+@mixin media-up($breakpoint) {
+  @if $breakpoint == 4k {
+    @media (min-width: $breakpoint-4k) {
+      @content;
+    }
+  } @else if $breakpoint == desktop {
+    @media (min-width: $breakpoint-laptop-l) {
+      @content;
+    }
+  } @else if $breakpoint == laptop-l {
+    @media (min-width: $breakpoint-laptop) {
+      @content;
+    }
+  } @else if $breakpoint == laptop {
+    @media (min-width: $breakpoint-tablet) {
+      @content;
+    }
+  } @else if $breakpoint == tablet {
+    @media (min-width: $breakpoint-mobile-l) {
+      @content;
+    }
+  } @else if $breakpoint == mobile-l {
+    @media (min-width: $breakpoint-mobile-m) {
+      @content;
+    }
+  } @else if $breakpoint == mobile-m {
+    @media (min-width: $breakpoint-mobile-s) {
+      @content;
+    }
+  }
+}
+
+// Media of at most the maximum breakpoint width
+@mixin media-down($breakpoint) {
+  @if $breakpoint == desktop {
+    @media (max-width: #{$breakpoint-laptop-l - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == laptop-l {
+    @media (max-width: #{$breakpoint-laptop - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == laptop {
+    @media (max-width: 1024px) { @content; }
+  } @else if $breakpoint == tablet {
+    @media (max-width: 768px) { @content; }
+  } @else if $breakpoint == mobile-l {
+    @media (max-width: 576px) { @content; }
+  } @else if $breakpoint == mobile-m {
+    @media (max-width: #{$breakpoint-mobile-s - 1px}) {
+      @content;
+    }
+  } @else if $breakpoint == mobile-s {
+    @media (max-width: 375px) { @content; }
+  }
+}
+
+// Media between the minimum and maximum breakpoints
+@mixin media-between($min-breakpoint, $max-breakpoint) {
+  $min-width: $breakpoint-mobile-s; // Default
+  $max-width: $breakpoint-4k; // Default
+
+  // Set min-width
+  @if $min-breakpoint == desktop {
+    $min-width: $breakpoint-laptop-l;
+  } @else if $min-breakpoint == laptop-l {
+    $min-width: $breakpoint-laptop;
+  } @else if $min-breakpoint == laptop {
+    $min-width: $breakpoint-tablet;
+  } @else if $min-breakpoint == tablet {
+    $min-width: $breakpoint-mobile-l;
+  } @else if $min-breakpoint == mobile-l {
+    $min-width: $breakpoint-mobile-m;
+  } @else if $min-breakpoint == mobile-m {
+    $min-width: $breakpoint-mobile-s;
+  }
+
+  // Set max-width
+  @if $max-breakpoint == desktop {
+    $max-width: #{$breakpoint-4k - 1px};
+  } @else if $max-breakpoint == laptop-l {
+    $max-width: #{$breakpoint-laptop-l - 1px};
+  } @else if $max-breakpoint == laptop {
+    $max-width: #{$breakpoint-laptop - 1px};
+  } @else if $max-breakpoint == tablet {
+    $max-width: #{$breakpoint-tablet - 1px};
+  } @else if $max-breakpoint == mobile-l {
+    $max-width: #{$breakpoint-mobile-l - 1px};
+  } @else if $max-breakpoint == mobile-m {
+    $max-width: #{$breakpoint-mobile-m - 1px};
+  }
+
+  @media (min-width: $min-width) and (max-width: $max-width) {
+    @content;
+  }
+}
+
+// ===========================================
+// SPECIFIC DEVICE TARGETING
+// ===========================================
+
+// Target only mobile devices
+@mixin mobile-only {
+  @media (max-width: #{$breakpoint-tablet - 1px}) {
+    @content;
+  }
+}
+
+// Target only tablet devices
+@mixin tablet-only {
+  @media (min-width: $breakpoint-tablet) and (max-width: #{$breakpoint-laptop - 1px}) {
+    @content;
+  }
+}
+
+// Target only desktop devices
+@mixin desktop-only {
+  @media (min-width: $breakpoint-laptop) {
+    @content;
+  }
+}
+
+// ===========================================
+// CONTAINER MIXINS
+// ===========================================
+
+// Responsive container with auto margins and appropriate padding
+@mixin container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  @include media-up(mobile-l) {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  @include media-up(tablet) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+    max-width: $container-tablet;
+  }
+
+  @include media-up(laptop) {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+    max-width: $container-laptop;
+  }
+
+  @include media-up(desktop) {
+    max-width: $container-desktop;
+  }
+
+  @include media-up(4k) {
+    max-width: $container-4k;
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+// Fluid container that's always 100% width
+@mixin container-fluid {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  @include media-up(mobile-l) {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  @include media-up(tablet) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  @include media-up(desktop) {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+// ===========================================
+// GRID SYSTEM MIXINS
+// ===========================================
+
+// Create responsive grid layout with columns
+@mixin grid($columns: 12, $gap: 1rem) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+// Responsive grid with different columns at different breakpoints
+@mixin responsive-grid(
+  $mobile-cols: 1,
+  $tablet-cols: 2,
+  $laptop-cols: 3,
+  $desktop-cols: 4,
+  $gap: 1rem
+) {
+  display: grid;
+  gap: $gap;
+  grid-template-columns: repeat($mobile-cols, 1fr);
+
+  @include media-up(tablet) {
+    grid-template-columns: repeat($tablet-cols, 1fr);
+  }
+
+  @include media-up(laptop) {
+    grid-template-columns: repeat($laptop-cols, 1fr);
+  }
+
+  @include media-up(desktop) {
+    grid-template-columns: repeat($desktop-cols, 1fr);
+  }
+}
+
+// Auto-fit grid that adjusts columns based on available space
+@mixin auto-grid($min-item-width: 250px, $gap: 1rem) {
+  display: grid;
+  gap: $gap;
+  grid-template-columns: repeat(auto-fit, minmax($min-item-width, 1fr));
+}
+
+// ===========================================
+// TYPOGRAPHY MIXINS
+// ===========================================
+
+// Responsive font size that scales between breakpoints
+@mixin responsive-font-size(
+  $min-size,
+  $max-size,
+  $min-breakpoint: $breakpoint-mobile-s,
+  $max-breakpoint: $breakpoint-desktop
+) {
+  font-size: $min-size;
+
+  @media (min-width: $min-breakpoint) {
+    font-size: calc(
+      #{$min-size} + #{strip-unit($max-size - $min-size)} *
+        (
+          (100vw - #{$min-breakpoint}) / #{strip-unit(
+              $max-breakpoint - $min-breakpoint
+            )}
+        )
+    );
+  }
+
+  @media (min-width: $max-breakpoint) {
+    font-size: $max-size;
+  }
+}
+
+// Helper function to strip units
+@function strip-unit($number) {
+  @if type-of($number) == "number" and not unitless($number) {
+    @return $number / ($number * 0 + 1);
+  }
+  @return $number;
+}
+
+// ===========================================
+// FLEX LAYOUT MIXINS
+// ===========================================
+
+// Flexbox centering
+@mixin flex-center($direction: row, $justify: center, $align: center) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+// Flexbox row with responsive wrapping
+@mixin flex-row($gap: 1rem, $justify: flex-start, $align: center) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $gap;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+// Flexbox column
+@mixin flex-column($gap: 1rem, $justify: flex-start, $align: stretch) {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+// ===========================================
+// UTILITY CLASSES
+// ===========================================
+
+// Hide element on specific device sizes
+.hide-on-mobile {
+  @include mobile-only {
+    display: none !important;
+  }
+}
+
+.hide-on-tablet {
+  @include tablet-only {
+    display: none !important;
+  }
+}
+
+.hide-on-desktop {
+  @include desktop-only {
+    display: none !important;
+  }
+}
+
+// Show element only on specific device sizes
+.mobile-only {
+  @include media-up(tablet) {
+    display: none !important;
+  }
+}
+
+.tablet-only {
+  @include media-down(mobile-l) {
+    display: none !important;
+  }
+
+  @include media-up(laptop) {
+    display: none !important;
+  }
+}
+
+.desktop-only {
+  @include media-down(tablet) {
+    display: none !important;
+  }
+}
+
+// ===========================================
+// PERFORMANCE OPTIMIZATIONS
+// ===========================================
+
+// Apply GPU acceleration for smoother animations
+@mixin gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+// Apply smooth scrolling behavior
+@mixin smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+// Apply for reduced motion preferences
+@mixin respect-motion-preferences {
+  @media (prefers-reduced-motion: reduce) {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// ===========================================
+// TOUCH DEVICE OPTIMIZATIONS
+// ===========================================
+
+// Optimize for touch devices
+@mixin touch-device-optimize {
+  @media (pointer: coarse) {
+    // Increase touch target sizes
+    button,
+    a,
+    [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    // Add tap highlight color
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+
+    // Ripple effect for visual feedback
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 50%;
+      left: 50%;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: inherit;
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+      transition: transform 0.3s ease-out, opacity 0.2s ease-out;
+    }
+
+    &:active::after {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      transition: 0s;
+    }
+
+    @content;
+  }
+}
+
+// ===========================================
+// SAFE AREA INSETS
+// ===========================================
+
+// Apply safe area insets for modern mobile devices
+@mixin safe-area-insets($property: padding, $position: bottom) {
+  #{$property}-#{$position}: 1rem;
+
+  @supports (#{$property}-#{$position}: env(safe-area-inset-#{$position})) {
+    #{$property}-#{$position}: calc(1rem + env(safe-area-inset-#{$position}));
+  }
+}
