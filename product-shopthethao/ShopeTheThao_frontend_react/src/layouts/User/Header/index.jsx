@@ -1329,7 +1329,7 @@ const Header = ({ onMobileMenuToggle }) => {
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Completely Redesigned */}
       <AnimatePresence mode="wait">
         {mobileMenuOpen && (
           <>
@@ -1343,20 +1343,16 @@ const Header = ({ onMobileMenuToggle }) => {
             />
             <motion.div
               id="mobile-menu"
-              className={`mobile-menu`}
+              className="mobile-menu"
               variants={mobileMenuVariants}
               initial="closed"
               animate="open"
               exit="closed"
-              style={{
-                willChange: "transform",
-                transform: "translateZ(0)",
-                backfaceVisibility: "hidden",
-              }}
             >
+              {/* Header Section */}
               <div className="mobile-menu-header">
-                {activeSubmenu || activeGroup ? (
-                  <div className="submenu-header">
+                {activeSubmenu || activeGroup !== null ? (
+                  <div className="nav-header">
                     <button
                       className="back-button"
                       onClick={() => {
@@ -1368,190 +1364,360 @@ const Header = ({ onMobileMenuToggle }) => {
                       }}
                     >
                       <FiChevronDown style={{ transform: "rotate(90deg)" }} />
-                      <span>Trở về</span>
                     </button>
                     <h3>{getMenuTitle()}</h3>
-                    <button className="close-menu" onClick={handleCloseMenu}>
+                    <button className="close-button" onClick={handleCloseMenu}>
                       <FiX />
                     </button>
                   </div>
                 ) : (
-                  <button className="close-menu" onClick={handleCloseMenu}>
-                    <FiX />
-                  </button>
+                  <div className="nav-header main">
+                    <div className="brand-logo">
+                      <h2>Shope<span>Nhdinh</span></h2>
+                    </div>
+                    <button className="close-button" onClick={handleCloseMenu}>
+                      <FiX />
+                    </button>
+                  </div>
                 )}
               </div>
 
-              <nav className="mobile-nav">
-                <div className="menu-content">
-                  {activeGroup !== null ? (
-                    // Group items view
-                    <ul className="group-items">
-                      {categoryDetails[activeSubmenu].groups[
-                        activeGroup
-                      ].items.map((item, index) => (
-                        <li key={index}>
-                          <Link
-                            to={item.path}
-                            className={item.isNew ? "new-item" : ""}
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : activeSubmenu ? (
-                    // Category groups view
-                    <>
-                      <ul className="submenu-groups">
-                        {categoryDetails[activeSubmenu].groups.map(
-                          (group, index) => (
-                            <li key={index}>
-                              <button
-                                className={`group-button ${
-                                  group.isHighlight ? "highlight" : ""
-                                }`}
-                                onClick={() => setActiveGroup(index)}
-                              >
-                                {group.title}
-                                <FiChevronDown
-                                  style={{ transform: "rotate(-90deg)" }}
-                                />
-                              </button>
-                            </li>
-                          )
-                        )}
-                      </ul>
-                      <div className="mobile-quick-links">
-                        {categoryDetails[activeSubmenu].quickLinks.map(
-                          (link, index) => (
-                            <Link
-                              key={index}
-                              to={link.path}
-                              className="mobile-quick-link"
-                              onClick={() => setMobileMenuOpen(false)}
-                            >
-                              {link.name}
-                            </Link>
-                          )
-                        )}
+              {/* User Profile Bar - Only shown on main menu */}
+              {!activeSubmenu && !activeGroup && (
+                <div className="user-profile-bar">
+                  {isAuthenticated ? (
+                    <div className="logged-user">
+                      <div className="avatar">
+                        <FiUser />
                       </div>
-                    </>
+                      <div className="user-info">
+                        <p className="welcome">Xin chào</p>
+                        <p className="name">Tài khoản của tôi</p>
+                      </div>
+                      <Link 
+                        to={ROUTES.USER.PROFILE} 
+                        className="profile-action"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <span>Xem hồ sơ</span>
+                        <FiChevronDown style={{ transform: "rotate(-90deg)" }} />
+                      </Link>
+                    </div>
                   ) : (
-                    // Main menu view
-                    <ul className="main-menu">
-                      {mainCategories.map((category) => (
-                        <li key={category.id}>
-                          {renderMobileMenuItem(category)}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="guest-user">
+                      <FiUser className="icon" />
+                      <div className="auth-actions">
+                        <Link 
+                          to={ROUTES.AUTH.LOGIN} 
+                          className="login-btn"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Đăng nhập
+                        </Link>
+                        <span className="divider">/</span>
+                        <Link 
+                          to={ROUTES.AUTH.LOGIN} 
+                          state={{ activeTab: "register" }}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="register-btn"
+                        >
+                          Đăng ký
+                        </Link>
+                      </div>
+                    </div>
                   )}
                 </div>
-              </nav>
+              )}
 
-              <div className="mobile-menu-footer">
-                <div className="user-actions-mobile compact-actions">
-                  <Link
-                    to={ROUTES.USER.PROFILE}
-                    className="action-btn"
-                    onClick={() => setMobileMenuOpen(false)}
+              {/* Navigation Section */}
+              <div className="mobile-nav-wrapper">
+                {activeGroup !== null ? (
+                  // Group items view with improved styling
+                  <motion.div 
+                    className="menu-section"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <FiUser />
-                    <span>Tài khoản</span>
-                  </Link>
-                  <Link
-                    to={ROUTES.USER.WISHLIST}
-                    className="action-btn"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <AiOutlineHeart />
-                    <span>Yêu thích</span>
-                    {wishlistCount > 0 && (
-                      <div className="count-indicator">{wishlistCount}</div>
-                    )}
-                  </Link>
-                  <Link
-                    to={ROUTES.USER.CART}
-                    className="action-btn"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <FiShoppingBag />
-                    <span>Giỏ hàng</span>
-                    {cartCount > 0 && (
-                      <div className="count-indicator">{cartCount}</div>
-                    )}
-                  </Link>
-                  <Link
-                    to={ROUTES.USER.ORDERS}
-                    className="action-btn"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <FiShoppingBag />
-                    <span>Đơn hàng</span>
-                  </Link>
-                </div>
-
-                {isAuthenticated ? (
-                  <div className="mobile-auth-buttons">
-                    <Link
-                      to={ROUTES.USER.PROFILE}
-                      className="mobile-btn"
-                      onClick={() => setMobileMenuOpen(false)}
+                    <ul className="menu-item-list">
+                      {categoryDetails[activeSubmenu].groups[activeGroup].items.map((item, index) => (
+                        <motion.li 
+                          key={index}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.03 }}
+                          className="menu-item"
+                        >
+                          <Link
+                            to={item.path}
+                            className="item-link"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            <span className="item-name">{item.name}</span>
+                            {item.isNew && <span className="item-tag new">Mới</span>}
+                            {item.isSale && <span className="item-tag sale">Sale</span>}
+                            {item.isHot && <span className="item-tag hot">Hot</span>}
+                            <FiChevronDown className="icon-right" style={{ transform: "rotate(-90deg)" }} />
+                          </Link>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                ) : activeSubmenu ? (
+                  // Category view with improved styling
+                  <div className="menu-view">
+                    <motion.div 
+                      className="menu-section"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      <FiUser /> Tài khoản
-                    </Link>
-                    <button
-                      className="mobile-btn accent"
-                      onClick={() => {
-                        handleLogout();
-                        setMobileMenuOpen(false);
-                      }}
+                      <h4 className="section-title">Danh mục sản phẩm</h4>
+                      <ul className="menu-item-list">
+                        {categoryDetails[activeSubmenu].groups.map((group, index) => (
+                          <motion.li 
+                            key={index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.04 }}
+                            className={`menu-item ${group.isHighlight ? 'highlighted' : ''}`}
+                          >
+                            <button
+                              className="item-button"
+                              onClick={() => setActiveGroup(index)}
+                            >
+                              <span className="item-name">{group.title}</span>
+                              <FiChevronDown className="icon-right" style={{ transform: "rotate(-90deg)" }} />
+                            </button>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </motion.div>
+                    
+                    {/* Featured Content Section */}
+                    {categoryDetails[activeSubmenu].featuredImage && (
+                      <motion.div 
+                        className="featured-section"
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.15, duration: 0.25 }}
+                      >
+                        <h4 className="section-title">Nổi bật</h4>
+                        <div className="featured-content">
+                          <img 
+                            src={categoryDetails[activeSubmenu].featuredImage.src} 
+                            alt={categoryDetails[activeSubmenu].featuredImage.alt}
+                            className="featured-image"
+                          />
+                          <div className="featured-overlay">
+                            <h5>{categoryDetails[activeSubmenu].featuredImage.title}</h5>
+                            <p>{categoryDetails[activeSubmenu].featuredImage.description}</p>
+                            <Link 
+                              to={categoryDetails[activeSubmenu].featuredImage.link}
+                              className="featured-btn"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              Khám phá ngay
+                            </Link>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                    
+                    {/* Quick Links Section */}
+                    <motion.div 
+                      className="quick-links-section"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
                     >
-                      <FiLogOut /> Đăng xuất
-                    </button>
+                      <h4 className="section-title">Truy cập nhanh</h4>
+                      <div className="quick-links">
+                        {categoryDetails[activeSubmenu].quickLinks.map((link, index) => (
+                          <Link
+                            key={index}
+                            to={link.path}
+                            className="quick-link"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {link.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </motion.div>
                   </div>
                 ) : (
-                  <div className="mobile-auth-buttons">
-                    <Link
-                      to={ROUTES.AUTH.LOGIN}
-                      className="mobile-btn"
-                      onClick={() => setMobileMenuOpen(false)}
+                  // Main Menu View with improved styling
+                  <div className="menu-view">
+                    {/* Main Categories Section */}
+                    <div className="menu-section primary">
+                      <ul className="menu-item-list">
+                        {mainCategories.filter(cat => cat.isPrimary).map((category, index) => (
+                          <motion.li 
+                            key={category.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className={`menu-item ${category.isSpecial ? 'special' : ''}`}
+                          >
+                            {categoryDetails[category.id] ? (
+                              <button
+                                className="item-button"
+                                onClick={() => setActiveSubmenu(category.id)}
+                              >
+                                <span className="item-name">{category.name}</span>
+                                <FiChevronDown className="icon-right" style={{ transform: "rotate(-90deg)" }} />
+                              </button>
+                            ) : (
+                              <Link
+                                to={category.path}
+                                className="item-link"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
+                                <span className="item-name">{category.name}</span>
+                                <FiChevronDown className="icon-right" style={{ transform: "rotate(-90deg)" }} />
+                              </Link>
+                            )}
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Secondary Categories Section */}
+                    <div className="menu-section secondary">
+                      <h4 className="section-title">Danh mục sản phẩm</h4>
+                      <ul className="menu-item-list">
+                        {mainCategories.filter(cat => !cat.isPrimary && cat.id !== "outlet").map((category, index) => (
+                          <motion.li 
+                            key={category.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 + (index * 0.05) }}
+                            className="menu-item"
+                          >
+                            {categoryDetails[category.id] ? (
+                              <button
+                                className="item-button"
+                                onClick={() => setActiveSubmenu(category.id)}
+                              >
+                                <span className="item-name">{category.name}</span>
+                                <FiChevronDown className="icon-right" style={{ transform: "rotate(-90deg)" }} />
+                              </button>
+                            ) : (
+                              <Link
+                                to={category.path}
+                                className="item-link"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
+                                <span className="item-name">{category.name}</span>
+                                <FiChevronDown className="icon-right" style={{ transform: "rotate(-90deg)" }} />
+                              </Link>
+                            )}
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Outlet Category Section */}
+                    {mainCategories.find(cat => cat.id === "outlet") && (
+                      <motion.div 
+                        className="outlet-section"
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <div className="outlet-card">
+                          <h4>OUTLET - Giảm giá đặc biệt</h4>
+                          <p>Săn sale lên đến 70% cho hàng ngàn sản phẩm</p>
+                          <button
+                            className="outlet-button"
+                            onClick={() => setActiveSubmenu("outlet")}
+                          >
+                            Khám phá ngay
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Quick Actions Section */}
+                    <motion.div 
+                      className="quick-actions-section"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.35 }}
                     >
-                      Đăng nhập
-                    </Link>
-                    <Link
-                      to={ROUTES.AUTH.LOGIN}
-                      className="mobile-btn accent"
-                      state={{ activeTab: "register" }}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Đăng ký
-                    </Link>
+                      <h4 className="section-title">Tiện ích</h4>
+                      <div className="quick-actions">
+                        <Link 
+                          to={ROUTES.USER.ORDERS} 
+                          className="action-tile"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <FiPackage className="action-icon" />
+                          <span className="action-name">Đơn hàng</span>
+                        </Link>
+                        <Link 
+                          to={ROUTES.USER.WISHLIST} 
+                          className="action-tile"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <AiOutlineHeart className="action-icon" />
+                          <span className="action-name">Yêu thích</span>
+                          {wishlistCount > 0 && <span className="count-badge">{wishlistCount}</span>}
+                        </Link>
+                        <Link 
+                          to={ROUTES.USER.CART} 
+                          className="action-tile"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <FiShoppingBag className="action-icon" />
+                          <span className="action-name">Giỏ hàng</span>
+                          {cartCount > 0 && <span className="count-badge">{cartCount}</span>}
+                        </Link>
+                        {isAuthenticated && (
+                          <button 
+                            className="action-tile"
+                            onClick={() => {
+                              handleLogout();
+                              setMobileMenuOpen(false);
+                            }}
+                          >
+                            <FiLogOut className="action-icon" />
+                            <span className="action-name">Đăng xuất</span>
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
                   </div>
                 )}
+              </div>
+
+              {/* Footer */}
+              <div className="mobile-menu-footer">
                 <div className="social-links">
                   <a
-                    href="https://facebook.com/"
+                    href="https://facebook.com/nhdinh03"
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="social-link"
                   >
-                    Facebook
+                    <FaFacebook /> Facebook
                   </a>
                   <a
-                    href="https://instagram.com/"
+                    href="https://instagram.com/nhdinhdz"
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="social-link"
                   >
-                    Instagram
+                    <FaInstagram /> Instagram
                   </a>
-                  <a
-                    href="https://tiktok.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    TikTok
+                </div>
+                <div className="contact-info">
+                  <a href="tel:+84123456789" className="contact-link">
+                    <FiPhone /> +84 123 456 789
+                  </a>
+                  <a href="mailto:info@shopethethao.com" className="contact-link">
+                    <FiMail /> info@shopethethao.com
                   </a>
                 </div>
               </div>
