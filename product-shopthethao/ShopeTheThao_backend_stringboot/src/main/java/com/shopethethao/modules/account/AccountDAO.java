@@ -61,6 +61,10 @@ public interface AccountDAO extends JpaRepository<Account, String> {
 
     Optional<Account> findByEmail(String email);
 
+    // Add this new method to fetch account with roles eagerly
+    @Query("SELECT a FROM Account a LEFT JOIN FETCH a.roles WHERE a.email = :email")
+    Optional<Account> findByEmailWithRoles(@Param("email") String email);
+
     boolean existsById(String id);
 
     Boolean existsByEmail(String email);

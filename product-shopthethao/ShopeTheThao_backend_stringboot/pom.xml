@@ -135,6 +135,16 @@
             <version>1.18.24</version> <!-- Chọn phiên bản mới nhất -->
             <scope>provided</scope>
         </dependency>
+
+        	 <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency> 
+
+        	<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
     </dependencies>
 
     <build>

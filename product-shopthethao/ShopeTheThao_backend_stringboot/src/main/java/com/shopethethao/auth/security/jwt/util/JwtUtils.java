@@ -10,8 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
+import com.shopethethao.auth.security.oauth2.OAuth2UserPrincipal;
 import com.shopethethao.auth.security.token.TokenManager;
 import com.shopethethao.auth.security.user.entity.UserDetailsImpl;
 
@@ -57,28 +60,31 @@ public class JwtUtils {
 
     // Tạo JWT
     public String generateJwtToken(Authentication authentication) {
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-        logger.info("Đang tạo JWT cho người dùng: {}", userPrincipal.getUsername());
+        String username;
+        
+        // Handle different types of Authentication principals
+        if (authentication.getPrincipal() instanceof UserDetailsImpl userPrincipal) {
+            username = userPrincipal.getUsername();
+        } else if (authentication.getPrincipal() instanceof OAuth2UserPrincipal oauth2Principal) {
+            username = oauth2Principal.getName();
+        } else if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
+            // Handle standard OAuth2User objects including DefaultOidcUser
+            Map<String, Object> attributes = oauth2User.getAttributes();
+            // Extract sub claim which contains the unique ID
+            username = (String) attributes.getOrDefault("sub", 
+                       attributes.getOrDefault("email", 
+                       oauth2User.getName()));
+        } else {
+            username = authentication.getName();
+        }
 
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
-
-        logger.debug("Chi tiết tạo token - Thời gian tạo: {}, Hết hạn: {}, Thời gian tồn tại: {} ms",
-                now, expiryDate, jwtExpirationMs);
-
-        String token = Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key(), SignatureAlgorithm.HS256)
+        return Jwts.builder()
+                .setClaims(new HashMap<>())
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .signWith(key())
                 .compact();
-
-        logger.info("JWT đã được tạo thành công cho người dùng: {}", userPrincipal.getUsername());
-        logger.debug("Độ dài token: {} ký tự", token.length());
-
-        tokenManager.saveToken(userPrincipal.getUsername(), token, System.currentTimeMillis() + jwtExpirationMs);
-
-        return token;
     }
 
     // Mã hóa
@@ -299,6 +305,7 @@ public class JwtUtils {
     public String generateTokenFromUsername(String username) {
         logger.info("Generating new token from username: {}", username);
         String token = Jwts.builder()
+                .setClaims(new HashMap<>())
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))

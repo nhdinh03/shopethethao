@@ -59,6 +59,40 @@ const authApi = {
     }
   },
 
+  // Add method to handle OAuth2 login data
+  processOAuth2Login: function(token, refreshToken, userData) {
+    try {
+      if (!token || !userData) {
+        throw new Error("Invalid OAuth2 data");
+      }
+
+      localStorage.setItem("token", token);
+      
+      if (refreshToken) {
+        localStorage.setItem("refreshToken", refreshToken);
+      }
+      
+      localStorage.setItem("user", JSON.stringify(userData));
+      
+      if (userData.roles) {
+        localStorage.setItem("roles", JSON.stringify(userData.roles));
+      }
+
+      return {
+        success: true,
+        data: userData,
+        roles: userData.roles || []
+      };
+    } catch (error) {
+      console.error("OAuth2 login processing error:", error);
+      // Ensure cleanup on error
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("roles");
+      throw error;
+    }
+  },
 
   signup: async (values) => {
     try {
@@ -86,8 +120,6 @@ const authApi = {
       throw error;
     }
   },
-
-
 
   changePassword: async (values) => {
     try {
@@ -183,11 +215,10 @@ const authApi = {
   logout() {
     const token = this.getToken();
     
-    // Always clear localStorage first
-    localStorage.clear();
-    
     if (!token) {
-        return Promise.resolve({ message: "Đăng xuất thành công" });
+      // If no token, just clear localStorage and return
+      localStorage.clear();
+      return Promise.resolve({ message: "Đăng xuất thành công" });
     }
 
     return axiosClient.post(endpoints.logout, {}, {
@@ -196,11 +227,14 @@ const authApi = {
         }
     })
     .then(response => {
+        // Clear localStorage after successful response
+        localStorage.clear();
         return response.data;
     })
     .catch(error => {
         console.error("Lỗi đăng xuất:", error);
-        // Return success anyway since we've cleared localStorage
+        // Clear localStorage even if there's an error
+        localStorage.clear();
         return { message: "Đăng xuất thành công" };
     });
   },

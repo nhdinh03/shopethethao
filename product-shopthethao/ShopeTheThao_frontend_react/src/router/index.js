@@ -8,8 +8,7 @@ import * as PageAdmin from "../pages/Admin";
 import * as PageUser from "../pages/User";
 import NotFound from "../pages/NotFound/notFound";
 import { ROUTES, ADMIN_ROUTES } from '../constants/routeConstants';
-
-
+import OAuth2RedirectHandler from 'components/User/Auth/OAuth2/OAuth2RedirectHandler';
 
 export const publicRoutes = [
   { path: ROUTES.HOME, component: PageUser.HomeIndex, layout: UserLayout },
@@ -60,6 +59,11 @@ export const publicRoutes = [
     component: PageUser.OtpForm,
     layout: LayoutPageDefault,
     requiresUnverified: true, // Add this flag to check auth status
+  },
+  {
+    path: ROUTES.AUTH.OAUTH2_REDIRECT,
+    component: OAuth2RedirectHandler,
+    layout: LayoutPageDefault,
   },
   {
     path: ROUTES.ERROR.NOT_FOUND,

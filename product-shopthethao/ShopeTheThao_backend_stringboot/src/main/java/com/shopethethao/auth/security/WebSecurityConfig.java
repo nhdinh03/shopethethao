@@ -1,7 +1,6 @@
 package com.shopethethao.auth.security;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -21,17 +20,28 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.shopethethao.auth.security.jwt.filter.AuthTokenFilter;
 import com.shopethethao.auth.security.jwt.handler.AuthEntryPointJwt;
+import com.shopethethao.auth.security.oauth2.CustomOAuth2UserService;
+import com.shopethethao.auth.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.shopethethao.auth.security.user.service.UserDetailsServiceImpl;
 
 @Configuration
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
+    private final OAuth2AuthenticationSuccessHandler OAuth2AuthenticationSuccessHandler;
+
+    private final CustomOAuth2UserService customOAuth2UserService;
+
     @Autowired
     UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
+
+    WebSecurityConfig(CustomOAuth2UserService customOAuth2UserService, OAuth2AuthenticationSuccessHandler OAuth2AuthenticationSuccessHandler) {
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.OAuth2AuthenticationSuccessHandler = OAuth2AuthenticationSuccessHandler;
+    }
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -71,12 +81,19 @@ public class WebSecurityConfig {
                             "/api/categories/**", "/api/comment/**", "/api/detailedInvoices/**", "/api/invoice/**",
                             "/api/productattributemappings/**", "/api/productattributes/**", "/api/products/**",
                             "/api/productsizes/**", "/api/receiptproduct/**", "/api/role/**", "/api/size/**",
-                            "/api/stockReceipts/**", "/api/suppliers/**", "/api/userhistory-sse/**",
-                            "/api/verifications/**").permitAll();
+                            "/api/stockReceipts/**", "/api/suppliers/**", "/api/userhistory-sse/**","/",
+                            "/api/verifications/**", "/oauth2/**", "/login/oauth2/code/**").permitAll();
 
                     auth.requestMatchers("/test/test/**").permitAll();
                     auth.anyRequest().authenticated();
-                });
+                }).oauth2Login(oauth2 -> oauth2
+                    .loginPage("/oauth2/authorization/google") // Default login page for Google OAuth2
+                    .defaultSuccessUrl("http://localhost:3000/", true) // Redirect after successful login
+                    .failureUrl("/login?error=true") // Redirect after failed login
+                    .userInfoEndpoint(userInfo -> userInfo
+                        .userService(customOAuth2UserService))
+                    .successHandler(OAuth2AuthenticationSuccessHandler)
+                );
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -88,7 +105,7 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
-        // Allow IPv6 addresses
+        // Allow origins
         config.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
             "http://192.168.1.21:3000",

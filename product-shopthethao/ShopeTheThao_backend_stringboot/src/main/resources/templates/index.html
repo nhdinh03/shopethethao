@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test</title>
+    <style>
+
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Test Login</h2>
+
+        <div id="normalLogin">
+            <input type="text" id="username" placeholder="Username/Phone">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()" class="btn login-btn">Đăng nhập</button>
+        </div>
+
+
+        <button onclick="loginWithGoogle()" class="btn google-btn">
+            Đăng nhập với Google
+        </button>
+
+>
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script th:inline="javascript">
+
+        async function login() {
+
+        }
+
+        function loginWithGoogle() {
+            document.getElementById('result').innerHTML = 'Đang chuyển hướng đến Google...';
+            window.location.href = 'http://localhost:8081/oauth2/authorization/google';
+        }
+
+    </script>
+</body>
+</html>

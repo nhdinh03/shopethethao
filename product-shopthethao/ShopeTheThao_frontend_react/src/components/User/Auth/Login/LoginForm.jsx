@@ -115,8 +115,17 @@ const LoginForm = () => {
     setShowForgotPassword(true);
   };
 
+  const handleGoogleLogin = () => {
+    // Use the correct port for your Spring Boot application
+    window.location.href = "http://localhost:8081/oauth2/authorization/google";
+  };
+
   const handleSocialLogin = (provider) => {
-    message.info(`Đăng nhập bằng ${provider} đang được phát triển!`);
+    if (provider === "Google") {
+      handleGoogleLogin();
+    } else {
+      message.info(`Đăng nhập bằng ${provider} đang được phát triển!`);
+    }
   };
 
   useEffect(() => {

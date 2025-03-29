@@ -18,6 +18,7 @@ export const ROUTES = {
   AUTH: {
     LOGIN: `/${API_VERSION}/auth/login`,
     OTP: `/${API_VERSION}/auth/otp`,
+    OAUTH2_REDIRECT: '/oauth2/redirect',
   },
   ERROR: {
     NOT_FOUND: `/${API_VERSION}/404`,
