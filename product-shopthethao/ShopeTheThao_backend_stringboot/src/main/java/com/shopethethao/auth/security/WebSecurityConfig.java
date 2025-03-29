@@ -20,8 +20,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.shopethethao.auth.security.jwt.filter.AuthTokenFilter;
 import com.shopethethao.auth.security.jwt.handler.AuthEntryPointJwt;
-import com.shopethethao.auth.security.oauth2.CustomOAuth2UserService;
-import com.shopethethao.auth.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.shopethethao.auth.security.oauth2google.CustomOAuth2UserService;
+import com.shopethethao.auth.security.oauth2google.OAuth2AuthenticationSuccessHandler;
 import com.shopethethao.auth.security.user.service.UserDetailsServiceImpl;
 
 @Configuration

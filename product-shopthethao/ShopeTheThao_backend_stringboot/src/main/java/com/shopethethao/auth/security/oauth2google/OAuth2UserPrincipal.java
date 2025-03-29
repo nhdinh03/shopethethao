@@ -1,4 +1,4 @@
-package com.shopethethao.auth.security.oauth2;
+package com.shopethethao.auth.security.oauth2google;
 
 import java.util.Collection;
 import java.util.Map;

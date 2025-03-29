@@ -14,7 +14,7 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
-import com.shopethethao.auth.security.oauth2.OAuth2UserPrincipal;
+import com.shopethethao.auth.security.oauth2google.OAuth2UserPrincipal;
 import com.shopethethao.auth.security.token.TokenManager;
 import com.shopethethao.auth.security.user.entity.UserDetailsImpl;
 
