@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -7,16 +7,13 @@ import {
   Button,
   Upload,
   message,
-  Spin,
   Modal,
   Card,
   Divider,
   Row,
   Col,
   Avatar,
-  Tooltip,
   notification,
-  Tabs,
 } from "antd";
 import {
   UserOutlined,
@@ -29,15 +26,15 @@ import {
   CheckCircleOutlined,
   CalendarOutlined,
   IdcardOutlined,
-  SettingOutlined,
   HomeOutlined,
   SafetyCertificateOutlined,
   InfoCircleOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
 import "./UserProfile.scss";
-import authApi from "api/Admin/Auth/auth";
-import Loading from "pages/Loading/loading";
+import authApi from "api/Admin/Auth/auth"; // Giả định đây là API của bạn
+import Loading from "pages/Loading/loading"; // Giả định đây là component loading
+import { motion } from "framer-motion";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
@@ -50,8 +47,8 @@ const UserProfile = () => {
   const [saveLoading, setSaveLoading] = useState(false);
   const [changePasswordLoading, setChangePasswordLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
-  
-  // Enhanced responsive breakpoints
+
+  // Breakpoints linh hoạt cho responsive
   const [screenSize, setScreenSize] = useState({
     is4k: window.innerWidth >= 2560,
     isLaptop: window.innerWidth >= 1024 && window.innerWidth < 2560,
@@ -61,34 +58,32 @@ const UserProfile = () => {
     isMobileS: window.innerWidth < 375,
   });
 
-  // Replace the mock data loading with actual user data from localStorage
+  // Tải dữ liệu người dùng khi component khởi tạo
   useEffect(() => {
-    try {
-      const storedUser = authApi.getUser();
-      if (storedUser) {
-        setUserData(storedUser);
-
-        // Set form values from user data
-        form.setFieldsValue({
-          ...storedUser,
-          birthday: storedUser.birthday ? moment(storedUser.birthday) : null,
-        });
-
-        // Set image URL if available
-        if (storedUser.image) {
-          setImageUrl(`/uploads/${storedUser.image}`);
+    const fetchUserData = async () => {
+      try {
+        const storedUser = await authApi.getUser();
+        if (storedUser) {
+          setUserData(storedUser);
+          form.setFieldsValue({
+            ...storedUser,
+            birthday: storedUser.birthday ? moment(storedUser.birthday) : null,
+          });
+          if (storedUser.image) setImageUrl(`/uploads/${storedUser.image}`);
+        } else {
+          message.error("Không thể tải thông tin người dùng");
         }
-      } else {
-        message.error("Không thể tải thông tin người dùng");
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+        message.error("Đã xảy ra lỗi khi tải thông tin người dùng");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error loading user data:", error);
-      message.error("Đã xảy ra lỗi khi tải thông tin người dùng");
-    } finally {
-      setLoading(false);
-    }
+    };
+    fetchUserData();
   }, [form]);
 
+  // Theo dõi kích thước màn hình để điều chỉnh responsive
   useEffect(() => {
     const handleResize = () => {
       setScreenSize({
@@ -100,542 +95,324 @@ const UserProfile = () => {
         isMobileS: window.innerWidth < 375,
       });
     };
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Dynamically calculate avatar size based on screen size
+  // Điều chỉnh kích thước avatar theo breakpoint
   const getAvatarSize = () => {
     if (screenSize.is4k) return 180;
     if (screenSize.isLaptop) return 120;
     if (screenSize.isTablet) return 100;
-    if (screenSize.isMobileL) return 90;
-    return 80; // For mobile M and S
+    return 90;
   };
 
+  // Xử lý lưu thông tin
   const handleSubmit = (values) => {
     setSaveLoading(true);
-
     const updatedUser = {
       ...values,
       birthday: values.birthday.format("YYYY-MM-DD"),
       id: userData.id,
       password: userData.password,
     };
-
-    // Simulate API call
     setTimeout(() => {
+      setUserData(updatedUser);
       setSaveLoading(false);
-
       notification.success({
         message: "Cập nhật thành công",
-        description: "Thông tin cá nhân của bạn đã được cập nhật",
-        placement: "bottomRight",
+        description: "Thông tin cá nhân đã được cập nhật",
       });
-
       setIsEditing(false);
     }, 800);
   };
 
+  // Xử lý đổi mật khẩu
   const handlePasswordChange = async (values) => {
+    setChangePasswordLoading(true);
     try {
-      setChangePasswordLoading(true);
-
       if (values.newPassword !== values.confirmPassword) {
         message.error("Mật khẩu xác nhận không khớp!");
-        setChangePasswordLoading(false);
         return;
       }
-
-      // Log the request payload for debugging
-      const requestPayload = {
-        id: userData.id, // Make sure we're using the correct user ID
+      const response = await authApi.changePassword({
+        id: userData.id,
         oldPassword: values.currentPassword,
         newPassword: values.newPassword,
-        confirmNewPassword: values.confirmPassword,
-      };
-
-      console.log("Password change request payload:", requestPayload);
-
-      // Send the password change request
-      const response = await authApi.changePassword(requestPayload);
-
+      });
       notification.success({
         message: "Đổi mật khẩu thành công",
-        description: "Mật khẩu của bạn đã được cập nhật",
+        description: "Mật khẩu đã được cập nhật",
         icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
       });
-
       setPasswordModalVisible(false);
       passwordForm.resetFields();
     } catch (error) {
-      console.error("Password change error:", error);
-      // Log the error response data for debugging
-      if (error.response) {
-        console.error("Error response data:", error.response.data);
-      }
-
-      // Display appropriate error message
-      const errorMessage =
-        error.response?.data?.message || "Đổi mật khẩu không thành công";
       notification.error({
         message: "Lỗi",
-        description: errorMessage,
+        description: error.response?.data?.message || "Đổi mật khẩu thất bại",
       });
     } finally {
       setChangePasswordLoading(false);
     }
   };
 
+  // Kiểm tra file ảnh trước khi upload
   const beforeUpload = (file) => {
     const isImage = file.type.startsWith("image/");
-    if (!isImage) {
-      message.error("Bạn chỉ có thể tải lên file hình ảnh!");
-    }
     const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error("Hình ảnh phải nhỏ hơn 2MB!");
-    }
+    if (!isImage) message.error("Chỉ được tải lên file hình ảnh!");
+    if (!isLt2M) message.error("Hình ảnh phải nhỏ hơn 2MB!");
     return isImage && isLt2M;
   };
 
-  const handleUpload = (info) => {
-    if (info.file.status === "done") {
-      // In real app, this would come from server response
-      setImageUrl(URL.createObjectURL(info.file.originFileObj));
-      message.success(`${info.file.name} đã được tải lên thành công`);
-    } else if (info.file.status === "error") {
-      message.error(`${info.file.name} tải lên thất bại.`);
+  // Xử lý upload ảnh
+  const handleUpload = ({ file }) => {
+    if (file.status === "done") {
+      const url = URL.createObjectURL(file.originFileObj);
+      setImageUrl(url);
+      message.success("Tải ảnh lên thành công");
     }
   };
 
+  // Chuyển đổi chế độ chỉnh sửa
   const toggleEdit = () => {
-    if (isEditing) {
-      form.submit();
-    } else {
+    if (isEditing) form.submit();
+    else {
       setIsEditing(true);
-      message.info({
-        content: "Bạn có thể chỉnh sửa thông tin của mình",
-        duration: 2,
-      });
+      message.info("Bạn có thể chỉnh sửa thông tin");
     }
   };
 
-  const tabItems = [
-    {
-      key: 'basic',
-      icon: <UserOutlined />,
-      label: 'Thông tin cơ bản',
-      ariaControls: 'basic-tab'
-    },
-    {
-      key: 'address',
-      icon: <HomeOutlined />,
-      label: 'Địa chỉ',
-      ariaControls: 'address-tab'
-    },
-    {
-      key: 'security',
-      icon: <SafetyCertificateOutlined />,
-      label: 'Bảo mật',
-      ariaControls: 'security-tab'
-    }
-  ];
-
-  // Profile content based on active tab
+  // Các tab nội dung
   const renderProfileContent = () => {
     switch (activeTab) {
       case "basic":
         return (
-          <Card className="profile-card basic-info" title="Thông tin cơ bản">
-            <Row gutter={[screenSize.isMobileM || screenSize.isMobileS ? 12 : 24, screenSize.is4k ? 24 : 16]}>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="fullname"
-                  label="Họ và tên"
-                  rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
-                >
-                  <Input
-                    prefix={<UserOutlined />}
-                    readOnly={!isEditing}
-                    className={!isEditing ? "readonly-input" : ""}
-                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="phone"
-                  label="Số điện thoại"
-                  rules={[
-                    { required: true, message: "Vui lòng nhập số điện thoại!" },
-                  ]}
-                >
-                  <Input
-                    prefix={<PhoneOutlined />}
-                    readOnly={!isEditing}
-                    className={!isEditing ? "readonly-input" : ""}
-                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item name="email" label="Email">
-                  <Input
-                    prefix={<MailOutlined />}
-                    readOnly
-                    className="readonly-input"
-                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} md={12}>
-                <Form.Item
-                  name="birthday"
-                  label="Ngày sinh"
-                  rules={[
-                    { required: true, message: "Vui lòng chọn ngày sinh!" },
-                  ]}
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    format="DD/MM/YYYY"
-                    disabled={!isEditing}
-                    className={!isEditing ? "readonly-input" : ""}
-                    suffixIcon={<CalendarOutlined />}
-                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24}>
-                <Form.Item
-                  name="gender"
-                  label="Giới tính"
-                  rules={[
-                    { required: true, message: "Vui lòng chọn giới tính!" },
-                  ]}
-                >
-                  <Radio.Group disabled={!isEditing} className="gender-group">
-                    <Radio value="M">
-                      <span className="gender-label">
-                        <IdcardOutlined /> Nam
-                      </span>
-                    </Radio>
-                    <Radio value="F">
-                      <span className="gender-label">
-                        <IdcardOutlined /> Nữ
-                      </span>
-                    </Radio>
-                  </Radio.Group>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card title="Thông tin cơ bản" className="profile-card">
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="fullname"
+                    label="Họ và tên"
+                    rules={[{ required: true, message: "Vui lòng nhập họ tên!" }]}
+                  >
+                    <Input
+                      prefix={<UserOutlined />}
+                      readOnly={!isEditing}
+                      size={screenSize.is4k ? "large" : "middle"}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="phone"
+                    label="Số điện thoại"
+                    rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
+                  >
+                    <Input
+                      prefix={<PhoneOutlined />}
+                      readOnly={!isEditing}
+                      size={screenSize.is4k ? "large" : "middle"}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="email" label="Email">
+                    <Input prefix={<MailOutlined />} readOnly />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="birthday"
+                    label="Ngày sinh"
+                    rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
+                  >
+                    <DatePicker
+                      format="DD/MM/YYYY"
+                      disabled={!isEditing}
+                      style={{ width: "100%" }}
+                      size={screenSize.is4k ? "large" : "middle"}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24}>
+                  <Form.Item
+                    name="gender"
+                    label="Giới tính"
+                    rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
+                  >
+                    <Radio.Group disabled={!isEditing}>
+                      <Radio value="M">Nam</Radio>
+                      <Radio value="F">Nữ</Radio>
+                    </Radio.Group>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          </motion.div>
         );
       case "address":
         return (
-          <Card className="profile-card address-info" title="Địa chỉ">
-            <div className="address-section">
-              <div className="address-header">
-                <HomeOutlined className="section-icon" />
-                <span className="section-title">Địa chỉ liên hệ</span>
-              </div>
-
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card title="Địa chỉ" className="profile-card">
               <Form.Item
                 name="address"
                 rules={[{ required: true, message: "Vui lòng nhập địa chỉ!" }]}
               >
                 <Input.TextArea
-                  rows={screenSize.isMobileS ? 3 : 4}
+                  rows={4}
                   readOnly={!isEditing}
-                  className={!isEditing ? "readonly-input address-textarea" : "address-textarea"}
                   placeholder="Nhập địa chỉ của bạn"
-                  size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
                 />
               </Form.Item>
-            </div>
-            
-            {!isEditing && (
-              <div className="address-visualization">
-                <div className="address-map-placeholder">
-                  <div className="address-icon-container">
-                    <i className="address-pin-icon"><HomeOutlined /></i>
-                  </div>
-                  <p className="address-note">Địa chỉ hiển thị ở đây giúp bạn nhận hàng nhanh chóng</p>
-                </div>
-              </div>
-            )}
-          </Card>
+            </Card>
+          </motion.div>
         );
       case "security":
         return (
-          <Card className="profile-card security-info" title="Bảo mật">
-            <div className="security-sections">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card title="Bảo mật" className="profile-card">
               <div className="security-item">
-                <div className="security-header">
-                  <div className="security-icon-container">
-                    <LockOutlined className="security-icon" />
-                  </div>
-                  <div className="security-text">
-                    <h3>Mật khẩu</h3>
-                    <p>Cập nhật mật khẩu để bảo vệ tài khoản của bạn</p>
-                  </div>
-                </div>
-                <div className="security-action">
-                  <Button
-                    type="primary"
-                    onClick={() => setPasswordModalVisible(true)}
-                    className="change-password-btn"
-                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-                    icon={<LockOutlined />}
-                  >
-                    Đổi mật khẩu
-                  </Button>
-                </div>
+                <LockOutlined /> Mật khẩu
+                <Button
+                  type="primary"
+                  onClick={() => setPasswordModalVisible(true)}
+                  icon={<LockOutlined />}
+                >
+                  Đổi mật khẩu
+                </Button>
               </div>
-              
-              <Divider style={{ margin: '24px 0' }} />
-              
-              <div className="security-item">
-                <div className="security-header">
-                  <div className="security-icon-container verify-icon">
-                    <SafetyCertificateOutlined className="security-icon" />
-                  </div>
-                  <div className="security-text">
-                    <h3>Xác thực hai yếu tố</h3>
-                    <p>Bảo vệ tài khoản bằng xác thực thêm qua điện thoại</p>
-                  </div>
-                </div>
-                <div className="security-action">
-                  <Button
-                    type="default"
-                    className="verify-button"
-                    size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-                    icon={<CheckCircleOutlined />}
-                  >
-                    {userData?.phone ? "Đã xác thực" : "Chưa xác thực"}
-                  </Button>
-                </div>
-              </div>
-              
-              <Divider style={{ margin: '24px 0' }} />
-              
-              <div className="security-tips">
-                <h4>
-                  <InfoCircleOutlined style={{ marginRight: '8px' }} />
-                  Mẹo bảo mật
-                </h4>
-                <ul>
-                  <li>Sử dụng mật khẩu mạnh, bao gồm ký tự đặc biệt và số</li>
-                  <li>Không sử dụng cùng một mật khẩu trên nhiều trang web</li>
-                  <li>Cập nhật mật khẩu định kỳ mỗi 3-6 tháng</li>
-                </ul>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </motion.div>
         );
       default:
         return null;
     }
   };
 
-  if (loading) {
-    return <Loading />;
-  }
+  if (loading) return <Loading />;
 
   return (
     <div className="user-profile-container">
       <div className="profile-header">
-        <div className="profile-avatar">
-          <div className="avatar-container">
-            <Avatar
-              size={getAvatarSize()}
-              src={imageUrl}
-              icon={!imageUrl && <UserOutlined />}
-              className="user-avatar"
-            />
-            {isEditing && (
-              <Upload
-                name="avatar"
-                showUploadList={false}
-                beforeUpload={beforeUpload}
-                onChange={handleUpload}
-                className="avatar-upload"
-              >
-                <button className="camera-button">
-                  <CameraOutlined />
-                </button>
-              </Upload>
-            )}
-          </div>
-          <div className="profile-info">
-            <h2 className="user-name">{userData.fullname}</h2>
-            <p className="user-email">{userData.email}</p>
-            <Button
-              type={isEditing ? "primary" : "default"}
-              icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
-              onClick={toggleEdit}
-              loading={saveLoading}
-              className="edit-button"
-              size={screenSize.is4k ? "large" : (screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle")}
+        <motion.div
+          className="avatar-container"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Avatar
+            size={getAvatarSize()}
+            src={imageUrl}
+            icon={<UserOutlined />}
+          />
+          {isEditing && (
+            <Upload
+              showUploadList={false}
+              beforeUpload={beforeUpload}
+              onChange={handleUpload}
             >
-              {isEditing ? "Lưu thông tin" : "Chỉnh sửa"}
-            </Button>
-          </div>
+              <Button className="camera-button" icon={<CameraOutlined />} />
+            </Upload>
+          )}
+        </motion.div>
+        <div className="profile-info">
+          <h2>{userData?.fullname}</h2>
+          <p>{userData?.email}</p>
+          <Button
+            type={isEditing ? "primary" : "default"}
+            icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
+            onClick={toggleEdit}
+            loading={saveLoading}
+          >
+            {isEditing ? "Lưu" : "Chỉnh sửa"}
+          </Button>
         </div>
-        
-        <div className="profile-navigation" role="tablist">
-          {tabItems.map(item => (
-            <button
-              key={item.key}
-              role="tab"
-              className={`nav-item ${activeTab === item.key ? 'active' : ''}`}
-              onClick={() => setActiveTab(item.key)}
-              onKeyPress={(e) => e.key === 'Enter' && setActiveTab(item.key)}
-              tabIndex={0}
-              aria-selected={activeTab === item.key}
-              aria-controls={item.ariaControls}
-            >
-              <div className="nav-icon-wrapper">
-                {item.icon}
-              </div>
-              <span className="nav-text">{item.label}</span>
-            </button>
-          ))}
+        <div className="profile-navigation">
+          <Button
+            onClick={() => setActiveTab("basic")}
+            type={activeTab === "basic" ? "primary" : "default"}
+          >
+            Thông tin cơ bản
+          </Button>
+          <Button
+            onClick={() => setActiveTab("address")}
+            type={activeTab === "address" ? "primary" : "default"}
+          >
+            Địa chỉ
+          </Button>
+          <Button
+            onClick={() => setActiveTab("security")}
+            type={activeTab === "security" ? "primary" : "default"}
+          >
+            Bảo mật
+          </Button>
         </div>
       </div>
-
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        className={`profile-form ${isEditing ? "editing" : ""}`}
-      >
-        <div className="profile-content" role="tabpanel" aria-label="Tab Content">
-          <div 
-            id="basic-tab"
-            role="tabpanel"
-            aria-labelledby="basic-tab"
-            hidden={activeTab !== "basic"}
-          >
-            {activeTab === "basic" && renderProfileContent()}
-          </div>
-          <div 
-            id="address-tab"
-            role="tabpanel"
-            aria-labelledby="address-tab"
-            hidden={activeTab !== "address"}
-          >
-            {activeTab === "address" && renderProfileContent()}
-          </div>
-          <div 
-            id="security-tab"
-            role="tabpanel"
-            aria-labelledby="security-tab"
-            hidden={activeTab !== "security"}
-          >
-            {activeTab === "security" && renderProfileContent()}
-          </div>
-        </div>
+      <Form form={form} onFinish={handleSubmit} layout="vertical">
+        {renderProfileContent()}
       </Form>
-
       <Modal
         title="Đổi mật khẩu"
         open={passwordModalVisible}
-        onCancel={() => setPasswordModalVisible(false)}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+        }}
         footer={null}
-        centered
-        className="password-modal"
-        width={screenSize.is4k ? 600 : screenSize.isMobileL || screenSize.isMobileM || screenSize.isMobileS ? "95%" : 520}
       >
-        <Form
-          layout="vertical"
-          onFinish={handlePasswordChange}
-          form={passwordForm}
-        >
+        <Form form={passwordForm} onFinish={handlePasswordChange} layout="vertical">
           <Form.Item
             label="Mật khẩu hiện tại"
             name="currentPassword"
-            rules={[
-              { required: true, message: "Vui lòng nhập mật khẩu hiện tại!" },
-              { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự!" },
-            ]}
+            rules={[{ required: true, message: "Nhập mật khẩu hiện tại!" }]}
           >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Nhập mật khẩu hiện tại"
-              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-            />
+            <Input.Password prefix={<LockOutlined />} />
           </Form.Item>
-
-          <Divider />
-
           <Form.Item
             label="Mật khẩu mới"
             name="newPassword"
-            rules={[
-              { required: true, message: "Vui lòng nhập mật khẩu mới!" },
-              { min: 8, message: "Mật khẩu phải có ít nhất 8 ký tự!" },
-            ]}
+            rules={[{ required: true, message: "Nhập mật khẩu mới!" }]}
           >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Nhập mật khẩu mới"
-              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-            />
+            <Input.Password prefix={<LockOutlined />} />
           </Form.Item>
-
           <Form.Item
-            label="Xác nhận mật khẩu mới"
+            label="Xác nhận mật khẩu"
             name="confirmPassword"
-            dependencies={["newPassword"]}
             rules={[
-              { required: true, message: "Vui lòng xác nhận mật khẩu mới!" },
+              { required: true, message: "Xác nhận mật khẩu!" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue("newPassword") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(
-                    new Error("Mật khẩu xác nhận không khớp!")
-                  );
+                  return Promise.reject("Mật khẩu không khớp!");
                 },
               }),
             ]}
           >
-            <Input.Password
-              prefix={<LockOutlined />}
-              placeholder="Xác nhận mật khẩu mới"
-              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-            />
+            <Input.Password prefix={<LockOutlined />} />
           </Form.Item>
-
-          <div className="modal-buttons">
-            <Button
-              key="cancel"
-              onClick={() => {
-                setPasswordModalVisible(false);
-                passwordForm.resetFields();
-              }}
-              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-            >
-              Hủy
-            </Button>
-            <Button
-              style={{ marginLeft: 10 }}
-              key="submit"
-              type="primary"
-              htmlType="submit"
-              loading={changePasswordLoading}
-              size={screenSize.is4k ? "large" : screenSize.isMobileM || screenSize.isMobileS ? "small" : "middle"}
-            >
-              Xác nhận
-            </Button>
-          </div>
+          <Button type="primary" htmlType="submit" loading={changePasswordLoading}>
+            Xác nhận
+          </Button>
         </Form>
       </Modal>
     </div>
   );
 };
+
 export default UserProfile;
