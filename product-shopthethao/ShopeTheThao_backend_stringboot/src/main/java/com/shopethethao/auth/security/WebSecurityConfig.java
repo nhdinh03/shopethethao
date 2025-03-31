@@ -29,7 +29,6 @@ import com.shopethethao.auth.security.user.service.UserDetailsServiceImpl;
 public class WebSecurityConfig {
 
     private final OAuth2AuthenticationSuccessHandler OAuth2AuthenticationSuccessHandler;
-
     private final CustomOAuth2UserService customOAuth2UserService;
 
     @Autowired
@@ -38,7 +37,8 @@ public class WebSecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
-    WebSecurityConfig(CustomOAuth2UserService customOAuth2UserService, OAuth2AuthenticationSuccessHandler OAuth2AuthenticationSuccessHandler) {
+    WebSecurityConfig(CustomOAuth2UserService customOAuth2UserService, 
+                     OAuth2AuthenticationSuccessHandler OAuth2AuthenticationSuccessHandler) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.OAuth2AuthenticationSuccessHandler = OAuth2AuthenticationSuccessHandler;
     }
@@ -68,32 +68,19 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ Bật CORS đúng cách
-                .csrf(csrf -> csrf.disable())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/**", "/api/accounts/**", "/api/auth/**", "/api/auth/regenerate-otp/**",
-                            "/users/me/**", "/api/upload/**",
-                            "/api/productimages/**", "/api/lockreasons/**", "/api/cancelreason/**",
-                            "/api/accountRole/**", "/api/accountStaff/**", "/api/brands/**", "/api/cancel-reason/**",
-                            "/api/categories/**", "/api/comment/**", "/api/detailedInvoices/**", "/api/invoice/**",
-                            "/api/productattributemappings/**", "/api/productattributes/**", "/api/products/**",
-                            "/api/productsizes/**", "/api/receiptproduct/**", "/api/role/**", "/api/size/**",
-                            "/api/stockReceipts/**", "/api/suppliers/**", "/api/userhistory-sse/**","/",
-                            "/api/verifications/**", "/oauth2/**", "/login/oauth2/code/**").permitAll();
-
-                    auth.requestMatchers("/test/test/**").permitAll();
-                    auth.anyRequest().authenticated();
-                }).oauth2Login(oauth2 -> oauth2
-                    .loginPage("/oauth2/authorization/google") // Default login page for Google OAuth2
-                    .defaultSuccessUrl("http://localhost:3000/", true) // Redirect after successful login
-                    .failureUrl("/login?error=true") // Redirect after failed login
-                    .userInfoEndpoint(userInfo -> userInfo
-                        .userService(customOAuth2UserService))
-                    .successHandler(OAuth2AuthenticationSuccessHandler)
-                );
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> {
+                auth.requestMatchers("/**").permitAll();
+                auth.anyRequest().authenticated();
+            })
+            .oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService))
+                .successHandler(OAuth2AuthenticationSuccessHandler)
+            );
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -105,7 +92,6 @@ public class WebSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
-        // Allow origins
         config.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
             "http://192.168.1.21:3000",
@@ -117,12 +103,6 @@ public class WebSecurityConfig {
         
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("*"));
-        config.setExposedHeaders(Arrays.asList(
-            "Content-Type",
-            "Authorization",
-            "Access-Control-Allow-Origin",
-            "Access-Control-Allow-Credentials"
-        ));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
     

@@ -1,5 +1,11 @@
 package com.shopethethao.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,11 +13,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
 public class UserHistorySSEService {
@@ -25,15 +26,15 @@ public class UserHistorySSEService {
         return t;
     });
 
-    private static final long TIMEOUT = 60 * 1000L; // 1 phút
-    private static final long HEARTBEAT_DELAY = 10; // 10 giây
+    private static final long TIMEOUT = 120_000L; // 2 phút
+    private static final long HEARTBEAT_DELAY = 30; // 30 giây
     private static final int MAX_EMITTERS = 100;
 
     public UserHistorySSEService() {
         heartbeatExecutor.scheduleAtFixedRate(this::sendHeartbeat, 0, HEARTBEAT_DELAY, TimeUnit.SECONDS);
     }
 
-    @jakarta.annotation.PreDestroy
+    @PreDestroy
     public void shutdown() {
         heartbeatExecutor.shutdown();
         try {
@@ -44,8 +45,8 @@ public class UserHistorySSEService {
             logger.error("Error shutting down heartbeat executor", e);
             Thread.currentThread().interrupt();
         }
-        authEmitters.clear();
-        adminEmitters.clear();
+        completeAllEmitters(authEmitters, "auth");
+        completeAllEmitters(adminEmitters, "admin");
     }
 
     public SseEmitter createAuthEmitter() {
@@ -57,27 +58,48 @@ public class UserHistorySSEService {
     }
 
     private SseEmitter createEmitter(CopyOnWriteArrayList<SseEmitter> emitters, boolean isAuth) {
+        cleanDeadEmitters(emitters, isAuth); // Dọn dẹp trước khi tạo emitter mới
+
         if (emitters.size() >= MAX_EMITTERS) {
-            logger.warn("Max emitters reached ({}), removing oldest emitter", MAX_EMITTERS);
-            SseEmitter oldest = emitters.remove(0);
-            oldest.complete();
+            logger.warn("Max emitters reached ({}), removing oldest emitter for {}", MAX_EMITTERS,
+                    isAuth ? "auth" : "admin");
+            completeEmitter(emitters.remove(0));
         }
 
         SseEmitter emitter = new SseEmitter(TIMEOUT);
         emitters.add(emitter);
 
-        emitter.onCompletion(() -> emitters.remove(emitter));
-        emitter.onTimeout(() -> emitters.remove(emitter));
-        emitter.onError(e -> emitters.remove(emitter));
+        setupEmitterCallbacks(emitter, emitters, isAuth);
 
         try {
-            emitter.send(SseEmitter.event().name("INIT").data("Connection established").reconnectTime(5000));
+            emitter.send(SseEmitter.event()
+                    .name("INIT")
+                    .data("Connection established")
+                    .reconnectTime(5000));
+            logger.debug("Successfully initialized {} emitter", isAuth ? "auth" : "admin");
         } catch (IOException e) {
-            // logger.error("Failed to initialize {} emitter", isAuth ? "auth" : "admin", e);
+            logger.debug("Failed to initialize {} emitter due to client disconnection: {}", 
+                    isAuth ? "auth" : "admin", e.getMessage());
             emitters.remove(emitter);
-            emitter.completeWithError(e);
+            completeEmitter(emitter); // Hoàn tất emitter mà không ném lỗi
+            return null;
         }
         return emitter;
+    }
+
+    private void setupEmitterCallbacks(SseEmitter emitter, CopyOnWriteArrayList<SseEmitter> emitters, boolean isAuth) {
+        emitter.onCompletion(() -> {
+            emitters.remove(emitter);
+            logger.debug("Emitter completed for {}", isAuth ? "auth" : "admin");
+        });
+        emitter.onTimeout(() -> {
+            emitters.remove(emitter);
+            logger.debug("Emitter timed out for {}", isAuth ? "auth" : "admin");
+        });
+        emitter.onError(e -> {
+            emitters.remove(emitter);
+            logger.debug("Emitter error for {}: {}", isAuth ? "auth" : "admin", e.getMessage());
+        });
     }
 
     private void sendHeartbeat() {
@@ -87,43 +109,75 @@ public class UserHistorySSEService {
 
     private void sendToEmitters(List<SseEmitter> emitters, String eventName, Object data, boolean isAuth) {
         List<SseEmitter> deadEmitters = new ArrayList<>();
+
         for (SseEmitter emitter : emitters) {
+            if (emitter == null) {
+                deadEmitters.add(emitter);
+                continue;
+            }
             try {
-                if (emitter != null) {
-                    synchronized (emitter) {
-                        emitter.send(SseEmitter.event()
-                                .name(eventName)
-                                .data(data)
-                                .id(String.valueOf(System.currentTimeMillis()))
-                                .reconnectTime(5000));
-                    }
-                }
+                emitter.send(SseEmitter.event()
+                        .name(eventName)
+                        .data(data)
+                        .id(String.valueOf(System.currentTimeMillis()))
+                        .reconnectTime(5000));
             } catch (IOException e) {
-                // deadEmitters.add(emitter);
-                // logger.debug("Client disconnected, failed to send {} to {} emitter: {}",
-                //         eventName, isAuth ? "auth" : "admin", e.getMessage());
+                // Client ngắt kết nối (reload trang), xử lý im lặng
+                deadEmitters.add(emitter);
+                completeEmitter(emitter); // Hoàn tất emitter ngay lập tức
+                logger.debug("Client disconnected while sending {} to {} emitter", eventName, isAuth ? "auth" : "admin");
             } catch (IllegalStateException e) {
-                // deadEmitters.add(emitter);
-                // logger.debug("Emitter already completed or timed out for {}: {}",
-                //         isAuth ? "auth" : "admin", e.getMessage());
+                deadEmitters.add(emitter);
+                completeEmitter(emitter); // Hoàn tất emitter ngay lập tức
+                logger.debug("Emitter completed or timed out while sending {} to {}", eventName, isAuth ? "auth" : "admin");
             } catch (Exception e) {
-                // deadEmitters.add(emitter);
-                // logger.debug("Unexpected error sending {} to {} emitter: {}",
-                //         eventName, isAuth ? "auth" : "admin", e.getMessage());
+                deadEmitters.add(emitter);
+                logger.error("Unexpected error sending {} to {} emitter: {}", eventName, isAuth ? "auth" : "admin", e.getMessage());
             }
         }
 
         if (!deadEmitters.isEmpty()) {
             emitters.removeAll(deadEmitters);
-            deadEmitters.forEach(emitter -> {
-                try {
-                    emitter.complete();
-                } catch (Exception e) {
-                    logger.debug("Failed to complete dead emitter: {}", e.getMessage());
-                }
-            });
             logger.debug("Removed {} dead {} emitters", deadEmitters.size(), isAuth ? "auth" : "admin");
         }
+    }
+
+    private void cleanDeadEmitters(List<SseEmitter> emitters, boolean isAuth) {
+        List<SseEmitter> deadEmitters = new ArrayList<>();
+        for (SseEmitter emitter : emitters) {
+            if (emitter == null) {
+                deadEmitters.add(emitter);
+                continue;
+            }
+            try {
+                // Kiểm tra emitter còn hoạt động không bằng cách gửi một sự kiện thử nghiệm
+                emitter.send(SseEmitter.event().comment("test"));
+            } catch (IOException | IllegalStateException e) {
+                deadEmitters.add(emitter);
+                completeEmitter(emitter); // Hoàn tất emitter ngay nếu không hoạt động
+                logger.debug("Cleaned inactive {} emitter: {}", isAuth ? "auth" : "admin", e.getMessage());
+            }
+        }
+        if (!deadEmitters.isEmpty()) {
+            emitters.removeAll(deadEmitters);
+            logger.debug("Cleaned {} dead/inactive {} emitters", deadEmitters.size(), isAuth ? "auth" : "admin");
+        }
+    }
+
+    private void completeEmitter(SseEmitter emitter) {
+        if (emitter != null) {
+            try {
+                emitter.complete();
+            } catch (Exception e) {
+                logger.debug("Failed to complete emitter: {}", e.getMessage());
+            }
+        }
+    }
+
+    private void completeAllEmitters(List<SseEmitter> emitters, String type) {
+        emitters.forEach(this::completeEmitter);
+        emitters.clear();
+        logger.debug("Completed all {} emitters", type);
     }
 
     public void notifyAuthActivity(Object data) {
@@ -143,39 +197,16 @@ public class UserHistorySSEService {
     }
 
     public void removeEmittersForUser(String userId) {
-        List<SseEmitter> toRemoveAuth = new ArrayList<>();
-        List<SseEmitter> toRemoveAdmin = new ArrayList<>();
+        List<SseEmitter> toRemoveAuth = new ArrayList<>(authEmitters);
+        List<SseEmitter> toRemoveAdmin = new ArrayList<>(adminEmitters);
 
-        authEmitters.forEach(emitter -> {
-            try {
-                emitter.complete();
-                toRemoveAuth.add(emitter);
-            } catch (Exception e) {
-                logger.debug("Error completing auth emitter for user {}: {}", userId, e.getMessage());
-                toRemoveAuth.add(emitter);
-            }
-        });
+        toRemoveAuth.forEach(this::completeEmitter);
+        toRemoveAdmin.forEach(this::completeEmitter);
 
-        adminEmitters.forEach(emitter -> {
-            try {
-                emitter.complete();
-                toRemoveAdmin.add(emitter);
-            } catch (Exception e) {
-                logger.debug("Error completing admin emitter for user {}: {}", userId, e.getMessage());
-                toRemoveAdmin.add(emitter);
-            }
-        });
+        authEmitters.removeAll(toRemoveAuth);
+        adminEmitters.removeAll(toRemoveAdmin);
 
-        if (!toRemoveAuth.isEmpty()) {
-            authEmitters.removeAll(toRemoveAuth);
-            logger.debug("Removed {} auth emitters for user {}", toRemoveAuth.size(), userId);
-        }
-
-        if (!toRemoveAdmin.isEmpty()) {
-            adminEmitters.removeAll(toRemoveAdmin);
-            logger.debug("Removed {} admin emitters for user {}", toRemoveAdmin.size(), userId);
-        }
-
-        logger.info("Cleaned up SSE emitters for user {}", userId);
+        logger.info("Cleaned up {} auth and {} admin emitters for user {}",
+                toRemoveAuth.size(), toRemoveAdmin.size(), userId);
     }
 }
