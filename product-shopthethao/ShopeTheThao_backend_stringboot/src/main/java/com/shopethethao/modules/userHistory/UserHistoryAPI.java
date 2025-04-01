@@ -28,15 +28,15 @@ public class UserHistoryAPI {
     @Autowired
     UserHistoryDAO userHistoriesDAO;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserHistoryAPI.class);
-    private final UserHistoryService userHistoryService;
-    private final UserHistorySSEService sseService;
-
     @Autowired
     public UserHistoryAPI(UserHistoryService userHistoryService, UserHistorySSEService sseService) {
         this.userHistoryService = userHistoryService;
         this.sseService = sseService;
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(UserHistoryAPI.class);
+    private final UserHistoryService userHistoryService;
+    private final UserHistorySSEService sseService;
 
     @GetMapping("/get/all")
     public ResponseEntity<List<UserHistoryDTO>> findAll() {
@@ -75,11 +75,16 @@ public class UserHistoryAPI {
         logger.info("New auth activities SSE connection from: {}", clientIp);
 
         SseEmitter emitter = sseService.createAuthEmitter();
+        if (emitter == null) {
+            logger.debug("Failed to create auth emitter for {}, client may have disconnected", clientIp);
+            return new SseEmitter(0L); // Trả về emitter rỗng để kết thúc ngay
+        }
+
         try {
             userHistoryService.sendInitialAuthActivitiesToEmitter(emitter);
         } catch (Exception e) {
             logger.debug("Failed to send initial auth activities to {}: {}", clientIp, e.getMessage());
-            emitter.completeWithError(e); // Hoàn tất emitter để tránh lỗi async lan truyền
+            emitter.completeWithError(e);
         }
 
         logger.info("Auth emitters count: {}", sseService.getAuthEmitterCount());
@@ -92,11 +97,16 @@ public class UserHistoryAPI {
         logger.info("New admin activities SSE connection from: {}", clientIp);
 
         SseEmitter emitter = sseService.createAdminEmitter();
+        if (emitter == null) {
+            logger.debug("Failed to create admin emitter for {}, client may have disconnected", clientIp);
+            return new SseEmitter(0L); // Trả về emitter rỗng để kết thúc ngay
+        }
+
         try {
             userHistoryService.sendInitialAdminActivitiesToEmitter(emitter);
         } catch (Exception e) {
             logger.debug("Failed to send initial admin activities to {}: {}", clientIp, e.getMessage());
-            emitter.completeWithError(e); // Hoàn tất emitter để tránh lỗi async lan truyền
+            emitter.completeWithError(e);
         }
 
         logger.info("Admin emitters count: {}", sseService.getAdminEmitterCount());
@@ -160,7 +170,6 @@ public class UserHistoryAPI {
         }
     }
 
-    
     @GetMapping("/unread-count")
     public ResponseEntity<?> getUnreadCount() {
         try {

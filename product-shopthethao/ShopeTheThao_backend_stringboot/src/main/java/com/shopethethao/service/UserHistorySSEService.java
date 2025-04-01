@@ -1,11 +1,5 @@
 package com.shopethethao.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import jakarta.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +7,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import jakarta.annotation.PreDestroy;
 
 @Service
 public class UserHistorySSEService {
@@ -27,7 +28,7 @@ public class UserHistorySSEService {
     });
 
     private static final long TIMEOUT = 120_000L; // 2 phút
-    private static final long HEARTBEAT_DELAY = 30; // 30 giây
+    private static final long HEARTBEAT_DELAY = 5; // 5 giây
     private static final int MAX_EMITTERS = 100;
 
     public UserHistorySSEService() {
@@ -58,7 +59,7 @@ public class UserHistorySSEService {
     }
 
     private SseEmitter createEmitter(CopyOnWriteArrayList<SseEmitter> emitters, boolean isAuth) {
-        cleanDeadEmitters(emitters, isAuth); // Dọn dẹp trước khi tạo emitter mới
+        cleanDeadEmitters(emitters, isAuth);
 
         if (emitters.size() >= MAX_EMITTERS) {
             logger.warn("Max emitters reached ({}), removing oldest emitter for {}", MAX_EMITTERS,
@@ -81,7 +82,7 @@ public class UserHistorySSEService {
             logger.debug("Failed to initialize {} emitter due to client disconnection: {}", 
                     isAuth ? "auth" : "admin", e.getMessage());
             emitters.remove(emitter);
-            completeEmitter(emitter); // Hoàn tất emitter mà không ném lỗi
+            completeEmitter(emitter);
             return null;
         }
         return emitter;
@@ -103,8 +104,13 @@ public class UserHistorySSEService {
     }
 
     private void sendHeartbeat() {
-        sendToEmitters(authEmitters, "HEARTBEAT", "ping", true);
-        sendToEmitters(adminEmitters, "HEARTBEAT", "ping", false);
+        try {
+            sendToEmitters(authEmitters, "HEARTBEAT", "ping", true);
+            sendToEmitters(adminEmitters, "HEARTBEAT", "ping", false);
+        } catch (Exception e) {
+            logger.debug("Error in heartbeat: {}", e.getMessage());
+            // Không ném lỗi ra ngoài để tránh lan truyền lên stack trace
+        }
     }
 
     private void sendToEmitters(List<SseEmitter> emitters, String eventName, Object data, boolean isAuth) {
@@ -122,17 +128,20 @@ public class UserHistorySSEService {
                         .id(String.valueOf(System.currentTimeMillis()))
                         .reconnectTime(5000));
             } catch (IOException e) {
-                // Client ngắt kết nối (reload trang), xử lý im lặng
+                logger.debug("Client disconnected while sending {} to {} emitter: {}", 
+                        eventName, isAuth ? "auth" : "admin", e.getMessage());
                 deadEmitters.add(emitter);
-                completeEmitter(emitter); // Hoàn tất emitter ngay lập tức
-                logger.debug("Client disconnected while sending {} to {} emitter", eventName, isAuth ? "auth" : "admin");
+                completeEmitter(emitter);
             } catch (IllegalStateException e) {
+                logger.debug("Emitter completed or timed out while sending {} to {}: {}", 
+                        eventName, isAuth ? "auth" : "admin", e.getMessage());
                 deadEmitters.add(emitter);
-                completeEmitter(emitter); // Hoàn tất emitter ngay lập tức
-                logger.debug("Emitter completed or timed out while sending {} to {}", eventName, isAuth ? "auth" : "admin");
+                completeEmitter(emitter);
             } catch (Exception e) {
+                logger.debug("Unexpected error while sending {} to {} emitter: {}", 
+                        eventName, isAuth ? "auth" : "admin", e.getMessage());
                 deadEmitters.add(emitter);
-                logger.error("Unexpected error sending {} to {} emitter: {}", eventName, isAuth ? "auth" : "admin", e.getMessage());
+                completeEmitter(emitter);
             }
         }
 
@@ -150,12 +159,17 @@ public class UserHistorySSEService {
                 continue;
             }
             try {
-                // Kiểm tra emitter còn hoạt động không bằng cách gửi một sự kiện thử nghiệm
                 emitter.send(SseEmitter.event().comment("test"));
-            } catch (IOException | IllegalStateException e) {
+            } catch (IOException e) {
+                logger.debug("Cleaned inactive {} emitter due to disconnection: {}", 
+                        isAuth ? "auth" : "admin", e.getMessage());
                 deadEmitters.add(emitter);
-                completeEmitter(emitter); // Hoàn tất emitter ngay nếu không hoạt động
-                logger.debug("Cleaned inactive {} emitter: {}", isAuth ? "auth" : "admin", e.getMessage());
+                completeEmitter(emitter);
+            } catch (IllegalStateException e) {
+                logger.debug("Cleaned timed out {} emitter: {}", 
+                        isAuth ? "auth" : "admin", e.getMessage());
+                deadEmitters.add(emitter);
+                completeEmitter(emitter);
             }
         }
         if (!deadEmitters.isEmpty()) {

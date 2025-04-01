@@ -15,7 +15,6 @@ class UserHistorySSEService {
       admin: [],
     };
 
-    // Đóng kết nối khi unload hoặc reload trang
     window.addEventListener("beforeunload", () => {
       this.closeAllConnections();
     });
@@ -46,9 +45,7 @@ class UserHistorySSEService {
       this.connectToAdminStream();
     }
     return () => {
-      this.callbacks.admin = this.callbacks.admin.filter(
-        (cb) => cb !== callback
-      );
+      this.callbacks.admin = this.callbacks.admin.filter((cb) => cb !== callback);
       if (this.callbacks.admin.length === 0) {
         this.closeAdminConnection();
       }
@@ -59,90 +56,70 @@ class UserHistorySSEService {
     if (this.isAuthConnecting) return;
     this.isAuthConnecting = true;
 
-    const url = new URL(
-      "http://localhost:8081/api/userhistory-sse/stream/auth-activities"
-    );
+    const url = new URL("http://localhost:8081/api/userhistory-sse/stream/auth-activities");
     url.searchParams.append("t", Date.now());
 
-    try {
-      this.authEventSource = new EventSource(url);
+    this.authEventSource = new EventSource(url);
 
-      this.authEventSource.onopen = () => {
-        console.debug("Auth SSE connection established");
-        this.reconnectAttempt = 0;
-        this.isAuthConnecting = false;
-      };
+    this.authEventSource.onopen = () => {
+      console.debug("Auth SSE connection established");
+      this.reconnectAttempt = 0;
+      this.isAuthConnecting = false;
+    };
 
-      this.authEventSource.addEventListener("AUTH_ACTIVITY", (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          this.lastAuthData = this.mergeReadStatus(
-            this.lastAuthData?.content,
-            data.content
-          );
-          this.callbacks.auth.forEach((cb) => cb(data));
-        } catch (error) {
-          console.error("Error parsing AUTH_ACTIVITY:", error);
-        }
-      });
+    this.authEventSource.addEventListener("AUTH_ACTIVITY", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        this.lastAuthData = this.mergeReadStatus(this.lastAuthData?.content, data.content);
+        this.callbacks.auth.forEach((cb) => cb(data));
+      } catch (error) {
+        console.error("Error parsing AUTH_ACTIVITY:", error);
+      }
+    });
 
-      this.authEventSource.addEventListener("HEARTBEAT", () => {
-        console.debug("Auth SSE heartbeat received");
-      });
+    this.authEventSource.addEventListener("HEARTBEAT", () => {
+      console.debug("Auth SSE heartbeat received");
+    });
 
-      this.authEventSource.onerror = () => {
-        console.debug("Auth SSE connection lost");
-        this.handleReconnect("auth", this.connectToAuthStream.bind(this));
-      };
-    } catch (error) {
-      console.error("Error creating Auth SSE:", error);
+    this.authEventSource.onerror = () => {
+      console.debug("Auth SSE connection lost");
       this.handleReconnect("auth", this.connectToAuthStream.bind(this));
-    }
+    };
   }
 
   connectToAdminStream() {
     if (this.isAdminConnecting) return;
     this.isAdminConnecting = true;
 
-    const url = new URL(
-      "http://localhost:8081/api/userhistory-sse/stream/admin-activities"
-    );
+    const url = new URL("http://localhost:8081/api/userhistory-sse/stream/admin-activities");
     url.searchParams.append("t", Date.now());
 
-    try {
-      this.adminEventSource = new EventSource(url);
+    this.adminEventSource = new EventSource(url);
 
-      this.adminEventSource.onopen = () => {
-        console.debug("Admin SSE connection established");
-        this.reconnectAttempt = 0;
-        this.isAdminConnecting = false;
-      };
+    this.adminEventSource.onopen = () => {
+      console.debug("Admin SSE connection established");
+      this.reconnectAttempt = 0;
+      this.isAdminConnecting = false;
+    };
 
-      this.adminEventSource.addEventListener("ADMIN_ACTIVITY", (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          this.lastAdminData = this.mergeReadStatus(
-            this.lastAdminData?.content,
-            data.content
-          );
-          this.callbacks.admin.forEach((cb) => cb(data));
-        } catch (error) {
-          console.error("Error parsing ADMIN_ACTIVITY:", error);
-        }
-      });
+    this.adminEventSource.addEventListener("ADMIN_ACTIVITY", (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        this.lastAdminData = this.mergeReadStatus(this.lastAdminData?.content, data.content);
+        this.callbacks.admin.forEach((cb) => cb(data));
+      } catch (error) {
+        console.error("Error parsing ADMIN_ACTIVITY:", error);
+      }
+    });
 
-      this.adminEventSource.addEventListener("HEARTBEAT", () => {
-        console.debug("Admin SSE heartbeat received");
-      });
+    this.adminEventSource.addEventListener("HEARTBEAT", () => {
+      console.debug("Admin SSE heartbeat received");
+    });
 
-      this.adminEventSource.onerror = () => {
-        console.debug("Admin SSE connection lost");
-        this.handleReconnect("admin", this.connectToAdminStream.bind(this));
-      };
-    } catch (error) {
-      console.error("Error creating Admin SSE:", error);
+    this.adminEventSource.onerror = () => {
+      console.debug("Admin SSE connection lost");
       this.handleReconnect("admin", this.connectToAdminStream.bind(this));
-    }
+    };
   }
 
   handleReconnect(type, reconnectFn) {
@@ -152,11 +129,7 @@ class UserHistorySSEService {
 
     if (this.reconnectAttempt < this.maxReconnectAttempts) {
       const delay = this.calculateReconnectDelay();
-      console.debug(
-        `Reconnecting ${type} SSE in ${delay}ms (attempt ${
-          this.reconnectAttempt + 1
-        })`
-      );
+      console.debug(`Reconnecting ${type} SSE in ${delay}ms (attempt ${this.reconnectAttempt + 1})`);
       this.reconnectTimeouts[type] = setTimeout(() => {
         this.reconnectAttempt++;
         reconnectFn();
@@ -168,20 +141,13 @@ class UserHistorySSEService {
 
   mergeReadStatus(oldItems = [], newItems = []) {
     return newItems.map((newItem) => {
-      const oldItem = oldItems.find(
-        (item) => item.idHistory === newItem.idHistory
-      );
-      return oldItem?.readStatus === 1
-        ? { ...newItem, readStatus: 1 }
-        : newItem;
+      const oldItem = oldItems.find((item) => item.idHistory === newItem.idHistory);
+      return oldItem?.readStatus === 1 ? { ...newItem, readStatus: 1 } : newItem;
     });
   }
 
   calculateReconnectDelay() {
-    const expBackoff = Math.min(
-      30000,
-      this.baseReconnectDelay * Math.pow(2, this.reconnectAttempt)
-    );
+    const expBackoff = Math.min(30000, this.baseReconnectDelay * Math.pow(2, this.reconnectAttempt));
     const jitter = expBackoff * 0.2 * (Math.random() * 2 - 1);
     return Math.floor(expBackoff + jitter);
   }
@@ -211,5 +177,6 @@ class UserHistorySSEService {
     this.closeAdminConnection();
   }
 }
+
 
 export const userHistorySSE = new UserHistorySSEService();
