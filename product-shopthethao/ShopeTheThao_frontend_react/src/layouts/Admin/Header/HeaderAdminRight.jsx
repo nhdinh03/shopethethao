@@ -26,12 +26,17 @@ function HeaderAdminRight() {
       if (userLocalData.image) {
         const imgUrl = `http://localhost:8081/api/upload/${userLocalData.image}`;
         setImageUrl(imgUrl);
+        console.log(userLocalData);
+        console.log(imgUrl);
+        
       }
     }
   }, []);
   const getImageUrl = (imageName) => {
     if (!imageName) return "";
     const url = `http://localhost:8081/api/upload/${imageName}`;
+    console.log(imageName);
+    
     return url;
   };
 
