@@ -53,6 +53,79 @@
       }
     }
   }
+
+  // --- START: NEW Mobile Menu Font Sizes ---
+  // Moved from header.scss - Base sizes for tablet/mobile range
+  .mobile-menu {
+    --menu-font-base: var(--mobile-font-size-base, 15px);
+    --menu-font-sm: var(--mobile-font-size-sm, 13px);
+    --menu-font-xs: var(--mobile-font-size-xs, 11px);
+    --menu-font-xxs: 10px; // Extra small for tags/badges
+
+    .mobile-menu__header { // Renamed header block
+      .nav-header {
+        h3 { font-size: 1rem; } // 16px title
+        .brand-logo h2 { font-size: 1.3rem; }
+        .back-button svg, .close-button svg { font-size: 1.2rem; }
+      }
+    }
+
+    .user-profile-bar {
+      .user-info {
+        .name { font-size: 1rem; } // 16px
+        .welcome { font-size: var(--menu-font-sm); } // 13px
+      }
+      .profile-action { font-size: var(--menu-font-sm); } // 13px
+      .guest-user .auth-actions {
+        .login-btn, .register-btn { font-size: 0.9rem; } // ~14.4px
+      }
+    }
+
+    .mobile-nav-wrapper { // Renamed content wrapper
+      .section-title {
+        font-size: var(--menu-font-xs); // 11px
+        letter-spacing: 0.8px;
+      }
+
+      .menu-item {
+        .item-button, .item-link {
+          .item-name { font-size: var(--menu-font-base); } // 15px standard
+          .item-tag { font-size: var(--menu-font-xxs); } // 10px tag
+          .icon-right { font-size: 1rem; } // 16px arrow
+        }
+      }
+
+      .featured-section .featured-overlay {
+        h5 { font-size: 1.05rem; } // ~17px
+        p { font-size: var(--menu-font-sm); } // 13px
+        .featured-btn { font-size: var(--menu-font-sm); } // 13px
+      }
+
+      .quick-links-section .quick-links .quick-link {
+        font-size: var(--menu-font-xs); // 11px
+      }
+
+      .outlet-section .outlet-card {
+        h4 { font-size: 1.1rem; } // ~17.6px
+        p { font-size: 0.9rem; } // ~14.4px
+        .outlet-button { font-size: 0.9rem; } // ~14.4px
+      }
+
+      .quick-actions-section .quick-actions .action-tile {
+        .action-icon { font-size: 1.4rem; } // ~22px
+        .action-name { font-size: var(--menu-font-xs); } // 11px
+        .count-badge { font-size: var(--menu-font-xxs); width: 16px; height: 16px; } // 10px badge
+      }
+    }
+
+    .mobile-menu-footer { // Renamed footer block
+      .social-links a, .contact-info a {
+        font-size: var(--menu-font-sm); // 13px
+        svg { font-size: 1rem; } // 16px icons
+      }
+    }
+  }
+  // --- END: NEW Mobile Menu Font Sizes ---
 }
 
 // Tablet breakpoint
@@ -314,134 +387,117 @@
       }
     }
   }
-}
 
-// Small mobile devices 
-@media (max-width: 360px) {
+  // --- Adjust NEW Mobile Menu Font Sizes for smaller screens ---
   .mobile-menu {
-    .mobile-menu-header {
-      height: 50px;
-      margin-bottom: 10px;
+    --menu-font-base: 14px; // Slightly smaller base for small mobile
+    --menu-font-sm: 12px;
+    --menu-font-xs: 11px; // Keep smallest title size reasonable
+    --menu-font-xxs: 10px;
 
-      .menu-logo h2 {
-        font-size: 1rem;
-      }
-
-      .menu-brand h2 {
-        font-size: 1.1rem;
-      }
-
-      .close-menu,
-      .back-button {
-        width: 34px;
-        height: 34px;
-      }
-
-      .close-menu {
-        width: 36px;
-        height: 36px;
-
-        svg {
-          font-size: 18px;
-        }
-      }
+    .mobile-menu__header .nav-header { // Use new BEM class
+        h3 { font-size: 0.95rem; } // ~15px
+        .brand-logo h2 { font-size: 1.2rem; }
     }
 
-    .mobile-nav .menu-content {
-      padding: 8px;
-      
-      .main-menu li .menu-item,
-      .submenu-groups li .group-button,
-      .group-items li .menu-link {
-        padding: 10px;
-        font-size: 0.8rem;
-      }
-      
-      .mobile-quick-links {
-        .mobile-quick-link {
-          padding: 8px;
-          font-size: 0.75rem;
-          min-width: 100%;
-          margin-bottom: 4px;
+    .user-profile-bar {
+        .user-info {
+           .name { font-size: 0.95rem; } // ~15px
+           .welcome { font-size: var(--menu-font-sm); } // 12px
         }
-      }
+        .guest-user .auth-actions {
+            .login-btn, .register-btn { font-size: 0.85rem; } // ~13.6px
+        }
     }
 
-    .mobile-menu-footer {
-      padding: 10px;
-
-      .user-actions-mobile {
-        grid-template-columns: 1fr;
-
-        .action-btn {
-          flex-direction: row;
-          justify-content: flex-start;
-          padding: 8px 10px;
-
-          svg {
-            margin-right: 8px;
-            width: 18px;
-            height: 18px;
+    .mobile-nav-wrapper { // Use new BEM class
+       .menu-item {
+          .item-button, .item-link {
+             .item-name { font-size: var(--menu-font-base); } // 14px item
           }
-
-          span {
-            font-size: 0.75rem;
-          }
-
-          .count-indicator {
-            width: 16px;
-            height: 16px;
-            font-size: 0.7rem;
-          }
+       }
+        .featured-section .featured-overlay {
+           h5 { font-size: 1rem; } // 16px
+           p { font-size: var(--menu-font-sm); } // 12px
+           .featured-btn { font-size: var(--menu-font-sm); } // 12px
         }
-      }
-
-      .user-actions-mobile {
-        grid-template-columns: 1fr;
-
-        .action-btn {
-          padding: 10px;
-
-          svg {
-            width: 18px;
-            height: 18px; 
+         .quick-links-section .quick-links .quick-link {
+            font-size: var(--menu-font-xs); // 11px
+         }
+          .outlet-section .outlet-card {
+             h4 { font-size: 1rem; } // 16px
+             p { font-size: 0.85rem; } // ~13.6px
+             .outlet-button { font-size: 0.85rem; } // ~13.6px
           }
-
-          span {
-            font-size: 12px;
-          }
+           .quick-actions-section .quick-actions .action-tile {
+               .action-icon { font-size: 1.3rem; } // ~21px
+               .action-name { font-size: var(--menu-font-xs); } // 11px
+           }
+       }
+        .mobile-menu-footer { // Use new BEM class
+           .social-links a, .contact-info a {
+              font-size: var(--menu-font-sm); // 12px
+           }
         }
-      }
-
-      .mobile-auth-buttons .mobile-btn {
-        padding: 10px;
-        font-size: 13px;
-      }
-
-      .social-links a {
-        padding: 6px 10px;
-        font-size: 12px;
-      }
     }
   }
 
-  .mobile-nav {
-    .submenu-groups li .group-button,
-    .main-menu li .menu-item {
-      padding: 12px;
-      font-size: 13px;
 
-      svg {
-        font-size: 16px;
-      }
-    }
+// Small mobile devices
+@media (max-width: 360px) {
+   .header .mobile-menu { // Target mobile menu specifically
+      // --- Further fine-tune sizes for very small screens ---
+       --menu-font-base: 13px; // Even smaller base
+       --menu-font-sm: 11px;
+       --menu-font-xs: 10px;
+       --menu-font-xxs: 9px;
 
-    .mobile-quick-links .mobile-quick-link {
-      padding: 10px;
-      font-size: 12px;
-      min-width: 100%;
-    }
-  }
+        .mobile-menu__header .nav-header {
+             h3 { font-size: 0.9rem; } // ~14.4px
+             .brand-logo h2 { font-size: 1.1rem; }
+        }
+        .user-profile-bar {
+            .user-info {
+               .name { font-size: 0.9rem; } // ~14.4px
+               .welcome { font-size: var(--menu-font-sm); } // 11px
+            }
+            .guest-user .auth-actions {
+                .login-btn, .register-btn { font-size: 0.8rem; } // ~12.8px
+            }
+        }
+         .mobile-nav-wrapper {
+             .section-title { font-size: var(--menu-font-xs); } // 10px
+             .menu-item {
+                .item-button, .item-link {
+                   .item-name { font-size: var(--menu-font-base); } // 13px item
+                   .item-tag { font-size: var(--menu-font-xxs); } // 9px tag
+                }
+             }
+              .featured-section .featured-overlay {
+                 h5 { font-size: 0.95rem; } // ~15px
+                 p { font-size: var(--menu-font-sm); } // 11px
+                 .featured-btn { font-size: var(--menu-font-sm); } // 11px
+              }
+               .quick-links-section .quick-links .quick-link {
+                  font-size: var(--menu-font-xs); // 10px
+               }
+               .outlet-section .outlet-card {
+                  h4 { font-size: 0.95rem; } // ~15px
+                  p { font-size: 0.8rem; } // ~12.8px
+                  .outlet-button { font-size: 0.8rem; } // ~12.8px
+               }
+                .quick-actions-section .quick-actions .action-tile {
+                    .action-icon { font-size: 1.2rem; } // ~19px
+                    .action-name { font-size: var(--menu-font-xs); } // 10px
+                    .count-badge { font-size: 9px; width: 15px; height: 15px; }
+                }
+         }
+          .mobile-menu-footer {
+             .social-links a, .contact-info a {
+                font-size: var(--menu-font-sm); // 11px
+             }
+          }
+   }
 }
 
 // Safe area insets for notched devices

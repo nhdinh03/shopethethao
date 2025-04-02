@@ -4,7 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        {
+            "type": "java",
+            "name": "ShopeTheThaoApplication",
+            "request": "launch",
+            "mainClass": "com.shopethethao.ShopeTheThaoApplication",
+            "projectName": "ShopeTheThao"
+        },
         {
             "type": "jdk",
             "request": "launch",

@@ -48,6 +48,23 @@
   --container-desktop: 1200px;
   --container-laptop: 900px;
   --container-tablet: 100%;
+
+  // ... existing variables ...
+  --font-size-base: 16px; // Base font size for desktop context
+  --font-size-sm: 14px;
+  --font-size-xs: 12px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+
+  // Mobile specific (can be overridden in responsive)
+  --mobile-font-size-base: 15px;
+  --mobile-font-size-sm: 13px;
+  --mobile-font-size-xs: 11px;
+  // ... add more if needed
+
+  // Update existing font size variables if they conflict or are redundant
+  --gl-body-font-set-size-functional-4: var(--font-size-sm); // Example update
+  --gl-body-font-size-functional-2: var(--font-size-sm); // Example update
 }
 .desktop-nav ul li.has-mega-menu {
   position: static !important; /* Phải static để mega-menu thoát khỏi giới hạn của cha */
@@ -435,7 +452,7 @@ html {
     align-items: center;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 13px;
+    font-size: var(--font-size-xs); // Smaller font for top bar
     position: relative; // Thêm position relative
     z-index: 5;
 
@@ -457,6 +474,7 @@ html {
           color: var(--color-light);
           text-decoration: none;
           transition: var(--transition);
+          font-size: inherit; // Inherit from top-bar
 
           &:hover {
             color: var(--color-accent);
@@ -508,7 +526,7 @@ html {
           cursor: pointer;
           transition: var(--transition);
           text-decoration: none;
-          font-size: 13px;
+          font-size: var(--font-size-xs); // Consistent small size
           font-weight: 500;
           display: inline-flex;
           align-items: center;
@@ -728,7 +746,7 @@ html {
             align-items: center;
             font-family: var(--gl-body-font-family-functional-2),
               var(--gl-font-family-fallback);
-            font-size: var(--gl-body-font-size-functional-2);
+            font-size: var(--font-size-sm); // Standard nav item size
             font-style: var(--gl-body-font-style-functional-2);
             letter-spacing: var(--gl-body-font-letterspacing-functional-2);
             line-height: var(--gl-body-font-lineheight-functional-2);
@@ -827,7 +845,7 @@ html {
             .category-column {
               h4 {
                 color: var(--color-primary);
-                font-size: 16px;
+                font-size: 1rem; // 16px title for categories
                 margin: 0 0 15px;
                 padding-bottom: 10px;
                 border-bottom: 1px solid var(--color-gray-light);
@@ -845,9 +863,10 @@ html {
                     padding: 8px 0;
                     height: auto;
                     font-weight: normal;
-                    font-size: 14px;
+                    font-size: var(--font-size-sm); // 14px for links
 
                     &:hover {
+                      color: var(--color-accent);
                       padding-left: 5px;
                     }
                   }
@@ -880,19 +899,19 @@ html {
                   color: white;
 
                   h5 {
-                    font-size: 15px;
+                    font-size: var(--font-size-lg); // 18px
                     margin-bottom: 5px;
                   }
 
                   p {
-                    font-size: 13px;
+                    font-size: var(--font-size-sm); // 14px
                     opacity: 0.8;
                   }
 
                   .featured-btn {
                     display: inline-block;
                     margin-top: 10px;
-                    font-size: 12px;
+                    font-size: var(--font-size-xs); // 12px
                     padding: 5px 10px;
                     background-color: var(--color-accent);
                     color: white;
@@ -957,11 +976,11 @@ html {
           position: absolute;
           top: -2px;
           right: -2px;
-          width: 20px;
-          height: 20px;
+          width: 18px; // Adjust size if needed
+          height: 18px;
           background: var(--color-accent);
           color: white;
-          font-size: 11px;
+          font-size: 10px; // Very small for badge count
           font-weight: bold;
           @include flex-center;
           border-radius: 50%;
@@ -1134,7 +1153,7 @@ html {
         padding: 0 15px;
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 25px;
-        font-size: 16px;
+        font-size: 1rem; // 16px for search input
         outline: none;
         transition: var(--transition);
 
@@ -1184,7 +1203,7 @@ html {
         margin-bottom: 10px;
 
         h4 {
-          font-size: 14px;
+          font-size: var(--font-size-sm); // 14px
           margin: 0;
         }
 
@@ -1192,7 +1211,7 @@ html {
           background: none;
           border: none;
           color: var(--color-accent);
-          font-size: 13px;
+          font-size: var(--font-size-xs); // 12px
           cursor: pointer;
           padding: 0;
 
@@ -1248,7 +1267,7 @@ html {
 
           .product-info {
             h5 {
-              font-size: 14px;
+              font-size: var(--font-size-sm); // 14px
               margin: 0 0 5px;
               overflow: hidden;
               text-overflow: ellipsis;
@@ -1258,7 +1277,7 @@ html {
             .price {
               color: var(--color-accent);
               font-weight: 600;
-              font-size: 14px;
+              font-size: var(--font-size-sm); // 14px
             }
           }
 
@@ -1586,7 +1605,7 @@ html {
                     content: "Mới";
                     margin-left: 8px;
                     padding: 4px 8px;
-                    font-size: 11px;
+                    font-size: var(--font-size-xs); // 12px for 'New' tag
                     font-weight: 600;
                     color: white;
                     background: var(--color-accent);
@@ -1987,7 +2006,7 @@ html {
             margin-bottom: 20px;
             .category-column {
               h4 {
-                font-size: 16px;
+                font-size: 1rem; // 16px title for categories
                 font-weight: 600;
                 text-transform: uppercase;
                 color: var(--color-primary);
@@ -2007,7 +2026,7 @@ html {
 
                   a {
                     padding: 6px 0;
-                    font-size: 14px;
+                    font-size: var(--font-size-sm); // 14px for links
                     font-weight: normal;
                     text-transform: none;
                     letter-spacing: normal;
@@ -2052,14 +2071,14 @@ html {
                   color: white;
 
                   h3 {
-                    font-size: 18px;
+                    font-size: var(--font-size-lg); // 18px
                     font-weight: 600;
                     margin: 0 0 8px;
                     text-transform: uppercase;
                   }
 
                   p {
-                    font-size: 14px;
+                    font-size: var(--font-size-sm); // 14px
                     margin: 0 0 15px;
                   }
 
@@ -2070,7 +2089,7 @@ html {
                     color: white;
                     border-radius: 4px;
                     text-decoration: none;
-                    font-size: 13px;
+                    font-size: var(--font-size-xs); // 12px
                     font-weight: 500;
                     transition: var(--transition);
 
@@ -2093,7 +2112,7 @@ html {
             .quick-link {
               color: var(--color-accent);
               text-decoration: none;
-              font-size: 14px;
+              font-size: var(--font-size-sm); // 14px
               font-weight: 500;
               transition: var(--transition);
 
@@ -2181,11 +2200,11 @@ html {
       position: absolute;
       top: -2px;
       right: -2px;
-      width: 20px;
-      height: 20px;
+      width: 18px; // Adjust size if needed
+      height: 18px;
       background: var(--color-accent);
       color: white;
-      font-size: 11px;
+      font-size: 10px; // Very small for badge count
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -2311,10 +2330,10 @@ html {
       color: var(--color-text);
       text-decoration: none;
       transition: background-color 0.2s ease;
-      font-size: 14px;
+      font-size: var(--font-size-sm); // 14px for dropdown items
 
       svg {
-        font-size: 16px;
+        font-size: 1rem; // 16px for icons
         color: var(--color-gray);
       }
 
@@ -2615,7 +2634,7 @@ body.menu-open {
     display: flex;
     align-items: center;
     gap: 16px;
-    font-size: 12px;
+    font-size: var(--font-size-xs); // 12px
     color: var(--color-gray);
 
     .download-app {
@@ -2642,7 +2661,7 @@ body.menu-open {
         color: var(--color-gray);
         text-decoration: none;
         transition: color 0.2s ease;
-        font-size: 12px;
+        font-size: var(--font-size-xs); // 12px
 
         &:hover {
           color: var(--color-accent);
@@ -2692,7 +2711,7 @@ body.menu-open {
           align-items: center;
           padding: 8px 16px;
           color: var(--color-text);
-          font-size: 12px;
+          font-size: var(--font-size-xs); // 12px
           text-decoration: none;
           transition: background 0.2s ease;
 
@@ -2718,7 +2737,7 @@ body.menu-open {
         align-items: center;
         gap: 4px;
         color: var(--color-text);
-        font-size: 12px;
+        font-size: var(--font-size-xs); // 12px
         text-decoration: none;
         transition: color 0.2s ease;
         padding: 0 4px;
