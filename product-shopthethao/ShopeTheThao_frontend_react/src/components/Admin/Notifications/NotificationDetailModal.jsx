@@ -19,12 +19,13 @@ const NotificationDetailModal = forwardRef(({ visible, notification, onClose }, 
   };
   
   const getActionTypeTag = () => {
-    const actionType = notification.actionType || '';
-    const color = getActionColor(actionType);
+    // Lấy phần đầu tiên của note để hiển thị đúng tiêu đề
+    const titleFromNote = notification.note ? notification.note.split('\n')[0] : '';
+    const color = getActionColor(notification.actionType);
     
     return (
       <Tag color={color}>
-        {formatActionType(actionType)}
+        {titleFromNote.split('Chi tiết:')[0].trim()}
       </Tag>
     );
   };
@@ -50,33 +51,6 @@ const NotificationDetailModal = forwardRef(({ visible, notification, onClose }, 
     }
   };
   
-  const formatActionType = (actionType) => {
-    if (!actionType) return '';
-    
-    switch (actionType) {
-      case 'LOGIN':
-        return 'Đăng nhập';
-      case 'LOGOUT':
-        return 'Đăng xuất';
-      case 'LOGIN_FAILED':
-        return 'Đăng nhập thất bại';
-      case 'CREATE_CATEGORIE':
-        return 'Thêm danh mục';
-      case 'UPDATE_CATEGORIE':
-        return 'Cập nhật danh mục';
-      case 'DELETE_CATEGORIE':
-        return 'Xóa danh mục';
-      case 'CREATE_PRODUCT':
-        return 'Thêm sản phẩm';
-      case 'UPDATE_PRODUCT':
-        return 'Cập nhật sản phẩm';
-      case 'DELETE_PRODUCT':
-        return 'Xóa sản phẩm';
-      default:
-        return actionType.replace(/_/g, ' ').toLowerCase()
-          .replace(/\b\w/g, c => c.toUpperCase());
-    }
-  };
   
   const formatDateTime = (dateTime) => {
     if (!dateTime) return '';

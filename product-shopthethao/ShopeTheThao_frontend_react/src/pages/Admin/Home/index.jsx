@@ -36,6 +36,7 @@ import moment from "moment";
 import { userHistoryApi } from "api/Admin";
 import { userHistorySSE } from "api/Admin/UserHistory/userHistorySSE";
 import "./HomeModule.scss";
+import { ADMIN_ROUTES } from "router";
 
 const AdminIndex = () => {
   const [adminHistories, setAdminHistories] = useState([]);
@@ -219,7 +220,7 @@ const AdminIndex = () => {
     {
       title: "Thêm sản phẩm mới",
       description: "Thêm sản phẩm mới vào kho",
-      link: "/dashboard-management-sys/catalog/products",
+      link: ADMIN_ROUTES.CATALOG.PRODUCTS,
       color: "bg-blue-100 text-blue-600",
       icon: <BiPackage className="w-12 h-12" />,
       gradient: "from-blue-500 to-blue-600",
@@ -227,7 +228,7 @@ const AdminIndex = () => {
     {
       title: "Xử lý đơn hàng",
       description: "Quản lý đơn hàng mới",
-      link: "/dashboard-management-sys/invoices",
+      link: ADMIN_ROUTES.INVOICES.LIST,
       color: "bg-green-100 text-green-600",
       icon: <BiReceipt className="w-12 h-12" />,
       gradient: "from-green-500 to-green-600",
@@ -235,7 +236,7 @@ const AdminIndex = () => {
     {
       title: "Quản lý kho",
       description: "Kiểm tra nhập kho",
-      link: "/dashboard-management-sys/inventory/stock-receipts",
+      link: ADMIN_ROUTES.INVENTORY.STOCK_RECEIPTS,
       color: "bg-orange-100 text-orange-600",
       icon: <BiStore className="w-12 h-12" />,
       gradient: "from-orange-500 to-orange-600",
@@ -243,7 +244,7 @@ const AdminIndex = () => {
     {
       title: "Báo cáo doanh thu",
       description: "Xem báo cáo chi tiết",
-      link: "/dashboard-management-sys/charts",
+      link:   ADMIN_ROUTES.CHARTS,
       color: "bg-purple-100 text-purple-600",
       icon: <BiAnalyse className="w-12 h-12" />,
       gradient: "from-purple-500 to-purple-600",

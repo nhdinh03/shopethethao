@@ -510,42 +510,66 @@ const NotificationDropdown = () => {
 
   const renderActionIcon = (actionType) => {
     switch (actionType) {
-      case "LOGIN":
-        return (
-          <Avatar size="small" style={{ backgroundColor: "#52c41a" }}>
-            L
-          </Avatar>
-        );
-      case "LOGOUT":
-        return (
-          <Avatar size="small" style={{ backgroundColor: "#faad14" }}>
-            O
-          </Avatar>
-        );
-      case "LOGIN_FAILED":
-        return (
-          <Avatar size="small" style={{ backgroundColor: "#f5222d" }}>
-            F
-          </Avatar>
-        );
-      case "UPDATE_CATEGORIE":
-        return (
-          <Avatar size="small" style={{ backgroundColor: "#1890ff" }}>
-            C
-          </Avatar>
-        );
-      case "UPDATE_PRODUCT":
-        return (
-          <Avatar size="small" style={{ backgroundColor: "#722ed1" }}>
-            P
-          </Avatar>
-        );
+      // Auth actions
+      case 'LOGIN':
+        return <Avatar size="small" style={{ backgroundColor: "#52c41a" }}>LI</Avatar>;
+      case 'LOGOUT':
+        return <Avatar size="small" style={{ backgroundColor: "#faad14" }}>LO</Avatar>;
+      case 'LOGIN_FAILED':
+        return <Avatar size="small" style={{ backgroundColor: "#f5222d" }}>LF</Avatar>;
+      case 'RELOGIN':
+        return <Avatar size="small" style={{ backgroundColor: "#52c41a" }}>RL</Avatar>;
+
+      // Product actions  
+      case 'CREATE_PRODUCT':
+        return <Avatar size="small" style={{ backgroundColor: "#722ed1" }}>CP</Avatar>;
+      case 'UPDATE_PRODUCT':
+        return <Avatar size="small" style={{ backgroundColor: "#722ed1" }}>UP</Avatar>;
+      case 'DELETE_PRODUCT':
+        return <Avatar size="small" style={{ backgroundColor: "#722ed1" }}>DP</Avatar>;
+
+      // Category actions
+      case 'CREATE_CATEGORIE':
+        return <Avatar size="small" style={{ backgroundColor: "#1890ff" }}>CC</Avatar>;
+      case 'UPDATE_CATEGORIE':
+        return <Avatar size="small" style={{ backgroundColor: "#1890ff" }}>UC</Avatar>;
+      case 'DELETE_CATEGORIE':
+        return <Avatar size="small" style={{ backgroundColor: "#1890ff" }}>DC</Avatar>;
+
+      // Size actions
+      case 'CREATE_SIZE':
+        return <Avatar size="small" style={{ backgroundColor: "#13c2c2" }}>CS</Avatar>;
+      case 'UPDATE_SIZE':
+        return <Avatar size="small" style={{ backgroundColor: "#13c2c2" }}>US</Avatar>;
+      case 'DELETE_SIZE':
+        return <Avatar size="small" style={{ backgroundColor: "#13c2c2" }}>DS</Avatar>;
+
+      // Brand actions  
+      case 'CREATE_BRAND':
+        return <Avatar size="small" style={{ backgroundColor: "#eb2f96" }}>CB</Avatar>;
+      case 'UPDATE_BRAND':
+        return <Avatar size="small" style={{ backgroundColor: "#eb2f96" }}>UB</Avatar>;
+      case 'DELETE_BRAND':
+        return <Avatar size="small" style={{ backgroundColor: "#eb2f96" }}>DB</Avatar>;
+
+      // Supplier actions
+      case 'CREATE_SUPPLIER':
+        return <Avatar size="small" style={{ backgroundColor: "#fa8c16" }}>CS</Avatar>;
+      case 'UPDATE_SUPPLIER':
+        return <Avatar size="small" style={{ backgroundColor: "#fa8c16" }}>US</Avatar>;
+      case 'DELETE_SUPPLIER':
+        return <Avatar size="small" style={{ backgroundColor: "#fa8c16" }}>DS</Avatar>;
+
+      // Stock Receipt actions
+      case 'CREATE_STOCK_RECEIPT':
+        return <Avatar size="small" style={{ backgroundColor: "#a0d911" }}>CR</Avatar>;
+      case 'UPDATE_STOCK_RECEIPT':
+        return <Avatar size="small" style={{ backgroundColor: "#a0d911" }}>UR</Avatar>;
+      case 'DELETE_STOCK_RECEIPT':
+        return <Avatar size="small" style={{ backgroundColor: "#a0d911" }}>DR</Avatar>;
+
       default:
-        return (
-          <Avatar size="small" style={{ backgroundColor: "#8c8c8c" }}>
-            A
-          </Avatar>
-        );
+        return <Avatar size="small" style={{ backgroundColor: "#8c8c8c" }}>N/A</Avatar>;
     }
   };
 
@@ -627,30 +651,35 @@ const NotificationDropdown = () => {
   };
 
   const getNotificationTitle = (item) => {
+    // Lấy dòng đầu tiên của note làm tiêu đề
+    const firstLine = item.note?.split('\n')[0] || '';
+    if (firstLine) {
+      return firstLine;
+    }
+
+    // Fallback nếu không có note
     switch (item.actionType) {
-      case "LOGIN":
-        return `Đăng nhập ${item.username ? "- " + item.username : ""}`;
-      case "LOGOUT":
-        return `Đăng xuất ${item.username ? "- " + item.username : ""}`;
-      case "LOGIN_FAILED":
-        return "Đăng nhập thất bại";
-      case "UPDATE_CATEGORIE":
-        return "Cập nhật danh mục";
-      case "UPDATE_PRODUCT":
-        return "Cập nhật sản phẩm";
+      case 'LOGIN':
+        return `Đăng nhập - ${item.username || ''}`;
+      case 'LOGOUT':
+        return `Đăng xuất - ${item.username || ''}`;
+      case 'LOGIN_FAILED':
+        return `Đăng nhập thất bại - ${item.username || ''}`;
       default:
         return item.actionType
-          .replace(/_/g, " ")
+          .replace(/_/g, ' ')
           .toLowerCase()
           .replace(/\b\w/g, (c) => c.toUpperCase());
     }
   };
 
   const getNotificationDescription = (item) => {
-    if (item.note?.length > 100) {
-      return `${item.note.substring(0, 100)}...`;
+    // Lấy phần còn lại của note làm mô tả
+    const lines = item.note?.split('\n') || [];
+    if (lines.length > 1) {
+      return lines.slice(1).join('\n');
     }
-    return item.note || "Không có mô tả";
+    return 'Không có mô tả';
   };
 
   const handleTabChange = (activeKey) => {

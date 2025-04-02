@@ -1,5 +1,5 @@
-export const API_VERSION = "QQQQQQQQQTTTTTT";
-export const ADMIN_PREFIX = "dashboard-management-DDDDDUUUUUUU";
+export const API_VERSION = "Cnhdinh";
+export const ADMIN_PREFIX = "nhdinh";
 
 export const ROUTES = {
   HOME: "/",

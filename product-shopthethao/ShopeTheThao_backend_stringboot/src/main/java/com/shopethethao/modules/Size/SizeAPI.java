@@ -114,10 +114,10 @@ public class SizeAPI {
 
             // Create detailed log message
             String logMessage = String.format("""
-                ADMIN: %s đã tạo size mới
+                Thêm kích thước - %s
                 Chi tiết:
-                - ID: %d
-                - Tên size: %s
+                - Mã: %d
+                - Tên kích thước: %s
                 - Mô tả: %s""",
                 authentication.getName(),
                 savedSize.getId(),
@@ -200,11 +200,10 @@ public class SizeAPI {
 
                 // Create detailed change log
                 String changeLog = String.format("""
-                    ADMIN: %s đã cập nhật size #%d
+                    Cập nhật kích thước - %s
                     Chi tiết thay đổi:
                     %s""",
                     authentication.getName(),
-                    id,
                     String.join(System.lineSeparator(), changes));
 
                 // Log the admin action
@@ -255,10 +254,10 @@ public class SizeAPI {
 
             // Create detailed log message before deletion
             String logMessage = String.format("""
-                ADMIN: %s đã xóa size
-                Chi tiết size đã xóa:
-                - ID: %d
-                - Tên size: %s
+                Xóa kích thước - %s
+                Chi tiết:
+                - Mã: %d
+                - Tên kích thước: %s
                 - Mô tả: %s""",
                 authentication.getName(),
                 id,
