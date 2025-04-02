@@ -22,15 +22,15 @@ public class Size {
     private Integer id;
 
     @Column(nullable = false, unique = true)
-    private String name; 
+    private String name;
 
     @Column(name = "description")
     private String description;
 
     @Override
     public String toString() {
-        return String.format("Size{id=%d, name='%s'}", 
-            this.getId(), 
-            this.getName());
+        return String.format("Size{id=%d, name='%s'}",
+                this.getId(),
+                this.getName());
     }
 }

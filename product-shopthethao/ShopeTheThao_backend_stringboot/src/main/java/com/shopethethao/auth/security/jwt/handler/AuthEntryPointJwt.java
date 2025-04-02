@@ -27,8 +27,10 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setCharacterEncoding("UTF-8");
 
         Map<String, Object> error = new HashMap<>();
+        error.put("success", false);
         error.put("status", "UNAUTHORIZED");
         error.put("code", "TOKEN_EXPIRED");
         error.put("message", "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
@@ -36,7 +38,6 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         error.put("timestamp", System.currentTimeMillis());
         error.put("requireLogin", true);
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), error);
+        new ObjectMapper().writeValue(response.getOutputStream(), error);
     }
 }

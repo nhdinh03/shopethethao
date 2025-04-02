@@ -69,7 +69,7 @@ public class SizeAPI {
             if (search != null && !search.trim().isEmpty()) {
                 // Search by name or description containing the search term (case-insensitive)
                 page = sizeDAO.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
-                    search.trim(), search.trim(), pageable);
+                        search.trim(), search.trim(), pageable);
             } else {
                 page = sizeDAO.findAll(pageable);
             }
@@ -119,19 +119,19 @@ public class SizeAPI {
                 - Mã: %d
                 - Tên kích thước: %s
                 - Mô tả: %s""",
-                authentication.getName(),
-                savedSize.getId(),
-                savedSize.getName(),
-                savedSize.getDescription() != null ? savedSize.getDescription() : "Không có"
+                    authentication.getName(),
+                    savedSize.getId(),
+                    savedSize.getName(),
+                    savedSize.getDescription() != null ? savedSize.getDescription() : "Không có"
             );
 
             // Log user action
             userHistoryService.logUserAction(
-                authentication.getName(),
-                UserActionType.CREATE_SIZE,
-                logMessage,
-                getClientIp(request),
-                getClientInfo(request)
+                    authentication.getName(),
+                    UserActionType.CREATE_SIZE,
+                    logMessage,
+                    getClientIp(request),
+                    getClientInfo(request)
             );
 
             // Return success response with details
@@ -152,7 +152,7 @@ public class SizeAPI {
     // Edit an existing size
     @PutMapping("/{id}")
     public ResponseEntity<?> updateSize(
-            @PathVariable("id") Integer id, 
+            @PathVariable("id") Integer id,
             @RequestBody Size size,
             Authentication authentication,
             HttpServletRequest request) {
@@ -160,8 +160,8 @@ public class SizeAPI {
             Optional<Size> optionalSize = sizeDAO.findById(id);
             if (optionalSize.isEmpty()) {
                 String errorMessage = String.format("Size #%d không tồn tại!", id);
-                logAdminAction(authentication.getName(), request, 
-                    "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                logAdminAction(authentication.getName(), request,
+                        "CẬP NHẬT THẤT BẠI: " + errorMessage);
                 return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
 
@@ -169,8 +169,8 @@ public class SizeAPI {
             Optional<Size> duplicateSize = sizeDAO.findByName(size.getName());
             if (duplicateSize.isPresent() && !duplicateSize.get().getId().equals(id)) {
                 String errorMessage = String.format("Size '%s' đã tồn tại!", size.getName());
-                logAdminAction(authentication.getName(), request, 
-                    "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                logAdminAction(authentication.getName(), request,
+                        "CẬP NHẬT THẤT BẠI: " + errorMessage);
                 return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
             }
 
@@ -181,16 +181,16 @@ public class SizeAPI {
             // Track name changes
             if (!existingSize.getName().equals(size.getName())) {
                 changes.add(String.format("- Tên size:%n  + Cũ: '%s'%n  + Mới: '%s'",
-                    existingSize.getName(),
-                    size.getName()));
+                        existingSize.getName(),
+                        size.getName()));
                 existingSize.setName(size.getName());
             }
 
             // Track description changes
             if (!Objects.equals(existingSize.getDescription(), size.getDescription())) {
                 changes.add(String.format("- Mô tả:%n  + Cũ: '%s'%n  + Mới: '%s'",
-                    existingSize.getDescription() != null ? existingSize.getDescription() : "Không có",
-                    size.getDescription() != null ? size.getDescription() : "Không có"));
+                        existingSize.getDescription() != null ? existingSize.getDescription() : "Không có",
+                        size.getDescription() != null ? size.getDescription() : "Không có"));
                 existingSize.setDescription(size.getDescription());
             }
 
@@ -203,16 +203,16 @@ public class SizeAPI {
                     Cập nhật kích thước - %s
                     Chi tiết thay đổi:
                     %s""",
-                    authentication.getName(),
-                    String.join(System.lineSeparator(), changes));
+                        authentication.getName(),
+                        String.join(System.lineSeparator(), changes));
 
                 // Log the admin action
                 userHistoryService.logUserAction(
-                    authentication.getName(),
-                    UserActionType.UPDATE_SIZE,
-                    changeLog,
-                    getClientIp(request),
-                    getClientInfo(request));
+                        authentication.getName(),
+                        UserActionType.UPDATE_SIZE,
+                        changeLog,
+                        getClientIp(request),
+                        getClientInfo(request));
 
                 // Return success response with details
                 Map<String, Object> response = new HashMap<>();
@@ -259,10 +259,10 @@ public class SizeAPI {
                 - Mã: %d
                 - Tên kích thước: %s
                 - Mô tả: %s""",
-                authentication.getName(),
-                id,
-                size.getName(),
-                size.getDescription() != null ? size.getDescription() : "Không có"
+                    authentication.getName(),
+                    id,
+                    size.getName(),
+                    size.getDescription() != null ? size.getDescription() : "Không có"
             );
 
             // Thực hiện xóa
@@ -270,17 +270,17 @@ public class SizeAPI {
 
             // Log user action
             userHistoryService.logUserAction(
-                authentication.getName(),
-                UserActionType.DELETE_SIZE,
-                logMessage,
-                getClientIp(request),
-                getClientInfo(request)
+                    authentication.getName(),
+                    UserActionType.DELETE_SIZE,
+                    logMessage,
+                    getClientIp(request),
+                    getClientInfo(request)
             );
 
             // Return success response with details
             Map<String, Object> response = new HashMap<>();
-            response.put("message", String.format("ADMIN: %s đã xóa size '%s' thành công!", 
-                authentication.getName(), size.getName()));
+            response.put("message", String.format("ADMIN: %s đã xóa size '%s' thành công!",
+                    authentication.getName(), size.getName()));
             response.put("deletedBy", authentication.getName());
             response.put("deletedAt", LocalDateTime.now());
             response.put("sizeInfo", size);
@@ -306,15 +306,15 @@ public class SizeAPI {
     // Add these helper methods if they don't exist
     private void logAdminAction(String adminUsername, HttpServletRequest request, String action) {
         try {
-            UserActionType actionType = action.startsWith("CẬP NHẬT") ? 
-                UserActionType.UPDATE_SIZE : UserActionType.ADMIN_ACTION;
+            UserActionType actionType = action.startsWith("CẬP NHẬT")
+                    ? UserActionType.UPDATE_SIZE : UserActionType.ADMIN_ACTION;
 
             userHistoryService.logUserAction(
-                adminUsername,
-                actionType,
-                action,
-                getClientIp(request),
-                getClientInfo(request)
+                    adminUsername,
+                    actionType,
+                    action,
+                    getClientIp(request),
+                    getClientInfo(request)
             );
         } catch (Exception e) {
             // Log error if needed

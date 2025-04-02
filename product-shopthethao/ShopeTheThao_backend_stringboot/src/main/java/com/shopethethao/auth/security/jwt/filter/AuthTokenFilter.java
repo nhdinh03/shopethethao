@@ -88,14 +88,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     Map<String, Object> errorResponse = new HashMap<>();
     errorResponse.put("success", false);
+    errorResponse.put("status", "UNAUTHORIZED");
     errorResponse.put("message", message);
     errorResponse.put("code", code);
     errorResponse.put("requireLogin", requireLogin);
     errorResponse.put("timestamp", System.currentTimeMillis());
-    errorResponse.put("status", HttpServletResponse.SC_UNAUTHORIZED);
 
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.writeValue(response.getOutputStream(), errorResponse);
+    new ObjectMapper().writeValue(response.getOutputStream(), errorResponse);
   }
 
   private String parseJwt(HttpServletRequest request) {
