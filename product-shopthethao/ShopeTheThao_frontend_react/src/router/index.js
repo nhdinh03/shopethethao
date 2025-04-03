@@ -146,7 +146,7 @@ export const privateRoutes = [
     layout: AdminLayout,
   },
   {
-    path: ADMIN_ROUTES.CHARTS,
+    path: ADMIN_ROUTES.ANALYTICS.CHARTS,
     component: PageAdmin.Charts,
     layout: AdminLayout,
   },

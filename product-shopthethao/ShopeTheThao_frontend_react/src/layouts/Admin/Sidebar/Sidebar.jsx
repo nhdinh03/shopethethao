@@ -262,7 +262,7 @@ function Sidebar({ onClose }) {
           <Link to={ADMIN_ROUTES.ANALYTICS.CHARTS} onClick={onClose}>
             <span className="menu-item-label">Biểu đồ phân tích</span>
           </Link>,
-          ADMIN_ROUTES.ANALYTICS.CHARTS,
+           ADMIN_ROUTES.ANALYTICS.CHARTS,
           <FontAwesomeIcon
             icon={solidIcons.faChartPie}
             className="submenu-icon"
