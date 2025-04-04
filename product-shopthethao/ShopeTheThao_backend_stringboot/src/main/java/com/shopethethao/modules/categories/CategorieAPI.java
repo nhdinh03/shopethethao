@@ -1,15 +1,15 @@
 package com.shopethethao.modules.categories;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
 import com.shopethethao.modules.products.ProductsDAO;
-import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.service.AdminLogService;
 import com.shopethethao.service.UserHistoryService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,8 +48,12 @@ public class CategorieAPI {
 
     @Autowired
     private UserHistoryService userHistoryService;
+    
+    @Autowired
+    private AdminLogService adminLogService;
 
     private static final Logger logger = LoggerFactory.getLogger(CategorieAPI.class);
+    private static final String MODULE_PREFIX = "CATEGORIE";
 
     // Lấy toàn bộ danh mục (không phân trang)
     @GetMapping("/get/all")
@@ -121,12 +125,11 @@ public class CategorieAPI {
                     savedCategory.getDescription() != null ? savedCategory.getDescription() : "Không có");
 
             // Log user action
-            userHistoryService.logUserAction(
+            adminLogService.logAdminAction(
                     authentication.getName(),
-                    UserActionType.CREATE_CATEGORIE,
+                    request,
                     logMessage,
-                    getClientIp(request),
-                    getClientInfo(request));
+                    MODULE_PREFIX);
 
             return ResponseEntity.ok(savedCategory);
         } catch (Exception e) {
@@ -143,8 +146,8 @@ public class CategorieAPI {
             Optional<Categorie> optionalCategory = dao.findById(id);
             if (optionalCategory.isEmpty()) {
                 String errorMessage = String.format("Danh mục #%d không tồn tại!", id);
-                logAdminAction(authentication.getName(), request,
-                        "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                adminLogService.logAdminAction(authentication.getName(), request,
+                        "CẬP NHẬT THẤT BẠI: " + errorMessage, MODULE_PREFIX);
                 return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
 
@@ -152,8 +155,8 @@ public class CategorieAPI {
             Optional<Categorie> duplicateCategory = dao.findByName(categorie.getName());
             if (duplicateCategory.isPresent() && !duplicateCategory.get().getId().equals(id)) {
                 String errorMessage = String.format("Tên danh mục '%s' đã tồn tại!", categorie.getName());
-                logAdminAction(authentication.getName(), request,
-                        "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                adminLogService.logAdminAction(authentication.getName(), request,
+                        "CẬP NHẬT THẤT BẠI: " + errorMessage, MODULE_PREFIX);
                 return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
             }
 
@@ -191,12 +194,11 @@ public class CategorieAPI {
                         String.join(System.lineSeparator(), changes));
 
                 // Log the admin action
-                userHistoryService.logUserAction(
+                adminLogService.logAdminAction(
                         authentication.getName(),
-                        UserActionType.UPDATE_CATEGORIE,
+                        request,
                         changeLog,
-                        getClientIp(request),
-                        getClientInfo(request));
+                        MODULE_PREFIX);
 
                 // Return success response with details
                 Map<String, Object> response = new HashMap<>();
@@ -208,13 +210,13 @@ public class CategorieAPI {
                 return ResponseEntity.ok(response);
             } else {
                 String message = String.format("Không có thay đổi nào được thực hiện cho danh mục #%d", id);
-                logAdminAction(authentication.getName(), request, message);
+                adminLogService.logAdminAction(authentication.getName(), request, message, MODULE_PREFIX);
                 return new ResponseEntity<>(message, HttpStatus.OK);
             }
 
         } catch (Exception e) {
             String errorMessage = String.format("Lỗi khi cập nhật danh mục #%d: %s", id, e.getMessage());
-            logAdminAction(authentication.getName(), request, "LỖI: " + errorMessage);
+            adminLogService.logAdminAction(authentication.getName(), request, "LỖI: " + errorMessage, MODULE_PREFIX);
             return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -252,13 +254,11 @@ public class CategorieAPI {
                     id,
                     categoryName);
 
-            // Log user action
-            userHistoryService.logUserAction(
+            adminLogService.logAdminAction(
                     authentication.getName(),
-                    UserActionType.DELETE_CATEGORIE,
+                    request,
                     logMessage,
-                    getClientIp(request),
-                    getClientInfo(request));
+                    MODULE_PREFIX);
 
             return ResponseEntity.ok(String.format("ADMIN: %s đã xóa danh mục '%s' thành công!",
                     authentication.getName(), categoryName));
@@ -270,44 +270,6 @@ public class CategorieAPI {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Lỗi không xác định khi xóa danh mục!");
         }
-    }
-
-    private void logAdminAction(String adminUsername, HttpServletRequest request, String action) {
-        try {
-            // Determine the action type using a more readable approach
-            UserActionType actionType = determineActionType(action);
-
-            userHistoryService.logUserAction(
-                    adminUsername,
-                    actionType,
-                    action,
-                    getClientIp(request),
-                    getClientInfo(request));
-        } catch (Exception e) {
-            logger.error("Failed to log admin action: {}", e.getMessage());
-        }
-    }
-
-    private UserActionType determineActionType(String action) {
-        if (action.startsWith("CẬP NHẬT")) {
-            return UserActionType.UPDATE_CATEGORIE;
-        } else if (action.startsWith("XÓA")) {
-            return UserActionType.DELETE_CATEGORIE;
-        } else {
-            return UserActionType.ADMIN_ACTION;
-        }
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0];
-    }
-
-    private String getClientInfo(HttpServletRequest request) {
-        return request.getHeader("User-Agent");
     }
 
 }

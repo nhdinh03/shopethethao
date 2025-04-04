@@ -1,8 +1,14 @@
 package com.shopethethao.modules.product_Attributes;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,7 +17,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,18 +28,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.userHistory.UserActionType;
+import com.shopethethao.service.AdminLogService;
 import com.shopethethao.service.UserHistoryService;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/productattributes")
@@ -44,6 +41,12 @@ public class ProductAttributesAPI {
 
     @Autowired
     private ProductAttributesDAO productAttributesDAO;
+
+    @Autowired
+    private UserHistoryService userHistoryService;
+
+    @Autowired
+    private AdminLogService adminLogService;
 
     @GetMapping("/get/all")
     public ResponseEntity<List<ProductAttributes>> findAll() {
@@ -87,14 +90,6 @@ public class ProductAttributesAPI {
         return attribute.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Autowired
-    private UserHistoryService userHistoryService;
-
-    private String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.isAuthenticated() ? authentication.getName() : null;
-    }
-
     // ✅ Thêm một thuộc tính mới
     @PostMapping
     public ResponseEntity<?> addAttribute(
@@ -105,7 +100,11 @@ public class ProductAttributesAPI {
             // Validate name
             if (attribute.getName() == null || attribute.getName().trim().isEmpty()) {
                 String errorMessage = "Tên thuộc tính không được để trống!";
-                logAdminAction(authentication.getName(), request, "THÊM THẤT BẠI: " + errorMessage);
+                adminLogService.logAdminAction(
+                    authentication.getName(), 
+                    request, 
+                    "THÊM THẤT BẠI: " + errorMessage,
+                    "PRODUCTATTRIBUTES");
                 return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
             }
 
@@ -116,7 +115,11 @@ public class ProductAttributesAPI {
             Optional<ProductAttributes> existing = productAttributesDAO.findByNameIgnoreCase(attribute.getName());
             if (existing.isPresent()) {
                 String errorMessage = String.format("Thuộc tính '%s' đã tồn tại!", attribute.getName());
-                logAdminAction(authentication.getName(), request, "THÊM THẤT BẠI: " + errorMessage);
+                adminLogService.logAdminAction(
+                    authentication.getName(), 
+                    request, 
+                    "THÊM THẤT BẠI: " + errorMessage,
+                    "PRODUCTATTRIBUTES");
                 return new ResponseEntity<>(errorMessage, HttpStatus.CONFLICT);
             }
 
@@ -130,12 +133,11 @@ public class ProductAttributesAPI {
                     authentication.getName(),
                     savedAttribute.getName());
 
-            userHistoryService.logUserAction(
-                    authentication.getName(),
-                    UserActionType.CREATE_PRODUCTATTRIBUTES,
-                    logMessage,
-                    getClientIp(request),
-                    request.getHeader("User-Agent"));
+            adminLogService.logAdminAction(
+                authentication.getName(),
+                request,
+                logMessage,
+                "PRODUCTATTRIBUTES");
 
             return ResponseEntity.ok(savedAttribute);
         } catch (Exception e) {
@@ -155,7 +157,11 @@ public class ProductAttributesAPI {
             Optional<ProductAttributes> optionalAttribute = productAttributesDAO.findById(id);
             if (optionalAttribute.isEmpty()) {
                 String errorMessage = String.format("Thuộc tính #%d không tồn tại!", id);
-                logAdminAction(authentication.getName(), request, "CẬP NHẬT THẤT BẠI: " + errorMessage);
+                adminLogService.logAdminAction(
+                    authentication.getName(), 
+                    request, 
+                    "CẬP NHẬT THẤT BẠI: " + errorMessage,
+                    "PRODUCTATTRIBUTES");
                 return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
 
@@ -182,12 +188,11 @@ public class ProductAttributesAPI {
                         id,
                         String.join(System.lineSeparator(), changes));
 
-                userHistoryService.logUserAction(
-                        authentication.getName(),
-                        UserActionType.UPDATE_PRODUCTATTRIBUTES,
-                        changeLog,
-                        getClientIp(request),
-                        request.getHeader("User-Agent"));
+                adminLogService.logAdminAction(
+                    authentication.getName(),
+                    request,
+                    changeLog,
+                    "PRODUCTATTRIBUTES");
 
                 Map<String, Object> response = new HashMap<>();
                 response.put("attribute", updatedAttribute);
@@ -198,7 +203,11 @@ public class ProductAttributesAPI {
                 return ResponseEntity.ok(response);
             } else {
                 String message = String.format("Không có thay đổi nào được thực hiện cho thuộc tính #%d", id);
-                logAdminAction(authentication.getName(), request, message);
+                adminLogService.logAdminAction(
+                    authentication.getName(), 
+                    request, 
+                    message,
+                    "PRODUCTATTRIBUTES");
                 return new ResponseEntity<>(message, HttpStatus.OK);
             }
         } catch (Exception e) {
@@ -229,12 +238,11 @@ public class ProductAttributesAPI {
                                 id,
                                 attributeName);
 
-                        userHistoryService.logUserAction(
-                                authentication.getName(),
-                                UserActionType.DELETE_PRODUCTATTRIBUTES,
-                                logMessage,
-                                getClientIp(request),
-                                request.getHeader("User-Agent"));
+                        adminLogService.logAdminAction(
+                            authentication.getName(),
+                            request,
+                            logMessage,
+                            "PRODUCTATTRIBUTES");
 
                         Map<String, Object> response = new HashMap<>();
                         response.put("message", "Xóa thuộc tính thành công");
@@ -254,36 +262,5 @@ public class ProductAttributesAPI {
         }
     }
 
-    // Helper methods
-    private void logAdminAction(String adminUsername, HttpServletRequest request, String action) {
-        try {
-            UserActionType actionType = determineActionType(action);
-            userHistoryService.logUserAction(
-                    adminUsername,
-                    actionType,
-                    action,
-                    getClientIp(request),
-                    request.getHeader("User-Agent"));
-        } catch (Exception e) {
-            logger.error("Failed to log admin action: {}", e.getMessage());
-        }
-    }
 
-    private UserActionType determineActionType(String action) {
-        if (action.startsWith("CẬP NHẬT")) {
-            return UserActionType.UPDATE_PRODUCTATTRIBUTES;
-        } else if (action.startsWith("XÓA")) {
-            return UserActionType.DELETE_PRODUCTATTRIBUTES;
-        } else {
-            return UserActionType.ADMIN_ACTION;
-        }
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0];
-    }
 }

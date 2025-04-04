@@ -1,5 +1,15 @@
 package com.shopethethao.service;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,24 +19,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import com.shopethethao.dto.UserHistoryDTO;
+import com.shopethethao.modules.account.Account;
 import com.shopethethao.modules.account.AccountDAO;
 import com.shopethethao.modules.userHistory.UserActionType;
 import com.shopethethao.modules.userHistory.UserHistory;
 import com.shopethethao.modules.userHistory.UserHistoryDAO;
-import com.shopethethao.modules.account.Account;
-import java.util.Arrays;
-import java.util.Collections;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -47,68 +47,82 @@ public class UserHistoryService {
     public void logUserAction(String userId, UserActionType actionType, String note, String ipAddress,
             String deviceInfo) {
         if (userId == null || userId.trim().isEmpty()) {
-            log.error("Cannot log user action: userId is null or empty");
+            log.error("Invalid user action logging attempt - userId: null or empty");
             throw new IllegalArgumentException("userId cannot be null or empty");
         }
 
         try {
             Account account = accountDAO.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                    .orElseThrow(() -> {
+                        log.error("User action logging failed - userId: {} not found", userId);
+                        return new IllegalArgumentException("User not found: " + userId);
+                    });
 
-            UserHistory history = new UserHistory();
-            history.setAccount(account);
-            history.setActionType(actionType);
-            history.setNote(note);
-
-            // Format IP address if it's localhost
-            if ("0:0:0:0:0:0:0:1".equals(ipAddress)) {
-                ipAddress = "127.0.0.1";
-            }
-
-            history.setIpAddress(ipAddress != null ? ipAddress : "unknown");
-            history.setDeviceInfo(deviceInfo != null ? deviceInfo : "unknown");
-            history.setHistoryDateTime(LocalDateTime.now());
-            history.setStatus(1);
-            history.setReadStatus(0);
-
-            // Save in a try-catch block
-            try {
-                userHistoryDAO.save(history);
-                log.debug("Successfully saved action {} for user {}", actionType, userId);
-            } catch (Exception e) {
-                log.error("Failed to save user history: {}", e.getMessage());
-                throw new RuntimeException("Failed to save user history", e);
-            }
-
-            // Move notification outside the inner try-catch
+            UserHistory history = createUserHistory(account, actionType, note, normalizeIpAddress(ipAddress), deviceInfo);
+            saveUserHistory(history);
             notifyClientsOfActivityChange(actionType);
 
+            log.info("User action logged - userId: {}, action: {}, ip: {}", 
+                userId, actionType, history.getIpAddress());
         } catch (Exception e) {
-            log.error("Failed to log user action for user {}: {}", userId, e.getMessage());
+            log.error("User action logging failed - userId: {}, action: {}, error: {}", 
+                userId, actionType, e.getMessage());
             throw new RuntimeException("Failed to log user action", e);
+        }
+    }
+
+    private UserHistory createUserHistory(Account account, UserActionType actionType, 
+            String note, String ipAddress, String deviceInfo) {
+        UserHistory history = new UserHistory();
+        history.setAccount(account);
+        history.setActionType(actionType);
+        history.setNote(note);
+        history.setIpAddress(ipAddress);
+        history.setDeviceInfo(deviceInfo != null ? deviceInfo : "unknown");
+        history.setHistoryDateTime(LocalDateTime.now());
+        history.setStatus(1);
+        history.setReadStatus(0);
+        return history;
+    }
+
+    private String normalizeIpAddress(String ipAddress) {
+        if ("0:0:0:0:0:0:0:1".equals(ipAddress)) {
+            return "127.0.0.1";
+        }
+        return ipAddress != null ? ipAddress : "unknown";
+    }
+
+    private void saveUserHistory(UserHistory history) {
+        try {
+            userHistoryDAO.save(history);
+            log.debug("User history saved - userId: {}, action: {}", 
+                history.getUserId(), history.getActionType());
+        } catch (Exception e) {
+            log.error("User history save failed - userId: {}, action: {}, error: {}", 
+                history.getUserId(), history.getActionType(), e.getMessage());
+            throw new RuntimeException("Failed to save user history", e);
         }
     }
 
     @Transactional(readOnly = true)
     private void notifyClientsOfActivityChange(UserActionType actionType) {
-        // Determine whether this is an auth-related action or admin action
         try {
             if (actionType.isAuthAction()) {
                 Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content",
                     getLatestAuthActivities());
                 sseService.notifyAuthActivity(data);
-                log.debug("Auth activities notification sent");
+                log.debug("Auth activity notification sent for action: {}", actionType);
             } 
             
-            if (actionType.isAdminAction() || true) { // Always notify admin for all actions
+            if (actionType.isAdminAction() || true) {
                 Map<String, List<UserHistoryDTO>> data = Collections.singletonMap("content",
                     getLatestAdminActivities());
                 sseService.notifyAdminActivity(data);
-                log.debug("Admin activities notification sent");
+                log.debug("Admin activity notification sent for action: {}", actionType);
             }
         } catch (Exception e) {
-            // Log error but don't throw to prevent transaction rollback
-            log.error("Error notifying clients of activity change: {}", e.getMessage(), e);
+            log.warn("Activity notification failed for action: {}, error: {}", 
+                actionType, e.getMessage());
         }
     }
 

@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class UserHistorySSEService {
     private static final Logger logger = LoggerFactory.getLogger(UserHistorySSEService.class);
 
@@ -115,6 +117,7 @@ public class UserHistorySSEService {
 
     private void sendToEmitters(List<SseEmitter> emitters, String eventName, Object data, boolean isAuth) {
         List<SseEmitter> deadEmitters = new ArrayList<>();
+        String emitterType = isAuth ? "auth" : "admin";
 
         for (SseEmitter emitter : emitters) {
             if (emitter == null) {
@@ -127,54 +130,45 @@ public class UserHistorySSEService {
                         .data(data)
                         .id(String.valueOf(System.currentTimeMillis()))
                         .reconnectTime(5000));
-            } catch (IOException e) {
-                logger.debug("Client disconnected while sending {} to {} emitter: {}", 
-                        eventName, isAuth ? "auth" : "admin", e.getMessage());
-                deadEmitters.add(emitter);
-                completeEmitter(emitter);
-            } catch (IllegalStateException e) {
-                logger.debug("Emitter completed or timed out while sending {} to {}: {}", 
-                        eventName, isAuth ? "auth" : "admin", e.getMessage());
-                deadEmitters.add(emitter);
-                completeEmitter(emitter);
             } catch (Exception e) {
-                logger.debug("Unexpected error while sending {} to {} emitter: {}", 
-                        eventName, isAuth ? "auth" : "admin", e.getMessage());
                 deadEmitters.add(emitter);
                 completeEmitter(emitter);
+                log.debug("{} emitter disconnected - event: {}, reason: {}", 
+                    emitterType, eventName, e.getMessage());
             }
         }
 
         if (!deadEmitters.isEmpty()) {
             emitters.removeAll(deadEmitters);
-            logger.debug("Removed {} dead {} emitters", deadEmitters.size(), isAuth ? "auth" : "admin");
+            log.debug("Removed {} dead {} emitters", deadEmitters.size(), emitterType);
         }
     }
 
     private void cleanDeadEmitters(List<SseEmitter> emitters, boolean isAuth) {
         List<SseEmitter> deadEmitters = new ArrayList<>();
+        String emitterType = isAuth ? "auth" : "admin";
+        int initialCount = emitters.size();
+
         for (SseEmitter emitter : emitters) {
-            if (emitter == null) {
-                deadEmitters.add(emitter);
-                continue;
-            }
-            try {
-                emitter.send(SseEmitter.event().comment("test"));
-            } catch (IOException e) {
-                logger.debug("Cleaned inactive {} emitter due to disconnection: {}", 
-                        isAuth ? "auth" : "admin", e.getMessage());
-                deadEmitters.add(emitter);
-                completeEmitter(emitter);
-            } catch (IllegalStateException e) {
-                logger.debug("Cleaned timed out {} emitter: {}", 
-                        isAuth ? "auth" : "admin", e.getMessage());
+            if (emitter == null || !isEmitterAlive(emitter)) {
                 deadEmitters.add(emitter);
                 completeEmitter(emitter);
             }
         }
+
         if (!deadEmitters.isEmpty()) {
             emitters.removeAll(deadEmitters);
-            logger.debug("Cleaned {} dead/inactive {} emitters", deadEmitters.size(), isAuth ? "auth" : "admin");
+            log.debug("Cleaned {} {} emitters - before: {}, after: {}", 
+                deadEmitters.size(), emitterType, initialCount, emitters.size());
+        }
+    }
+
+    private boolean isEmitterAlive(SseEmitter emitter) {
+        try {
+            emitter.send(SseEmitter.event().comment("test"));
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -183,7 +177,7 @@ public class UserHistorySSEService {
             try {
                 emitter.complete();
             } catch (Exception e) {
-                logger.debug("Failed to complete emitter: {}", e.getMessage());
+                log.trace("Failed to complete emitter: {}", e.getMessage());
             }
         }
     }
@@ -211,16 +205,16 @@ public class UserHistorySSEService {
     }
 
     public void removeEmittersForUser(String userId) {
-        List<SseEmitter> toRemoveAuth = new ArrayList<>(authEmitters);
-        List<SseEmitter> toRemoveAdmin = new ArrayList<>(adminEmitters);
+        int authCount = authEmitters.size();
+        int adminCount = adminEmitters.size();
 
-        toRemoveAuth.forEach(this::completeEmitter);
-        toRemoveAdmin.forEach(this::completeEmitter);
+        authEmitters.forEach(this::completeEmitter);
+        adminEmitters.forEach(this::completeEmitter);
 
-        authEmitters.removeAll(toRemoveAuth);
-        adminEmitters.removeAll(toRemoveAdmin);
+        authEmitters.clear();
+        adminEmitters.clear();
 
-        logger.info("Cleaned up {} auth and {} admin emitters for user {}",
-                toRemoveAuth.size(), toRemoveAdmin.size(), userId);
+        log.info("User {} emitters cleaned - auth: {}, admin: {}", 
+            userId, authCount, adminCount);
     }
 }

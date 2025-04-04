@@ -1,10 +1,15 @@
 package com.shopethethao.modules.suppliers;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,12 +29,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shopethethao.dto.ResponseDTO;
-import com.shopethethao.modules.userHistory.UserActionType;
-import com.shopethethao.service.UserHistoryService;
+import com.shopethethao.service.AdminLogService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/suppliers")
@@ -41,7 +43,7 @@ public class SupplierAPI {
     private SupplierDAO supplierDao;
 
     @Autowired
-    private UserHistoryService userHistoryService;
+    private AdminLogService adminLogService;
 
     // Fetch all suppliers without pagination
     @GetMapping("/get/all")
@@ -89,154 +91,196 @@ public class SupplierAPI {
             Authentication authentication,
             HttpServletRequest request) {
         try {
+            // Validate required fields
+            if (supplier.getName() == null || supplier.getName().trim().isEmpty()) {
+                String errorMessage = "Tên nhà cung cấp không được để trống!";
+                adminLogService.logAdminAction(
+                    authentication.getName(), 
+                    request, 
+                    "THÊM THẤT BẠI: " + errorMessage,
+                    "SUPPLIER");
+                return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+            }
+
             Supplier savedSupplier = supplierDao.save(supplier);
             
-            // Create detailed log message with admin info
             String logMessage = String.format("""
-                    ADMIN: %s đã thêm nhà cung cấp mới
-                    Chi tiết:
+                    Thêm nhà cung cấp mới:
+                    - Mã: %d
                     - Tên nhà cung cấp: %s
                     - Số điện thoại: %s
                     - Email: %s
                     - Địa chỉ: %s""",
-                    authentication.getName(),
-                    supplier.getName(),
-                    supplier.getPhoneNumber(),
-                    supplier.getEmail() != null ? supplier.getEmail() : "Không có",
-                    supplier.getAddress() != null ? supplier.getAddress() : "Không có");
+                    savedSupplier.getId(),
+                    savedSupplier.getName(),
+                    savedSupplier.getPhoneNumber(),
+                    savedSupplier.getEmail() != null ? savedSupplier.getEmail() : "Không có",
+                    savedSupplier.getAddress() != null ? savedSupplier.getAddress() : "Không có");
 
-            // Log user action
-            userHistoryService.logUserAction(
+            adminLogService.logAdminAction(
                 authentication.getName(),
-                UserActionType.CREATE_SUPPLIER,
+                request,
                 logMessage,
-                getClientIp(request),
-                getClientInfo(request)
-            );
+                "SUPPLIER");
             
-            return ResponseEntity.ok(savedSupplier);
+            Map<String, Object> response = new HashMap<>();
+            response.put("supplier", savedSupplier);
+            response.put("message", "Thêm nhà cung cấp thành công");
+            response.put("createdBy", authentication.getName());
+            response.put("createdAt", LocalDateTime.now());
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi khi tạo nhà cung cấp!", HttpStatus.INTERNAL_SERVER_ERROR);
+            String errorMessage = "Không thể tạo nhà cung cấp: " + e.getMessage();
+            adminLogService.logAdminAction(
+                authentication.getName(), 
+                request, 
+                "LỖI: " + errorMessage,
+                "SUPPLIER");
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     // Update an existing supplier
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateSupplier(@PathVariable("id") Integer id,
+    public ResponseEntity<?> updateSupplier(
+            @PathVariable("id") Integer id,
             @RequestBody Supplier supplier, 
             Authentication authentication,
             HttpServletRequest request) {
         try {
             Optional<Supplier> optionalSupplier = supplierDao.findById(id);
-            if (optionalSupplier.isPresent()) {
-                Supplier existingSupplier = optionalSupplier.get();
-                List<String> changes = new ArrayList<>();
+            if (optionalSupplier.isEmpty()) {
+                String errorMessage = String.format("Nhà cung cấp #%d không tồn tại!", id);
+                adminLogService.logAdminAction(
+                    authentication.getName(), 
+                    request, 
+                    "CẬP NHẬT THẤT BẠI: " + errorMessage,
+                    "SUPPLIER");
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
+            }
 
-                // Track changes with detailed formatting
-                if (!existingSupplier.getName().equals(supplier.getName())) {
-                    changes.add(String.format("- Tên nhà cung cấp:%n  + Cũ: '%s'%n  + Mới: '%s'",
-                        existingSupplier.getName(), supplier.getName()));
-                    existingSupplier.setName(supplier.getName());
-                }
+            Supplier existingSupplier = optionalSupplier.get();
+            List<String> changes = new ArrayList<>();
 
-                if (!existingSupplier.getPhoneNumber().equals(supplier.getPhoneNumber())) {
-                    changes.add(String.format("- Số điện thoại:%n  + Cũ: '%s'%n  + Mới: '%s'",
-                        existingSupplier.getPhoneNumber(), supplier.getPhoneNumber()));
-                    existingSupplier.setPhoneNumber(supplier.getPhoneNumber());
-                }
+            // Track changes with detailed formatting
+            if (!existingSupplier.getName().equals(supplier.getName())) {
+                changes.add(String.format("- Tên nhà cung cấp:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                    existingSupplier.getName(), supplier.getName()));
+                existingSupplier.setName(supplier.getName());
+            }
 
-                if (!Objects.equals(existingSupplier.getEmail(), supplier.getEmail())) {
-                    changes.add(String.format("- Email:%n  + Cũ: '%s'%n  + Mới: '%s'",
-                        existingSupplier.getEmail() != null ? existingSupplier.getEmail() : "Không có",
-                        supplier.getEmail() != null ? supplier.getEmail() : "Không có"));
-                    existingSupplier.setEmail(supplier.getEmail());
-                }
+            if (!existingSupplier.getPhoneNumber().equals(supplier.getPhoneNumber())) {
+                changes.add(String.format("- Số điện thoại:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                    existingSupplier.getPhoneNumber(), supplier.getPhoneNumber()));
+                existingSupplier.setPhoneNumber(supplier.getPhoneNumber());
+            }
 
-                if (!Objects.equals(existingSupplier.getAddress(), supplier.getAddress())) {
-                    changes.add(String.format("- Địa chỉ:%n  + Cũ: '%s'%n  + Mới: '%s'",
-                        existingSupplier.getAddress() != null ? existingSupplier.getAddress() : "Không có",
-                        supplier.getAddress() != null ? supplier.getAddress() : "Không có"));
-                    existingSupplier.setAddress(supplier.getAddress());
-                }
+            if (!Objects.equals(existingSupplier.getEmail(), supplier.getEmail())) {
+                changes.add(String.format("- Email:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                    existingSupplier.getEmail() != null ? existingSupplier.getEmail() : "Không có",
+                    supplier.getEmail() != null ? supplier.getEmail() : "Không có"));
+                existingSupplier.setEmail(supplier.getEmail());
+            }
 
-                if (!changes.isEmpty()) {
-                    Supplier updatedSupplier = supplierDao.save(existingSupplier);
+            if (!Objects.equals(existingSupplier.getAddress(), supplier.getAddress())) {
+                changes.add(String.format("- Địa chỉ:%n  + Cũ: '%s'%n  + Mới: '%s'",
+                    existingSupplier.getAddress() != null ? existingSupplier.getAddress() : "Không có",
+                    supplier.getAddress() != null ? supplier.getAddress() : "Không có"));
+                existingSupplier.setAddress(supplier.getAddress());
+            }
 
-                    // Create detailed change log
-                    String changeLog = String.format("""
-                            ADMIN: %s đã cập nhật nhà cung cấp #%d
-                            Chi tiết thay đổi:
-                            %s""",
-                            authentication.getName(),
-                            id,
-                            String.join(System.lineSeparator(), changes));
+            if (!changes.isEmpty()) {
+                Supplier updatedSupplier = supplierDao.save(existingSupplier);
 
-                    // Log the admin action
-                    userHistoryService.logUserAction(
-                        authentication.getName(),
-                        UserActionType.UPDATE_SUPPLIER,
-                        changeLog,
-                        getClientIp(request),
-                        getClientInfo(request)
-                    );
+                String changeLog = String.format("""
+                    Cập nhật nhà cung cấp #%d:
+                    %s""",
+                    id,
+                    String.join(System.lineSeparator(), changes));
 
-                    return ResponseEntity.ok(updatedSupplier);
-                } else {
-                    return new ResponseEntity<>("Không có thay đổi nào được thực hiện!", HttpStatus.OK);
-                }
+                adminLogService.logAdminAction(
+                    authentication.getName(),
+                    request,
+                    changeLog,
+                    "SUPPLIER");
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("supplier", updatedSupplier);
+                response.put("changes", changes);
+                response.put("updateTime", LocalDateTime.now());
+                response.put("updatedBy", authentication.getName());
+
+                return ResponseEntity.ok(response);
             } else {
-                return new ResponseEntity<>("Nhà cung cấp không tồn tại!", HttpStatus.NOT_FOUND);
+                return ResponseEntity.ok("Không có thay đổi nào được thực hiện!");
             }
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi khi cập nhật nhà cung cấp!", HttpStatus.INTERNAL_SERVER_ERROR);
+            String errorMessage = String.format("Lỗi khi cập nhật nhà cung cấp #%d: %s", id, e.getMessage());
+            adminLogService.logAdminAction(
+                authentication.getName(), 
+                request, 
+                "LỖI: " + errorMessage,
+                "SUPPLIER");
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     // Delete a supplier
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteSupplier(@PathVariable("id") Integer id, 
+    public ResponseEntity<?> deleteSupplier(
+            @PathVariable("id") Integer id, 
             Authentication authentication,
             HttpServletRequest request) {
         try {
             Optional<Supplier> existingSupplier = supplierDao.findById(id);
-            if (existingSupplier.isPresent()) {
-                Supplier supplier = existingSupplier.get();
-                
-                // Create detailed log message
-                String logMessage = String.format("""
-                        ADMIN: %s đã xóa nhà cung cấp
-                        Chi tiết:
-                        - ID: %d
-                        - Tên nhà cung cấp: %s
-                        - Số điện thoại: %s
-                        - Email: %s
-                        - Địa chỉ: %s""",
-                        authentication.getName(),
-                        id,
-                        supplier.getName(),
-                        supplier.getPhoneNumber(),
-                        supplier.getEmail() != null ? supplier.getEmail() : "Không có",
-                        supplier.getAddress() != null ? supplier.getAddress() : "Không có");
-
-                // Perform deletion
-                supplierDao.deleteById(id);
-                
-                // Log user action
-                userHistoryService.logUserAction(
-                    authentication.getName(),
-                    UserActionType.DELETE_SUPPLIER,
-                    logMessage,
-                    getClientIp(request),
-                    getClientInfo(request)
-                );
-                
-                return ResponseEntity.ok(String.format("ADMIN: %s đã xóa nhà cung cấp '%s' thành công!",
-                        authentication.getName(), supplier.getName()));
-            } else {
-                return new ResponseEntity<>("Nhà cung cấp không tồn tại!", HttpStatus.NOT_FOUND);
+            if (existingSupplier.isEmpty()) {
+                String errorMessage = String.format("Nhà cung cấp #%d không tồn tại!", id);
+                adminLogService.logAdminAction(
+                    authentication.getName(), 
+                    request, 
+                    "XÓA THẤT BẠI: " + errorMessage,
+                    "SUPPLIER");
+                return new ResponseEntity<>(errorMessage, HttpStatus.NOT_FOUND);
             }
+
+            Supplier supplier = existingSupplier.get();
+            String logMessage = String.format("""
+                Xóa nhà cung cấp:
+                - Mã: %d
+                - Tên nhà cung cấp: %s
+                - Số điện thoại: %s
+                - Email: %s
+                - Địa chỉ: %s""",
+                id,
+                supplier.getName(),
+                supplier.getPhoneNumber(),
+                supplier.getEmail() != null ? supplier.getEmail() : "Không có",
+                supplier.getAddress() != null ? supplier.getAddress() : "Không có");
+
+            supplierDao.deleteById(id);
+            
+            adminLogService.logAdminAction(
+                authentication.getName(),
+                request,
+                logMessage,
+                "SUPPLIER");
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Xóa nhà cung cấp thành công");
+            response.put("deletedBy", authentication.getName());
+            response.put("deletedAt", LocalDateTime.now());
+            response.put("supplierInfo", supplier);
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return new ResponseEntity<>("Lỗi khi xóa nhà cung cấp!", HttpStatus.INTERNAL_SERVER_ERROR);
+            String errorMessage = String.format("Lỗi khi xóa nhà cung cấp #%d: %s", id, e.getMessage());
+            adminLogService.logAdminAction(
+                authentication.getName(), 
+                request, 
+                "LỖI: " + errorMessage,
+                "SUPPLIER");
+            return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
