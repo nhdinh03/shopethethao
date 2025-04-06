@@ -1,9 +1,14 @@
 package com.shopethethao.auth.otp.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+
+import com.shopethethao.modules.products.Product;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -71,6 +76,195 @@ public class EmailUtil {
         """, originalMessage, response);
         
     sendEmail(email, subject, content);
+  }
+
+  public void sendNewProductEmail(String to, Product product) throws MessagingException {
+    String subject = "Sản phẩm mới tại Shop Thể Thao Nhdinh";
+    String htmlContent = createNewProductEmailContent(product);
+    sendEmail(to, subject, htmlContent);
+  }
+
+  private String createNewProductEmailContent(Product product) {
+    // Lấy danh sách hình ảnh
+    List<String> imageUrls = new ArrayList<>();
+    if (product.getImages() != null && !product.getImages().isEmpty()) {
+        // Lấy tối đa 3 hình ảnh
+        product.getImages().stream()
+            .limit(3)
+            .filter(img -> img.getImageUrl() != null && !img.getImageUrl().trim().isEmpty())
+            .forEach(img -> imageUrls.add(img.getImageUrl()));
+    }
+    
+    if (imageUrls.isEmpty()) {
+        imageUrls.add("https://via.placeholder.com/600x400?text=Ch%C6%B0a%20c%C3%B3%20h%C3%ACnh%20%E1%BA%A3nh");
+    }
+
+    // Format giá sản phẩm
+    String formattedPrice = String.format("%,.0f", product.getPrice());
+    
+    // Tạo gallery hình ảnh
+    StringBuilder imageGallery = new StringBuilder();
+    if (imageUrls.size() == 1) {
+        // Hiển thị 1 hình ảnh lớn
+        imageGallery.append(String.format(
+            "<div style='text-align: center; margin-bottom: 20px;'>" +
+            "<img src='%s' alt='%s' style='width: 100%%; max-width: 600px; height: auto; border-radius: 8px;'>" +
+            "</div>",
+            imageUrls.get(0),
+            product.getName()
+        ));
+    } else {
+        // Hiển thị nhiều hình ảnh dạng gallery
+        imageGallery.append("<div style='display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;'>");
+        for (String url : imageUrls) {
+            imageGallery.append(String.format(
+                "<div style='flex: 1; min-width: 30%%; max-width: 32%%; border-radius: 8px; overflow: hidden;'>" +
+                "<img src='%s' alt='%s' style='width: 100%%; height: 150px; object-fit: cover;'>" +
+                "</div>",
+                url,
+                product.getName()
+            ));
+        }
+        imageGallery.append("</div>");
+    }
+    
+    // Chuẩn bị thông tin kích thước
+    StringBuilder sizesInfo = new StringBuilder();
+    if (product.getSizes() != null && !product.getSizes().isEmpty()) {
+        sizesInfo.append("<table style='width: 100%; border-collapse: collapse; margin-top: 20px;'>");
+        sizesInfo.append("<thead style='background-color: #f8f9fa;'>");
+        sizesInfo.append("<tr>");
+        sizesInfo.append("<th style='padding: 12px; text-align: left; border: 1px solid #dee2e6;'>Kích thước</th>");
+        sizesInfo.append("<th style='padding: 12px; text-align: center; border: 1px solid #dee2e6;'>Số lượng</th>");
+        sizesInfo.append("<th style='padding: 12px; text-align: right; border: 1px solid #dee2e6;'>Giá bán</th>");
+        sizesInfo.append("</tr>");
+        sizesInfo.append("</thead>");
+        sizesInfo.append("<tbody>");
+        
+        // Sắp xếp theo tên size
+        product.getSizes().stream()
+            .sorted((a, b) -> {
+                if (a.getSize() == null || b.getSize() == null || 
+                    a.getSize().getName() == null || b.getSize().getName() == null) {
+                    return 0;
+                }
+                return a.getSize().getName().compareTo(b.getSize().getName());
+            })
+            .forEach(size -> {
+                String sizeName = size.getSize() != null && size.getSize().getName() != null ? 
+                    size.getSize().getName() : "Chưa xác định";
+                    
+                sizesInfo.append(String.format(
+                    "<tr>" +
+                    "<td style='padding: 12px; text-align: left; border: 1px solid #dee2e6;'>%s</td>" +
+                    "<td style='padding: 12px; text-align: center; border: 1px solid #dee2e6;'>%d</td>" +
+                    "<td style='padding: 12px; text-align: right; border: 1px solid #dee2e6; color: #e41e31;'>%,d ₫</td>" +
+                    "</tr>",
+                    sizeName,
+                    size.getQuantity(),
+                    size.getPrice()
+                ));
+            });
+            
+        sizesInfo.append("</tbody>");
+        sizesInfo.append("</table>");
+    } else {
+        sizesInfo.append("<p style='color: #666; font-style: italic; margin-top: 20px;'>Chưa có thông tin kích thước</p>");
+    }
+    
+    // Tạo nội dung HTML với CSS inline
+    return String.format("""
+        <!DOCTYPE html>
+        <html lang='vi'>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+            <title>Sản phẩm mới tại Shop Thể Thao Nhdinh</title>
+        </head>
+        <body style='font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333;'>
+            <div style='max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.1);'>
+                <!-- Header -->
+                <div style='background: linear-gradient(135deg, #e41e31 0%%, #c11b19 100%%); padding: 24px; text-align: center;'>
+                    <h1 style='color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;'>SẢN PHẨM MỚI</h1>
+                    <p style='color: #ffffff; opacity: 0.9; margin-top: 5px;'>Shop Thể Thao Nhdinh</p>
+                </div>
+                
+                <!-- Main Content -->
+                <div style='padding: 30px;'>
+                    <!-- Product Title -->
+                    <h2 style='font-size: 24px; margin-top: 0; margin-bottom: 5px; color: #222;'>%s</h2>
+                    
+                    <!-- Category Badge -->
+                    <div style='margin-bottom: 20px;'>
+                        <span style='display: inline-block; background-color: #0f5bff; color: white; padding: 5px 12px; border-radius: 30px; font-size: 13px; font-weight: 500;'>%s</span>
+                    </div>
+                    
+                    <!-- Image Gallery -->
+                    %s
+                    
+                    <!-- Product Price -->
+                    <div style='background-color: #f9f9f9; border-left: 4px solid #e41e31; padding: 15px; margin-bottom: 15px;'>
+                        <p style='margin: 0; font-size: 14px; color: #666;'>Giá niêm yết:</p>
+                        <div style='font-size: 26px; font-weight: 700; color: #e41e31;'>%s ₫</div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div style='margin-bottom: 25px;'>
+                        <h3 style='font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px;'>Mô tả sản phẩm</h3>
+                        <p style='line-height: 1.6; color: #444;'>%s</p>
+                    </div>
+                    
+                    <!-- Sizes & Prices -->
+                    <div style='margin-bottom: 30px;'>
+                        <h3 style='font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px;'>Kích thước & Giá</h3>
+                        %s
+                    </div>
+                    
+                    <!-- CTA Button -->
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='http://localhost:4200/products/%d' style='display: inline-block; background-color: #e41e31; color: white; font-weight: 600; padding: 14px 30px; text-decoration: none; border-radius: 30px; font-size: 16px;'>XEM CHI TIẾT SẢN PHẨM</a>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div style='background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #eee;'>
+                    <!-- Social Media Links -->
+                    <div style='margin-bottom: 15px;'>
+                        <a href='https://www.facebook.com/nhdinh03' style='display: inline-block; margin: 0 10px; color: #3b5998; text-decoration: none;'>
+                            <span>Facebook</span>
+                        </a>
+                        <a href='https://www.instagram.com/nhdinhdz' style='display: inline-block; margin: 0 10px; color: #e1306c; text-decoration: none;'>
+                            <span>Instagram</span>
+                        </a>
+                        <a href='https://www.tiktok.com/@nhdinhdz' style='display: inline-block; margin: 0 10px; color: #000000; text-decoration: none;'>
+                            <span>TikTok</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Address & Copyright -->
+                    <p style='color: #666; font-size: 13px; margin-bottom: 5px;'>Địa chỉ: 65 A2, An Sơn, Thống Nhất, Nha Trang, Khánh Hòa</p>
+                    <p style='color: #666; font-size: 13px; margin: 0;'>© %d Shop Thể Thao Nhdinh. Bản quyền thuộc về Nhdinh.</p>
+                </div>
+            </div>
+            
+            <!-- Unsubscribe text at bottom -->
+            <div style='max-width: 650px; margin: 10px auto; text-align: center; font-size: 12px; color: #999;'>
+                <p>Email này được gửi tự động để thông báo về sản phẩm mới. Nếu bạn không muốn nhận email này nữa, vui lòng <a href='http://localhost:4200/account/unsubscribe' style='color: #666;'>hủy đăng ký</a>.</p>
+            </div>
+        </body>
+        </html>
+        """,
+        // Thông tin sản phẩm
+        product.getName(),
+        product.getCategorie() != null && product.getCategorie().getName() != null ? 
+            product.getCategorie().getName() : "Sản phẩm mới",
+        imageGallery.toString(),
+        formattedPrice,
+        product.getDescription() != null ? product.getDescription() : "Chưa có mô tả",
+        sizesInfo.toString(),
+        product.getId(),
+        java.time.LocalDate.now().getYear()
+    );
   }
 
   // Phương thức trợ giúp để tạo nội dung HTML cho email

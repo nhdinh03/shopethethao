@@ -55,6 +55,8 @@ import com.shopethethao.modules.userHistory.UserActionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.shopethethao.modules.products.services.ProductEmailService;
+
 @RestController
 @RequestMapping("/api/products")
 public class ProductsAPI {
@@ -83,6 +85,9 @@ public class ProductsAPI {
 
     @Autowired
     private HttpServletRequest request;
+
+    @Autowired
+    private ProductEmailService productEmailService;
 
     // Lấy toàn bộ danh sách sản phẩm (không phân trang)
     @GetMapping("/get/all")
@@ -191,6 +196,9 @@ public class ProductsAPI {
 
             // Save product first
             Product savedProduct = productsDAO.save(product);
+
+            // Gửi email thông báo sau khi lưu sản phẩm thành công
+            productEmailService.notifyUsersAboutNewProduct(savedProduct);
 
             // Save sizes
             for (ProductSize size : product.getSizes()) {

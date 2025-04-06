@@ -35,4 +35,7 @@ public interface ProductsDAO extends JpaRepository<Product, Integer> {
 
     Page<Product> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseOrCategorie_NameContainingIgnoreCase(
             String name, String description, String categoryName, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.status = true AND p.id = :productId")
+    Optional<Product> findActiveProductById(@Param("productId") Integer productId);
 }

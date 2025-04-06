@@ -80,4 +80,16 @@ public interface AccountDAO extends JpaRepository<Account, String> {
     @Query("SELECT a FROM Account a WHERE a.status = 0 AND (a.fullname LIKE %?1% OR a.email LIKE %?1% OR a.phone LIKE %?1%)")
     Page<Account> searchLockedAccounts(String keyword, Pageable pageable);
 
+    @Query("""
+        SELECT a FROM Account a 
+        WHERE a.status = 1 
+        AND a.verified = true 
+        AND a.email IS NOT NULL 
+        ORDER BY a.id 
+        LIMIT :batchSize OFFSET :offset
+        """)
+    List<Account> findActiveUsersWithVerifiedEmail(
+        @Param("offset") int offset, 
+        @Param("batchSize") int batchSize
+    );
 }
